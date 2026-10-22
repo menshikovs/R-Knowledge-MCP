@@ -71,20 +71,45 @@ class SourceRepository(ABC):
             )
         return metadata, files, artifact, index
 
-    async def get_package_info(self, package: str) -> dict:
-        metadata, _, artifact, index = await self.source(package)
+    @staticmethod
+    def package_metadata(
+        package: str, metadata: dict[str, str], sources: list[dict], verification_level: str
+    ) -> dict:
+        field_map = {
+            "title": "Title",
+            "description": "Description",
+            "authors": "Author",
+            "authors_at_r": "Authors@R",
+            "license": "License",
+            "urls": "URL",
+        }
         return {
             "package": package,
-            "package_version": metadata["Version"],
+            "package_version": metadata.get("Version"),
             "installed_version": None,
-            "title": metadata.get("Title"),
-            "description": metadata.get("Description"),
-            "authors": metadata.get("Author"),
-            "authors_at_r": metadata.get("Authors@R"),
-            "license": metadata.get("License"),
-            "urls": metadata.get("URL"),
-            "sources": [index.provenance(), artifact.provenance()],
+            **{output: metadata.get(source) for output, source in field_map.items()},
+            "metadata_verification_level": verification_level,
+            "metadata_fields_missing": [
+                output for output, source in field_map.items() if not metadata.get(source)
+            ],
+            "sources": sources,
         }
+
+    async def get_package_info(self, package: str, verify_archive: bool = True) -> dict:
+        if not verify_archive:
+            record, index = await self.current(package)
+            return self.package_metadata(package, record, [index.provenance()], "index_verified")
+        metadata, _, artifact, index = await self.source(package)
+        record = self._index_records[package]
+        verification_level = (
+            "archive_checksum_verified" if record.get("MD5sum") else "description_version_matched"
+        )
+        return self.package_metadata(
+            package,
+            metadata,
+            [index.provenance(), artifact.provenance()],
+            verification_level,
+        )
 
     async def get_dependencies(self, package: str) -> dict:
         record, artifact = await self.current(package)

@@ -62,7 +62,7 @@ or provide a hosted endpoint. Codex configuration follows
 | Tool | Main arguments | Behavior |
 | --- | --- | --- |
 | `search_packages` | `query`, `repository="cran"`, `bioc_version`, `limit=10`, `offset=0` | Names and available title keywords |
-| `get_package_info` | `package`, `repository="cran"`, `bioc_version` | Indexed version, DESCRIPTION, authors, license, URLs |
+| `get_package_info` | `package`, `repository="cran"`, `bioc_version`, `verify_archive=true` | Versioned DESCRIPTION fields with explicit index/DESCRIPTION/archive assurance |
 | `get_dependencies` | `package`, `repository="cran"`, `bioc_version`, `resolve_repositories=false` | Raw dependency fields and optional repository resolution |
 | `get_function_docs` | `package`, `function`, `repository="cran"`, `bioc_version`, `offset=0` | Genuine raw Rd, paginated |
 | `get_package_vignettes` | `package`, `repository="cran"`, `bioc_version` | Vignette links from the version-checked official package page |
@@ -99,6 +99,44 @@ to CRAN. `all` keeps separate identities when names overlap, and exposes source
 failures in `errors` with `verification_status="partial"` or `"failed"`. Absence
 from a checked index differs from an unavailable source. Combined search orders
 CRAN results then Bioconductor results, using a shared offset/limit (1-20).
+
+`get_package_info` keeps deep archive verification as its backward-compatible
+default. Pass `verify_archive=false` to avoid downloading a package archive:
+CRAN reads the official per-package DESCRIPTION and checks its exact package and
+version against PACKAGES; if that optional endpoint returns 404, the tool returns
+partial index-only metadata and identifies missing fields. Bioconductor returns
+metadata available in the selected release's software, annotation, and experiment
+PACKAGES index. It does not fetch a current package page or substitute another
+release when DESCRIPTION fields are absent.
+
+Inspect `metadata_verification_level` before relying on a result:
+
+```json
+{
+  "package": "ExamplePkg",
+  "repository": "cran",
+  "package_version": "2.10-1",
+  "bioc_version": null,
+  "verification_status": "verified",
+  "metadata_verification_level": "description_version_matched",
+  "source_url": "https://cran.r-project.org/web/packages/ExamplePkg/DESCRIPTION",
+  "checked_at": "2026-10-22T00:00:00+00:00"
+}
+```
+
+`index_verified` means the record came from the selected repository index;
+`description_version_matched` means a DESCRIPTION identity matched that index;
+`archive_checksum_verified` means the indexed archive checksum was present and
+matched. If an archive has no indexed checksum, deep mode still checks its
+DESCRIPTION package/version and reports `description_version_matched`.
+`verification_status` continues to describe whether the returned data was
+retrieved and validated; it does not imply the strongest assurance level.
+
+Only `get_package_info` exposes the lightweight option. `get_package_knowledge`,
+GitHub AGENTS.md, Context7, Prompt Intelligence package grounding, and function
+Rd retrieval retain deep verification by default. Dependencies and Bioconductor
+compatibility already use the selected indices. See [source assurance and
+performance measurements](docs/sources.md).
 
 Prompt Intelligence also registers fourteen standard MCP Prompts, including
 `r-multi-stage-workflow`, which uses the same bounded local composition pipeline

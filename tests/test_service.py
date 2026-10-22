@@ -19,6 +19,7 @@ async def test_all_tools_and_provenance(service):
     assert info["license"] == "MIT"
     assert info["installed_version"] is None
     assert info["latest_cran_version"] == "2.10-1"
+    assert info["metadata_verification_level"] == "description_version_matched"
     deps = await api.get_dependencies("ExamplePkg")
     assert deps["dependencies"] == {
         "Depends": "R (>= 4.1)",

@@ -1,8 +1,10 @@
 """Canonical current CRAN provider; preserves the original operations."""
 
+from datetime import UTC, datetime
+
 from ..errors import KnowledgeError
 from ..http import CATALOG, INDEX, Artifact, version_parts
-from ..parsers import CatalogParser, dcf, decode
+from ..parsers import CatalogParser, dcf, decode, description_text
 from .base import SourceRepository
 
 
@@ -16,13 +18,87 @@ class CranProvider(SourceRepository):
     def page_path(self, package: str) -> str:
         return f"/web/packages/{package}/index.html"
 
-    async def get_package_info(self, package: str) -> dict:
-        result = await super().get_package_info(package)
+    def description_path(self, package: str) -> str:
+        return f"/web/packages/{package}/DESCRIPTION"
+
+    async def get_package_info(self, package: str, verify_archive: bool = True) -> dict:
+        if verify_archive:
+            result = await super().get_package_info(package, verify_archive=True)
+        else:
+            record, index = await self.current(package)
+            try:
+                result = await self._lightweight_description(package, record, index)
+            except KnowledgeError as exc:
+                if exc.code != "not_found":
+                    raise
+                result = {
+                    **self.package_metadata(
+                        package, record, [index.provenance()], "index_verified"
+                    ),
+                    "verification_status": "partial",
+                    "metadata_details_status": "unavailable",
+                    "metadata_error": {
+                        "code": exc.code,
+                        "message": str(exc),
+                        "source_url": exc.source_url,
+                        "attempted_at": datetime.now(UTC).isoformat(),
+                    },
+                }
         return {
             **result,
             "latest_cran_version": result["package_version"],
             "cran_url": f"https://cran.r-project.org/package={package}",
         }
+
+    async def _lightweight_description(self, package, record, index):
+        artifact = await self.http.fetch(self.description_path(package))
+        related_sources = [index.provenance(), artifact.provenance()]
+        try:
+            records = dcf(description_text(artifact.body))
+        except KnowledgeError as exc:
+            raise KnowledgeError(
+                exc.code,
+                str(exc),
+                artifact.source_url,
+                related_sources=related_sources,
+            ) from exc
+        if len(records) != 1:
+            raise KnowledgeError(
+                "invalid_source",
+                "Expected one DESCRIPTION record",
+                artifact.source_url,
+                related_sources=related_sources,
+            )
+        metadata = records[0]
+        if not metadata.get("Package") or not metadata.get("Version"):
+            raise KnowledgeError(
+                "invalid_source",
+                "DESCRIPTION lacks package identity fields",
+                artifact.source_url,
+                related_sources=related_sources,
+            )
+        try:
+            version_parts(metadata["Version"])
+        except KnowledgeError as exc:
+            raise KnowledgeError(
+                "invalid_source",
+                "DESCRIPTION contains an invalid package version",
+                artifact.source_url,
+                related_sources=related_sources,
+            ) from exc
+        if metadata["Package"] != package or metadata["Version"] != record["Version"]:
+            raise KnowledgeError(
+                "version_mismatch",
+                "Lightweight DESCRIPTION does not match the selected CRAN index record",
+                artifact.source_url,
+                related_sources=related_sources,
+            )
+        return self.package_metadata(
+            package,
+            metadata,
+            related_sources,
+            "description_version_matched",
+        )
 
     async def get_dependencies(self, package: str) -> dict:
         result = await super().get_dependencies(package)

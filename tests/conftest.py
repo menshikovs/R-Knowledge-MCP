@@ -60,6 +60,7 @@ async def service():
         INDEX: INDEX_TEXT.encode(),
         CATALOG: b"<table><tr><td><a>ExamplePkg</a></td><td>Synthetic Data Tools</td></tr>"
         b"<tr><td>AnotherPkg</td><td>Other Tools</td></tr></table>",
+        "/web/packages/ExamplePkg/DESCRIPTION": DESCRIPTION.encode(),
         "/src/contrib/ExamplePkg_2.10-1.tar.gz": archive(
             {
                 "ExamplePkg/DESCRIPTION": DESCRIPTION,

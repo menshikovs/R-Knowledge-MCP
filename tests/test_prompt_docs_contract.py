@@ -55,7 +55,7 @@ class _MetadataVersionOverride:
         self.delegate = CranProvider(http)
         self.version_override = version_override
 
-    async def get_package_info(self, package):
+    async def get_package_info(self, package, verify_archive=True):
         return {
             "package": package,
             "package_version": self.version_override or VERSION,

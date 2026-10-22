@@ -21,6 +21,8 @@ INDEX = "/src/contrib/PACKAGES"
 CATALOG = "/web/packages/available_packages_by_name.html"
 PACKAGE = re.compile(r"[A-Za-z][A-Za-z0-9.]{0,99}\Z")
 VERSION = re.compile(r"[0-9]+(?:[.-][0-9]+)*\Z")
+OVERSIZED_FAILURE_TTL = 60
+OVERSIZED_FAILURE_CAPACITY = 128
 ARCHIVE_ROUTE = re.compile(
     r"/src/contrib/[A-Za-z][A-Za-z0-9.]{0,99}_[0-9]+(?:[.-][0-9]+)*\.tar\.gz\Z"
 )
@@ -72,6 +74,7 @@ class RepositoryHTTP(ABC):
         self.cache_bytes = configured_cache_bytes() if cache_bytes is None else cache_bytes
         self.request_timeout = positive_float("HTTP_TIMEOUT_SECONDS", 15)
         self._cache: OrderedDict[str, tuple[float, Artifact]] = OrderedDict()
+        self._oversized_failures: OrderedDict[str, tuple[float, str]] = OrderedDict()
         self._bytes = 0
         # Coalesce identical requests without blocking unrelated repository routes.
         self._cache_lock = asyncio.Lock()
@@ -101,9 +104,7 @@ class RepositoryHTTP(ABC):
         if not self.allowed_path(path):
             raise KnowledgeError("blocked_url", "Only fixed repository source routes are allowed")
         url = self.base_url + path
-        limit = (25 if path.endswith(".tar.gz") else 16) << 20
-        if path == "/config.yaml":
-            limit = 1 << 20
+        limit = self._response_limit(path)
         async with self._singleflight(path):
             async with self._cache_lock:
                 now = monotonic()
@@ -113,6 +114,12 @@ class RepositoryHTTP(ABC):
                         self._cache.move_to_end(path)
                         return item
                     self._bytes -= len(self._cache.pop(path)[1].body)
+            failed = self._oversized_failures.get(path)
+            if failed:
+                if failed[0] > monotonic():
+                    self._oversized_failures.move_to_end(path)
+                    raise KnowledgeError("source_too_large", failed[1], url, cached=True)
+                self._oversized_failures.pop(path, None)
             async with self._request_slots:
                 try:
                     async with asyncio.timeout(45):
@@ -181,6 +188,16 @@ class RepositoryHTTP(ABC):
                     raise KnowledgeError(
                         "source_unavailable", "Repository request failed or timed out", url
                     ) from exc
+                except KnowledgeError as exc:
+                    if exc.code == "source_too_large":
+                        self._oversized_failures[path] = (
+                            monotonic() + OVERSIZED_FAILURE_TTL,
+                            str(exc),
+                        )
+                        self._oversized_failures.move_to_end(path)
+                        while len(self._oversized_failures) > OVERSIZED_FAILURE_CAPACITY:
+                            self._oversized_failures.popitem(last=False)
+                    raise
             item = Artifact(bytes(chunks), url, datetime.now(UTC).isoformat())
             async with self._cache_lock:
                 if len(item.body) <= self.cache_bytes:
@@ -191,6 +208,14 @@ class RepositoryHTTP(ABC):
                     self._cache[path] = (monotonic() + self.ttl, item)
                     self._bytes += len(item.body)
             return item
+
+    @staticmethod
+    def _response_limit(path: str) -> int:
+        if path == "/config.yaml":
+            return 1 << 20
+        if path.endswith("/DESCRIPTION"):
+            return 2 << 20
+        return (25 if path.endswith(".tar.gz") else 16) << 20
 
     @staticmethod
     def _retry_after(value: str | None) -> float | None:
@@ -214,6 +239,7 @@ class CranHTTP(RepositoryHTTP):
         return (
             path in (INDEX, CATALOG)
             or bool(ARCHIVE_ROUTE.fullmatch(path))
+            or bool(re.fullmatch(r"/web/packages/[A-Za-z][A-Za-z0-9.]{0,99}/DESCRIPTION", path))
             or bool(re.fullmatch(r"/web/packages/[A-Za-z][A-Za-z0-9.]{0,99}/index\.html", path))
         )
 
