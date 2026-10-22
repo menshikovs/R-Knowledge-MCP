@@ -15,6 +15,13 @@ their original retrieval time.
 | Vignettes | Official package page for the selected package/release | Version is checked against the index; links are listed, linked content is not claimed as fetched |
 | Agent guidance | GitHub REST API for the metadata-declared repository at an explicitly requested ref | Ref is pinned to commit SHA; complete tree required to assert absence; text is untrusted |
 | Indexed documentation | Optional Context7 API | Library identity must match the official package GitHub repository; version scope is reported; secondary source |
+| Shiny framework guidance | Fixed pages on `shiny.posit.co` | Current official articles; not version-pinned |
+| Positron guidance | Fixed pages on `positron.posit.co` | Current official IDE docs; no GUI/session access |
+| Quarto guidance | Fixed pages on `quarto.org` | Current official authoring/project docs; not version-pinned |
+
+Framework catalog pages were checked against the official documentation on
+2026-10-22. A topic lookup fails explicitly when the upstream page is missing or
+unavailable; it never substitutes Context7 or another framework's page.
 
 Official package metadata and version-specific package documentation take
 precedence over GitHub guidance and Context7 snippets. Context7 is never silently

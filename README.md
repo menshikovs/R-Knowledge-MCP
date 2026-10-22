@@ -66,6 +66,15 @@ or provide a hosted endpoint. Codex configuration follows
 | `get_package_agent_guidance` | `package`, `revision`, `repository`, `bioc_version` | AGENTS.md files from the package's metadata-declared GitHub repository at an explicit ref, pinned to a commit SHA |
 | `get_context7_docs` | `package`, `question`, `repository`, `bioc_version` | Context7 documentation/examples only after its library ID matches the package's verified metadata URL |
 | `get_package_knowledge` | `package`, optional `question`, `revision`, `repository`, `bioc_version` | Package metadata and dependencies, plus requested GitHub/Context7 sections with their own provenance |
+| `get_shiny_docs` | `package`, `function`, optional `package_version` | Exact Rd alias from current indexed CRAN source; known Shiny function ownership checked |
+| `explain_shiny_reactivity` | `topic`, `question`, optional `source` | Reactive concept with retrieved official Shiny article and optional static findings |
+| `analyze_shiny_app` | `source` or `files`, optional `shiny_version` | Heuristic checks on caller-supplied R text; never executes it |
+| `get_positron_guidance` | `topic`, optional version/OS/R/project metadata | Retrieved Positron docs; current docs are not version-pinned |
+| `analyze_r_workspace` | `files` mapping | Analyze selected contents and renv metadata; `.Renviron` values are redacted |
+| `get_quarto_docs` | `topic`, optional `quarto_version` | Retrieved official Quarto pages; version caveat is explicit |
+| `analyze_quarto_document` | `source`, optional project/R/dependency metadata | Safe YAML front matter, R chunk options, formats and citations; no render |
+| `analyze_quarto_project` | `_quarto.yml` text, optional `_metadata.yml` and manifest | Project/profile/format metadata and manifest-level bibliography checks |
+| `get_r_workflow_guidance` | scenario, explicit package list, optional R/Bioc versions | Combines selected package knowledge and framework docs without inventing recommendations |
 | `get_bioconductor_version` | `r_version` | Official R/release mapping and latest released recommendation for that R |
 | `check_package_compatibility` | `package`, `r_version`, `bioc_version` | Bioconductor/R mapping and direct required dependency checks |
 | `check_package_version` | `package`, `installed_version` | Existing CRAN numeric version comparison |
@@ -230,6 +239,8 @@ src/cran_knowledge_mcp/
 
 See [architecture details](docs/ARCHITECTURE.md), [source authority](docs/sources.md),
 [security model](docs/security.md), and [development rules](AGENTS.md).
+For framework behavior and limits, see the
+[Shiny, Positron and Quarto integration guide](docs/shiny-positron-quarto.md).
 
 ## Limits and security
 
@@ -295,5 +306,8 @@ endpoints fail explicitly. Workflows/books are outside the requested categories.
 
 No local inspection, renv.lock parsing, archived CRAN version lookup, transitive
 solver, installation test or public hosting is included. See [the roadmap](docs/ROADMAP.md).
+`analyze_r_workspace` only sees text provided by the client. Shiny and Quarto
+analyzers are static checks, not runtime, schema-complete, browser or security
+tests.
 Optional live checks after installation: `python scripts/smoke_cran.py` and
 `python scripts/smoke_repositories.py`.

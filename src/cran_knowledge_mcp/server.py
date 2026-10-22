@@ -36,7 +36,8 @@ def create_server(
         stateless_http=True,
         json_response=True,
         instructions=(
-            "Read-only CRAN, Bioconductor, GitHub AGENTS.md and Context7 data. "
+            "Read-only CRAN, Bioconductor, Shiny, Positron, Quarto, GitHub AGENTS.md "
+            "and Context7 data. "
             "Cite repository, release, sources and checked_at. "
             "Check R/Bioconductor compatibility before recommending Bioconductor packages. "
             "Latest repository versions are not "
@@ -46,6 +47,8 @@ def create_server(
             "no supplied commands are executed. "
             "Rd macros and examples are never executed. "
             "Check verification_status and errors. Cached checks may be up to 5 minutes old."
+            " User-supplied R and Quarto source is analyzed statically and never executed."
+            " Positron tools provide documentation, not GUI or live-session control."
         ),
         transport_security=TransportSecuritySettings(
             enable_dns_rebinding_protection=True,
@@ -230,6 +233,131 @@ def create_server(
             ),
             package=package,
             repository=repository,
+            bioc_version=bioc_version,
+        )
+
+    @server.tool(annotations=annotations)
+    async def get_shiny_docs(
+        package: str, function: str, ctx: Context, package_version: str | None = None
+    ) -> dict[str, Any]:
+        """Get genuine Rd for a Shiny function from a CRAN source archive."""
+        return await bounded(
+            ctx.request_context.lifespan_context.get_shiny_docs(package, function, package_version),
+            package=package,
+            repository="cran",
+        )
+
+    @server.tool(annotations=annotations)
+    async def explain_shiny_reactivity(
+        topic: Literal["reactivity", "isolation", "modules", "async", "basics"],
+        question: str,
+        ctx: Context,
+        source: str | None = None,
+    ) -> dict[str, Any]:
+        """Explain a Shiny topic with official docs and optional static source checks."""
+        return await bounded(
+            ctx.request_context.lifespan_context.explain_shiny_reactivity(topic, question, source),
+            repository="shiny",
+        )
+
+    @server.tool(annotations=annotations)
+    async def analyze_shiny_app(
+        ctx: Context,
+        source: str | None = None,
+        files: dict[str, str] | None = None,
+        shiny_version: str | None = None,
+    ) -> dict[str, Any]:
+        """Run bounded heuristic checks on supplied Shiny source; never executes it."""
+        return await bounded(
+            ctx.request_context.lifespan_context.analyze_shiny_app(source, files, shiny_version),
+            repository="shiny",
+        )
+
+    @server.tool(annotations=annotations)
+    async def get_positron_guidance(
+        topic: Literal["interpreters", "r_installation", "startup", "extensions", "mcp"],
+        ctx: Context,
+        positron_version: str | None = None,
+        operating_system: str | None = None,
+        r_version: str | None = None,
+        project_type: str | None = None,
+    ) -> dict[str, Any]:
+        """Retrieve official Positron guidance; this does not control the IDE or an R session."""
+        return await bounded(
+            ctx.request_context.lifespan_context.get_positron_guidance(
+                topic, positron_version, operating_system, r_version, project_type
+            ),
+            repository="positron",
+        )
+
+    @server.tool(annotations=annotations)
+    async def analyze_r_workspace(files: dict[str, str], ctx: Context) -> dict[str, Any]:
+        """Analyze supplied project text; never reads paths or exposes .Renviron values."""
+        return await bounded(
+            ctx.request_context.lifespan_context.analyze_r_workspace(files),
+            repository="r_workspace",
+        )
+
+    @server.tool(annotations=annotations)
+    async def get_quarto_docs(
+        topic: Literal["r", "projects", "profiles", "citations", "rendering"],
+        ctx: Context,
+        quarto_version: str | None = None,
+    ) -> dict[str, Any]:
+        """Retrieve a page from the fixed catalog of official Quarto documentation."""
+        return await bounded(
+            ctx.request_context.lifespan_context.get_quarto_docs(topic, quarto_version),
+            repository="quarto",
+        )
+
+    @server.tool(annotations=annotations)
+    async def analyze_quarto_document(
+        source: str,
+        ctx: Context,
+        project_config: str | None = None,
+        quarto_version: str | None = None,
+        r_version: str | None = None,
+        dependencies: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Safely parse QMD YAML and fenced R chunk options without rendering or executing code."""
+        return await bounded(
+            ctx.request_context.lifespan_context.analyze_quarto_document(
+                source, project_config, quarto_version, r_version, dependencies
+            ),
+            repository="quarto_document",
+        )
+
+    @server.tool(annotations=annotations)
+    async def analyze_quarto_project(
+        project_config: str,
+        ctx: Context,
+        metadata_config: str | None = None,
+        file_manifest: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Analyze supplied Quarto YAML and a path-only manifest; no server filesystem access."""
+        return await bounded(
+            ctx.request_context.lifespan_context.analyze_quarto_project(
+                project_config, metadata_config, file_manifest
+            ),
+            repository="quarto_project",
+        )
+
+    @server.tool(annotations=annotations)
+    async def get_r_workflow_guidance(
+        scenario: Literal[
+            "shiny_bioconductor", "quarto_positron", "quarto_bioconductor", "analysis_to_shiny"
+        ],
+        ctx: Context,
+        packages: list[dict[str, str]] | None = None,
+        r_version: str | None = None,
+        bioc_version: str | None = None,
+    ) -> dict[str, Any]:
+        """Combine official framework docs with knowledge for explicitly named packages."""
+        return await bounded(
+            ctx.request_context.lifespan_context.get_r_workflow_guidance(
+                scenario, packages, r_version, bioc_version
+            ),
+            repository="r_workflow",
             bioc_version=bioc_version,
         )
 

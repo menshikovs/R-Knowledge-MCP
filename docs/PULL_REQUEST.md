@@ -1,47 +1,54 @@
-# Build a source-attributed R package knowledge MCP
+# Deep Shiny, Positron and Quarto integration
 
-Adds a read-only MCP server for CRAN and Bioconductor package metadata,
-version-specific Rd documentation, dependencies, vignette links and
-conservative R/Bioconductor compatibility checks. Optional GitHub and Context7
-providers add commit-pinned package guidance and indexed documentation while
-preserving per-source provenance.
+Adds source-attributed guidance and bounded project analysis for common R
+development workflows while preserving the existing CRAN, Bioconductor,
+GitHub AGENTS.md and Context7 providers.
 
-## Implementation
+## Changes
 
-- Adds a `PackageRepository` contract with separate CRAN and Bioconductor
-  providers. Bioconductor releases and R mappings are discovered from the
-  official configuration, and software, annotation and experiment indices are
-  handled independently.
-- Registers eleven FastMCP tools for package search/info/dependencies/docs,
-  compatibility and version checks, vignettes, GitHub AGENTS.md, Context7, and
-  combined package knowledge. Both stdio and Streamable HTTP are supported.
-- Verifies official index/archive identity and preserves source URL, source
-  version and retrieval time. Missing packages, incomplete upstream data,
-  incompatible constraints and upstream failures remain explicit.
-- Resolves GitHub only from verified package metadata, pins requested refs to
-  commit SHA, and labels every AGENTS.md file untrusted. Context7 is optional,
-  server-keyed, repository matched, version scoped where supported, and labeled
-  as a secondary source.
-- Restricts outbound calls to fixed HTTPS routes, rejects redirects, caps
-  downloads and outputs, applies bounded timeouts/retries and cache limits, and
-  exposes validated runtime configuration. No package code or external
-  instructions are executed.
-- Adds security/source authority docs and future limitations to the README and
-  roadmap. No public deployment or paid service is configured.
+- Adds a fixed-catalog provider for official Shiny, Positron and Quarto
+  documentation, with bounded async HTTP, redirect rejection, caching, source
+  timestamps and explicit current-documentation/version caveats.
+- Adds nine MCP tools: `get_shiny_docs`, `explain_shiny_reactivity`,
+  `analyze_shiny_app`, `get_positron_guidance`, `analyze_r_workspace`,
+  `get_quarto_docs`, `analyze_quarto_document`, `analyze_quarto_project` and
+  `get_r_workflow_guidance`.
+- Provides heuristic-only Shiny source checks, safe YAML/QMD parsing, Quarto
+  project and bibliography-manifest checks, and metadata-only R workspace
+  analysis including bounded `renv.lock` summaries. No user R, YAML objects,
+  Quarto chunks, startup files or external instructions are executed.
+- Adds explicit Shiny function ownership checks and refuses silent substitution
+  when the requested historical package documentation is not available.
+- Adds cross-framework workflows that combine selected official docs and only
+  explicitly named package knowledge. Caller-supplied dependency names remain
+  unverified unless a separate package metadata check succeeds.
+- Updates user and developer documentation, security boundaries, architecture,
+  source catalog and roadmap.
 
 ## Validation
 
-- 109 tests pass in Linux Docker, including mocked CRAN, Bioconductor, GitHub
-  and Context7 APIs, unavailable sources, compatibility checks, cache behavior,
-  secret redaction, MCP stdio/HTTP, and configuration validation.
-- `ruff check .` and `ruff format --check .` pass.
-- Docker image builds and the packaged CLI help check passes.
+- Full `pytest` suite, `ruff check .`, `ruff format --check .`, Docker image build
+  and packaged CLI checks are run for this branch; exact results are recorded
+  in the PR description at creation time.
+- New tests mock external documentation HTTP and cover static analysis,
+  malformed/unsafe metadata, secret redaction, bounded inputs, provenance,
+  service behavior and MCP registration.
 
-## Known limitations
+## Limits
 
-Compatibility checks cover official R/release mapping and direct required
-dependencies; they do not solve transitive/platform dependencies or inspect an
-installed R environment. CRAN archive lookups, `renv.lock` parsing and
-installation testing remain future work. Context7 may not index an R package;
-AGENTS.md retrieval requires an explicit ref and fails closed on truncated
-GitHub trees. See `docs/ROADMAP.md` and `docs/security.md`.
+- Shiny source checks are lexical heuristics, not R parsing, execution, reactive
+  graph reconstruction, browser testing or security certification.
+- Quarto analysis does not render documents and can only compare bibliography
+  references against a caller-provided path manifest.
+- Workspace inspection is limited to explicitly supplied bounded file text;
+  it never reads a local path. `.Renviron` values are omitted and `.Rprofile` is
+  never executed.
+- Shiny Rd is retrieved from the current indexed CRAN source archive. Requested
+  historical versions are reported unavailable rather than substituted.
+- Positron and Quarto docs use current official pages and are not pinned to
+  supplied versions. The MCP integration does not control the IDE, interpreter
+  or terminal.
+- Workflow advice does not infer package selections, solve full dependency
+  graphs, install packages, render output or test deployment.
+- MCP resources, reusable prompts, full R AST analysis, live IDE adapters and
+  optional local R/Quarto smoke tests remain future work.

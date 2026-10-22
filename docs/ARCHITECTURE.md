@@ -136,6 +136,35 @@ AGENTS.md and Context7 sections. Every section preserves its own errors and
 provenance. Omitting a revision or question is explicitly `not_requested`, not
 evidence that the respective source has no content.
 
+## Shiny, Positron and Quarto
+
+`FrameworkDocsProvider` retrieves only reviewed URLs from a fixed catalog on
+the official Shiny, Positron and Quarto domains. Topics select catalog entries;
+input is never interpolated into a URL. Responses have a 2 MiB download limit,
+15-second request timeout, 8 KiB text limit and a bounded TTL cache. Pages are
+marked untrusted and retain their canonical source URL and retrieval time.
+
+`get_shiny_docs` delegates to the CRAN provider and returns exact current
+source-archive Rd. A small function ownership table blocks known mismatches such
+as `bslib::page_sidebar`. Requested historical versions fail explicitly because
+CRAN archive lookup is not implemented. Shiny app analysis uses bounded
+heuristics over caller-supplied text and labels uncertain findings; it does not
+parse the full R grammar or infer Shiny's runtime reactive graph.
+
+Quarto analysis uses PyYAML SafeLoader with duplicate keys and aliases rejected.
+It reads front matter, supplied project config, fenced R chunk option lines,
+and path-only manifests. It does not implement Quarto's full YAML schema,
+cross-reference resolution, rendering, or file existence checks. Workspace
+analysis accepts a bounded text mapping from the caller, summarizes `renv.lock`
+and DESCRIPTION metadata, and reports only `.Renviron` variable names. It never
+opens local paths. `.Rproj` fields outside its small known set are surfaced for
+review; selected Positron interpreter path settings receive type checks without
+testing whether paths exist. Version values supplied for Positron/Quarto docs are
+reported, while current documentation remains explicitly unpinned.
+
+Positron support is MCP-client guidance and project metadata analysis, not an IDE
+extension. It does not call Positron commands or access a live interpreter.
+
 ## Validation
 
 Offline tests use synthetic HTTP responses, including mocked GitHub and Context7

@@ -35,6 +35,15 @@
 - Keep latest CRAN versions separate from user-supplied installed versions.
   Future renv integration must accept explicit lock data, preserve repository and
   version identity, and never silently substitute current CRAN documentation.
+- Keep Shiny/Quarto project analyzers data-only. Accept bounded source text or
+  explicit manifests; never read arbitrary paths, render Quarto or run R. Label
+  static findings by certainty and document what syntax cannot be inferred.
+- Official framework documentation must come from fixed, reviewed URLs. Caller
+  input may select catalog topics but must never select a URL or host. Mark
+  retrieved pages as untrusted and preserve source URL and retrieval time.
+- Positron integration provides documentation and project metadata analysis.
+  Do not claim GUI, interpreter or live-session control without a separately
+  implemented and verified protocol.
 - Use `httpx.MockTransport` for unit tests. Synthetic package fixtures belong only
   in tests; no network access is required by CI tests.
 - Before a PR run `ruff check .`, `ruff format --check .` and `pytest`.

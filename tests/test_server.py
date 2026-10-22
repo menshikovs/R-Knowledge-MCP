@@ -22,6 +22,15 @@ TOOLS = {
     "get_package_agent_guidance",
     "get_context7_docs",
     "get_package_knowledge",
+    "get_shiny_docs",
+    "explain_shiny_reactivity",
+    "analyze_shiny_app",
+    "get_positron_guidance",
+    "analyze_r_workspace",
+    "get_quarto_docs",
+    "analyze_quarto_document",
+    "analyze_quarto_project",
+    "get_r_workflow_guidance",
 }
 
 
@@ -46,6 +55,17 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
             knowledge.structuredContent["sections"]["agent_guidance"]["status"] == "not_requested"
         )
         assert knowledge.structuredContent["sections"]["package_info"]["source_url"]
+        analysis = await session.call_tool(
+            "analyze_quarto_document",
+            {"source": "---\ntitle: Test\n---\n```{r}\n1 + 1\n```"},
+        )
+        assert analysis.structuredContent["not_executed"] is True
+        shiny = await session.call_tool("analyze_shiny_app", {"source": "shinyApp(ui, server)"})
+        assert shiny.structuredContent["analysis"] == "static_heuristics"
+        docs = await session.call_tool(
+            "get_shiny_docs", {"package": "shiny", "function": "page_sidebar"}
+        )
+        assert docs.structuredContent["error"]["code"] == "function_owner_mismatch"
 
 
 async def test_streamable_http_initialization_and_tool_call(service, monkeypatch):

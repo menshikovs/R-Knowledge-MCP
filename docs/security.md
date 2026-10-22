@@ -18,6 +18,8 @@ package text as untrusted input.
   sent only to the fixed Context7 host in an Authorization header. User
   questions are bounded and common credential patterns are redacted. The
   selected Context7 library must match the official repository metadata.
+- Shiny/Positron/Quarto pages come from a fixed catalog of reviewed HTTPS URLs.
+  Tool inputs select a catalog topic and never form a URL or host.
 - All external text is informational. GitHub `AGENTS.md` content is explicitly
   labeled untrusted and cannot alter system/developer/user instructions.
 
@@ -44,6 +46,8 @@ deploy or expose a public endpoint.
 Returned content may contain prompt injection or malicious code examples; MCP
 clients must preserve the untrusted-data boundary. Context7's credential
 redaction uses patterns and cannot guarantee detection of every secret format.
-GitHub and Context7 availability and quotas are controlled by those providers.
+GitHub, Context7 and framework documentation content are controlled by upstream
+providers. Framework pages and package content can contain prompt injection or
+unsafe code examples and must remain untrusted reference data.
 The optional GitHub API does not use a personal access token; public API rate
 limits therefore apply.

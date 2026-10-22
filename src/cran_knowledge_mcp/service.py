@@ -9,11 +9,72 @@ from datetime import UTC, datetime
 from .config import cache_ttl, context7_api_key
 from .errors import KnowledgeError
 from .http import BioconductorHTTP, CranHTTP, package_name, version_parts
+from .project_analysis import (
+    analyze_quarto_document as analyze_quarto_source,
+)
+from .project_analysis import (
+    analyze_quarto_project as analyze_quarto_config,
+)
+from .project_analysis import (
+    analyze_r_workspace as analyze_workspace_metadata,
+)
+from .project_analysis import (
+    analyze_shiny_app as analyze_shiny_source,
+)
 from .providers import BioconductorProvider, CranProvider, PackageRepository
 from .providers.bioconductor import CATEGORIES
 from .providers.context7 import Context7Provider
+from .providers.framework_docs import FrameworkDocsProvider
 from .providers.github_agents import GitHubAgentsProvider
 from .releases import BioconductorReleases, r_minor
+
+SHINY_PACKAGE_DOCS = {
+    name.casefold(): name
+    for name in (
+        "shiny",
+        "bslib",
+        "htmltools",
+        "shinyWidgets",
+        "DT",
+        "plotly",
+        "promises",
+        "future",
+        "shinyvalidate",
+        "shinytest2",
+        "testthat",
+        "reactlog",
+        "thematic",
+    )
+}
+SHINY_FUNCTION_OWNERS = {
+    name: "shiny"
+    for name in (
+        "shinyApp",
+        "fluidPage",
+        "moduleServer",
+        "NS",
+        "reactive",
+        "reactiveVal",
+        "reactiveValues",
+        "observe",
+        "observeEvent",
+        "eventReactive",
+        "renderPlot",
+        "renderTable",
+        "renderUI",
+        "req",
+        "validate",
+        "need",
+        "testServer",
+    )
+}
+SHINY_FUNCTION_OWNERS["page_sidebar"] = "bslib"
+WORKFLOW_TOPICS = {
+    "shiny_bioconductor": [("shiny", "reactivity"), ("shiny", "modules")],
+    "quarto_positron": [("positron", "interpreters"), ("quarto", "r"), ("quarto", "projects")],
+    "quarto_bioconductor": [("quarto", "r"), ("quarto", "citations")],
+    "analysis_to_shiny": [("shiny", "basics"), ("shiny", "reactivity"), ("shiny", "modules")],
+}
 
 
 def failure(exc: KnowledgeError, package=None, repository=None, bioc_version=None):
@@ -42,6 +103,7 @@ class KnowledgeService:
         providers: dict[str, PackageRepository] | None = None,
         agents_provider: GitHubAgentsProvider | None = None,
         context7_provider: Context7Provider | None = None,
+        framework_docs_provider: FrameworkDocsProvider | None = None,
     ):
         self.http = http  # Backward-compatible injection point for offline clients/tests.
         self.bioc_http = BioconductorHTTP(http.client)
@@ -52,6 +114,7 @@ class KnowledgeService:
         self.context7 = context7_provider or Context7Provider(
             http.client, context7_api_key(), ttl=cache_ttl(21600)
         )
+        self.framework_docs = framework_docs_provider or FrameworkDocsProvider(http.client)
 
     async def provider(self, repository: str, bioc_version: str | None = None):
         if repository == "bioconductor":
@@ -386,6 +449,238 @@ class KnowledgeService:
             "checked_at": max((s["checked_at"] for s in sources), default=info.get("checked_at")),
             "verification_status": overall,
             "sources": sources,
+        }
+
+    async def get_shiny_docs(self, package, function, package_version=None):
+        canonical = SHINY_PACKAGE_DOCS.get(package.casefold()) if isinstance(package, str) else None
+        if canonical is None:
+            raise KnowledgeError(
+                "unsupported_package",
+                "Select a documented Shiny ecosystem package: "
+                f"{', '.join(SHINY_PACKAGE_DOCS.values())}",
+            )
+        owner = SHINY_FUNCTION_OWNERS.get(function) if isinstance(function, str) else None
+        if owner and canonical != owner:
+            raise KnowledgeError(
+                "function_owner_mismatch",
+                f"Official Shiny reference identifies {function} as belonging to {owner}",
+            )
+        info = await self.get_package_info(canonical, "cran")
+        if "error" in info:
+            return {"package": canonical, "documentation": info, "verification_status": "failed"}
+        actual_version = info["package_version"]
+        if package_version is not None and version_parts(package_version) != version_parts(
+            actual_version
+        ):
+            error = KnowledgeError(
+                "requested_version_unavailable",
+                "Only current indexed CRAN source documentation is implemented; "
+                "the requested version was not substituted.",
+            )
+            return {
+                **failure(error, canonical, "cran"),
+                "latest_package_version": actual_version,
+                "requested_package_version": package_version,
+            }
+        docs = await self.get_function_docs(canonical, function, repository="cran")
+        if "error" in docs:
+            return {
+                "package": canonical,
+                "package_version": actual_version,
+                "requested_package_version": package_version,
+                "documentation": docs,
+                "source_url": docs.get("source_url"),
+                "checked_at": docs.get("checked_at"),
+                "sources": docs.get("sources", []),
+                "verification_status": "failed",
+            }
+        return {
+            "package": canonical,
+            "repository": "cran",
+            "package_version": actual_version,
+            "requested_package_version": package_version,
+            "function": function,
+            "documentation": docs,
+            "package_metadata_source": info["source_url"],
+            "source_url": docs.get("source_url"),
+            "checked_at": docs.get("checked_at"),
+            "sources": info.get("sources", []) + docs.get("sources", []),
+            "verification_status": "verified",
+            "version_scope": "exact_current_indexed_source_archive",
+        }
+
+    async def explain_shiny_reactivity(self, topic, question=None, source=None):
+        if question is not None and (not isinstance(question, str) or len(question) > 500):
+            raise KnowledgeError("invalid_input", "Question must be at most 500 characters")
+        docs = await self.framework_docs.get_docs("shiny", topic)
+        analysis = analyze_shiny_source(source=source) if source is not None else None
+        guidance = {
+            "reactivity": (
+                "Reactive sources, expressions and endpoints form a dependency graph. "
+                "Expressions track reads and cache values until invalidated."
+            ),
+            "isolation": (
+                "isolate() lets code read reactive values without registering those reads "
+                "as dependencies of the current reactive context."
+            ),
+            "modules": (
+                "Shiny modules namespace UI IDs and create scoped server logic. "
+                "moduleServer() supports testServer() testing."
+            ),
+            "async": (
+                "For long-running work, current Shiny guidance recommends considering "
+                "Extended Tasks first; async programming remains supported."
+            ),
+            "basics": (
+                "A Shiny app connects UI inputs to server-side reactive computations "
+                "and rendered outputs."
+            ),
+        }[topic.casefold()]
+        return {
+            "framework": "shiny",
+            "topic": topic,
+            "question_received": question is not None,
+            "explanation": guidance,
+            "official_documentation": docs,
+            "source_analysis": analysis,
+            "not_executed": True,
+            "verification_status": "verified_official_source",
+            "sources": [
+                {
+                    "source_url": docs["source_url"],
+                    "checked_at": docs["checked_at"],
+                    "verification_status": docs["verification_status"],
+                }
+            ],
+        }
+
+    async def analyze_shiny_app(self, source=None, files=None, shiny_version=None):
+        result = analyze_shiny_source(source=source, files=files)
+        if shiny_version is not None:
+            result["client_supplied_shiny_version"] = shiny_version
+            result["version_check"] = await self.check_package_version("shiny", shiny_version)
+            result["version_warning"] = (
+                "Static findings do not establish runtime compatibility; the version "
+                "check compares supplied version only to current CRAN."
+            )
+        return result
+
+    async def get_positron_guidance(
+        self, topic, positron_version=None, operating_system=None, r_version=None, project_type=None
+    ):
+        result = await self.framework_docs.get_docs("positron", topic, positron_version)
+        result.update(
+            operating_system=operating_system,
+            r_version=r_version,
+            project_type=project_type,
+            version_warning=(
+                "Positron documentation is current and not pinned to the requested version."
+                if positron_version
+                else None
+            ),
+            integration_note=(
+                "This server provides guidance and MCP tools. "
+                "It does not control Positron or an R session."
+            ),
+        )
+        return result
+
+    async def get_quarto_docs(self, topic, quarto_version=None):
+        result = await self.framework_docs.get_docs("quarto", topic, quarto_version)
+        if quarto_version:
+            result["version_warning"] = (
+                "Current official docs are not pinned to the requested Quarto version."
+            )
+        return result
+
+    async def analyze_quarto_document(
+        self, source, project_config=None, quarto_version=None, r_version=None, dependencies=None
+    ):
+        if dependencies is not None and (
+            not isinstance(dependencies, list)
+            or len(dependencies) > 100
+            or any(
+                not isinstance(item, str) or not item or len(item) > 200 for item in dependencies
+            )
+        ):
+            raise KnowledgeError(
+                "invalid_input",
+                "Dependencies must be at most 100 non-empty names of 200 characters",
+            )
+        result = analyze_quarto_source(source, project_config, quarto_version)
+        result["r_version"] = r_version
+        result["dependencies_supplied"] = dependencies or []
+        result["dependency_analysis"] = "caller_supplied_names_unverified"
+        return result
+
+    async def analyze_quarto_project(
+        self, project_config, metadata_config=None, file_manifest=None
+    ):
+        return analyze_quarto_config(project_config, metadata_config, file_manifest)
+
+    async def analyze_r_workspace(self, files):
+        return analyze_workspace_metadata(files)
+
+    async def get_r_workflow_guidance(
+        self, scenario, packages=None, r_version=None, bioc_version=None
+    ):
+        if scenario not in WORKFLOW_TOPICS:
+            raise KnowledgeError(
+                "invalid_input", f"scenario must be one of: {', '.join(sorted(WORKFLOW_TOPICS))}"
+            )
+        packages = packages or []
+        if not isinstance(packages, list) or len(packages) > 6:
+            raise KnowledgeError("invalid_input", "Supply at most six explicit package requests")
+        knowledge, errors = [], []
+        for item in packages:
+            if not isinstance(item, dict) or set(item) - {"package", "repository"}:
+                raise KnowledgeError(
+                    "invalid_input", "Each package needs package and optional repository"
+                )
+            name = item.get("package")
+            repo = item.get("repository", "cran")
+            if not isinstance(name, str) or not name:
+                raise KnowledgeError("invalid_input", "Each workflow package needs a package name")
+            if repo not in ("cran", "bioconductor"):
+                raise KnowledgeError(
+                    "invalid_input", "Workflow package repository must be cran or bioconductor"
+                )
+            bundle = await self.get_package_knowledge(
+                name, repo, bioc_version if repo == "bioconductor" else None
+            )
+            knowledge.append(bundle)
+            if bundle.get("errors"):
+                errors.append({"package": name, "section": "package_knowledge", "result": bundle})
+            if repo == "bioconductor" and r_version:
+                compatibility = await self.check_package_compatibility(
+                    name, r_version, bioc_version
+                )
+                if "error" in compatibility or compatibility.get("compatibility_status") in (
+                    "incompatible",
+                    "unknown",
+                ):
+                    errors.append(
+                        {"package": name, "section": "compatibility", "result": compatibility}
+                    )
+        documentation = []
+        for framework, topic in WORKFLOW_TOPICS[scenario]:
+            try:
+                documentation.append(await self.framework_docs.get_docs(framework, topic))
+            except KnowledgeError as exc:
+                errors.append({"framework": framework, "topic": topic, "error": failure(exc)})
+        return {
+            "scenario": scenario,
+            "r_version": r_version,
+            "bioc_version": bioc_version,
+            "package_knowledge": knowledge,
+            "official_framework_docs": documentation,
+            "errors": errors,
+            "verification_status": "partial" if errors else "verified",
+            "not_executed": True,
+            "limitations": [
+                "Package recommendations are limited to names supplied explicitly by the caller.",
+                "No app, report, dependency graph or local R environment is executed or inferred.",
+            ],
         }
 
     async def check_package_version(self, package, installed_version):

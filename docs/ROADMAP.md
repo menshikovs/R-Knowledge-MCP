@@ -41,3 +41,18 @@ transport compatibility tests. Design TLS ingress, per-client rate and body
 limits, concurrency/admission control, monitoring, resource budgets and optional
 MCP authorization. Review DNS/egress policy and upstream load. No deployment or
 paid services are part of this version.
+
+## R framework intelligence follow-ups
+
+The Shiny analyzer is heuristic and does not parse complete R syntax or
+reconstruct the runtime reactive graph. A future parser could add source
+locations, module-aware namespacing and testthat/shinytest2 suggestions without
+running apps. Quarto analysis checks supplied YAML and chunk options only;
+consider versioned Quarto schema validation and bibliography-key checking when
+bibliography text is explicitly supplied. Framework docs target current official
+pages; historical Shiny, Quarto and Positron docs need validated versioned
+catalogs before tools can claim version-specific guidance.
+
+Positron support is MCP configuration guidance and safe metadata analysis. An
+IDE extension or live-session adapter should be separate work after evaluating
+the official APIs and permission model; this server does not control the IDE.
