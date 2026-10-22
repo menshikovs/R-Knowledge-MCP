@@ -1,0 +1,13 @@
+.venv/
+upstream/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+build/
+dist/
+.env
+.test-tmp/
+pytest-cache-files-*/
+.playwright-mcp/

@@ -1,0 +1,252 @@
+# Repository architecture
+
+`server.py` exposes MCP tools through the official SDK. It delegates to
+`KnowledgeService`, which routes operations, adds identity/provenance/status
+envelopes, combines independent results, and checks direct compatibility.
+The ASGI lifespan owns the shared client and service/cache across stateless HTTP
+requests; stdio owns the same resources for its process session.
+
+## Prompt Intelligence
+
+`prompt_intelligence/` composes deterministic, editable R-task prompts from a
+typed `PromptSpecification`, a versioned local template registry and optional
+lookups through `KnowledgeService`. It is a separate layer from package
+providers: it asks existing CRAN/Bioconductor APIs for metadata, dependencies,
+release compatibility and exact Rd aliases, then attaches provenance. Package
+suggestions from a task template are labeled candidates until a provider
+verifies them. Source failures stay visible; they never become fabricated
+versions, documentation or compatibility claims.
+
+The five tools expose build, improve, validate, template listing and package
+context operations. Fourteen standard MCP Prompts are also registered as
+user-selected, string-argument templates. Native Prompts are local and
+deterministic and do not access a project or network. They label their package
+arguments and project context as unverified user input. The tools and Prompts
+are gated by `PROMPT_INTELLIGENCE_ENABLED`; the existing tools remain
+registered when disabled.
+
+`build_r_prompt` can route through the composable pipeline in
+`prompt_intelligence/composition/`: `TaskDecomposer`, `TemplateResolver`,
+`DependencyPlanner`, `ConstraintMerger`, `UnifiedPromptComposer` and the
+structural evaluator. It reuses the typed template registry and knowledge
+providers. `auto` preserves the legacy prompt for one task and composes related
+multi-stage work; callers can force `single`/`composed`, select explicit
+templates, and supply bounded workflow context. The native
+`r-multi-stage-workflow` Prompt uses the same local pipeline without provider
+lookups. See [Composable Prompts](COMPOSABLE_PROMPTS.md) for contracts, limits,
+conflict behavior and a complete output example.
+
+The composer and validator never execute R, shell commands, generated prompts,
+repository instructions or package examples. Project text and prompt content
+are untrusted data. Inputs, package grounding concurrency, output sizes and
+source references are bounded. Credential-like inputs fail before composition.
+`auto` and `external` enhancement modes use only a provider explicitly injected
+by a future integration; no external provider or key is configured by default.
+Any injected output must preserve the original request, constraints, safety
+boundaries and included official source URLs or deterministic output is kept.
+Even accepted enhanced output is labeled for review.
+
+Prompt quality scores are weighted structural heuristics. They do not predict
+task success or prove that generated work is correct. See
+[`PROMPT_INTELLIGENCE.md`](PROMPT_INTELLIGENCE.md) and
+[`PROMPT_ENGINEERING_RESEARCH.md`](PROMPT_ENGINEERING_RESEARCH.md).
+
+CSV/SQL templates accept bounded `structured_context` JSON for caller-observed
+CSV columns/types, delimiter/encoding/sample rows, database dialect and schema,
+indexes, estimated size, access mode, package versions and performance needs.
+The context is validated and preserved as untrusted caller input. No paths are
+opened and no database is contacted. A dialect can select its matching CRAN
+driver candidate; package availability and function aliases are checked through
+the existing provider before an API is labeled verified. Current docs are not
+substituted for a caller-requested historical package version. A sample is
+limited to three sanitized records and is never sent to an injected enhancer.
+
+## Provider contract
+
+`PackageRepository` is a structural Protocol with repository identity, optional
+Bioconductor release, index/current lookup, search, package metadata,
+dependencies, function docs and vignette operations. A provider does not have to
+inherit another provider. `CranProvider` and `BioconductorProvider` independently
+implement this contract and share `SourceRepository`'s bounded, data-only source
+archive and package-page operations.
+
+Another repository can implement the Protocol, supply its fixed HTTP policy and
+be registered through `KnowledgeService(..., providers={...})`. Add its public
+selector to the MCP Literal schema and tests deliberately. No caller can turn a
+repository identifier into an arbitrary URL or host.
+
+`RepositoryHTTP` implements shared async transport and TTL/LRU policy.
+`CranHTTP` and `BioconductorHTTP` own independent immutable host/route policies.
+Both reject redirects, URL query strings and traversal. They share an httpx
+connection pool but have separate artifact cache budgets. At most eight parsed
+Bioconductor providers are retained. All byte/time limits remain in force.
+`HTTP_TIMEOUT_SECONDS`, `HTTP_USER_AGENT`, `CACHE_TTL_SECONDS`, and `CACHE_MAX_BYTES` tune the
+client timeout and repository artifact cache within validated bounds.
+`MCP_TRANSPORT`, `MCP_HOST`, `MCP_PORT`, and `LOG_LEVEL` configure the CLI;
+Context7 credentials are read only from `CONTEXT7_API_KEY`.
+
+## Bioconductor identity and release resolution
+
+Package identity is `(repository, bioc_version, category, package, package_version)`.
+CRAN uses `null` for Bioconductor release. Bioconductor categories are software,
+annotation and experiment data, mapped to fixed `bioc`, `data/annotation` and
+`data/experiment` routes. Duplicate names across Bioconductor categories are an
+explicit ambiguity error; cross-repository names are retained separately.
+
+`BioconductorReleases` safely parses the bounded official config.yaml used by
+BiocManager. It validates release/devel and R mappings. Aliases are resolved to
+numeric versions before any index/archive/page fetch; no numeric release is
+hard-coded. Historical versions must be in that mapping and their indices must
+be available. Partial/missing indices fail; they cannot silently establish absence
+or cause fallback to the current release. Alias/config refresh creates a new
+provider snapshot when its checked mapping changes.
+
+## Result and error contract
+
+Every application envelope has package/repository/package-version/Bioconductor-
+version identity, primary source URL, UTC check time, verification status and
+all supporting sources. Nulls mean not applicable or unknown, never invented data.
+Search results carry this identity individually. Aggregate `all` envelopes have
+no single package version or primary source URL; their children retain both.
+
+`verified` means the stated data was obtained and validated, not that installation
+was tested. `partial` aggregate results retain explicit failures. A checked
+package absence differs from an unavailable source. Errors preserve attempted
+time and known source URL. Cached successes preserve their original check time;
+failures are not cached, and stale successes are not used after expiration.
+
+## Dependencies and compatibility
+
+Original DCF dependency fields remain verbatim. Bioconductor dependencies are
+resolved against the exact selected release's three indices and current CRAN.
+CRAN retains its previous lightweight behavior unless `resolve_repositories`
+is requested; `all` resolves both origins. Candidate records preserve source
+timestamps and constraints. R/base packages are runtime dependencies; their
+installed versions are not inspected. Ambiguous/unavailable dependencies remain
+explicit. No name-based guess assigns an unknown dependency to a repository.
+
+Compatibility checks official R major/minor mapping, direct package R patch
+constraints, direct required dependency versions and their R requirements.
+Suggests are listed but do not determine required-dependency compatibility.
+Unresolved required dependencies yield `unknown`, never a positive claim. A
+negative check is scoped to the selected release and current CRAN snapshot.
+Historical/current CRAN mixing is warned about. This is not a transitive solver,
+platform binary check or test of the user's installation.
+
+## Documents and trust boundaries
+
+Function docs are exact raw Rd, selected by literal alias from a matching indexed
+source archive. Available index MD5, package name and version are checked.
+Archive expansion, members, selected files and response sizes are bounded. Files
+are never extracted; no R, examples, macros or package scripts run.
+
+Vignettes are links actually present on the official package page, after its
+Version cell matches PACKAGES. Links must stay within the pinned package path on
+the official host. The server reports `listed_by_official_package_page` and
+`content_fetched=false`; it does not claim to have downloaded or run linked docs.
+
+## GitHub AGENTS.md provider
+
+`GitHubAgentsProvider` receives only `DESCRIPTION` URL values after the selected
+CRAN/Bioconductor provider checks the source archive against its index. It
+accepts one unambiguous HTTPS `github.com/{owner}/{repo}` reference. The fixed
+`api.github.com` transport verifies the canonical repository name, resolves an
+explicit branch/tag/SHA through the commits endpoint, and traverses the
+recursive tree for that immutable commit SHA. The GitHub tree API exposes a
+`truncated` marker; truncation is an explicit incomplete-source error, never a
+verified absence. AGENTS.md blobs are fetched by validated blob SHA, never by a
+URL embedded in repository data. Redirects are rejected.
+
+The response includes each path, its directory subtree scope, exact commit SHA,
+GitHub source URL and per-file check time. A complete tree with no matching
+files is `verified_absent`. The provider does not guess a tag from the package
+version: clients select a branch, tag or SHA, and the resolved SHA is returned.
+Tree JSON is capped at 4 MiB, individual files at 32 KiB, total file text at
+96 KiB, and count at 24. Files are UTF-8 data; no shell, R or external command
+runs. Content is marked `untrusted_reference_only` and cannot override system
+instructions.
+
+## Context7 provider
+
+`Context7Provider` is disabled when `CONTEXT7_API_KEY` is unset. Its only routes
+are the documented library-search and context endpoints on `context7.com`; the
+key is sent in a bearer header, never to the caller or URL. The provider starts
+from verified package `DESCRIPTION` URLs, searches by package name and official
+GitHub repository hint, and requires exactly one returned Context7 library ID
+matching that repository before retrieving docs. This prevents a same-name
+library from being silently substituted. It pins the R package version only
+when Context7 explicitly lists an exact match; otherwise it labels docs
+unpinned.
+
+Questions are bounded and common credential patterns are redacted before they
+leave the server. Context7 responses are capped at 4 MiB and 48 KiB of returned
+fragment text. Successful documentation results are cached for six hours;
+errors, including HTTP 429 and Retry-After, are surfaced. Each fragment
+identifies its library, source URL, package/repository identity, version scope
+and check time. Context7 remains a secondary indexed source, not an authority
+above official package archives or docs.
+
+`get_package_knowledge` combines package info and dependencies with optional
+AGENTS.md and Context7 sections. Every section preserves its own errors and
+provenance. Omitting a revision or question is explicitly `not_requested`, not
+evidence that the respective source has no content.
+
+## Shiny, Positron and Quarto
+
+`FrameworkDocsProvider` retrieves only reviewed URLs from a fixed catalog on
+the official Shiny, Positron and Quarto domains. Topics select catalog entries;
+input is never interpolated into a URL. Responses have a 2 MiB download limit,
+15-second request timeout, 8 KiB text limit and a bounded TTL cache. Pages are
+marked untrusted and retain their canonical source URL and retrieval time.
+
+`get_shiny_docs` delegates to the CRAN provider and returns exact current
+source-archive Rd. A small function ownership table blocks known mismatches such
+as `bslib::page_sidebar`. Requested historical versions fail explicitly because
+CRAN archive lookup is not implemented. Shiny app analysis uses bounded
+heuristics over caller-supplied text and labels uncertain findings; it does not
+parse the full R grammar or infer Shiny's runtime reactive graph.
+
+Quarto analysis uses PyYAML SafeLoader with duplicate keys and aliases rejected.
+It reads front matter, supplied project config, fenced R chunk option lines,
+and path-only manifests. It does not implement Quarto's full YAML schema,
+cross-reference resolution, rendering, or file existence checks. Workspace
+analysis accepts a bounded text mapping from the caller, summarizes `renv.lock`
+and DESCRIPTION metadata, and reports only `.Renviron` variable names. It never
+opens local paths. `.Rproj` fields outside its small known set are surfaced for
+review; selected Positron interpreter path settings receive type checks without
+testing whether paths exist. Version values supplied for Positron/Quarto docs are
+reported, while current documentation remains explicitly unpinned.
+
+Positron support is MCP-client guidance and project metadata analysis, not an IDE
+extension. It does not call Positron commands or access a live interpreter.
+
+## Visualization, transformation and reporting analysis
+
+`visualization_analysis.py` is a bounded lexical scanner for selected ggplot2,
+ggraph, tidyr, Plotly and knitr patterns. MCP registration stays in `server.py`;
+service methods add current CRAN metadata when callers request explicit package
+version checks. Function documentation uses the same exact CRAN source archive
+path as the core `get_function_docs` tool. Historical package versions are
+reported unavailable rather than substituted with current docs.
+
+The scanner accepts source text and optional schema mappings only. It does not
+evaluate R, access project paths, render Quarto/knitr, or transmit caller source
+or schemas to documentation providers. `renv.lock` is accepted only as
+caller-supplied bounded JSON text; extracted versions are labeled unverified
+lock data and are never described as installed versions. Static findings carry
+heuristic certainty and known primary-source links; they do not establish
+runtime success, complete schema lineage, graph-layout quality, or a complete
+ggplotly compatibility matrix. See
+`visualization-data-reporting.md` for tool-specific behavior and limits.
+
+## Validation
+
+Offline tests use synthetic HTTP responses, including mocked GitHub and Context7
+APIs, and real package names with deliberately synthetic versions. They cover
+CRAN regressions, release/devel/history, all three categories,
+cross-repository dependencies, R compatibility, unavailable sources, malformed
+YAML, missing packages, pinned vignette links, pagination, external repository
+matching, commit-pinned nested AGENTS.md scopes, verified absence versus
+truncated trees, Context7 version selection, key isolation, redaction and rate
+limits, and MCP stdio/HTTP. Optional smoke scripts exercise real official
+sources separately.
