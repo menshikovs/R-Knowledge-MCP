@@ -10,3 +10,4 @@ dist/
 .env
 .test-tmp/
 pytest-cache-files-*/
+.playwright-mcp/
