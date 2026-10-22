@@ -82,20 +82,79 @@ def redact_secrets(value):
     return value
 
 
+def validate_plan(experiment):
+    """Verify that the external JSON is exactly a reproducible randomized plan."""
+    if not isinstance(experiment, dict):
+        raise ControllerError("Plan must be a JSON object")
+    manifest = bench.manifest()
+    fields = {
+        "schema_version",
+        "benchmark",
+        "production_commit",
+        "fingerprint",
+        "seed",
+        "model",
+        "reasoning_effort",
+        "image",
+        "protocol",
+        "trials",
+        "execution",
+    }
+    if set(experiment) != fields:
+        raise ControllerError("Plan fields differ from the benchmark plan schema")
+    if experiment["schema_version"] != 1 or experiment["benchmark"] != manifest["benchmark"]:
+        raise ControllerError("Unsupported benchmark plan")
+    if experiment["protocol"] != manifest["protocol"]:
+        raise ControllerError("Plan protocol differs from the preregistered manifest")
+    if experiment["production_commit"] != manifest["production_commit"]:
+        raise ControllerError("Plan production commit differs from the preregistered baseline")
+    if experiment["fingerprint"] != bench.experiment_fingerprint():
+        raise ControllerError("Plan fingerprint differs from the current benchmark inputs")
+    if not isinstance(experiment["image"], str) or not re.fullmatch(
+        r"sha256:[a-f0-9]{64}", experiment["image"]
+    ):
+        raise ControllerError("An immutable image digest is required")
+    if experiment["execution"] != "external; no agent sessions started":
+        raise ControllerError("Plan execution marker is invalid")
+    if (
+        not isinstance(experiment["model"], str)
+        or not experiment["model"].strip()
+        or experiment["model"].strip() != experiment["model"]
+    ):
+        raise ControllerError("An explicit model identifier is required")
+    if experiment["model"].casefold() in {"default", "latest"}:
+        raise ControllerError("A moving model alias is not permitted")
+    if experiment["reasoning_effort"] not in {"low", "medium", "high", "xhigh"}:
+        raise ControllerError("Unsupported reasoning effort")
+    if not isinstance(experiment["seed"], int) or isinstance(experiment["seed"], bool):
+        raise ControllerError("Plan seed must be an integer")
+    if not isinstance(experiment["trials"], list) or not experiment["trials"]:
+        raise ControllerError("Plan trials must be a nonempty list")
+    try:
+        if any(not isinstance(row, dict) for row in experiment["trials"]):
+            raise TypeError("Trial rows must be objects")
+        repetitions = max(row.get("repeat", 0) for row in experiment["trials"])
+        expected = bench.plan(
+            experiment["model"],
+            experiment["reasoning_effort"],
+            experiment["image"],
+            repetitions=repetitions,
+            seed=experiment["seed"],
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ControllerError("Invalid randomized plan controls") from exc
+    if experiment != expected:
+        raise ControllerError("Plan assignments or controls differ from the deterministic schedule")
+    return expected
+
+
 def build_trial_config(experiment, trial_id):
     """Resolve one assigned row against the checked-in, immutable protocol."""
+    experiment = validate_plan(experiment)
     manifest = bench.manifest()
     assignment = next((t for t in experiment.get("trials", []) if t["trial_id"] == trial_id), None)
     if assignment is None:
         raise ControllerError("Trial is not assigned by this randomized plan")
-    if experiment.get("fingerprint") != bench.experiment_fingerprint():
-        raise ControllerError("Plan fingerprint differs from the current benchmark inputs")
-    if experiment.get("production_commit") != manifest["production_commit"]:
-        raise ControllerError("Plan production commit differs from the preregistered baseline")
-    if experiment.get("image") is None or not re.fullmatch(
-        r"sha256:[a-f0-9]{64}", experiment["image"]
-    ):
-        raise ControllerError("An immutable image digest is required")
     condition = assignment["condition"]
     tools = list(manifest["conditions"][condition]["tools"])
     return {

@@ -76,6 +76,17 @@ def test_rejects_changed_baseline_and_nonimmutable_image():
         controller.build_trial_config(plan, plan["trials"][0]["trial_id"])
 
 
+def test_rejects_edited_schedule_and_unknown_plan_fields():
+    plan = experiment()
+    plan["trials"][0]["condition"] = "B" if plan["trials"][0]["condition"] != "B" else "A"
+    with pytest.raises(controller.ControllerError, match="deterministic schedule"):
+        controller.build_trial_config(plan, plan["trials"][0]["trial_id"])
+    plan = experiment()
+    plan["unexpected"] = True
+    with pytest.raises(controller.ControllerError, match="Plan fields"):
+        controller.build_trial_config(plan, plan["trials"][0]["trial_id"])
+
+
 def test_preflight_stops_even_when_mcp_inventory_matches():
     result = controller.preflight(config("C"), observed_tools=config("C")["tools"])
     assert result["status"] == "blocked"
