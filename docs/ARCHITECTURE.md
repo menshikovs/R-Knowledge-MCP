@@ -25,6 +25,10 @@ repository identifier into an arbitrary URL or host.
 Both reject redirects, URL query strings and traversal. They share an httpx
 connection pool but have separate artifact cache budgets. At most eight parsed
 Bioconductor providers are retained. All byte/time limits remain in force.
+`HTTP_TIMEOUT_SECONDS`, `HTTP_USER_AGENT`, `CACHE_TTL_SECONDS`, and `CACHE_MAX_BYTES` tune the
+client timeout and repository artifact cache within validated bounds.
+`MCP_TRANSPORT`, `MCP_HOST`, `MCP_PORT`, and `LOG_LEVEL` configure the CLI;
+Context7 credentials are read only from `CONTEXT7_API_KEY`.
 
 ## Bioconductor identity and release resolution
 

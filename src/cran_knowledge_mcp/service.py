@@ -1,12 +1,12 @@
 """Repository router, provenance envelopes and conservative cross-repository checks."""
 
 import asyncio
-import os
 import re
 from collections import OrderedDict
 from collections.abc import Awaitable
 from datetime import UTC, datetime
 
+from .config import cache_ttl, context7_api_key
 from .errors import KnowledgeError
 from .http import BioconductorHTTP, CranHTTP, package_name, version_parts
 from .providers import BioconductorProvider, CranProvider, PackageRepository
@@ -48,9 +48,9 @@ class KnowledgeService:
         self.releases = BioconductorReleases(self.bioc_http)
         self.providers = providers if providers is not None else {"cran": CranProvider(http)}
         self._bioc: OrderedDict[str, BioconductorProvider] = OrderedDict()
-        self.agents = agents_provider or GitHubAgentsProvider(http.client)
+        self.agents = agents_provider or GitHubAgentsProvider(http.client, ttl=cache_ttl(3600))
         self.context7 = context7_provider or Context7Provider(
-            http.client, os.environ.get("CONTEXT7_API_KEY")
+            http.client, context7_api_key(), ttl=cache_ttl(21600)
         )
 
     async def provider(self, repository: str, bioc_version: str | None = None):

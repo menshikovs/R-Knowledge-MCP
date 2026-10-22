@@ -1,6 +1,8 @@
 """Official SDK FastMCP adapter and CLI (stdio by default)."""
 
 import argparse
+import logging
+import os
 from contextlib import asynccontextmanager
 from typing import Any, Literal
 
@@ -254,9 +256,13 @@ def create_http_app(allowed_hosts: list[str] | None = None):
 
 def main():
     parser = argparse.ArgumentParser(description="Read-only CRAN Knowledge MCP")
-    parser.add_argument("--transport", choices=["stdio", "streamable-http"], default="stdio")
-    parser.add_argument("--host", default="127.0.0.1")
-    parser.add_argument("--port", type=int, default=8000)
+    parser.add_argument(
+        "--transport",
+        choices=["stdio", "streamable-http"],
+        default=os.environ.get("MCP_TRANSPORT", "stdio"),
+    )
+    parser.add_argument("--host", default=os.environ.get("MCP_HOST", "127.0.0.1"))
+    parser.add_argument("--port", type=int, default=os.environ.get("MCP_PORT", "8000"))
     parser.add_argument(
         "--allowed-host",
         action="append",
@@ -264,6 +270,12 @@ def main():
         help="Allowed HTTP Host, repeatable; include port if needed",
     )
     args = parser.parse_args()
+    log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
+    if log_level not in {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}:
+        parser.error("LOG_LEVEL must be DEBUG, INFO, WARNING, ERROR or CRITICAL")
+    logging.basicConfig(level=log_level)
+    if not 1 <= args.port <= 65535:
+        parser.error("--port / MCP_PORT must be in [1, 65535]")
     if args.transport == "stdio":
         create_server().run(transport="stdio")
     else:

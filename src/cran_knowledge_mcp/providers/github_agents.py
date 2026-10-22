@@ -4,6 +4,7 @@ import asyncio
 import base64
 import json
 import re
+from collections import OrderedDict
 from datetime import UTC, datetime
 from time import monotonic
 from urllib.parse import quote
@@ -52,7 +53,7 @@ class GitHubAgentsProvider:
     def __init__(self, client: httpx.AsyncClient, ttl: float = 3600):
         self.client = client
         self.ttl = ttl
-        self._cache: dict[str, tuple[float, dict]] = {}
+        self._cache: OrderedDict[str, tuple[float, dict]] = OrderedDict()
 
     @staticmethod
     def _api_path(path: str) -> bool:
@@ -146,7 +147,9 @@ class GitHubAgentsProvider:
         )
         now = monotonic()
         if cache_key in self._cache and self._cache[cache_key][0] > now:
+            self._cache.move_to_end(cache_key)
             return self._cache[cache_key][1]
+        self._cache.pop(cache_key, None)
 
         repository_data, repository_artifact = await self._get(f"/repos/{owner}/{repo}")
         canonical = repository_data.get("full_name")
@@ -295,4 +298,6 @@ class GitHubAgentsProvider:
             "sources": sources,
         }
         self._cache[cache_key] = (now + self.ttl, result)
+        while len(self._cache) > 64:
+            self._cache.popitem(last=False)
         return result

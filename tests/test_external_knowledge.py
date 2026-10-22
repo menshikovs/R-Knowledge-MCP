@@ -85,6 +85,12 @@ async def test_github_agents_resolves_ref_and_preserves_path_scope(github_api):
     assert all(not file["commands_executed"] for file in result["files"])
     assert any("/git/trees/" + SHA in call.url.path for call in calls)
     assert any("/git/blobs/" in call.url.path for call in calls)
+    request_count = len(calls)
+    cached = await provider.get_package_agent_guidance(
+        "pkg", "1.2.3", "https://github.com/owner/pkg", "v1.2.3", "cran", None
+    )
+    assert cached["checked_at"] == result["checked_at"]
+    assert len(calls) == request_count
 
 
 async def test_github_verified_absence_requires_complete_tree(github_api):
@@ -199,6 +205,16 @@ async def test_context7_requires_exact_library_and_preserves_fragments(context7_
     assert all("ctx7-server-test-key" not in request.url.query.decode() for request in calls)
     assert all("supersecret-token" not in request.url.query.decode() for request in calls)
     assert "supersecret-token" not in result["question_sent"]
+    cached = await provider.get_context7_docs(
+        "pkg",
+        "1.2.3",
+        "https://github.com/owner/pkg",
+        "How should I call run? api_key=supersecret-token",
+        "cran",
+        None,
+    )
+    assert cached["checked_at"] == result["checked_at"]
+    assert len(calls) == 2
 
 
 async def test_context7_mismatch_disabled_rate_limit_and_question_secret_redaction():
@@ -230,10 +246,11 @@ async def test_context7_mismatch_disabled_rate_limit_and_question_secret_redacti
         transport=httpx.MockTransport(lambda request: pytest.fail("disabled must not call API"))
     )
     provider = Context7Provider(client, None)
-    with pytest.raises(KnowledgeError, match="disabled"):
+    with pytest.raises(KnowledgeError, match="disabled") as error:
         await provider.get_context7_docs(
             "pkg", "1.2", "https://github.com/owner/pkg", "usage", "cran", None
         )
+    assert error.value.code == "not_configured"
     await client.aclose()
 
     sanitized = safe_query("use this api_key=supersecret-token for docs")

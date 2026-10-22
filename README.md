@@ -161,11 +161,23 @@ Set the key only on the server process:
 CONTEXT7_API_KEY=ctx7sk-... cran-knowledge-mcp
 ```
 
-Without the key, `get_context7_docs` returns `integration_disabled` and the
+Without the key, `get_context7_docs` returns `not_configured` and the
 existing repository tools remain available. `get_package_knowledge` accepts
 optional `question` and `revision`; unrequested sections are marked
 `not_requested`, and each returned fragment retains its source URL and check
 time.
+
+## Configuration
+
+Use `.env.example` as a reference and export only the settings you need in the
+server process. The application does not automatically load `.env` files.
+`MCP_TRANSPORT`, `MCP_HOST`, `MCP_PORT`, and `LOG_LEVEL` configure the CLI;
+`HTTP_TIMEOUT_SECONDS` controls the httpx client timeout; `HTTP_USER_AGENT`
+sets its bounded User-Agent header; `CACHE_TTL_SECONDS`
+sets the repository artifact cache lifetime; `CACHE_MAX_BYTES` sets its byte
+budget (maximum 256 MiB). GitHub guidance and Context7 use the same TTL override
+with source-specific defaults of one and six hours. `CONTEXT7_API_KEY` is
+optional. Invalid numeric bounds fail with an explicit configuration error.
 
 Compatibility returns `metadata_compatible`, `incompatible` or `unknown`, with a
 nullable `compatible` flag. It checks the official R/release mapping, package R
@@ -216,7 +228,8 @@ src/cran_knowledge_mcp/
   parsers.py             bounded data-only DCF, HTML, gzip/tar and Rd aliases
 ```
 
-See [architecture details](docs/ARCHITECTURE.md) and [development rules](AGENTS.md).
+See [architecture details](docs/ARCHITECTURE.md), [source authority](docs/sources.md),
+[security model](docs/security.md), and [development rules](AGENTS.md).
 
 ## Limits and security
 
@@ -266,7 +279,7 @@ ruff format --check .
 pytest
 ```
 
-CI tests Python 3.11вЂ“3.14 and builds Docker without pushing an image. Unit and
+CI tests Python 3.11–3.14 and builds Docker without pushing an image. Unit and
 protocol tests mock HTTP and need no CRAN access. See [AGENTS.md](AGENTS.md).
 For an optional real-source check after installation, run
 `python scripts/smoke_cran.py`; it checks all five tools against CRAN without

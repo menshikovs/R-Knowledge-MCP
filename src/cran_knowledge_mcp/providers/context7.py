@@ -3,6 +3,7 @@
 import asyncio
 import json
 import re
+from collections import OrderedDict
 from datetime import UTC, datetime
 from time import monotonic
 from urllib.parse import urlencode
@@ -49,7 +50,7 @@ class Context7Provider:
         self.client = client
         self.api_key = api_key.strip() if api_key and api_key.strip() else None
         self.ttl = ttl
-        self._cache: dict[str, tuple[float, dict]] = {}
+        self._cache: OrderedDict[str, tuple[float, dict]] = OrderedDict()
 
     async def _get(self, route: str, params: dict[str, str], max_bytes=MAX_RESPONSE):
         if route not in ("/api/v2/libs/search", "/api/v2/context"):
@@ -57,7 +58,7 @@ class Context7Provider:
         url = f"{CONTEXT7}{route}?{urlencode(params)}"
         if not self.api_key:
             raise KnowledgeError(
-                "integration_disabled", "Context7 is disabled; set server-side CONTEXT7_API_KEY"
+                "not_configured", "Context7 is disabled; set server-side CONTEXT7_API_KEY"
             )
         body = bytearray()
         try:
@@ -86,6 +87,14 @@ class Context7Provider:
                         if response.status_code == 401:
                             raise KnowledgeError(
                                 "authentication_failed", "Context7 rejected the server API key", url
+                            )
+                        if response.status_code == 403:
+                            raise KnowledgeError(
+                                "forbidden", "Context7 denied access to this library or plan", url
+                            )
+                        if response.status_code == 202:
+                            raise KnowledgeError(
+                                "library_processing", "Context7 library is not finalized yet", url
                             )
                         raise KnowledgeError(
                             "source_unavailable", f"Context7 HTTP {response.status_code}", url
@@ -123,7 +132,9 @@ class Context7Provider:
         cache_key = f"{repository}:{bioc_version}:{package}:{expected_id}@{package_version}:{query}"
         now = monotonic()
         if cache_key in self._cache and self._cache[cache_key][0] > now:
+            self._cache.move_to_end(cache_key)
             return self._cache[cache_key][1]
+        self._cache.pop(cache_key, None)
         search, search_artifact = await self._get(
             "/api/v2/libs/search",
             {
@@ -250,4 +261,6 @@ class Context7Provider:
             "truncated": len(selected) < len(fragments),
         }
         self._cache[cache_key] = (now + self.ttl, result)
+        while len(self._cache) > 64:
+            self._cache.popitem(last=False)
         return result

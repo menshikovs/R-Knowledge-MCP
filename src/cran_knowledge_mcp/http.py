@@ -1,6 +1,7 @@
 """Bounded async transport with independent fixed repository route policies."""
 
 import asyncio
+import random
 import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
@@ -10,6 +11,8 @@ from time import monotonic
 
 import httpx
 
+from .config import cache_bytes as configured_cache_bytes
+from .config import cache_ttl, http_user_agent, positive_float
 from .errors import KnowledgeError
 
 BASE = "https://cran.r-project.org"
@@ -60,10 +63,13 @@ class RepositoryHTTP(ABC):
     def allowed_path(self, path: str) -> bool:
         """Validate a relative route before constructing any URL."""
 
-    def __init__(self, client: httpx.AsyncClient, ttl: float = 300, cache_bytes: int = 64 << 20):
+    def __init__(
+        self, client: httpx.AsyncClient, ttl: float | None = None, cache_bytes: int | None = None
+    ):
         self.client = client
-        self.ttl = ttl
-        self.cache_bytes = cache_bytes
+        self.ttl = cache_ttl(300) if ttl is None else ttl
+        self.cache_bytes = configured_cache_bytes() if cache_bytes is None else cache_bytes
+        self.request_timeout = positive_float("HTTP_TIMEOUT_SECONDS", 15)
         self._cache: OrderedDict[str, tuple[float, Artifact]] = OrderedDict()
         self._bytes = 0
         # Serializes downloads, collapses concurrent cache misses and bounds memory in flight.
@@ -86,31 +92,64 @@ class RepositoryHTTP(ABC):
                 self._bytes -= len(self._cache.pop(path)[1].body)
             try:
                 async with asyncio.timeout(45):
-                    async with self.client.stream(
-                        "GET",
-                        url,
-                        follow_redirects=False,
-                        timeout=15,
-                        headers={"Accept-Encoding": "identity"},
-                    ) as response:
-                        if response.status_code != 200:
-                            code = (
-                                "not_found" if response.status_code == 404 else "source_unavailable"
-                            )
-                            raise KnowledgeError(
-                                code, f"Repository HTTP {response.status_code}", url
-                            )
-                        if response.headers.get("content-encoding", "identity") != "identity":
-                            raise KnowledgeError(
-                                "invalid_source", "Unexpected HTTP compression", url
-                            )
-                        chunks = bytearray()
-                        async for chunk in response.aiter_bytes(chunk_size=65536):
-                            chunks.extend(chunk)
-                            if len(chunks) > limit:
-                                raise KnowledgeError(
-                                    "source_too_large", "Repository download exceeds limit", url
-                                )
+                    for attempt in range(2):
+                        try:
+                            async with self.client.stream(
+                                "GET",
+                                url,
+                                follow_redirects=False,
+                                timeout=self.request_timeout,
+                                headers={"Accept-Encoding": "identity"},
+                            ) as response:
+                                if response.status_code == 429:
+                                    retry_after = self._retry_after(
+                                        response.headers.get("Retry-After")
+                                    )
+                                    if (
+                                        attempt == 0
+                                        and retry_after is not None
+                                        and retry_after <= 1
+                                    ):
+                                        await asyncio.sleep(retry_after)
+                                        continue
+                                    message = "Repository rate limit exceeded"
+                                    if retry_after is not None:
+                                        message += f"; retry after {retry_after:g} seconds"
+                                    raise KnowledgeError("rate_limited", message, url)
+                                if response.status_code in (500, 502, 503, 504) and attempt == 0:
+                                    await asyncio.sleep(0.1 + random.random() * 0.2)
+                                    continue
+                                if response.status_code != 200:
+                                    code = (
+                                        "not_found"
+                                        if response.status_code == 404
+                                        else "source_unavailable"
+                                    )
+                                    raise KnowledgeError(
+                                        code, f"Repository HTTP {response.status_code}", url
+                                    )
+                                if (
+                                    response.headers.get("content-encoding", "identity")
+                                    != "identity"
+                                ):
+                                    raise KnowledgeError(
+                                        "invalid_source", "Unexpected HTTP compression", url
+                                    )
+                                chunks = bytearray()
+                                async for chunk in response.aiter_bytes(chunk_size=65536):
+                                    chunks.extend(chunk)
+                                    if len(chunks) > limit:
+                                        raise KnowledgeError(
+                                            "source_too_large",
+                                            "Repository download exceeds limit",
+                                            url,
+                                        )
+                                break
+                        except httpx.HTTPError:
+                            if attempt == 0:
+                                await asyncio.sleep(0.1 + random.random() * 0.2)
+                                continue
+                            raise
             except (httpx.HTTPError, TimeoutError) as exc:
                 raise KnowledgeError(
                     "source_unavailable", "Repository request failed or timed out", url
@@ -124,6 +163,20 @@ class RepositoryHTTP(ABC):
                 self._cache[path] = (monotonic() + self.ttl, item)
                 self._bytes += len(item.body)
             return item
+
+    @staticmethod
+    def _retry_after(value: str | None) -> float | None:
+        if value is None:
+            return None
+        try:
+            return max(0.0, float(value))
+        except ValueError:
+            from email.utils import parsedate_to_datetime
+
+            try:
+                return max(0.0, (parsedate_to_datetime(value) - datetime.now(UTC)).total_seconds())
+            except (TypeError, ValueError, OverflowError):
+                return None
 
 
 class CranHTTP(RepositoryHTTP):
@@ -152,12 +205,11 @@ class BioconductorHTTP(RepositoryHTTP):
 
 
 def make_client() -> httpx.AsyncClient:
+    timeout = positive_float("HTTP_TIMEOUT_SECONDS", 15)
     return httpx.AsyncClient(
         trust_env=False,
         follow_redirects=False,
-        timeout=15,
+        timeout=timeout,
         limits=httpx.Limits(max_connections=4, max_keepalive_connections=2),
-        headers={
-            "User-Agent": "cran-knowledge-mcp/0.1 (+https://github.com/menshikovs/R-Knowledge-MCP)"
-        },
+        headers={"User-Agent": http_user_agent()},
     )
