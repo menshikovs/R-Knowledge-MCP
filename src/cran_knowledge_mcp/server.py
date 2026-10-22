@@ -16,6 +16,7 @@ from mcp.types import CallToolResult, TextContent, ToolAnnotations
 from pydantic import ValidationError
 
 from .config import prompt_intelligence_enabled
+from .diagnostics import log_internal_failure
 from .errors import KnowledgeError
 from .http import CranHTTP, make_client
 from .prompt_intelligence import PromptIntelligence
@@ -75,11 +76,7 @@ class ErrorAwareFastMCP(FastMCP):
             elif isinstance(exc, ToolError) and str(exc).startswith("Unknown tool:"):
                 code, message = "tool_not_found", "The requested tool is not available"
             else:
-                logging.getLogger(__name__).error(
-                    "MCP tool execution failed (tool=%s error_type=%s)",
-                    name,
-                    type(cause or exc).__name__,
-                )
+                log_internal_failure(logging.getLogger(__name__), f"mcp_tool.{name}", cause or exc)
                 code, message = (
                     "internal_error",
                     "The tool could not complete due to an internal error",

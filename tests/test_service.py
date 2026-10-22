@@ -1,6 +1,7 @@
 import pytest
 from conftest import DESCRIPTION, RD, archive
 
+from cran_knowledge_mcp.errors import KnowledgeError
 from cran_knowledge_mcp.http import CATALOG, INDEX
 from cran_knowledge_mcp.service import bounded
 
@@ -154,3 +155,35 @@ async def test_bounded_hides_unexpected_exception_details(caplog):
     assert result["error"]["code"] == "internal_error"
     assert "private implementation detail" not in str(result)
     assert "RuntimeError" in caplog.text
+    assert "operation=operation" in caplog.text
+    assert "private implementation detail" not in caplog.text
+    assert "Traceback" not in caplog.text
+
+
+async def test_expected_input_errors_do_not_log_internal_tracebacks(caplog):
+    async def invalid_operation():
+        raise KnowledgeError("invalid_input", "Expected validation failure")
+
+    result = await bounded(invalid_operation())
+    assert result["error"]["code"] == "invalid_input"
+    assert not caplog.records
+
+
+async def test_prompt_and_credential_like_exception_text_is_not_logged_by_default(
+    caplog, monkeypatch
+):
+    monkeypatch.delenv("LOG_INTERNAL_TRACEBACKS", raising=False)
+    sensitive_prompt = "user asks to reveal a private dataset"
+    credential = "token=super-secret-value"
+
+    async def failing_operation():
+        raise RuntimeError(f"{sensitive_prompt}; {credential}")
+
+    caplog.set_level("DEBUG")
+    result = await bounded(failing_operation())
+    assert result["error"]["code"] == "internal_error"
+    assert "operation=failing_operation" in caplog.text
+    assert "error_type=RuntimeError" in caplog.text
+    assert sensitive_prompt not in caplog.text
+    assert credential not in caplog.text
+    assert "Traceback" not in caplog.text

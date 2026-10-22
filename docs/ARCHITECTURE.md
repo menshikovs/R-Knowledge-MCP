@@ -23,8 +23,8 @@ suggestions from a task template are labeled candidates until a provider
 verifies them. Source failures stay visible; they never become fabricated
 versions, documentation or compatibility claims.
 
-The five tools expose build, improve, validate, template listing and package
-context operations. Fourteen standard MCP Prompts are also registered as
+Prompt Intelligence exposes build, improve, validate, template listing and
+package context operations. Fourteen standard MCP Prompts are also registered as
 user-selected, string-argument templates. Native Prompts are local and
 deterministic and do not access a project or network. They label their package
 arguments and project context as unverified user input. The tools and Prompts
@@ -96,8 +96,10 @@ Context7 credentials are read only from `CONTEXT7_API_KEY`.
 `get_package_info(..., verify_archive=True)` preserves the original deep path by
 default. It selects the canonical index record, downloads that exact version's
 source archive, checks the indexed MD5 when supplied, parses DESCRIPTION in
-memory, and matches its package name and version. It never extracts files to
-disk or executes package code. Results include `metadata_verification_level`:
+memory, and matches its package name and version. Archive members are read in
+memory; arbitrary members are never extracted to disk and package code is never
+executed. Archive and decompression limits remain active. Results include
+`metadata_verification_level`:
 `archive_checksum_verified` when an indexed checksum was present and matched,
 or `description_version_matched` when the archive DESCRIPTION matched but the
 index supplied no checksum.
@@ -314,4 +316,14 @@ YAML, missing packages, pinned vignette links, pagination, external repository
 matching, commit-pinned nested AGENTS.md scopes, verified absence versus
 truncated trees, Context7 version selection, key isolation, redaction and rate
 limits, and MCP stdio/HTTP. Optional smoke scripts exercise real official
-sources separately.
+sources separately. The scheduled `upstream-smoke.yml` workflow runs daily on
+the default branch and supports manual dispatch. It checks current CRAN package
+metadata, the dynamically identified Bioconductor release and representative
+software/annotation/experiment indices, three Shiny catalog pages, selected
+Positron pages and selected Quarto pages. It uses bounded HTTPS requests, rejects
+redirects and validates response semantics without downloading package archives.
+It is intentionally independent of pull-request CI; its failures report the
+source, check, category, sanitized message, official URL and timestamp. These
+checks detect selected changes but do not guarantee ongoing source availability.
+See [Upstream monitoring](UPSTREAM_MONITORING.md) for manual execution,
+failure-category definitions and resource bounds.

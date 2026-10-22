@@ -9,6 +9,7 @@ from collections.abc import Awaitable
 from datetime import UTC, datetime
 
 from .config import cache_ttl, context7_api_key
+from .diagnostics import awaitable_operation_id, log_internal_failure
 from .errors import KnowledgeError
 from .http import BioconductorHTTP, CranHTTP, package_name, version_parts
 from .project_analysis import (
@@ -1172,7 +1173,7 @@ async def bounded(operation: Awaitable[dict], **context) -> dict:
     except KnowledgeError as exc:
         error = exc
     except Exception as exc:
-        logging.getLogger(__name__).error("Unhandled MCP tool failure (%s)", type(exc).__name__)
+        log_internal_failure(logging.getLogger(__name__), awaitable_operation_id(operation), exc)
         error = KnowledgeError(
             "internal_error", "The tool could not complete due to an internal error"
         )
