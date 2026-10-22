@@ -1,0 +1,10 @@
+.git
+.venv
+upstream
+__pycache__
+.pytest_cache
+.ruff_cache
+*.egg-info
+.env
+.test-tmp
+pytest-cache-files-*
