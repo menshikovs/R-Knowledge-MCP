@@ -1057,6 +1057,27 @@ class PromptIntelligence:
                         identity["repository"],
                         identity.get("bioconductor_release") or bioconductor_release,
                     )
+                    error = result.get("error")
+                    if error:
+                        error_code = error.get("code") if isinstance(error, dict) else None
+                        refs.append(
+                            {
+                                "package": canonical,
+                                "function": function,
+                                "repository": identity["repository"],
+                                "status": error_code or "source_unavailable",
+                                "verification_status": result.get(
+                                    "verification_status", "failed"
+                                ),
+                                "source_url": result.get("source_url")
+                                or (error.get("source_url") if isinstance(error, dict) else None),
+                                "checked_at": result.get("checked_at"),
+                                "attempted_at": (
+                                    error.get("attempted_at") if isinstance(error, dict) else None
+                                ),
+                            }
+                        )
+                        continue
                     if result.get("package_version") != identity.get("package_version"):
                         refs.append(
                             {
@@ -1064,9 +1085,28 @@ class PromptIntelligence:
                                 "function": function,
                                 "repository": identity["repository"],
                                 "status": "version_mismatch",
+                                "package_version": result.get("package_version"),
+                                "verification_status": result.get(
+                                    "verification_status", "verified"
+                                ),
+                                "source_url": result.get("source_url"),
+                                "checked_at": result.get("checked_at"),
                             }
                         )
                         warnings.append("function_docs_version_did_not_match_package_metadata")
+                        continue
+                    if result.get("verification_status") != "verified":
+                        refs.append(
+                            {
+                                "package": canonical,
+                                "function": function,
+                                "repository": identity["repository"],
+                                "status": result.get("verification_status") or "unverified",
+                                "verification_status": result.get("verification_status"),
+                                "source_url": result.get("source_url"),
+                                "checked_at": result.get("checked_at"),
+                            }
+                        )
                         continue
                     refs.append(
                         {
@@ -1075,7 +1115,10 @@ class PromptIntelligence:
                             "repository": identity["repository"],
                             "package_version": result.get("package_version"),
                             "status": "verified",
+                            "verification_status": "verified",
                             "format": result.get("format"),
+                            "source_url": result.get("source_url"),
+                            "checked_at": result.get("checked_at"),
                         }
                     )
                     verified.add((canonical.casefold(), function))

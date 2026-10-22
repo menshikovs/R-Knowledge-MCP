@@ -37,6 +37,30 @@ async def test_cross_framework_workflow_uses_selected_topics_and_not_guesses(ser
     assert result["verification_status"] == "verified"
 
 
+async def test_workflow_returns_structured_error_when_official_docs_are_unavailable(service):
+    class UnavailableDocs:
+        async def get_docs(self, framework, topic, version=None):
+            raise KnowledgeError(
+                "source_unavailable",
+                "Official documentation is unavailable",
+                f"https://docs.invalid/{framework}/{topic}",
+            )
+
+    knowledge, _, _ = service
+    knowledge.framework_docs = UnavailableDocs()
+    result = await knowledge.get_r_workflow_guidance("analysis_to_shiny")
+    assert result["verification_status"] == "partial"
+    assert len(result["errors"]) == 3
+    assert all(
+        error["error"]["error"]["code"] == "source_unavailable"
+        for error in result["errors"]
+    )
+    assert all(
+        error["error"]["error"]["source_url"].startswith("https://docs.invalid/")
+        for error in result["errors"]
+    )
+
+
 async def test_workflow_rejects_implicit_or_invalid_package_recommendations(service):
     knowledge, _, _ = service
     for packages in ([{"package": "ExamplePkg", "repository": "all"}], [{"repository": "cran"}]):
