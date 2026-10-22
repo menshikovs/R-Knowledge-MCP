@@ -75,6 +75,13 @@ or provide a hosted endpoint. Codex configuration follows
 | `analyze_quarto_document` | `source`, optional project/R/dependency metadata | Safe YAML front matter, R chunk options, formats and citations; no render |
 | `analyze_quarto_project` | `_quarto.yml` text, optional `_metadata.yml` and manifest | Project/profile/format metadata and manifest-level bibliography checks |
 | `get_r_workflow_guidance` | scenario, explicit package list, optional R/Bioc versions | Combines selected package knowledge and framework docs without inventing recommendations |
+| `get_visualization_docs` | `package`, `function`, optional `package_version` | Exact current CRAN Rd for ggplot2, ggraph, tidyr, plotly or knitr; unavailable historical versions are explicit errors |
+| `get_visualization_workflow` | fixed scenario, optional package versions | Groups exact current Rd references for a named workflow; does not generate or run code |
+| `analyze_ggplot_code` | R source, optional schema and package versions | Static layers, mapped/fixed aesthetics and simple schema checks |
+| `analyze_ggraph_code` | R source, optional node/edge schemas | Static layout and scope-aware node/edge mapping checks |
+| `analyze_tidyr_pipeline` | R source, optional input/expected schemas | Conservative reshape analysis and pivot key warnings |
+| `analyze_ggplotly_compatibility` | R source, optional package versions | Narrow documented conversion caveats, not full compatibility |
+| `analyze_knitr_chunks` | R Markdown/Quarto text, optional package versions | Static chunk labels/options/dependencies; no render or execution |
 | `get_bioconductor_version` | `r_version` | Official R/release mapping and latest released recommendation for that R |
 | `check_package_compatibility` | `package`, `r_version`, `bioc_version` | Bioconductor/R mapping and direct required dependency checks |
 | `check_package_version` | `package`, `installed_version` | Existing CRAN numeric version comparison |
@@ -241,6 +248,8 @@ See [architecture details](docs/ARCHITECTURE.md), [source authority](docs/source
 [security model](docs/security.md), and [development rules](AGENTS.md).
 For framework behavior and limits, see the
 [Shiny, Positron and Quarto integration guide](docs/shiny-positron-quarto.md).
+Visualization, tidyr and reproducible reporting analysis is described in the
+[visualization and reporting guide](docs/visualization-data-reporting.md).
 
 ## Limits and security
 
@@ -304,8 +313,10 @@ or every linked document was downloaded. Bioconductor history requires an
 official mapping and all three retrievable indices. Missing/redirected legacy
 endpoints fail explicitly. Workflows/books are outside the requested categories.
 
-No local inspection, renv.lock parsing, archived CRAN version lookup, transitive
-solver, installation test or public hosting is included. See [the roadmap](docs/ROADMAP.md).
+No local inspection, renv lock restoration, archived CRAN version lookup,
+transitive solver, installation test or public hosting is included. Visualization
+tools can inspect bounded lock JSON explicitly supplied by the client, without
+restoring or verifying an installed library. See [the roadmap](docs/ROADMAP.md).
 `analyze_r_workspace` only sees text provided by the client. Shiny and Quarto
 analyzers are static checks, not runtime, schema-complete, browser or security
 tests.

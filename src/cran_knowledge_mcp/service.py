@@ -1,6 +1,7 @@
 """Repository router, provenance envelopes and conservative cross-repository checks."""
 
 import asyncio
+import json
 import re
 from collections import OrderedDict
 from collections.abc import Awaitable
@@ -27,6 +28,13 @@ from .providers.context7 import Context7Provider
 from .providers.framework_docs import FrameworkDocsProvider
 from .providers.github_agents import GitHubAgentsProvider
 from .releases import BioconductorReleases, r_minor
+from .visualization_analysis import (
+    analyze_ggplot_code,
+    analyze_ggplotly_compatibility,
+    analyze_ggraph_code,
+    analyze_knitr_chunks,
+    analyze_tidyr_pipeline,
+)
 
 SHINY_PACKAGE_DOCS = {
     name.casefold(): name
@@ -74,6 +82,39 @@ WORKFLOW_TOPICS = {
     "quarto_positron": [("positron", "interpreters"), ("quarto", "r"), ("quarto", "projects")],
     "quarto_bioconductor": [("quarto", "r"), ("quarto", "citations")],
     "analysis_to_shiny": [("shiny", "basics"), ("shiny", "reactivity"), ("shiny", "modules")],
+}
+VISUALIZATION_WORKFLOWS = {
+    "tidy_to_plot": {
+        "sequence": [
+            ("tidyr", "pivot_longer"),
+            ("ggplot2", "ggplot"),
+            ("ggplot2", "aes"),
+            ("ggplot2", "geom_point"),
+        ],
+        "scope": "Use pivot_longer() to create a long table, then map columns in ggplot2.",
+    },
+    "graph_plot": {
+        "sequence": [
+            ("ggraph", "ggraph"),
+            ("ggraph", "geom_edge_link"),
+            ("ggraph", "geom_node_point"),
+        ],
+        "scope": "Build a graph visualization by adding edge and node layers to a ggraph layout.",
+    },
+    "interactive_plot": {
+        "sequence": [("plotly", "ggplotly")],
+        "scope": (
+            "Convert a ggplot object to a Plotly widget and validate rendering "
+            "in the client environment."
+        ),
+    },
+    "reproducible_report": {
+        "sequence": [("knitr", "knit"), ("knitr", "opts_chunk"), ("ggplot2", "ggsave")],
+        "scope": (
+            "Review chunk execution options and figure export while keeping "
+            "the rendering environment explicit."
+        ),
+    },
 }
 
 
@@ -508,6 +549,236 @@ class KnowledgeService:
             "verification_status": "verified",
             "version_scope": "exact_current_indexed_source_archive",
         }
+
+    async def get_visualization_docs(self, package, function, package_version=None):
+        allowed = {"ggplot2", "ggraph", "tidyr", "plotly", "knitr"}
+        if not isinstance(package, str) or package.casefold() not in allowed:
+            raise KnowledgeError(
+                "unsupported_package", "Choose ggplot2, ggraph, tidyr, plotly or knitr"
+            )
+        canonical = package.casefold()
+        if not isinstance(function, str) or not re.fullmatch(r"[A-Za-z.][A-Za-z0-9._]*", function):
+            raise KnowledgeError("invalid_input", "function must be an R function alias")
+        info = await self.get_package_info(canonical, "cran")
+        if "error" in info:
+            return {
+                "package": canonical,
+                "function": function,
+                "documentation": info,
+                "verification_status": "failed",
+            }
+        actual_version = info["package_version"]
+        if package_version is not None and version_parts(package_version) != version_parts(
+            actual_version
+        ):
+            error = KnowledgeError(
+                "requested_version_unavailable",
+                "Only current indexed CRAN documentation is available; no version was substituted.",
+            )
+            return {
+                **failure(error, canonical, "cran"),
+                "function": function,
+                "latest_package_version": actual_version,
+                "requested_package_version": package_version,
+                "sources": info.get("sources", []),
+                "source_url": info.get("source_url"),
+                "checked_at": info.get("checked_at"),
+            }
+        docs = await self.get_function_docs(canonical, function, repository="cran")
+        return {
+            "package": canonical,
+            "repository": "cran",
+            "package_version": actual_version,
+            "requested_package_version": package_version,
+            "function": function,
+            "documentation": docs,
+            "package_metadata_source": info.get("source_url"),
+            "source_url": docs.get("source_url"),
+            "checked_at": docs.get("checked_at"),
+            "sources": info.get("sources", []) + docs.get("sources", []),
+            "verification_status": "failed" if "error" in docs else "verified",
+            "version_scope": "exact_current_indexed_source_archive",
+        }
+
+    async def get_visualization_workflow(self, scenario, package_versions=None):
+        if scenario not in VISUALIZATION_WORKFLOWS:
+            raise KnowledgeError(
+                "invalid_input",
+                f"scenario must be one of: {', '.join(sorted(VISUALIZATION_WORKFLOWS))}",
+            )
+        package_versions = package_versions or {}
+        if not isinstance(package_versions, dict) or len(package_versions) > 5:
+            raise KnowledgeError("invalid_input", "Supply at most five explicit package versions")
+        if any(
+            key not in {"ggplot2", "ggraph", "tidyr", "plotly", "knitr"}
+            or not isinstance(value, str)
+            for key, value in package_versions.items()
+        ):
+            raise KnowledgeError(
+                "invalid_input", "Package versions must name supported packages and string versions"
+            )
+        workflow = VISUALIZATION_WORKFLOWS[scenario]
+        results = []
+        errors = []
+        for package, function in workflow["sequence"]:
+            try:
+                result = await self.get_visualization_docs(
+                    package, function, package_versions.get(package)
+                )
+            except KnowledgeError as exc:
+                result = failure(exc, package, "cran")
+            results.append(result)
+            if result.get("verification_status") != "verified":
+                errors.append({"package": package, "function": function, "result": result})
+        sources = [source for item in results for source in item.get("sources", [])]
+        return {
+            "scenario": scenario,
+            "scope": workflow["scope"],
+            "steps": results,
+            "sources": sources,
+            "checked_at": max((s.get("checked_at", "") for s in sources), default=None),
+            "source_url": sources[-1].get("source_url") if sources else None,
+            "repository": "cran",
+            "bioc_version": None,
+            "verification_status": "partial" if errors else "verified",
+            "errors": errors,
+            "no_code_executed": True,
+            "limitations": [
+                "Workflow steps are fixed documentation groupings, not generated or tested R code.",
+                "Function documentation is available only for the current indexed "
+                "CRAN source version.",
+            ],
+        }
+
+    async def _visualization_analysis(self, analyzer, source, schemas, package_versions, renv_lock):
+        if renv_lock is not None:
+            if not isinstance(renv_lock, str) or len(renv_lock.encode("utf-8")) > 512 << 10:
+                raise KnowledgeError("invalid_input", "renv.lock text is limited to 512 KiB")
+            try:
+                lock = json.loads(renv_lock)
+            except (ValueError, TypeError) as exc:
+                raise KnowledgeError("invalid_input", "renv.lock must be valid JSON") from exc
+            if not isinstance(lock, dict) or not isinstance(lock.get("Packages", {}), dict):
+                raise KnowledgeError("invalid_input", "renv.lock needs a Packages object")
+            if len(lock.get("Packages", {})) > 5000:
+                raise KnowledgeError(
+                    "invalid_input", "renv.lock supports at most 5000 package records"
+                )
+            allowed = {"ggplot2", "ggraph", "tidyr", "plotly", "knitr"}
+            for name, entry in lock["Packages"].items():
+                if isinstance(name, str) and name.casefold() in allowed and isinstance(entry, dict):
+                    version = entry.get("Version")
+                    if version is not None and (not isinstance(version, str) or len(version) > 100):
+                        raise KnowledgeError(
+                            "invalid_input", "renv.lock package versions must be short strings"
+                        )
+            lock_versions = {
+                name.casefold(): entry.get("Version")
+                for name, entry in lock["Packages"].items()
+                if isinstance(name, str) and isinstance(entry, dict)
+            }
+        else:
+            lock_versions = {}
+        result = analyzer(source, **schemas)
+        requested = package_versions or {}
+        if not isinstance(requested, dict) or len(requested) > 12:
+            raise KnowledgeError(
+                "invalid_input", "package_versions must be a mapping of at most 12 packages"
+            )
+        if any(not isinstance(k, str) or not isinstance(v, str) for k, v in requested.items()):
+            raise KnowledgeError("invalid_input", "Package names and versions must be strings")
+        versions = {}
+        sources = []
+        allowed = {"ggplot2", "ggraph", "tidyr", "plotly", "knitr"}
+        for package, supplied in requested.items():
+            name = package.casefold()
+            if name not in allowed:
+                raise KnowledgeError(
+                    "unsupported_package", "Only visualization core packages may be version checked"
+                )
+            info = await self.get_package_info(name, "cran")
+            if "error" in info:
+                versions[name] = {"verification_status": "failed", "error": info["error"]}
+                continue
+            latest = info.get("package_version")
+            lock_version = lock_versions.get(name)
+            versions[name] = {
+                "client_supplied_version": supplied,
+                "renv_lock_version": lock_version,
+                "latest_cran_version": latest,
+                "version_matches_cran": version_parts(supplied) == version_parts(latest),
+                "lock_matches_supplied": lock_version is None or lock_version == supplied,
+                "verification_status": "verified_current_cran_comparison",
+                "version_scope": "latest_cran_not_installed_version",
+            }
+            sources.extend(info.get("sources", []))
+        for package, version in lock_versions.items():
+            if package in allowed and package not in versions:
+                versions[package] = {
+                    "renv_lock_version": version,
+                    "verification_status": "client_supplied_lock_unverified",
+                    "version_scope": "renv_lock_not_installed_version",
+                }
+        result.update(
+            package_versions=versions,
+            package_version_sources=sources,
+            checked_at=max((source.get("checked_at", "") for source in sources), default=None),
+            repository="cran",
+            bioc_version=None,
+            verification_status="verified"
+            if not versions
+            or all(v.get("verification_status") != "failed" for v in versions.values())
+            else "partial",
+            source_url=sources[-1].get("source_url") if sources else None,
+            renv_lock_checked=False,
+            not_executed=True,
+        )
+        return result
+
+    async def analyze_ggplot_code(
+        self, source, data_schema=None, package_versions=None, renv_lock=None
+    ):
+        return await self._visualization_analysis(
+            analyze_ggplot_code, source, {"data_schema": data_schema}, package_versions, renv_lock
+        )
+
+    async def analyze_ggraph_code(
+        self, source, node_schema=None, edge_schema=None, package_versions=None, renv_lock=None
+    ):
+        return await self._visualization_analysis(
+            analyze_ggraph_code,
+            source,
+            {"node_schema": node_schema, "edge_schema": edge_schema},
+            package_versions,
+            renv_lock,
+        )
+
+    async def analyze_tidyr_pipeline(
+        self, source, input_schema=None, expected_schema=None, package_versions=None, renv_lock=None
+    ):
+        return await self._visualization_analysis(
+            analyze_tidyr_pipeline,
+            source,
+            {"input_schema": input_schema, "expected_schema": expected_schema},
+            package_versions,
+            renv_lock,
+        )
+
+    async def analyze_ggplotly_compatibility(self, source, package_versions=None, renv_lock=None):
+        return await self._visualization_analysis(
+            analyze_ggplotly_compatibility, source, {}, package_versions, renv_lock
+        )
+
+    async def analyze_knitr_chunks(
+        self, source, document_type=None, package_versions=None, renv_lock=None
+    ):
+        return await self._visualization_analysis(
+            analyze_knitr_chunks,
+            source,
+            {"document_type": document_type},
+            package_versions,
+            renv_lock,
+        )
 
     async def explain_shiny_reactivity(self, topic, question=None, source=None):
         if question is not None and (not isinstance(question, str) or len(question) > 500):

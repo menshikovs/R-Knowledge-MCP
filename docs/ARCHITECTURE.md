@@ -165,6 +165,25 @@ reported, while current documentation remains explicitly unpinned.
 Positron support is MCP-client guidance and project metadata analysis, not an IDE
 extension. It does not call Positron commands or access a live interpreter.
 
+## Visualization, transformation and reporting analysis
+
+`visualization_analysis.py` is a bounded lexical scanner for selected ggplot2,
+ggraph, tidyr, Plotly and knitr patterns. MCP registration stays in `server.py`;
+service methods add current CRAN metadata when callers request explicit package
+version checks. Function documentation uses the same exact CRAN source archive
+path as the core `get_function_docs` tool. Historical package versions are
+reported unavailable rather than substituted with current docs.
+
+The scanner accepts source text and optional schema mappings only. It does not
+evaluate R, access project paths, render Quarto/knitr, or transmit caller source
+or schemas to documentation providers. `renv.lock` is accepted only as
+caller-supplied bounded JSON text; extracted versions are labeled unverified
+lock data and are never described as installed versions. Static findings carry
+heuristic certainty and known primary-source links; they do not establish
+runtime success, complete schema lineage, graph-layout quality, or a complete
+ggplotly compatibility matrix. See
+`visualization-data-reporting.md` for tool-specific behavior and limits.
+
 ## Validation
 
 Offline tests use synthetic HTTP responses, including mocked GitHub and Context7

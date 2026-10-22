@@ -31,6 +31,13 @@ TOOLS = {
     "analyze_quarto_document",
     "analyze_quarto_project",
     "get_r_workflow_guidance",
+    "get_visualization_docs",
+    "get_visualization_workflow",
+    "analyze_ggplot_code",
+    "analyze_ggraph_code",
+    "analyze_tidyr_pipeline",
+    "analyze_ggplotly_compatibility",
+    "analyze_knitr_chunks",
 }
 
 
@@ -66,6 +73,11 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
             "get_shiny_docs", {"package": "shiny", "function": "page_sidebar"}
         )
         assert docs.structuredContent["error"]["code"] == "function_owner_mismatch"
+        visual = await session.call_tool(
+            "analyze_ggplot_code", {"source": "ggplot(df) + geom_point(aes(x = missing))"}
+        )
+        assert visual.structuredContent["not_executed"] is True
+        assert visual.structuredContent["analysis"] == "analyze_ggplot_code"
 
 
 async def test_streamable_http_initialization_and_tool_call(service, monkeypatch):

@@ -361,6 +361,117 @@ def create_server(
             bioc_version=bioc_version,
         )
 
+    @server.tool(annotations=annotations)
+    async def get_visualization_docs(
+        package: Literal["ggplot2", "ggraph", "tidyr", "plotly", "knitr"],
+        function: str,
+        ctx: Context,
+        package_version: str | None = None,
+    ) -> dict[str, Any]:
+        """Get exact current CRAN Rd by alias; historical versions are not substituted."""
+        return await bounded(
+            ctx.request_context.lifespan_context.get_visualization_docs(
+                package, function, package_version
+            ),
+            package=package,
+            repository="cran",
+        )
+
+    @server.tool(annotations=annotations)
+    async def get_visualization_workflow(
+        scenario: Literal["tidy_to_plot", "graph_plot", "interactive_plot", "reproducible_report"],
+        ctx: Context,
+        package_versions: dict[str, str] | None = None,
+    ) -> dict[str, Any]:
+        """Group current official function references; no code is generated or run."""
+        return await bounded(
+            ctx.request_context.lifespan_context.get_visualization_workflow(
+                scenario, package_versions
+            ),
+            repository="cran",
+        )
+
+    @server.tool(annotations=annotations)
+    async def analyze_ggplot_code(
+        source: str,
+        ctx: Context,
+        data_schema: dict[str, Any] | None = None,
+        package_versions: dict[str, str] | None = None,
+        renv_lock: str | None = None,
+    ) -> dict[str, Any]:
+        """Statically inspect ggplot calls and optional schemas; R source is never run."""
+        return await bounded(
+            ctx.request_context.lifespan_context.analyze_ggplot_code(
+                source, data_schema, package_versions, renv_lock
+            ),
+            repository="cran",
+        )
+
+    @server.tool(annotations=annotations)
+    async def analyze_ggraph_code(
+        source: str,
+        ctx: Context,
+        node_schema: dict[str, Any] | None = None,
+        edge_schema: dict[str, Any] | None = None,
+        package_versions: dict[str, str] | None = None,
+        renv_lock: str | None = None,
+    ) -> dict[str, Any]:
+        """Statically inspect ggraph calls, separate node/edge mappings, and optional schemas."""
+        return await bounded(
+            ctx.request_context.lifespan_context.analyze_ggraph_code(
+                source, node_schema, edge_schema, package_versions, renv_lock
+            ),
+            repository="cran",
+        )
+
+    @server.tool(annotations=annotations)
+    async def analyze_tidyr_pipeline(
+        source: str,
+        ctx: Context,
+        input_schema: dict[str, Any] | None = None,
+        expected_schema: dict[str, Any] | None = None,
+        package_versions: dict[str, str] | None = None,
+        renv_lock: str | None = None,
+    ) -> dict[str, Any]:
+        """Statically inspect tidyr operations; data-dependent results are not inferred."""
+        return await bounded(
+            ctx.request_context.lifespan_context.analyze_tidyr_pipeline(
+                source, input_schema, expected_schema, package_versions, renv_lock
+            ),
+            repository="cran",
+        )
+
+    @server.tool(annotations=annotations)
+    async def analyze_ggplotly_compatibility(
+        source: str,
+        ctx: Context,
+        package_versions: dict[str, str] | None = None,
+        renv_lock: str | None = None,
+    ) -> dict[str, Any]:
+        """Find documented ggplotly caveats; full compatibility is not claimed."""
+        return await bounded(
+            ctx.request_context.lifespan_context.analyze_ggplotly_compatibility(
+                source, package_versions, renv_lock
+            ),
+            repository="cran",
+        )
+
+    @server.tool(annotations=annotations)
+    async def analyze_knitr_chunks(
+        source: str,
+        ctx: Context,
+        document_type: Literal["rmd", "qmd"] | None = None,
+        package_versions: dict[str, str] | None = None,
+        renv_lock: str | None = None,
+    ) -> dict[str, Any]:
+        """Inspect knitr and Quarto chunk options statically; never render or execute chunks."""
+        return await bounded(
+            ctx.request_context.lifespan_context.analyze_knitr_chunks(
+                source, document_type, package_versions, renv_lock
+            ),
+            repository="cran",
+        )
+
     return server
 
 

@@ -44,6 +44,12 @@
 - Positron integration provides documentation and project metadata analysis.
   Do not claim GUI, interpreter or live-session control without a separately
   implemented and verified protocol.
+- Visualization, tidyr, knitr and Quarto source analysis must remain bounded and
+  static. Never execute user R, render documents, read local paths, or send user
+  source/schema text to documentation APIs. Mark lexical findings as heuristics;
+  do not claim complete R parsing, schema inference, rendering, or compatibility.
+- Preserve caller-supplied renv.lock versions separately from current repository
+  versions. Do not claim a lock proves the user's installed environment.
 - Use `httpx.MockTransport` for unit tests. Synthetic package fixtures belong only
   in tests; no network access is required by CI tests.
 - Before a PR run `ruff check .`, `ruff format --check .` and `pytest`.
