@@ -10,7 +10,10 @@ from mcp.server.fastmcp import Context, FastMCP
 from mcp.server.transport_security import TransportSecuritySettings
 from mcp.types import ToolAnnotations
 
+from .config import prompt_intelligence_enabled
 from .http import CranHTTP, make_client
+from .prompt_intelligence import PromptIntelligence
+from .prompt_intelligence.native_prompts import register_native_prompts
 from .service import KnowledgeService, bounded
 
 
@@ -58,6 +61,107 @@ def create_server(
         ),
     )
     annotations = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True)
+
+    if prompt_intelligence_enabled():
+
+        @server.tool(annotations=annotations)
+        async def build_r_prompt(
+            request: str,
+            ctx: Context,
+            target: Literal["codex", "chatgpt", "generic"] | None = None,
+            detail_level: Literal["concise", "standard", "comprehensive"] | None = None,
+            task_category: str | None = None,
+            packages: list[str] | None = None,
+            r_version: str | None = None,
+            bioconductor_release: str | None = None,
+            project_context: dict[str, str] | None = None,
+            constraints: list[str] | None = None,
+            include_sources: bool = True,
+            enhancement_mode: Literal["deterministic", "auto", "external"] = "deterministic",
+            language: str = "auto",
+        ) -> dict[str, Any]:
+            """Build an editable, source-grounded R development prompt; never execute it."""
+            intelligence = PromptIntelligence(ctx.request_context.lifespan_context)
+            return await bounded(
+                intelligence.build_r_prompt(
+                    request,
+                    target,
+                    detail_level,
+                    task_category,
+                    packages,
+                    r_version,
+                    bioconductor_release,
+                    project_context,
+                    constraints,
+                    include_sources,
+                    enhancement_mode,
+                    language,
+                ),
+                repository="prompt_intelligence",
+                bioc_version=bioconductor_release,
+            )
+
+        @server.tool(annotations=annotations)
+        async def improve_r_prompt(
+            existing_prompt: str,
+            ctx: Context,
+            improvement_goals: list[str] | None = None,
+            target: Literal["codex", "chatgpt", "generic"] | None = None,
+            detail_level: Literal["concise", "standard", "comprehensive"] | None = None,
+            packages: list[str] | None = None,
+            r_version: str | None = None,
+            bioconductor_release: str | None = None,
+            project_context: dict[str, str] | None = None,
+            enhancement_mode: Literal["deterministic", "auto", "external"] = "deterministic",
+        ) -> dict[str, Any]:
+            """Structure an existing prompt while retaining its complete original text and constraints."""  # noqa: E501  # Long user-facing copy or regex.
+            intelligence = PromptIntelligence(ctx.request_context.lifespan_context)
+            return await bounded(
+                intelligence.improve_r_prompt(
+                    existing_prompt,
+                    improvement_goals,
+                    target,
+                    detail_level,
+                    packages,
+                    r_version,
+                    bioconductor_release,
+                    project_context,
+                    enhancement_mode,
+                ),
+                repository="prompt_intelligence",
+                bioc_version=bioconductor_release,
+            )
+
+        @server.tool(annotations=annotations)
+        async def validate_r_prompt(prompt_text: str) -> dict[str, Any]:
+            """Check prompt structure, conflicts, possible secrets and unverified API claims."""
+
+            async def operation():
+                return PromptIntelligence(None).validate_r_prompt(prompt_text)
+
+            return await bounded(operation(), repository="prompt_intelligence")
+
+        @server.tool(annotations=annotations)
+        async def list_r_prompt_templates() -> dict[str, Any]:
+            """List stable built-in R prompt template identifiers and descriptions."""
+            return PromptIntelligence(None).list_r_prompt_templates()
+
+        @server.tool(annotations=annotations)
+        async def get_r_prompt_context(
+            packages: list[str],
+            ctx: Context,
+            r_version: str | None = None,
+            bioconductor_release: str | None = None,
+        ) -> dict[str, Any]:
+            """Resolve selected R package versions, direct dependencies and source provenance."""
+            intelligence = PromptIntelligence(ctx.request_context.lifespan_context)
+            return await bounded(
+                intelligence.get_r_prompt_context(packages, r_version, bioconductor_release),
+                repository="prompt_intelligence",
+                bioc_version=bioconductor_release,
+            )
+
+        register_native_prompts(server)
 
     @server.tool(annotations=annotations)
     async def search_packages(

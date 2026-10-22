@@ -6,6 +6,40 @@ envelopes, combines independent results, and checks direct compatibility.
 The ASGI lifespan owns the shared client and service/cache across stateless HTTP
 requests; stdio owns the same resources for its process session.
 
+## Prompt Intelligence
+
+`prompt_intelligence/` composes deterministic, editable R-task prompts from a
+typed `PromptSpecification`, a versioned local template registry and optional
+lookups through `KnowledgeService`. It is a separate layer from package
+providers: it asks existing CRAN/Bioconductor APIs for metadata, dependencies,
+release compatibility and exact Rd aliases, then attaches provenance. Package
+suggestions from a task template are labeled candidates until a provider
+verifies them. Source failures stay visible; they never become fabricated
+versions, documentation or compatibility claims.
+
+The five tools expose build, improve, validate, template listing and package
+context operations. Seven standard MCP Prompts are also registered as
+user-selected, string-argument templates. Native Prompts are local and
+deterministic and do not access a project or network. They label their package
+arguments and project context as unverified user input. The tools and Prompts
+are gated by `PROMPT_INTELLIGENCE_ENABLED`; the existing tools remain
+registered when disabled.
+
+The composer and validator never execute R, shell commands, generated prompts,
+repository instructions or package examples. Project text and prompt content
+are untrusted data. Inputs, package grounding concurrency, output sizes and
+source references are bounded. Credential-like inputs fail before composition.
+`auto` and `external` enhancement modes use only a provider explicitly injected
+by a future integration; no external provider or key is configured by default.
+Any injected output must preserve the original request, constraints, safety
+boundaries and included official source URLs or deterministic output is kept.
+Even accepted enhanced output is labeled for review.
+
+Prompt quality scores are weighted structural heuristics. They do not predict
+task success or prove that generated work is correct. See
+[`PROMPT_INTELLIGENCE.md`](PROMPT_INTELLIGENCE.md) and
+[`PROMPT_ENGINEERING_RESEARCH.md`](PROMPT_ENGINEERING_RESEARCH.md).
+
 ## Provider contract
 
 `PackageRepository` is a structural Protocol with repository identity, optional

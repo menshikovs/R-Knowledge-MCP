@@ -85,12 +85,32 @@ or provide a hosted endpoint. Codex configuration follows
 | `get_bioconductor_version` | `r_version` | Official R/release mapping and latest released recommendation for that R |
 | `check_package_compatibility` | `package`, `r_version`, `bioc_version` | Bioconductor/R mapping and direct required dependency checks |
 | `check_package_version` | `package`, `installed_version` | Existing CRAN numeric version comparison |
+| `build_r_prompt` | request, optional R/Bioconductor context, packages and constraints | Build an editable R task prompt; package versions/docs are grounded only when verified from configured repository providers |
+| `improve_r_prompt` | existing prompt, goals, optional context | Add structure while preserving the full original text and explicit goals |
+| `validate_r_prompt` | `prompt_text` | Heuristic checklist for gaps, conflicts, likely secrets and unverified `pkg::function()` references |
+| `list_r_prompt_templates` | — | List stable IDs for 20 local R task templates |
+| `get_r_prompt_context` | packages, optional R/Bioconductor versions | Return verified package metadata, dependencies, compatibility and source provenance without generating a prompt |
 
 `repository` accepts **cran**, **bioconductor**, and **all**. Existing calls default
 to CRAN. `all` keeps separate identities when names overlap, and exposes source
 failures in `errors` with `verification_status="partial"` or `"failed"`. Absence
 from a checked index differs from an unavailable source. Combined search orders
 CRAN results then Bioconductor results, using a shared offset/limit (1-20).
+
+Prompt Intelligence also registers seven standard MCP Prompts (for package
+development, Shiny, Quarto, Bioconductor, ggplot2, debugging and architecture
+review). They are user-selected, deterministic drafts. Connect clients that
+support MCP Prompts through their normal prompt discovery UI; the five tools
+remain available for clients that invoke tools directly. These prompts do not
+inspect a local workspace or fetch package data, so their supplied context is
+explicitly unverified. Tools may fetch bounded package context from the existing
+official providers. Set `PROMPT_INTELLIGENCE_ENABLED=false` to disable the new
+tools and prompts without affecting existing knowledge tools.
+
+Prompt construction, examples, configuration, limitations, and evaluation
+guidance are documented in [Prompt Intelligence](docs/PROMPT_INTELLIGENCE.md).
+The deterministic design and external optimizer comparison are in
+[Prompt Engineering Research](docs/PROMPT_ENGINEERING_RESEARCH.md).
 
 For Bioconductor, `bioc_version` accepts `release` (default), `stable` (alias),
 `devel`, or a specific historical release in the official map. Numbers are
@@ -194,6 +214,10 @@ sets the repository artifact cache lifetime; `CACHE_MAX_BYTES` sets its byte
 budget (maximum 256 MiB). GitHub guidance and Context7 use the same TTL override
 with source-specific defaults of one and six hours. `CONTEXT7_API_KEY` is
 optional. Invalid numeric bounds fail with an explicit configuration error.
+Prompt settings include `PROMPT_INTELLIGENCE_ENABLED`,
+`PROMPT_MAX_INPUT_CHARS`, `PROMPT_MAX_OUTPUT_CHARS`,
+`PROMPT_MAX_GROUNDING_PACKAGES`, `PROMPT_DEFAULT_TARGET`, and
+`PROMPT_DEFAULT_DETAIL_LEVEL`. See the prompt guide for bounds and meanings.
 
 Compatibility returns `metadata_compatible`, `incompatible` or `unknown`, with a
 nullable `compatible` flag. It checks the official R/release mapping, package R

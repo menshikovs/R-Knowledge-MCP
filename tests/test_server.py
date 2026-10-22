@@ -38,6 +38,21 @@ TOOLS = {
     "analyze_tidyr_pipeline",
     "analyze_ggplotly_compatibility",
     "analyze_knitr_chunks",
+    "build_r_prompt",
+    "improve_r_prompt",
+    "validate_r_prompt",
+    "list_r_prompt_templates",
+    "get_r_prompt_context",
+}
+
+PROMPTS = {
+    "r-package-development",
+    "shiny-app-development",
+    "quarto-report",
+    "bioconductor-analysis",
+    "ggplot2-visualization",
+    "r-debugging",
+    "r-architecture-audit",
 }
 
 
@@ -51,6 +66,13 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         tools = (await session.list_tools()).tools
         assert {tool.name for tool in tools} == TOOLS
         assert all(tool.annotations.readOnlyHint for tool in tools)
+        prompts = (await session.list_prompts()).prompts
+        assert {prompt.name for prompt in prompts} == PROMPTS
+        prompt = await session.get_prompt(
+            "shiny-app-development", {"request": "Build a Shiny dashboard"}
+        )
+        assert "Shiny" in prompt.messages[0].content.text
+        assert "not authorize" in prompt.messages[0].content.text
         result = await session.call_tool("get_dependencies", {"package": "ExamplePkg"})
         assert not result.isError
         assert result.structuredContent["latest_cran_version"] == "2.10-1"
@@ -78,6 +100,34 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         )
         assert visual.structuredContent["not_executed"] is True
         assert visual.structuredContent["analysis"] == "analyze_ggplot_code"
+        generated = await session.call_tool(
+            "build_r_prompt",
+            {"request": "Create a small R package", "enhancement_mode": "deterministic"},
+        )
+        assert generated.structuredContent["not_executed"] is True
+        templates = await session.call_tool("list_r_prompt_templates", {})
+        assert templates.structuredContent["template_count"] >= 18
+        checked = await session.call_tool(
+            "validate_r_prompt",
+            {"prompt_text": "Build an R package; include tests and acceptance criteria."},
+        )
+        assert checked.structuredContent["rubric"].startswith("Heuristic")
+
+
+async def test_prompt_intelligence_can_be_disabled_without_disabling_knowledge_tools(monkeypatch):
+    monkeypatch.setenv("PROMPT_INTELLIGENCE_ENABLED", "false")
+    async with create_connected_server_and_client_session(create_server()) as session:
+        assert {tool.name for tool in (await session.list_tools()).tools} == (
+            TOOLS
+            - {
+                "build_r_prompt",
+                "improve_r_prompt",
+                "validate_r_prompt",
+                "list_r_prompt_templates",
+                "get_r_prompt_context",
+            }
+        )
+        assert (await session.list_prompts()).prompts == []
 
 
 async def test_streamable_http_initialization_and_tool_call(service, monkeypatch):
@@ -111,6 +161,27 @@ async def test_streamable_http_initialization_and_tool_call(service, monkeypatch
             assert response.status_code == 200
             assert response.json()["result"]["serverInfo"]["name"] == "CRAN Knowledge MCP"
             assert "mcp-session-id" not in response.headers
+            response = await client.post(
+                "/mcp",
+                json={"jsonrpc": "2.0", "id": 11, "method": "prompts/list", "params": {}},
+            )
+            assert response.status_code == 200
+            prompt_names = {item["name"] for item in response.json()["result"]["prompts"]}
+            assert prompt_names == PROMPTS
+            response = await client.post(
+                "/mcp",
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 12,
+                    "method": "prompts/get",
+                    "params": {
+                        "name": "bioconductor-analysis",
+                        "arguments": {"request": "Analyze DESeq2 data"},
+                    },
+                },
+            )
+            assert response.status_code == 200
+            assert "Bioconductor" in response.json()["result"]["messages"][0]["content"]["text"]
             response = await client.post(
                 "/mcp",
                 json={
@@ -150,5 +221,6 @@ async def test_stdio_subprocess_initialize_and_error():
         async with ClientSession(read, write) as session:
             await session.initialize()
             assert {tool.name for tool in (await session.list_tools()).tools} == TOOLS
+            assert {prompt.name for prompt in (await session.list_prompts()).prompts} == PROMPTS
             result = await session.call_tool("get_dependencies", {"package": "../bad"})
             assert json.loads(result.content[0].text)["error"]["code"] == "invalid_input"

@@ -54,3 +54,43 @@ def http_user_agent() -> str:
             "invalid_configuration", "HTTP_USER_AGENT must be 1..200 printable chars"
         )
     return value
+
+
+def prompt_intelligence_enabled() -> bool:
+    raw = os.environ.get("PROMPT_INTELLIGENCE_ENABLED", "true").strip().casefold()
+    if raw not in {"true", "false", "1", "0", "yes", "no"}:
+        raise KnowledgeError(
+            "invalid_configuration", "PROMPT_INTELLIGENCE_ENABLED must be a boolean"
+        )
+    return raw in {"true", "1", "yes"}
+
+
+def prompt_max_input_chars() -> int:
+    return positive_int("PROMPT_MAX_INPUT_CHARS", 8000, 32000)
+
+
+def prompt_max_output_chars() -> int:
+    return positive_int("PROMPT_MAX_OUTPUT_CHARS", 24000, 48000)
+
+
+def prompt_max_grounding_packages() -> int:
+    return positive_int("PROMPT_MAX_GROUNDING_PACKAGES", 5, 10)
+
+
+def prompt_default_target() -> str:
+    value = os.environ.get("PROMPT_DEFAULT_TARGET", "codex").strip().casefold()
+    if value not in {"codex", "chatgpt", "generic"}:
+        raise KnowledgeError(
+            "invalid_configuration", "PROMPT_DEFAULT_TARGET must be codex, chatgpt or generic"
+        )
+    return value
+
+
+def prompt_default_detail_level() -> str:
+    value = os.environ.get("PROMPT_DEFAULT_DETAIL_LEVEL", "standard").strip().casefold()
+    if value not in {"concise", "standard", "comprehensive"}:
+        raise KnowledgeError(
+            "invalid_configuration",
+            "PROMPT_DEFAULT_DETAIL_LEVEL must be concise, standard or comprehensive",
+        )
+    return value

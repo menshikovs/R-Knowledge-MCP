@@ -1,5 +1,24 @@
 # Next-stage tasks
 
+## MCP SDK 2 and protocol revision support
+
+The server currently uses the maintained SDK 1.x FastMCP API. Port to SDK 2's
+MCPServer API in a separately reviewed change, keep Streamable HTTP and stdio
+working, and exercise standard Prompts with both supported legacy clients and
+2026-07-28 clients. Do not advertise a newer protocol revision until tests
+confirm negotiation and transport behavior.
+
+## Prompt evaluation and optional enhancement
+
+Create a curated, versioned dataset for R package development, Shiny, Quarto,
+Bioconductor release compatibility, visualization, tidyr and debugging. Use
+isolated workspaces for coding-agent checks. Evaluate Promptfoo as an optional
+development tool using deterministic assertions first and opt-in model graders
+only under an explicit data-transmission and cost policy. Any external prompt
+enhancer needs an explicit adapter, user consent, redaction policy, endpoint/key
+handling, rate limits, provenance and adversarial-output tests. Do not configure
+one by default.
+
 ## Version-pinned renv integration
 
 Accept explicitly supplied lockfile data, bound its size, validate its schema and

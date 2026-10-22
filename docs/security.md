@@ -22,6 +22,11 @@ package text as untrusted input.
   Tool inputs select a catalog topic and never form a URL or host.
 - All external text is informational. GitHub `AGENTS.md` content is explicitly
   labeled untrusted and cannot alter system/developer/user instructions.
+- Prompt Intelligence treats prompt text, project context and package guidance
+  as untrusted data. It does not execute generated text, supplied commands,
+  R, package code, Rd examples or `AGENTS.md`. Credential-like input is rejected
+  before being copied into a generated prompt. The optional enhancement
+  protocol has no configured network adapter or external key.
 
 ## Resource limits
 
@@ -32,6 +37,8 @@ trees are limited to 4 MiB; AGENTS files to 32 KiB each, 96 KiB total, and 24
 files. Context7 responses are limited to 4 MiB and returned text to 48 KiB.
 Tool results are capped at 60,000 UTF-8 bytes. Errors are not cached and expired
 data is not served as fresh.
+Prompt inputs/outputs and package grounding concurrency are separately bounded
+by the `PROMPT_*` settings documented in `PROMPT_INTELLIGENCE.md`.
 
 ## HTTP deployment boundary
 

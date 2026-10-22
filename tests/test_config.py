@@ -6,6 +6,10 @@ from cran_knowledge_mcp.config import (
     context7_api_key,
     http_user_agent,
     positive_float,
+    prompt_default_detail_level,
+    prompt_default_target,
+    prompt_intelligence_enabled,
+    prompt_max_grounding_packages,
 )
 from cran_knowledge_mcp.errors import KnowledgeError
 
@@ -40,3 +44,23 @@ def test_http_user_agent_rejects_header_injection(monkeypatch):
     monkeypatch.setenv("HTTP_USER_AGENT", "client\r\nAuthorization: leaked")
     with pytest.raises(KnowledgeError, match="HTTP_USER_AGENT"):
         http_user_agent()
+
+
+def test_prompt_configuration_defaults_and_bounds(monkeypatch):
+    for name in (
+        "PROMPT_INTELLIGENCE_ENABLED",
+        "PROMPT_DEFAULT_TARGET",
+        "PROMPT_DEFAULT_DETAIL_LEVEL",
+        "PROMPT_MAX_GROUNDING_PACKAGES",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    assert prompt_intelligence_enabled() is True
+    assert prompt_default_target() == "codex"
+    assert prompt_default_detail_level() == "standard"
+    assert prompt_max_grounding_packages() == 5
+    monkeypatch.setenv("PROMPT_INTELLIGENCE_ENABLED", "sometimes")
+    with pytest.raises(KnowledgeError, match="PROMPT_INTELLIGENCE_ENABLED"):
+        prompt_intelligence_enabled()
+    monkeypatch.setenv("PROMPT_MAX_GROUNDING_PACKAGES", "11")
+    with pytest.raises(KnowledgeError, match="PROMPT_MAX_GROUNDING_PACKAGES"):
+        prompt_max_grounding_packages()
