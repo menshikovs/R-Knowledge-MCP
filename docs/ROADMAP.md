@@ -1,5 +1,16 @@
 # Next-stage tasks
 
+## Composable prompt engine (implemented)
+
+`build_r_prompt` supports automatic/single/forced composition, explicit template
+selection, bounded shared workflow context, stage contracts, dependency
+planning, conflict reporting, package grounding through the existing providers
+and the native `r-multi-stage-workflow` MCP Prompt. Deterministic tests cover
+the documented CSV/PostgreSQL/Quarto, Bioconductor/Shiny, DuckDB/Plotly,
+package/Quarto, tidyr/ggplot2/knitr and conflicting-dialect workflows. The
+structural rubric evaluates organization and constraints only; it does not
+measure downstream code correctness. See `COMPOSABLE_PROMPTS.md`.
+
 ## MCP SDK 2 and protocol revision support
 
 The server currently uses the maintained SDK 1.x FastMCP API. Port to SDK 2's
@@ -8,7 +19,7 @@ working, and exercise standard Prompts with both supported legacy clients and
 2026-07-28 clients. Do not advertise a newer protocol revision until tests
 confirm negotiation and transport behavior.
 
-## Prompt evaluation and optional enhancement
+## Broader prompt evaluation and optional enhancement
 
 Create a curated, versioned dataset for R package development, Shiny, Quarto,
 Bioconductor release compatibility, visualization, tidyr and debugging. Use

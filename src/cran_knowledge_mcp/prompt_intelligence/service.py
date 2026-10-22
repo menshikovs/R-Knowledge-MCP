@@ -16,6 +16,14 @@ from ..config import (
 )
 from ..errors import KnowledgeError
 from .composer import CATEGORY_REQUIREMENTS, render_prompt
+from .composition.composer import UnifiedPromptComposer
+from .composition.constraints import ConstraintMerger
+from .composition.context import validate_workflow_context
+from .composition.decomposer import TaskDecomposer
+from .composition.evaluation import evaluate_composition
+from .composition.models import WorkflowTask
+from .composition.planner import DependencyPlanner
+from .composition.resolver import TemplateResolver
 from .intent import (
     PACKAGE_ALIASES,
     classify_request,
@@ -54,6 +62,11 @@ class PromptIntelligence:
     def __init__(self, knowledge_service, enhancer: PromptEnhancementProvider | None = None):
         self.knowledge = knowledge_service
         self.enhancer = enhancer
+        self.task_decomposer = TaskDecomposer()
+        self.template_resolver = TemplateResolver()
+        self.dependency_planner = DependencyPlanner()
+        self.constraint_merger = ConstraintMerger()
+        self.unified_composer = UnifiedPromptComposer()
 
     async def build_r_prompt(
         self,
@@ -70,11 +83,23 @@ class PromptIntelligence:
         enhancement_mode: str = "deterministic",
         language: str | None = None,
         structured_context: dict[str, Any] | None = None,
+        composition_mode: str = "auto",
+        templates: list[str] | None = None,
+        workflow_context: dict[str, Any] | None = None,
+        include_plan: bool = True,
+        include_provenance: bool = True,
     ) -> dict[str, Any]:
         request = validate_text(request, "request", prompt_max_input_chars())
         if r_version is not None and not re.fullmatch(r"[0-9]+\.[0-9]+(?:\.[0-9]+)?", r_version):
             raise KnowledgeError("invalid_input", "Use an R version such as 4.4 or 4.4.1")
         category = classify_request(request, task_category)
+        composition_mode = self._choice(
+            composition_mode, {"auto", "single", "composed"}, "composition_mode"
+        )
+        if not isinstance(include_plan, bool) or not isinstance(include_provenance, bool):
+            raise KnowledgeError(
+                "invalid_input", "include_plan and include_provenance must be boolean"
+            )
         if bioconductor_release and not re.fullmatch(
             r"(?:release|stable|devel|[0-9]+\.[0-9]+)", bioconductor_release
         ):
@@ -89,15 +114,114 @@ class PromptIntelligence:
         language = infer_language(request, language)
         context = self._validate_context(project_context)
         structured_context = self._validate_structured_context(structured_context)
+        workflow_context = validate_workflow_context(workflow_context)
         if structured_context:
             context["structured CSV/SQL context (caller-supplied, untrusted)"] = json.dumps(
                 structured_context, ensure_ascii=False, separators=(",", ":")
             )
         constraints = self._validate_constraints(constraints)
-        self._reject_sensitive_input(request, context, constraints)
+        self._reject_sensitive_input(
+            request,
+            {
+                **context,
+                **{
+                    f"workflow_context.{key}": json.dumps(value, ensure_ascii=False)
+                    if not isinstance(value, str)
+                    else value
+                    for key, value in workflow_context.items()
+                },
+            },
+            constraints,
+        )
         detected, candidate_suggestions = detect_packages(request, packages, category)
         template = TEMPLATE_BY_ID[CATEGORY_TEMPLATE[category]]
-        if structured_context.get("database_dialect"):
+        workflow_tasks = (
+            []
+            if composition_mode == "single" or templates is not None
+            else self.task_decomposer.decompose(request, workflow_context)
+        )
+        if not workflow_tasks:
+            workflow_tasks = [
+                WorkflowTask(
+                    task_id=f"stage-01-{category.replace('_', '-')}",
+                    description=template.description,
+                    category=category,
+                    template_ids=(template.template_id,),
+                    inputs=template.composition.inputs,
+                    outputs=template.composition.outputs,
+                    position=0,
+                    confidence="primary_intent_fallback",
+                )
+            ]
+        if composition_mode == "single":
+            if templates is not None and len(templates) > 1:
+                raise KnowledgeError(
+                    "invalid_input", "single mode accepts at most one explicit template"
+                )
+            workflow_tasks = [workflow_tasks[0]]
+            if templates is not None:
+                workflow_tasks, selected_template_ids = self.template_resolver.resolve(
+                    workflow_tasks, request, templates
+                )
+            else:
+                workflow_tasks, selected_template_ids = self.template_resolver.resolve(
+                    workflow_tasks[:1], request
+                )
+        else:
+            workflow_tasks, selected_template_ids = self.template_resolver.resolve(
+                workflow_tasks, request, templates
+            )
+        if templates is not None and len(selected_template_ids) == 1:
+            # The explicit registry choice controls the legacy single-template renderer too.
+            category = TEMPLATE_BY_ID[selected_template_ids[0]].task_category
+            template = TEMPLATE_BY_ID[selected_template_ids[0]]
+        merged = self.constraint_merger.merge(
+            request, workflow_tasks, constraints, structured_context, workflow_context, language
+        )
+        is_composed = composition_mode == "composed" or (
+            composition_mode == "auto"
+            and (
+                len(workflow_tasks) > 1
+                or len(selected_template_ids) > 1
+                or len(self.constraint_merger.dialects_in(request, structured_context)) > 1
+                or bool(merged["conflicts"])
+            )
+        )
+        if templates is not None and len(selected_template_ids) > 1:
+            is_composed = True
+        if composition_mode == "single":
+            is_composed = False
+        if is_composed:
+            plan = self.dependency_planner.plan(
+                workflow_tasks,
+                selected_template_ids,
+                stage_order=workflow_context.get("stage_order"),
+                warnings=merged["warnings"],
+                conflicts=merged["conflicts"],
+                assumptions=merged["assumptions"],
+            )
+            warnings_from_plan = list(plan.warnings)
+        else:
+            plan = None
+            warnings_from_plan = list(merged["warnings"])
+        template_candidates = []
+        # Give each selected stage one representative package before adding optional
+        # secondary suggestions, so the lookup budget is shared by the workflow.
+        for index in range(
+            max((len(TEMPLATE_BY_ID[item].packages) for item in selected_template_ids), default=0)
+        ):
+            template_candidates.extend(
+                TEMPLATE_BY_ID[template_id].packages[index]
+                for template_id in selected_template_ids
+                if index < len(TEMPLATE_BY_ID[template_id].packages)
+            )
+        candidate_suggestions = list(dict.fromkeys(candidate_suggestions + template_candidates))
+        dialects = self.constraint_merger.dialects_in(request, structured_context)
+        effective_database_dialect = structured_context.get("database_dialect") or (
+            dialects[0] if len(dialects) == 1 else None
+        )
+        if structured_context.get("database_dialect") or len(dialects) == 1:
+            selected_dialect = structured_context.get("database_dialect") or dialects[0]
             dialect_packages = {
                 "postgresql": "RPostgres",
                 "sqlite": "RSQLite",
@@ -106,11 +230,13 @@ class PromptIntelligence:
                 "mariadb": "RMariaDB",
                 "sql_server": "odbc",
             }
-            candidate_suggestions.append(dialect_packages[structured_context["database_dialect"]])
-            selected_driver = dialect_packages[structured_context["database_dialect"]]
+            selected_driver = dialect_packages[selected_dialect]
             candidate_suggestions = [
-                package for package in candidate_suggestions if package in {"DBI", selected_driver}
+                package
+                for package in candidate_suggestions
+                if package not in set(dialect_packages.values()) or package == selected_driver
             ]
+            candidate_suggestions.extend(["DBI", selected_driver])
         if structured_context.get("package_versions"):
             detected = list(dict.fromkeys([*detected, *structured_context["package_versions"]]))
         if re.search(
@@ -120,8 +246,14 @@ class PromptIntelligence:
         if re.search(r"\bshiny\b|dashboard|дашборд", request, re.I):
             candidate_suggestions.extend(["shiny", "bslib"])
         candidate_suggestions = list(dict.fromkeys(candidate_suggestions))
-        candidates = list(dict.fromkeys([*detected, *candidate_suggestions]))
-        candidates = candidates[: prompt_max_grounding_packages()]
+        # Preserve explicitly named packages and the selected SQL driver's metadata
+        # before optional template suggestions when the grounding budget is reached.
+        priority_candidates = list(dict.fromkeys(detected))
+        if structured_context.get("database_dialect") or len(dialects) == 1:
+            priority_candidates.extend(package for package in ("DBI", selected_driver))
+        candidates = list(dict.fromkeys([*priority_candidates, *candidate_suggestions]))[
+            : prompt_max_grounding_packages()
+        ]
         origins = {name: "user_supplied_or_named" for name in detected}
         for name in candidates:
             origins.setdefault(name, "template_candidate")
@@ -193,6 +325,11 @@ class PromptIntelligence:
                 "invalid_input", "Use release, stable, devel or a numeric Bioconductor release"
             )
 
+        template_function_refs = [
+            reference
+            for template_id in selected_template_ids
+            for reference in TEMPLATE_BY_ID[template_id].function_refs
+        ]
         function_docs, doc_warnings, verified_functions, doc_sources = await self._ground_functions(
             list(
                 dict.fromkeys(
@@ -201,10 +338,8 @@ class PromptIntelligence:
                         *[
                             reference
                             for reference in (
-                                *template.function_refs,
-                                *self._dialect_function_refs(
-                                    structured_context.get("database_dialect")
-                                ),
+                                *template_function_refs,
+                                *self._dialect_function_refs(effective_database_dialect),
                             )
                             if reference[0].casefold() in {name.casefold() for name in candidates}
                         ],
@@ -247,7 +382,7 @@ class PromptIntelligence:
             unknowns.append(
                 "Bioconductor package compatibility has not been checked because no R version was supplied."  # noqa: E501  # Long user-facing copy or regex.
             )
-        if structured_context.get("database_dialect"):
+        if effective_database_dialect:
             assumptions.append(
                 "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed."  # noqa: E501  # Intentional user-facing prompt text.
             )
@@ -435,6 +570,29 @@ class PromptIntelligence:
                     + "\n\n## Этапы",
                 )
             )
+        if plan is not None:
+            prompt_text = self.unified_composer.compose(
+                objective=request,
+                target=target,
+                detail_level=detail_level,
+                plan=plan,
+                requirements=merged["requirements"],
+                packages=package_records,
+                function_docs=function_docs,
+                sources=[source.__dict__ for source in sources]
+                if include_sources and include_provenance
+                else [],
+                structured_context=structured_context,
+                workflow_context=workflow_context,
+                include_provenance=include_sources and include_provenance,
+                language=language,
+            )
+            warnings.extend(warnings_from_plan)
+            assumptions = list(dict.fromkeys([*assumptions, *merged["assumptions"]]))
+        elif merged["conflicts"]:
+            prompt_text += "\n\n## Unresolved conflicts\n" + "\n".join(
+                f"- {item}" for item in merged["conflicts"]
+            )
         if len(prompt_text) > prompt_max_output_chars():
             raise KnowledgeError(
                 "response_too_large", "Generated prompt exceeds configured output limit"
@@ -468,13 +626,39 @@ class PromptIntelligence:
                     )
 
         validation = validate_prompt(prompt_text, verified_functions)
+        if plan is not None:
+            validation["composition"] = evaluate_composition(
+                prompt_text,
+                plan,
+                merged["requirements"],
+                prompt_max_output_chars(),
+            )
         return {
             "prompt_text": prompt_text,
             "task_category": category,
             "template_id": CATEGORY_TEMPLATE[category],
+            "composition_mode": "composed" if plan is not None else "single",
+            "selected_templates": [
+                {
+                    "id": template_id,
+                    "version": TEMPLATE_BY_ID[template_id].composition.version,
+                    "title": TEMPLATE_BY_ID[template_id].title,
+                }
+                for template_id in selected_template_ids
+            ],
+            "workflow_stages": [task.to_dict() for task in plan.tasks]
+            if plan is not None and include_plan
+            else [],
+            "dependencies": list(plan.dependencies) if plan is not None and include_plan else [],
+            "parallel_groups": [list(group) for group in plan.parallel_groups]
+            if plan is not None and include_plan
+            else [],
+            "conflicts": list(plan.conflicts) if plan is not None else merged["conflicts"],
             "target": target,
             "detail_level": detail_level,
-            "packages": package_records,
+            "packages": package_records
+            if include_provenance
+            else [self._without_provenance(item) for item in package_records],
             "structured_context": structured_context,
             "function_documentation": function_docs,
             "package_resolution": resolution,
@@ -486,8 +670,9 @@ class PromptIntelligence:
             "assumptions": assumptions,
             "unresolved_questions": unknowns,
             "sources": [source.__dict__ for source in sources[:MAX_SOURCE_REFS]]
-            if include_sources
+            if include_sources and include_provenance
             else [],
+            "workflow_context": workflow_context,
             "warnings": list(dict.fromkeys(warnings)),
             "generation_mode": generation_mode,
             "validation_summary": validation,
@@ -781,6 +966,17 @@ class PromptIntelligence:
                 "some_package_context_was_unavailable_or_partial; no metadata_was_invented"
             )
         return records, resolution, warnings
+
+    @staticmethod
+    def _without_provenance(record):
+        cleaned = {**record, "sources": []}
+        if isinstance(record.get("compatibility"), dict):
+            cleaned["compatibility"] = {
+                key: value
+                for key, value in record["compatibility"].items()
+                if key not in {"source_url", "checked_at"}
+            }
+        return cleaned
 
     async def _compatibility(self, package, repository, bioc_version, r_version):
         if repository != "bioconductor" or not r_version:

@@ -18,12 +18,23 @@ verifies them. Source failures stay visible; they never become fabricated
 versions, documentation or compatibility claims.
 
 The five tools expose build, improve, validate, template listing and package
-context operations. Seven standard MCP Prompts are also registered as
+context operations. Fourteen standard MCP Prompts are also registered as
 user-selected, string-argument templates. Native Prompts are local and
 deterministic and do not access a project or network. They label their package
 arguments and project context as unverified user input. The tools and Prompts
 are gated by `PROMPT_INTELLIGENCE_ENABLED`; the existing tools remain
 registered when disabled.
+
+`build_r_prompt` can route through the composable pipeline in
+`prompt_intelligence/composition/`: `TaskDecomposer`, `TemplateResolver`,
+`DependencyPlanner`, `ConstraintMerger`, `UnifiedPromptComposer` and the
+structural evaluator. It reuses the typed template registry and knowledge
+providers. `auto` preserves the legacy prompt for one task and composes related
+multi-stage work; callers can force `single`/`composed`, select explicit
+templates, and supply bounded workflow context. The native
+`r-multi-stage-workflow` Prompt uses the same local pipeline without provider
+lookups. See [Composable Prompts](COMPOSABLE_PROMPTS.md) for contracts, limits,
+conflict behavior and a complete output example.
 
 The composer and validator never execute R, shell commands, generated prompts,
 repository instructions or package examples. Project text and prompt content

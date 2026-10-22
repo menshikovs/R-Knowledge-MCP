@@ -15,12 +15,18 @@ resulting prompt or any supplied R, shell, package, or repository content.
 | `validate_r_prompt` | Report heuristic structure gaps, possible contradictions, credential-like text, unverified namespaced calls and current-version claims. |
 | `list_r_prompt_templates` | Return stable template IDs, categories, descriptions and unverified candidate packages. |
 | `get_r_prompt_context` | Resolve explicit packages independently of prompt generation and report package, dependency, release and compatibility provenance. |
-| MCP Prompts | Thirteen user-selected local drafts spanning package development, Shiny, Quarto, Bioconductor, visualization, debugging, architecture, CSV and SQL workflows. |
+| MCP Prompts | Fourteen user-selected local drafts, including `r-multi-stage-workflow`, spanning R, CSV/SQL, Shiny, Quarto, Bioconductor and visualization. |
 
 Tool-generated prompt requests can include `target` (`codex`, `chatgpt`,
 `generic`), `detail_level` (`concise`, `standard`, `comprehensive`),
 `task_category`, package names, R and Bioconductor versions, caller-supplied
-project context, constraints, source inclusion and `enhancement_mode`.
+project context, constraints, source inclusion and `enhancement_mode`. The
+composable engine adds `composition_mode` (`auto`, `single`, `composed`),
+explicit `templates`, bounded `workflow_context`, `include_plan` and
+`include_provenance`; it returns the resolved template IDs, ordered stages,
+dependency edges, parallel groups, conflicts, warnings and a structural
+composition rubric. See [Composable Prompts](COMPOSABLE_PROMPTS.md) for the
+pipeline and complete generated example.
 Categories cover package development, data analysis and transformation,
 statistical modeling, visualization, Shiny, Quarto, Bioconductor, debugging,
 refactoring, architecture review, testing, reproducibility, performance, CSV
@@ -28,11 +34,13 @@ import/cleaning/validation/analysis/export and SQL query, connection, optimizati
 schema design and ETL tasks.
 Classification is heuristic and can be overridden with `task_category`.
 
-Native MCP Prompts are intentionally simpler: they accept only strings and do
-not query a package provider. Any packages passed to them are unverified names.
-Use `build_r_prompt` or `get_r_prompt_context` when source-checked package
-versions and documentation are needed. Clients that do not expose MCP Prompts
-can use the tools directly.
+Native MCP Prompts accept strings and do not query a package provider. Any
+package names in their arguments remain unverified. The native
+`r-multi-stage-workflow` prompt invokes the same decomposer, resolver, planner,
+constraint merger and composer as the tool, in deterministic offline mode. Use
+`build_r_prompt` or `get_r_prompt_context` when source-checked package versions
+and documentation are needed. Clients that do not expose MCP Prompts can use
+the tools directly.
 
 ## Grounding and provenance
 
@@ -147,7 +155,8 @@ installed SDK.
 
 ## CSV, SQL and ETL context
 
-Thirteen native Prompts are available, including csv-import, csv-cleaning,
+Fourteen native Prompts are available, including `r-multi-stage-workflow`,
+csv-import, csv-cleaning,
 csv-validation, sql-query, sql-database and csv-sql-pipeline. The ten templates
 are cataloged in PROMPT_TEMPLATES.md. CSV/SQL task categories cover import,
 cleaning, validation, analysis, export, query, database integration,

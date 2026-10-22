@@ -80,8 +80,13 @@ def create_server(
             enhancement_mode: Literal["deterministic", "auto", "external"] = "deterministic",
             language: str = "auto",
             structured_context: dict[str, Any] | None = None,
+            composition_mode: Literal["auto", "single", "composed"] = "auto",
+            templates: list[str] | None = None,
+            workflow_context: dict[str, Any] | None = None,
+            include_plan: bool = True,
+            include_provenance: bool = True,
         ) -> dict[str, Any]:
-            """Build an editable, source-grounded R development prompt; never execute it."""
+            """Build one editable R prompt; compose detected workflow stages without executing them."""  # noqa: E501
             intelligence = PromptIntelligence(ctx.request_context.lifespan_context)
             return await bounded(
                 intelligence.build_r_prompt(
@@ -98,6 +103,11 @@ def create_server(
                     enhancement_mode,
                     language,
                     structured_context,
+                    composition_mode,
+                    templates,
+                    workflow_context,
+                    include_plan,
+                    include_provenance,
                 ),
                 repository="prompt_intelligence",
                 bioc_version=bioconductor_release,

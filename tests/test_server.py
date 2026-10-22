@@ -59,6 +59,7 @@ PROMPTS = {
     "sql-query",
     "sql-database",
     "csv-sql-pipeline",
+    "r-multi-stage-workflow",
 }
 
 
@@ -84,6 +85,18 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         )
         assert "delimiter" in csv_prompt.messages[0].content.text.lower()
         assert "CSV" in csv_prompt.messages[0].content.text
+        workflow_prompt = await session.get_prompt(
+            "r-multi-stage-workflow",
+            {
+                "objective": "Import a CSV into PostgreSQL and create a Quarto report",
+                "technologies": "readr, DBI, Quarto",
+                "inputs": "measurements.csv",
+                "outputs": "report.html",
+                "constraints": "Use parameterized SQL",
+            },
+        )
+        assert "Implementation plan" in workflow_prompt.messages[0].content.text
+        assert "PostgreSQL" in workflow_prompt.messages[0].content.text
         result = await session.call_tool("get_dependencies", {"package": "ExamplePkg"})
         assert not result.isError
         assert result.structuredContent["latest_cran_version"] == "2.10-1"
@@ -123,6 +136,20 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         assert generated.structuredContent["not_executed"] is True
         assert generated.structuredContent["structured_context"]["delimiter"] == ";"
         assert "UTF-8" in generated.structuredContent["prompt_text"]
+        composed = await session.call_tool(
+            "build_r_prompt",
+            {
+                "request": "Import and validate a CSV file",
+                "composition_mode": "composed",
+                "templates": ["csv-import", "csv-validation"],
+                "workflow_context": {"outputs": ["validated table"]},
+                "include_plan": True,
+                "include_provenance": False,
+            },
+        )
+        assert composed.structuredContent["composition_mode"] == "composed"
+        assert len(composed.structuredContent["workflow_stages"]) == 2
+        assert composed.structuredContent["sources"] == []
         templates = await session.call_tool("list_r_prompt_templates", {})
         assert templates.structuredContent["template_count"] >= 18
         checked = await session.call_tool(
@@ -200,6 +227,25 @@ async def test_streamable_http_initialization_and_tool_call(service, monkeypatch
             )
             assert response.status_code == 200
             assert "Bioconductor" in response.json()["result"]["messages"][0]["content"]["text"]
+            response = await client.post(
+                "/mcp",
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 13,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "build_r_prompt",
+                        "arguments": {
+                            "request": "Investigate the R error",
+                            "templates": ["r-debugging", "r-architecture-audit"],
+                            "composition_mode": "composed",
+                            "include_plan": True,
+                        },
+                    },
+                },
+            )
+            assert response.status_code == 200
+            assert response.json()["result"]["structuredContent"]["composition_mode"] == "composed"
             response = await client.post(
                 "/mcp",
                 json={

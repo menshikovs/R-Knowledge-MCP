@@ -85,7 +85,7 @@ or provide a hosted endpoint. Codex configuration follows
 | `get_bioconductor_version` | `r_version` | Official R/release mapping and latest released recommendation for that R |
 | `check_package_compatibility` | `package`, `r_version`, `bioc_version` | Bioconductor/R mapping and direct required dependency checks |
 | `check_package_version` | `package`, `installed_version` | Existing CRAN numeric version comparison |
-| `build_r_prompt` | request, optional R/Bioconductor context, packages, constraints and `structured_context` | Build an editable R task prompt; package versions/docs are grounded only when verified from configured repository providers |
+| `build_r_prompt` | request, optional R/Bioconductor context, packages, constraints, `structured_context`, `composition_mode`, `templates`, `workflow_context`, `include_plan`, `include_provenance` | Build a backward-compatible single-task prompt or one unified multi-stage workflow; package versions/docs are grounded only when verified from configured repository providers |
 | `improve_r_prompt` | existing prompt, goals, optional context and `structured_context` | Add structure while preserving the full original text and explicit goals |
 | `validate_r_prompt` | `prompt_text` | Heuristic checklist for gaps, conflicts, likely secrets and unverified `pkg::function()` references |
 | `list_r_prompt_templates` | — | List stable IDs for 30 local R task templates, including CSV and SQL workflows |
@@ -97,9 +97,11 @@ failures in `errors` with `verification_status="partial"` or `"failed"`. Absence
 from a checked index differs from an unavailable source. Combined search orders
 CRAN results then Bioconductor results, using a shared offset/limit (1-20).
 
-Prompt Intelligence also registers thirteen standard MCP Prompts (for package
+Prompt Intelligence also registers fourteen standard MCP Prompts, including
+`r-multi-stage-workflow`, which uses the same bounded local composition pipeline
+as `build_r_prompt` but does not query package providers. The other prompts cover package
 development, Shiny, Quarto, Bioconductor, ggplot2, debugging, architecture,
-CSV import/cleaning/validation, SQL queries/database connections, and CSV-to-SQL).
+CSV import/cleaning/validation, SQL queries/database connections, and CSV-to-SQL.
 They are user-selected, deterministic drafts. Connect clients that
 support MCP Prompts through their normal prompt discovery UI; the five tools
 remain available for clients that invoke tools directly. These prompts do not
@@ -109,7 +111,9 @@ official providers. Set `PROMPT_INTELLIGENCE_ENABLED=false` to disable the new
 tools and prompts without affecting existing knowledge tools.
 
 Prompt construction, examples, configuration, limitations, and evaluation
-guidance are documented in [Prompt Intelligence](docs/PROMPT_INTELLIGENCE.md).
+guidance are documented in [Prompt Intelligence](docs/PROMPT_INTELLIGENCE.md)
+and the [Composable Prompt Engine](docs/COMPOSABLE_PROMPTS.md), which includes a
+complete generated CSV → PostgreSQL → dplyr → ggplot2 → Quarto prompt.
 The deterministic design and external optimizer comparison are in
 [Prompt Engineering Research](docs/PROMPT_ENGINEERING_RESEARCH.md).
 The complete built-in prompt catalog and each template's package/API candidates

@@ -39,6 +39,13 @@ Tool results are capped at 60,000 UTF-8 bytes. Errors are not cached and expired
 data is not served as fresh.
 Prompt inputs/outputs and package grounding concurrency are separately bounded
 by the `PROMPT_*` settings documented in `PROMPT_INTELLIGENCE.md`.
+Composable prompts cap workflows at ten stages, explicit template selection at
+eight templates, and grounded package candidates at the configured maximum of
+ten (default five). Over-limit generated output is rejected instead of
+truncated. The dependency planner detects unknown edges and cycles. Conflicting
+database dialects, read-only/write requirements, or offline/network demands
+are preserved as unresolved conflicts; the composer does not silently choose
+one. See `docs/COMPOSABLE_PROMPTS.md` for its structural checks and limitations.
 CSV/SQL `structured_context` is an allow-listed object capped at 8 KiB. Sample
 records are limited to three small rows, treated as untrusted and potentially
 sensitive, checked for common credential patterns, and prevent any injected

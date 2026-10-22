@@ -5,6 +5,7 @@ import re
 from mcp.types import PromptMessage, TextContent
 
 from ..errors import KnowledgeError
+from . import PromptIntelligence
 from .composer import CATEGORY_REQUIREMENTS, render_prompt
 from .intent import infer_language, validate_text
 from .models import PromptSpecification
@@ -25,6 +26,11 @@ NATIVE_PROMPTS = (
     ("sql-query", "sql-query", "Build a dialect-aware SQL query prompt"),
     ("sql-database", "sql-database", "Build an R database integration prompt"),
     ("csv-sql-pipeline", "csv-sql-pipeline", "Build a CSV to SQL pipeline prompt"),
+    (
+        "r-multi-stage-workflow",
+        "r-multi-stage-workflow",
+        "Build a composed multi-stage R workflow prompt",
+    ),
 )
 
 
@@ -122,6 +128,55 @@ def register_native_prompts(server) -> None:
         return render
 
     for name, template_id, title in NATIVE_PROMPTS:
+        if template_id == "r-multi-stage-workflow":
+
+            async def render_multi_stage_workflow(
+                objective: str,
+                technologies: str = "",
+                inputs: str = "",
+                outputs: str = "",
+                constraints: str = "",
+                target: str = "generic",
+            ) -> list[PromptMessage]:
+                """Compose one local, deterministic workflow prompt without provider calls."""
+                request = objective
+                if technologies.strip():
+                    request += "\nRequested technologies: " + technologies[:1000]
+                workflow_context = {
+                    key: [line.strip() for line in value.splitlines() if line.strip()]
+                    for key, value in (("inputs", inputs), ("outputs", outputs))
+                    if value.strip()
+                }
+                if technologies.strip():
+                    workflow_context["technical_constraints"] = [
+                        "Requested technologies: " + technologies[:1000]
+                    ]
+                constraint_list = [
+                    line.strip(" -\t") for line in constraints.splitlines() if line.strip()
+                ]
+                result = await PromptIntelligence(None).build_r_prompt(
+                    request,
+                    target=target,
+                    constraints=constraint_list,
+                    workflow_context=workflow_context,
+                    composition_mode="composed",
+                    include_sources=False,
+                    include_provenance=False,
+                )
+                return [
+                    PromptMessage(
+                        role="user",
+                        content=TextContent(type="text", text=result["prompt_text"]),
+                    )
+                ]
+
+            render_multi_stage_workflow.__name__ = "prompt_r_multi_stage_workflow"
+            server.prompt(
+                name=name,
+                title=title,
+                description="Compose one bounded multi-stage R development prompt using the shared task, template, planner and composer pipeline.",  # noqa: E501
+            )(render_multi_stage_workflow)
+            continue
         template = TEMPLATE_BY_ID[template_id]
         render = make_renderer(template_id)
         render.__name__ = f"prompt_{name.replace('-', '_')}"
