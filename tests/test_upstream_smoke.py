@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from scripts.smoke_upstream import (
+from cran_knowledge_mcp.upstream_smoke import (
     Check,
     SmokeFailure,
     UpstreamSmokeChecker,
