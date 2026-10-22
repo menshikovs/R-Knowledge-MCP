@@ -19,7 +19,12 @@ sections. Successful result fields and schemas remain unchanged.
 
 SDK argument validation failures become a sanitized `invalid_input` envelope.
 Unexpected exceptions become a sanitized `internal_error`; exception strings,
-tracebacks, and secret values are not sent to clients. The SDK's
+tracebacks, and secret values are not sent to clients. Server-side ERROR logs
+include only a bounded operation identifier and exception type by default; raw
+prompts and exception messages are omitted. Full traceback text is opt-in with
+`LOG_INTERNAL_TRACEBACKS=true` and appears at DEBUG level, so it can reveal
+request or upstream content and should be enabled only in a protected diagnostic
+environment. The SDK's
 `CallToolResult` has no standard machine-readable error-code field. This server
 keeps its application codes in `structuredContent.error.code`, and serializes
 the envelope in `content` for older clients. Input-schema failures that occur

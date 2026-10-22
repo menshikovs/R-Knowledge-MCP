@@ -20,6 +20,10 @@ package text as untrusted input.
   selected Context7 library must match the official repository metadata.
 - Shiny/Positron/Quarto pages come from a fixed catalog of reviewed HTTPS URLs.
   Tool inputs select a catalog topic and never form a URL or host.
+- The scheduled upstream smoke workflow has its own fixed HTTPS check catalog.
+  It rejects redirects, limits response bytes and concurrency, and reads only
+  lightweight metadata and documentation pages. It runs without secrets and
+  does not make live requests during normal pull-request tests.
 - All external text is informational. GitHub `AGENTS.md` content is explicitly
   labeled untrusted and cannot alter system/developer/user instructions.
 - Prompt Intelligence treats prompt text, project context and package guidance
@@ -37,6 +41,14 @@ trees are limited to 4 MiB; AGENTS files to 32 KiB each, 96 KiB total, and 24
 files. Context7 responses are limited to 4 MiB and returned text to 48 KiB.
 Tool results are capped at 60,000 UTF-8 bytes. Errors are not cached and expired
 data is not served as fresh.
+
+Unexpected runtime failures produce a sanitized server log containing only a
+bounded operation identifier and exception type by default. Client errors keep
+their existing sanitized envelope. Full traceback logging is disabled by
+default; setting `LOG_INTERNAL_TRACEBACKS=true` emits exception text and stack
+frames at DEBUG level, which can include user or upstream data. Enable it only
+in a protected development or diagnostic environment, and do not collect those
+logs as public output.
 Prompt inputs/outputs and package grounding concurrency are separately bounded
 by the `PROMPT_*` settings documented in `PROMPT_INTELLIGENCE.md`.
 Composable prompts cap workflows at ten stages, explicit template selection at

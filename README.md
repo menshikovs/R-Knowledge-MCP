@@ -144,7 +144,7 @@ as `build_r_prompt` but does not query package providers. The other prompts cove
 development, Shiny, Quarto, Bioconductor, ggplot2, debugging, architecture,
 CSV import/cleaning/validation, SQL queries/database connections, and CSV-to-SQL.
 They are user-selected, deterministic drafts. Connect clients that
-support MCP Prompts through their normal prompt discovery UI; the five tools
+support MCP Prompts through their normal prompt discovery UI; MCP tools
 remain available for clients that invoke tools directly. These prompts do not
 inspect a local workspace or fetch package data, so their supplied context is
 explicitly unverified. Tools may fetch bounded package context from the existing
@@ -260,11 +260,14 @@ time.
 Use `.env.example` as a reference and export only the settings you need in the
 server process. The application does not automatically load `.env` files.
 `MCP_TRANSPORT`, `MCP_HOST`, `MCP_PORT`, and `LOG_LEVEL` configure the CLI;
+`LOG_INTERNAL_TRACEBACKS=true` opts into DEBUG tracebacks that can contain
+request or upstream data, so use it only in a protected diagnostic environment;
 `HTTP_TIMEOUT_SECONDS` controls the httpx client timeout; `HTTP_USER_AGENT`
 sets its bounded User-Agent header; `CACHE_TTL_SECONDS`
-sets the repository artifact cache lifetime; `CACHE_MAX_BYTES` sets its byte
-budget (maximum 256 MiB). GitHub guidance and Context7 use the same TTL override
-with source-specific defaults of one and six hours. `CONTEXT7_API_KEY` is
+sets the CRAN/Bioconductor artifact cache lifetime; `CACHE_MAX_BYTES` sets its
+byte budget (maximum 256 MiB). GitHub guidance and Context7 use the same TTL
+override with source-specific defaults of one and six hours. Framework pages
+use a one-hour cache. `CONTEXT7_API_KEY` is
 optional. Invalid numeric bounds fail with an explicit configuration error.
 Prompt settings include `PROMPT_INTELLIGENCE_ENABLED`,
 `PROMPT_MAX_INPUT_CHARS`, `PROMPT_MAX_OUTPUT_CHARS`,
@@ -333,9 +336,11 @@ No arbitrary outbound URLs, redirects, environment proxies, archive extraction,
 R installation, package execution or Rd evaluation. Vignette links are restricted
 to exact official host/package/release paths. Package text remains untrusted data.
 
-CRAN/Bioconductor artifacts use a 5-minute TTL and 64 MiB / 32-artifact LRU
-budget. External docs have bounded payloads and a six-hour success cache. GitHub
-and Context7 use fixed HTTPS hosts and routes. No caller URL is fetched,
+CRAN/Bioconductor artifacts use a configurable 5-minute default TTL and a
+64 MiB / 32-artifact LRU budget. Framework pages use a one-hour cache; GitHub
+AGENTS.md uses a configurable one-hour default, and Context7 uses a configurable
+six-hour default. Provider caches are bounded and failed requests never replace
+fresh data. GitHub and Context7 use fixed HTTPS hosts and routes. No caller URL is fetched,
 redirects are rejected, GitHub tree/blob sizes and per-file/total AGENTS.md
 bytes are limited, and all external text remains untrusted.
 At most eight Bioconductor release providers are retained per service. Downloads
@@ -377,9 +382,14 @@ pytest
 
 CI tests Python 3.11–3.14 and builds Docker without pushing an image. Unit and
 protocol tests mock HTTP and need no CRAN access. See [AGENTS.md](AGENTS.md).
-For an optional real-source check after installation, run
-`python scripts/smoke_cran.py`; it checks all five tools against CRAN without
-assuming a package version.
+For optional live checks after installation, run `python scripts/smoke_cran.py`
+or `python scripts/smoke_repositories.py`. The scheduled
+`python scripts/smoke_upstream.py` check covers selected official CRAN,
+Bioconductor, Shiny, Positron and Quarto sources. It also runs manually through
+the `Official upstream smoke checks` Actions workflow on the default branch.
+Live source checks are separate from ordinary PR CI because upstream outages
+are outside the repository's control. Coverage, failure categories and limits
+are described in [Upstream monitoring](docs/UPSTREAM_MONITORING.md).
 
 ## Known limitations and next stage
 
@@ -396,5 +406,5 @@ restoring or verifying an installed library. See [the roadmap](docs/ROADMAP.md).
 `analyze_r_workspace` only sees text provided by the client. Shiny and Quarto
 analyzers are static checks, not runtime, schema-complete, browser or security
 tests.
-Optional live checks after installation: `python scripts/smoke_cran.py` and
-`python scripts/smoke_repositories.py`.
+Optional live checks after installation: `python scripts/smoke_cran.py`,
+`python scripts/smoke_repositories.py` and `python scripts/smoke_upstream.py`.
