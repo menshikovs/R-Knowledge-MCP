@@ -1,0 +1,292 @@
+{
+  "schema_version": 1,
+  "benchmark": "codex-r-pilot-v1",
+  "production_commit": "edab8244ae8fa77f33d0dd750323405aacf5985b",
+  "environment": {
+    "r": "4.5.2",
+    "bioconductor": "3.22",
+    "lockfile": "configs/renv.lock",
+    "quarto": "1.8.27",
+    "mcp_sdk": "1.30.0",
+    "httpx": "0.28.1"
+  },
+  "protocol": {
+    "seed": 1729,
+    "repetitions": 2,
+    "candidate_seconds": 900,
+    "score_seconds": 180,
+    "memory_mb": 2048,
+    "cpus": 2,
+    "pids": 256,
+    "artifact_bytes": 8388608,
+    "token_budget": 30000,
+    "internet": "no ordinary browsing; only controlled model and MCP endpoints",
+    "prompt_intelligence": "optional; no automatic pre-enhancement; all calls included in budget",
+    "scoring": "4 equally weighted test groups per task; candidate errors/timeouts/security violations score zero; infrastructure failures are missing, never successes"
+  },
+  "conditions": {
+    "A": {
+      "tools": [],
+      "native_prompts": false
+    },
+    "B": {
+      "tools": [
+        "search_packages",
+        "get_package_info",
+        "get_dependencies",
+        "get_function_docs",
+        "check_package_version",
+        "get_bioconductor_version",
+        "check_package_compatibility",
+        "get_package_vignettes",
+        "get_shiny_docs",
+        "explain_shiny_reactivity",
+        "get_positron_guidance",
+        "get_quarto_docs",
+        "get_r_workflow_guidance",
+        "get_visualization_docs",
+        "get_visualization_workflow"
+      ],
+      "native_prompts": false
+    },
+    "C": {
+      "tools": [
+        "search_packages",
+        "get_package_info",
+        "get_dependencies",
+        "get_function_docs",
+        "check_package_version",
+        "get_bioconductor_version",
+        "check_package_compatibility",
+        "get_package_vignettes",
+        "get_shiny_docs",
+        "explain_shiny_reactivity",
+        "get_positron_guidance",
+        "get_quarto_docs",
+        "get_r_workflow_guidance",
+        "get_visualization_docs",
+        "get_visualization_workflow",
+        "build_r_prompt",
+        "improve_r_prompt",
+        "validate_r_prompt",
+        "list_r_prompt_templates",
+        "get_r_prompt_context"
+      ],
+      "native_prompts": false
+    }
+  },
+  "tasks": [
+    {
+      "id": "R01",
+      "area": "Base R validation",
+      "packages": [],
+      "groups": 4,
+      "artifacts": [
+        "solution.R"
+      ],
+      "fixture": "tasks/R01/data/records.csv",
+      "spec": "tasks/R01/task.md",
+      "oracle": "oracle/R01.R"
+    },
+    {
+      "id": "R02",
+      "area": "Grouped sales",
+      "packages": [
+        "dplyr"
+      ],
+      "groups": 4,
+      "artifacts": [
+        "solution.R"
+      ],
+      "fixture": "tasks/R02/data/sales.csv",
+      "spec": "tasks/R02/task.md",
+      "oracle": "oracle/R02.R"
+    },
+    {
+      "id": "R03",
+      "area": "Malformed typed CSV",
+      "packages": [
+        "readr"
+      ],
+      "groups": 4,
+      "artifacts": [
+        "solution.R"
+      ],
+      "fixture": "tasks/R03/data/measurements.csv",
+      "spec": "tasks/R03/task.md",
+      "oracle": "oracle/R03.R"
+    },
+    {
+      "id": "R04",
+      "area": "Grouped logarithmic plot",
+      "packages": [
+        "ggplot2"
+      ],
+      "groups": 4,
+      "artifacts": [
+        "solution.R"
+      ],
+      "fixture": "tasks/R04/data/measurements.csv",
+      "spec": "tasks/R04/task.md",
+      "oracle": "oracle/R04.R"
+    },
+    {
+      "id": "R05",
+      "area": "Irregular visits",
+      "packages": [
+        "tidyr"
+      ],
+      "groups": 4,
+      "artifacts": [
+        "solution.R"
+      ],
+      "fixture": "tasks/R05/data/visits.csv",
+      "spec": "tasks/R05/task.md",
+      "oracle": "oracle/R05.R"
+    },
+    {
+      "id": "R06",
+      "area": "Parameterized account lookup",
+      "packages": [
+        "DBI",
+        "RSQLite"
+      ],
+      "groups": 4,
+      "artifacts": [
+        "solution.R"
+      ],
+      "fixture": "tasks/R06/data/accounts.csv",
+      "spec": "tasks/R06/task.md",
+      "oracle": "oracle/R06.R"
+    },
+    {
+      "id": "R07",
+      "area": "Safe SQL aggregation",
+      "packages": [
+        "DBI",
+        "RSQLite"
+      ],
+      "groups": 4,
+      "artifacts": [
+        "solution.R"
+      ],
+      "fixture": "tasks/R07/data/orders.csv",
+      "spec": "tasks/R07/task.md",
+      "oracle": "oracle/R07.R"
+    },
+    {
+      "id": "R08",
+      "area": "Shiny reactive filtering",
+      "packages": [
+        "shiny"
+      ],
+      "groups": 4,
+      "artifacts": [
+        "solution.R"
+      ],
+      "fixture": "tasks/R08/data/values.csv",
+      "spec": "tasks/R08/task.md",
+      "oracle": "oracle/R08.R"
+    },
+    {
+      "id": "R09",
+      "area": "Reusable Shiny module",
+      "packages": [
+        "shiny"
+      ],
+      "groups": 4,
+      "artifacts": [
+        "solution.R"
+      ],
+      "fixture": "tasks/R09/data/values.csv",
+      "spec": "tasks/R09/task.md",
+      "oracle": "oracle/R09.R"
+    },
+    {
+      "id": "R10",
+      "area": "Local reproducible Quarto report",
+      "packages": [
+        "knitr",
+        "rmarkdown",
+        "xml2"
+      ],
+      "groups": 4,
+      "artifacts": [
+        "report.qmd"
+      ],
+      "fixture": "tasks/R10/data/sales.csv",
+      "spec": "tasks/R10/task.md",
+      "oracle": "oracle/R10.R"
+    },
+    {
+      "id": "R11",
+      "area": "Pinned Bioconductor interval summary",
+      "packages": [
+        "IRanges"
+      ],
+      "groups": 4,
+      "artifacts": [
+        "solution.R"
+      ],
+      "fixture": "tasks/R11/data/ranges.csv",
+      "spec": "tasks/R11/task.md",
+      "oracle": "oracle/R11.R"
+    },
+    {
+      "id": "R12",
+      "area": "CSV to validated reporting workflow",
+      "packages": [
+        "readr",
+        "dplyr",
+        "ggplot2",
+        "knitr"
+      ],
+      "groups": 4,
+      "artifacts": [
+        "solution.R"
+      ],
+      "fixture": "tasks/R12/data/workflow.csv",
+      "spec": "tasks/R12/task.md",
+      "oracle": "oracle/R12.R"
+    }
+  ],
+  "production_sources": {
+    "__init__.py": "e0f9981314cff1b4fcab3899639bafed8ca244777c023d6ee1f23334c29b2779",
+    "config.py": "98246128e8640a752d63cb27c984ac2f1f06d505681dfe3249111ed308368ab2",
+    "diagnostics.py": "861263df045b57bd67c878a9510b8085b003c7f27af7e666c6313c3a79d1a0d3",
+    "errors.py": "15d0fdaede31a17f6de890a3cf2f2994bb434ad868b3e8565dac12a190dd7ae9",
+    "http.py": "af7437758771ec62b79fbcdf32daee0395036a9a6cb6ac95ab3a46f9a6c15ec0",
+    "parsers.py": "9bd84e725dfd89ee1fe847cdb0ae33bdb20257e9600ed5824f13c844acf63035",
+    "project_analysis.py": "bc1600692a7b2cefcbfa4e407c3c9a253bea01b7492b29194a1807ff56021883",
+    "prompt_intelligence/__init__.py": "e6fa6f1a438c7f9ed89915bb348eb2588a753522d46913a36c0635e4e484e9fd",
+    "prompt_intelligence/composer.py": "0b80f7775ed7e2ac5e523aed2ed30669d5e8073cb337f92866b66eb62c14e78e",
+    "prompt_intelligence/composition/__init__.py": "67a6d20060e9c14272323839ffe2fb757d54c404c478eb70a729bcbd2b3c9367",
+    "prompt_intelligence/composition/composer.py": "d1b30f759272240f2a9d36e2e016f272c407be4ceab6adcf59a59ef6e2367954",
+    "prompt_intelligence/composition/constraints.py": "043377fc4fea633d23c6adcdef00f312087adf0bcea350c61b1b42b38e7eeeec",
+    "prompt_intelligence/composition/context.py": "2b6f44d6d48d8310aa97e9a83175f76b5e04de00a2b6649d574d01f4854f6c83",
+    "prompt_intelligence/composition/decomposer.py": "b62ffba15f2d6bdb4520e7ca7edb7e7c69f432ce452ae3969fbfa0784764d61f",
+    "prompt_intelligence/composition/evaluation.py": "3c45055345558b6da38e98e261513576d690cd8b0dc5505cbfa798e829c73168",
+    "prompt_intelligence/composition/models.py": "adff377daf256cd229bde7dca04d241ef7e42e530daf95b9b1b278da322feaae",
+    "prompt_intelligence/composition/planner.py": "ccb9716cc2cf6978545f1e960ca7935f25d0499a81e2fc6015e9aa21a9d174f7",
+    "prompt_intelligence/composition/resolver.py": "5ed2acfb80728fef979afcac5011b5f572d348d2cf27c85c950afaeb58301d9a",
+    "prompt_intelligence/intent.py": "099e04786bd98a9f8e75869420574b5e4622cb2636108119d98041c8bda754b9",
+    "prompt_intelligence/models.py": "e8b5e5ed677d16b4c8aef67053261e2aa04ce6559c83baa8b2f340ebd88009ab",
+    "prompt_intelligence/native_prompts.py": "075a440d1549ea37172fa0ecabbc6e7e4394f1f7bf65db4a25b0e558efefeac6",
+    "prompt_intelligence/quality.py": "370f4fd1ea8a9af25ab3872ba79cf5b3a7a07527a009acd1a5c5f904a8bfd59d",
+    "prompt_intelligence/service.py": "97a0b844180152e12b6c256913390e91f970a0797de561d4bd01d7b2320db457",
+    "prompt_intelligence/templates.py": "ba7f2001cbe09641f30e7d5d2b71acb78356b8602587ef8a8ae6fc7e5e836c12",
+    "providers/__init__.py": "53386389cf046dea0608206d25df0515b65c6307ed777f48b975825817f0747c",
+    "providers/base.py": "78f259ed5827152630a73023bc2d9f644ec2dc8103479b7c552593eed89b1222",
+    "providers/bioconductor.py": "d8ba59411ee716e8943906e1368129d3ff0e2b09726d89cef2c6bd614b82a412",
+    "providers/context7.py": "f6293ed0833c5cb4f292fa29b8f087560bd82fcf769f155ab0fbc8cfe8ebae99",
+    "providers/cran.py": "3a718d8d0ac5bb88bae935b5fcd581ebb528af41e947fab7ac239fae3803c3f9",
+    "providers/framework_docs.py": "c0a03e099a8c16fa19acb5181d627a55124975e2755899f15d7dd22ac1dd7fce",
+    "providers/github_agents.py": "d4b44617c3e73d396034278d0d3ff2d04ddf3140a34a2a49a953d914872b6148",
+    "providers/protocol.py": "7088e13a7e6d7d51aee8ccca45fc178fdbc1adc18de5e2efe0d049c61d8b162a",
+    "releases.py": "6eb5f4ae32f8b51d37b6555c5025a53d805833f14666db90d1148d1b3e06d2d1",
+    "server.py": "e554a799f06239a36af8efb1306c51d41da06e002870ec71b84b0fbd088e746f",
+    "service.py": "eff8ad270b0445ee5ac50ee79b632f971f34949649c63da34a444b1bd821ea73",
+    "upstream_smoke.py": "a23378afe12a44d586a6a6c8064deb1cd8fb9b7f1f41465ac4408652fa9e892b",
+    "visualization_analysis.py": "a21c733f5d1b87edf61bc58a634a79a57308fa661d8347af331bbde03ff94c37"
+  }
+}

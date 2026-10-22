@@ -1,0 +1,24 @@
+{
+  "kind": "candidate_R_container_only",
+  "agent_session_isolation_verified": false,
+  "image": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5",
+  "candidate_mount_targets": [
+    "/candidate"
+  ],
+  "network": "none",
+  "read_only_root": true,
+  "filesystem_checks": {
+    "oracle_absent": true,
+    "repository_absent": true,
+    "docker_socket_absent": true,
+    "only_public_files": true
+  },
+  "public_export": {
+    "task": "R01",
+    "files": {
+      "TASK.md": "7ed1dd81045c19f55af4f18780a2661cc99708ff226f115991e700a3e7b09436",
+      "renv.lock": "3a6cfd804a979eb108ee9aa1308078f7a4a9e8a4ab722fd2223a2505631311e1",
+      "data/records.csv": "c8f9b05de11c411d8101bbb8f6ac63cbcf8a20c0d7c095b6c55768e97d8b2062"
+    }
+  }
+}

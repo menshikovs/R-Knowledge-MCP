@@ -1,0 +1,5 @@
+*
+!configs/
+!configs/renv.lock
+!configs/restore.R
+!configs/Dockerfile

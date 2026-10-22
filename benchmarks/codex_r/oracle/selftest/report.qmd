@@ -1,0 +1,25 @@
+---
+title: Sales audit
+format:
+  html:
+    embed-resources: true
+execute:
+  echo: false
+  error: false
+  freeze: false
+  cache: false
+---
+
+# Group totals
+
+```{r}
+d <- read.csv("data/sales.csv", colClasses = c("character", "numeric"), na.strings=c("", "NA"))
+d <- d[is.finite(d$amount), , drop = FALSE]
+d$group[is.na(d$group)] <- "Unknown"
+out <- data.frame(group=character(),total=double(),n=integer())
+for (g in sort(unique(d$group))) {
+  values <- d$amount[d$group == g]
+  out <- rbind(out,data.frame(group=g,total=sum(values),n=length(values)))
+}
+knitr::kable(out)
+```
