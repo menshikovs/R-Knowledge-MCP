@@ -1,0 +1,5 @@
+.local-library/
+artifacts/
+results/
+*.html
+.quarto/

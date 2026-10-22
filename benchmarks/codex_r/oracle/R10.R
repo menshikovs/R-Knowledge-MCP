@@ -1,0 +1,32 @@
+test_that("Quarto configuration and executable chunks", {
+  text <- readLines(file.path(candidate_dir,"report.qmd"),warn=FALSE)
+  yaml_end <- which(text=="---")[2]; expect_false(is.na(yaml_end))
+  cfg <- yaml::yaml.load(paste(text[2:(yaml_end-1)],collapse="\n"))
+  expect_identical(cfg$title,"Sales audit")
+  expect_true(cfg$format$html[["embed-resources"]])
+  expect_false(cfg$execute$echo); expect_false(isTRUE(cfg$execute$error))
+  expect_false(isTRUE(cfg$execute$freeze)); expect_false(isTRUE(cfg$execute$cache))
+  expect_true(any(grepl("^\\x60{3}\\{r",text)))
+})
+test_that("render hidden local totals", {
+  html <- render_report(file.path(candidate_dir,"report.qmd"),c("group,amount","A,7","A,5","B,NA",",3"))
+  expect_match(html,"Group totals",fixed=TRUE)
+  rows <- html_table_rows(html)
+  expect_true(any(grepl("A.*12.*2",rows))); expect_true(any(grepl("Unknown.*3.*1",rows)))
+})
+test_that("replacement input and repeated rendering", {
+  lines <- c("group,amount","Z,2","Z,-2","Q,9")
+  a <- html_table_rows(render_report(file.path(candidate_dir,"report.qmd"),lines))
+  b <- html_table_rows(render_report(file.path(candidate_dir,"report.qmd"),rev_data(lines)))
+  expect_identical(a,b); expect_true(any(grepl("Z.*0.*2",a)))
+  expect_true(any(grepl("Q.*9.*1",a)))
+})
+test_that("empty data renders headers", {
+  html <- render_report(file.path(candidate_dir,"report.qmd"),"group,amount")
+  rows <- html_table_rows(html)
+  expect_true(any(grepl("group.*total.*n",rows,ignore.case=TRUE)))
+  doc <- xml2::read_html(html)
+  assets <- c(xml2::xml_attr(xml2::xml_find_all(doc,"//script[@src]"),"src"),
+              xml2::xml_attr(xml2::xml_find_all(doc,"//link[@rel='stylesheet']"),"href"))
+  expect_false(any(grepl("^https?://",assets)))
+})

@@ -1,0 +1,27 @@
+test_that("query results and null filtering", {
+  db <- accounts_db(); on.exit(unlink(db))
+  y <- subject$lookup_accounts(db,"Alice",10)
+  expect_equal(as.data.frame(y),data.frame(id=c(1L,2L),owner=c("Alice","Alice"),balance=c(10,20)))
+})
+test_that("SQL injection stays literal", {
+  db <- accounts_db(); on.exit(unlink(db))
+  y <- subject$lookup_accounts(db,"x' OR 1=1 --",0)
+  expect_identical(y$id,4L)
+  con <- DBI::dbConnect(RSQLite::SQLite(),db); on.exit(DBI::dbDisconnect(con),add=TRUE)
+  expect_equal(DBI::dbGetQuery(con,"SELECT COUNT(*) AS n FROM accounts")$n,5L)
+})
+test_that("connection cleanup on success and query failure", {
+  db <- accounts_db(); on.exit(unlink(db))
+  connections <- capture_connections(function() subject$lookup_accounts(db,"Alice",0))
+  expect_true(length(connections)>0L)
+  expect_true(all(!vapply(connections,DBI::dbIsValid,logical(1))))
+  con <- DBI::dbConnect(RSQLite::SQLite(),db); DBI::dbExecute(con,"DROP TABLE accounts"); DBI::dbDisconnect(con)
+  connections <- capture_connections(function() try(subject$lookup_accounts(db,"Alice",0),silent=TRUE))
+  expect_true(all(!vapply(connections,DBI::dbIsValid,logical(1))))
+})
+test_that("empty output types and invalid threshold", {
+  db <- accounts_db(); on.exit(unlink(db))
+  y <- subject$lookup_accounts(db,"nobody",0)
+  expect_identical(y$id,integer()); expect_identical(y$owner,character())
+  expect_identical(y$balance,double()); expect_error(subject$lookup_accounts(db,"Alice",NA_real_))
+})

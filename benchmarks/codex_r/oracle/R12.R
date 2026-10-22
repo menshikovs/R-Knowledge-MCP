@@ -1,0 +1,27 @@
+test_that("cleaning and grouped outputs", {
+  p <- csv_file(c("id,group,x,y"," b ,G,1,2","a,G,2,4","a,G,9,100","c,H,3,0","d,H,4,NA"))
+  y <- subject$build_report(p,file.path(tempdir(),"workflow-clean"))
+  expect_identical(y$data$id,c("a","b")); expect_equal(y$data$y,c(4,2))
+  expect_identical(y$summary$group,"G"); expect_identical(y$summary$n,2L)
+  expect_identical(y$summary$mean_y,3)
+})
+test_that("serialized products match returned objects", {
+  y <- workflow_result()
+  expect_s3_class(y$plot,"ggplot")
+  expect_s3_class(readRDS(file.path(dirname(y$report),"plot.rds")),"ggplot")
+  written <- read.csv(file.path(dirname(y$report),"summary.csv"))
+  expect_equal(written$mean_y,y$summary$mean_y)
+  expect_equal(nrow(ggplot2::ggplot_build(y$plot)$data[[1]]),nrow(y$data))
+})
+test_that("empty valid input and schema error", {
+  p <- csv_file("id,group,x,y")
+  y <- subject$build_report(p,file.path(tempdir(),"workflow-empty"))
+  expect_identical(y$data$id,character()); expect_identical(y$summary$n,integer())
+  expect_identical(y$summary$mean_y,double())
+  expect_error(subject$build_report(csv_file("bad,column"),file.path(tempdir(),"workflow-bad")))
+})
+test_that("report renders from its own directory offline", {
+  y <- workflow_result()
+  html <- render_workflow_report(y$report)
+  expect_true(nchar(html)>100); expect_match(html,"mean_y",fixed=TRUE)
+})

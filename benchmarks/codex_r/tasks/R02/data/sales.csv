@@ -1,0 +1,5 @@
+team,amount,active
+A,10,TRUE
+A,-2,TRUE
+B,3,FALSE
+B,NA,TRUE
