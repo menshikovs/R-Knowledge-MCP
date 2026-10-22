@@ -111,15 +111,18 @@ Commands and observed results before the final report commit:
 | `pytest -q -p no:cacheprovider -k 'not stdio_subprocess_initialize_and_error and not test_no_path_extraction'` | Passed; 188 passed, 2 environment-restricted tests deselected |
 | MCP in-process client | Existing tests cover complete tool discovery, prompt discovery/get, tool calls and Streamable HTTP `/mcp` initialization and calls |
 | Python wheel build | `python -m pip wheel . --no-deps --wheel-dir dist` passed; produced `cran_knowledge_mcp-0.1.0-py3-none-any.whl` |
-| Wheel installation and new CLI alias | Added to CI; wheel metadata confirms both old and new console scripts. Local CLI execution from the installed wheel was unavailable because the project venv has no pip and the global interpreter does not have project dependencies installed |
+| Wheel installation and new CLI alias | GitHub Actions on `cc07cb2` passed wheel build/install and installed CLI startup; wheel metadata confirms both old and new console scripts. Local CLI execution from the installed wheel was unavailable because the project venv has no pip and the global interpreter does not have project dependencies installed |
 | Docker | Local Docker Engine unavailable; latest GitHub Actions run on merge commit `4a0c139` completed successfully, including the Docker job |
 | stdio subprocess | Blocked locally by Windows named-pipe permissions; exercised by CI suite |
 | MCP SDK | `mcp>=1.30,<2`; installed local test SDK was 1.30.0 |
 
 The latest observed GitHub Actions run on `main` was
 [successful](https://github.com/menshikovs/R-Knowledge-MCP/actions/runs/39787235698).
-The feature branch's run was also successful. The workflow matrix declares
-Python 3.11, 3.12, 3.13 and 3.14.
+The stabilization branch run on `cc07cb2` also
+[passed](https://github.com/menshikovs/R-Knowledge-MCP/actions/runs/39787934182),
+including the new wheel installation and CLI smoke steps. The feature branch's
+run was also successful. The workflow matrix declares Python 3.11, 3.12, 3.13
+and 3.14.
 
 ## Security and release readiness
 
