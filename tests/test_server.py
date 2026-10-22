@@ -151,6 +151,22 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         assert generated.structuredContent["not_executed"] is True
         assert generated.structuredContent["structured_context"]["delimiter"] == ";"
         assert "UTF-8" in generated.structuredContent["prompt_text"]
+        concise = await session.call_tool(
+            "build_r_prompt",
+            {
+                "request": "Import a CSV file",
+                "task_category": "csv_import",
+                "structured_context": {"delimiter": ";", "encoding": "UTF-8"},
+                "detail_level": "concise",
+                "enhancement_mode": "deterministic",
+            },
+        )
+        assert concise.isError is False
+        assert concise.structuredContent.keys() == generated.structuredContent.keys()
+        assert "UTF-8" in concise.structuredContent["prompt_text"]
+        assert len(concise.structuredContent["prompt_text"]) < len(
+            generated.structuredContent["prompt_text"]
+        )
         composed = await session.call_tool(
             "build_r_prompt",
             {

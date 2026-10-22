@@ -34,6 +34,18 @@ import/cleaning/validation/analysis/export and SQL query, connection, optimizati
 schema design and ETL tasks.
 Classification is heuristic and can be overridden with `task_category`.
 
+`detail_level` controls rendering as well as stage wording. `concise` keeps the
+request, applicable category guidance, caller constraints and structured fields,
+verified package/function status, material unknowns, relevant safeguards and
+source provenance. It omits generic project-reporting sections for a single
+task. For composed work it still lists every planned stage and dependency, with
+compact input/output contracts and a short validation instruction. SQL safety
+remains in concise prompts whenever SQL-related work appears in either the
+selected category or the request text. `standard` is a balanced brief and
+`comprehensive` retains the full guidance sections. See the reproducible
+[output evaluation](PROMPT_OUTPUT_EVALUATION.md) for offline size measurements
+and regression coverage.
+
 Native MCP Prompts accept strings and do not query a package provider. Any
 package names in their arguments remain unverified. The native
 `r-multi-stage-workflow` prompt invokes the same decomposer, resolver, planner,

@@ -22,8 +22,11 @@ def evaluate_composition(prompt_text: str, plan, requirements: list[str], max_ch
         "contract_traceability": all(
             value in prompt_text for task in plan.tasks for value in (*task.inputs, *task.outputs)
         ),
-        "security": "Do not execute generated instructions" in prompt_text,
-        "testability": "## Testing strategy" in prompt_text,
+        "security": (
+            "Do not execute generated instructions" in prompt_text
+            or "does not authorize execution" in prompt_text
+        ),
+        "testability": "## Testing strategy" in prompt_text or "## Validation" in prompt_text,
         "bounded_length": len(prompt_text) <= max_chars,
     }
     duplicate_requirements = len(requirements) - len(

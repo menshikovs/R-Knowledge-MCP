@@ -94,7 +94,7 @@ def _render(
         unknowns=[
             "Confirm required R/package versions and inspect the actual project before implementation."  # noqa: E501  # Long user-facing copy or regex.
         ],
-        implementation_guidance=[requirement],
+        implementation_guidance=[],
         testing_requirements=[
             "Specify and run behavior-focused tests; report only checks actually run."
         ],
