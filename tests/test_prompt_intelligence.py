@@ -29,6 +29,31 @@ class KnowledgeFixture:
                 "verification_status": "verified",
             },
         }
+        for candidate_package in {
+            "readr",
+            "data.table",
+            "vroom",
+            "dplyr",
+            "tidyr",
+            "janitor",
+            "pointblank",
+            "validate",
+            "ggplot2",
+            "DBI",
+            "dbplyr",
+            "odbc",
+            "RPostgres",
+            "RMariaDB",
+            "RSQLite",
+            "duckdb",
+        }:
+            records[candidate_package] = {
+                "repository": "cran",
+                "package_version": "2.1.0",
+                "bioc_version": None,
+                "sources": [{"source_url": CRAN_URL, "checked_at": CHECKED}],
+                "verification_status": "verified",
+            }
         found = records.get(package)
         if repository == "all":
             return {
@@ -224,6 +249,159 @@ def test_validator_flags_instruction_override_and_potential_contradiction():
     codes = {finding["code"] for finding in report["findings"]}
     assert "potential_conflicting_instructions" in codes
     assert "instruction_override_attempt" in codes
+
+
+def test_csv_and_sql_templates_have_stable_ids_and_verified_api_candidates():
+    result = PromptIntelligence(None).list_r_prompt_templates()
+    templates = {item["id"]: item for item in result["templates"]}
+    expected = {
+        "csv-import",
+        "csv-cleaning",
+        "csv-validation",
+        "csv-analysis",
+        "csv-export",
+        "sql-query",
+        "sql-database",
+        "sql-performance",
+        "sql-schema",
+        "csv-sql-pipeline",
+    }
+    assert expected <= templates.keys()
+    assert {"readr", "data.table", "vroom"} <= set(templates["csv-import"]["candidate_packages"])
+    assert {"pointblank", "validate"} <= set(templates["csv-validation"]["candidate_packages"])
+    assert {"DBI", "duckdb"} <= set(templates["sql-performance"]["candidate_packages"])
+    assert templates["csv-import"]["function_references"]
+
+
+async def test_csv_import_inspects_metadata_and_incorporates_verified_package_apis():
+    result = await PromptIntelligence(KnowledgeFixture()).build_r_prompt(
+        "Import a large CSV into R",
+        detail_level="comprehensive",
+        structured_context={
+            "csv_columns": ["customer_id", "amount", "created_at"],
+            "column_types": {"customer_id": "character", "amount": "numeric"},
+            "delimiter": ";",
+            "encoding": "UTF-8",
+            "decimal_separator": ",",
+            "has_header": True,
+            "timezone": "Europe/Riga",
+            "estimated_rows": 2_000_000,
+        },
+    )
+    assert result["task_category"] == "csv_import"
+    assert "readr::read_delim()" in result["prompt_text"]
+    assert "data.table::fread()" in result["prompt_text"]
+    assert "UTF-8" in result["prompt_text"]
+    assert "chunked or streaming" in result["prompt_text"]
+    assert "https://cran.r-project.org/src/contrib/PACKAGES" in result["prompt_text"]
+    assert {"readr", "data.table", "vroom"} <= {record["package"] for record in result["packages"]}
+    assert result["structured_context"]["has_header"] is True
+
+
+async def test_sql_dialect_verifies_matching_driver_and_requires_parameterization():
+    result = await PromptIntelligence(KnowledgeFixture()).build_r_prompt(
+        "Query a PostgreSQL database from R",
+        structured_context={
+            "database_dialect": "postgres",
+            "table_schema": {
+                "table": "measurements",
+                "columns": [
+                    {"name": "sample_id", "type": "text", "nullable": False},
+                    {"name": "value", "type": "double precision", "nullable": True},
+                ],
+                "primary_key": ["sample_id"],
+            },
+            "read_only": True,
+        },
+    )
+    assert result["task_category"] == "database_query"
+    assert result["structured_context"]["database_dialect"] == "postgresql"
+    assert "PostgreSQL" in result["prompt_text"]
+    assert "parameterized" in result["prompt_text"]
+    assert "read-only" in result["prompt_text"]
+    assert "RPostgres::Postgres()" in result["prompt_text"]
+    assert "odbc::odbc()" not in result["prompt_text"]
+    assert "database_query" not in result["prompt_text"]
+
+
+async def test_sql_schema_prompt_has_destructive_operation_safeguards():
+    result = await PromptIntelligence(KnowledgeFixture()).build_r_prompt(
+        "Design a SQLite database schema",
+        structured_context={"database_dialect": "sqlite"},
+    )
+    prompt = result["prompt_text"]
+    assert result["task_category"] == "database_schema_design"
+    for requirement in (
+        "DROP",
+        "TRUNCATE",
+        "unrestricted DELETE",
+        "explicit authorization",
+        "backup",
+        "rollback",
+    ):
+        assert requirement in prompt
+    assert "RSQLite::SQLite()" in prompt
+
+
+async def test_csv_export_covers_formula_injection_without_inventing_schema():
+    result = await PromptIntelligence(KnowledgeFixture()).build_r_prompt(
+        "Export the analysis to CSV",
+        structured_context={"output_path": "data/clean_export.csv"},
+    )
+    assert result["task_category"] == "csv_export"
+    assert "CSV formula injection" in result["prompt_text"]
+    assert "do not assume" in result["prompt_text"].lower()
+    assert result["structured_context"]["output_path"] == "data/clean_export.csv"
+
+
+async def test_requested_package_version_never_gets_current_docs_substituted():
+    result = await PromptIntelligence(KnowledgeFixture()).build_r_prompt(
+        "Use readr::read_csv() to import the file",
+        structured_context={"package_versions": {"readr": "1.0.0"}},
+    )
+    assert result["function_documentation"][0]["status"] == "historical_version_docs_unavailable"
+    assert not any(item.get("status") == "verified" for item in result["function_documentation"])
+    assert any("requested_package_version_differs" in warning for warning in result["warnings"])
+
+
+async def test_structured_context_is_bounded_and_validated():
+    service = PromptIntelligence(None)
+    invalid_values = (
+        {"output_path": "../../outside.csv"},
+        {"database_dialect": "invented"},
+        {"delimiter": ",", "decimal_separator": ","},
+        {"delimiter": ""},
+        {"sample_records": [{"value": "a"}] * 4},
+        {"estimated_rows": -1},
+        {"table_schema": {"table": "x", "columns": [{"name": "a", "nullable": "yes"}]}},
+        {"unrecognized": "field"},
+    )
+    for value in invalid_values:
+        try:
+            await service.build_r_prompt("Import and analyze this CSV", structured_context=value)
+        except KnowledgeError:
+            pass
+        else:
+            raise AssertionError(f"invalid structured context should fail: {value}")
+
+
+async def test_external_enhancement_is_skipped_when_sample_rows_are_supplied():
+    class SpyEnhancer:
+        called = False
+
+        async def enhance(self, prompt_text, target):
+            self.called = True
+            return prompt_text
+
+    enhancer = SpyEnhancer()
+    result = await PromptIntelligence(None, enhancer).build_r_prompt(
+        "Inspect these sample records",
+        enhancement_mode="external",
+        structured_context={"sample_records": [{"name": "sanitized"}]},
+    )
+    assert enhancer.called is False
+    assert result["generation_mode"] == "deterministic"
+    assert any("sample_records" in warning for warning in result["warnings"])
 
 
 async def test_prompt_input_and_release_validation_are_bounded_and_explicit():

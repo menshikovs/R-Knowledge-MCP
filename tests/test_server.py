@@ -53,6 +53,12 @@ PROMPTS = {
     "ggplot2-visualization",
     "r-debugging",
     "r-architecture-audit",
+    "csv-import",
+    "csv-cleaning",
+    "csv-validation",
+    "sql-query",
+    "sql-database",
+    "csv-sql-pipeline",
 }
 
 
@@ -73,6 +79,11 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         )
         assert "Shiny" in prompt.messages[0].content.text
         assert "not authorize" in prompt.messages[0].content.text
+        csv_prompt = await session.get_prompt(
+            "csv-import", {"request": "Import a large CSV with an explicit schema"}
+        )
+        assert "delimiter" in csv_prompt.messages[0].content.text.lower()
+        assert "CSV" in csv_prompt.messages[0].content.text
         result = await session.call_tool("get_dependencies", {"package": "ExamplePkg"})
         assert not result.isError
         assert result.structuredContent["latest_cran_version"] == "2.10-1"
@@ -102,9 +113,16 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         assert visual.structuredContent["analysis"] == "analyze_ggplot_code"
         generated = await session.call_tool(
             "build_r_prompt",
-            {"request": "Create a small R package", "enhancement_mode": "deterministic"},
+            {
+                "request": "Import a CSV file",
+                "task_category": "csv_import",
+                "structured_context": {"delimiter": ";", "encoding": "UTF-8"},
+                "enhancement_mode": "deterministic",
+            },
         )
         assert generated.structuredContent["not_executed"] is True
+        assert generated.structuredContent["structured_context"]["delimiter"] == ";"
+        assert "UTF-8" in generated.structuredContent["prompt_text"]
         templates = await session.call_tool("list_r_prompt_templates", {})
         assert templates.structuredContent["template_count"] >= 18
         checked = await session.call_tool(

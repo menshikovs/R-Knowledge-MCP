@@ -39,6 +39,13 @@ Tool results are capped at 60,000 UTF-8 bytes. Errors are not cached and expired
 data is not served as fresh.
 Prompt inputs/outputs and package grounding concurrency are separately bounded
 by the `PROMPT_*` settings documented in `PROMPT_INTELLIGENCE.md`.
+CSV/SQL `structured_context` is an allow-listed object capped at 8 KiB. Sample
+records are limited to three small rows, treated as untrusted and potentially
+sensitive, checked for common credential patterns, and prevent any injected
+external prompt enhancer from receiving the request. Detection is heuristic;
+callers should omit sensitive samples. Output paths are validated as relative
+text only and are never opened. Database schema is descriptive input only; this
+server makes no database connection and executes no SQL.
 
 ## HTTP deployment boundary
 

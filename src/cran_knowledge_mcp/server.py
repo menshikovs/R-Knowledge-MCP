@@ -79,6 +79,7 @@ def create_server(
             include_sources: bool = True,
             enhancement_mode: Literal["deterministic", "auto", "external"] = "deterministic",
             language: str = "auto",
+            structured_context: dict[str, Any] | None = None,
         ) -> dict[str, Any]:
             """Build an editable, source-grounded R development prompt; never execute it."""
             intelligence = PromptIntelligence(ctx.request_context.lifespan_context)
@@ -96,6 +97,7 @@ def create_server(
                     include_sources,
                     enhancement_mode,
                     language,
+                    structured_context,
                 ),
                 repository="prompt_intelligence",
                 bioc_version=bioconductor_release,
@@ -113,6 +115,7 @@ def create_server(
             bioconductor_release: str | None = None,
             project_context: dict[str, str] | None = None,
             enhancement_mode: Literal["deterministic", "auto", "external"] = "deterministic",
+            structured_context: dict[str, Any] | None = None,
         ) -> dict[str, Any]:
             """Structure an existing prompt while retaining its complete original text and constraints."""  # noqa: E501  # Long user-facing copy or regex.
             intelligence = PromptIntelligence(ctx.request_context.lifespan_context)
@@ -127,6 +130,7 @@ def create_server(
                     bioconductor_release,
                     project_context,
                     enhancement_mode,
+                    structured_context,
                 ),
                 repository="prompt_intelligence",
                 bioc_version=bioconductor_release,

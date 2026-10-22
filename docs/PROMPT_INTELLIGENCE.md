@@ -15,7 +15,7 @@ resulting prompt or any supplied R, shell, package, or repository content.
 | `validate_r_prompt` | Report heuristic structure gaps, possible contradictions, credential-like text, unverified namespaced calls and current-version claims. |
 | `list_r_prompt_templates` | Return stable template IDs, categories, descriptions and unverified candidate packages. |
 | `get_r_prompt_context` | Resolve explicit packages independently of prompt generation and report package, dependency, release and compatibility provenance. |
-| MCP Prompts | Seven user-selected local drafts: `r-package-development`, `shiny-app-development`, `quarto-report`, `bioconductor-analysis`, `ggplot2-visualization`, `r-debugging`, `r-architecture-audit`. |
+| MCP Prompts | Thirteen user-selected local drafts spanning package development, Shiny, Quarto, Bioconductor, visualization, debugging, architecture, CSV and SQL workflows. |
 
 Tool-generated prompt requests can include `target` (`codex`, `chatgpt`,
 `generic`), `detail_level` (`concise`, `standard`, `comprehensive`),
@@ -23,7 +23,9 @@ Tool-generated prompt requests can include `target` (`codex`, `chatgpt`,
 project context, constraints, source inclusion and `enhancement_mode`.
 Categories cover package development, data analysis and transformation,
 statistical modeling, visualization, Shiny, Quarto, Bioconductor, debugging,
-refactoring, architecture review, testing, reproducibility and performance.
+refactoring, architecture review, testing, reproducibility, performance, CSV
+import/cleaning/validation/analysis/export and SQL query, connection, optimization,
+schema design and ETL tasks.
 Classification is heuristic and can be overridden with `task_category`.
 
 Native MCP Prompts are intentionally simpler: they accept only strings and do
@@ -142,3 +144,44 @@ current major and adds protocol revision 2026-07-28 support; migration should be
 separately tested before claiming that revision. The Prompts feature itself is
 registered using standard `prompts/list` and `prompts/get` behavior for the
 installed SDK.
+
+## CSV, SQL and ETL context
+
+Thirteen native Prompts are available, including csv-import, csv-cleaning,
+csv-validation, sql-query, sql-database and csv-sql-pipeline. The ten templates
+are cataloged in PROMPT_TEMPLATES.md. CSV/SQL task categories cover import,
+cleaning, validation, analysis, export, query, database integration,
+optimization, schema design and ETL. An explicit task_category always wins
+over heuristic classification.
+
+The structured_context argument to build_r_prompt and improve_r_prompt accepts
+an allow-listed, bounded JSON object. It may contain CSV column names and
+types, delimiter, encoding, decimal separator, quoting, header, missing-value
+tokens, timezone, up to three sanitized sample records, estimated row/byte
+counts, chunk/page sizes, safe relative output path, SQL dialect, table/column
+schema, keys, indexes, read/write mode, transaction preference, performance
+requirements and caller-supplied package versions. The total object is limited
+to 8 KiB; unknown fields are rejected. Numeric, boolean and nested schema fields
+are type-checked. Absolute paths, parent traversal and unsafe paths are rejected
+and never opened.
+
+Samples are untrusted and may be sensitive: likely credentials cause a
+validation error, and an injected external enhancer is skipped whenever sample
+records are present. No path is read and no database statement is executed.
+Package and function candidates are looked up through the existing CRAN
+provider. A function is labeled verified only when its exact Rd alias was
+retrieved from the matching package source archive. If a supplied package
+version differs from current metadata, current function docs are not substituted
+for the requested historical version.
+
+CSV prompts ask for schema evidence, parsing rules, locale/date-time handling,
+missing values, duplicates and memory considerations. If the schema is absent,
+they request column names/types or a small sanitized sample rather than the
+whole dataset. CSV export guidance covers safe relative paths and formula
+injection for spreadsheet consumers. SQL prompts require or explicitly request
+a dialect, parameterize values, separate identifier quoting, and avoid claims
+of universal SQL portability. They include least-privilege secrets, read-only
+inspection, transaction/rollback planning and safeguards for DROP, TRUNCATE,
+unrestricted DELETE, destructive migrations and bulk overwrites. A dialect
+selects the matching CRAN driver candidate for verification. DuckDB is presented
+as one local analytical option, not a universal default.

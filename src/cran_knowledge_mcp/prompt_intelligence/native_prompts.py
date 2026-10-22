@@ -19,6 +19,12 @@ NATIVE_PROMPTS = (
     ("ggplot2-visualization", "ggplot2-visualization", "Build a ggplot2 visualization prompt"),
     ("r-debugging", "r-debugging", "Build an R debugging prompt"),
     ("r-architecture-audit", "r-architecture-audit", "Build an R architecture review prompt"),
+    ("csv-import", "csv-import", "Build a safe CSV import prompt"),
+    ("csv-cleaning", "csv-cleaning", "Build a CSV cleaning prompt"),
+    ("csv-validation", "csv-validation", "Build a CSV validation prompt"),
+    ("sql-query", "sql-query", "Build a dialect-aware SQL query prompt"),
+    ("sql-database", "sql-database", "Build an R database integration prompt"),
+    ("csv-sql-pipeline", "csv-sql-pipeline", "Build a CSV to SQL pipeline prompt"),
 )
 
 

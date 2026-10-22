@@ -22,6 +22,16 @@ CATEGORIES = {
     "testing",
     "reproducibility",
     "performance_optimization",
+    "csv_import",
+    "data_cleaning",
+    "data_validation",
+    "csv_analysis",
+    "csv_export",
+    "database_query",
+    "database_integration",
+    "sql_optimization",
+    "database_schema_design",
+    "etl_pipeline",
 }
 
 CATEGORY_PATTERNS = [
@@ -95,6 +105,19 @@ PACKAGE_ALIASES = {
         "targets",
         "BiocParallel",
         "edgeR",
+        "readr",
+        "data.table",
+        "vroom",
+        "janitor",
+        "pointblank",
+        "validate",
+        "DBI",
+        "dbplyr",
+        "odbc",
+        "RPostgres",
+        "RMariaDB",
+        "RSQLite",
+        "duckdb",
     )
 }
 
@@ -108,7 +131,70 @@ PACKAGE_SUGGESTIONS = {
     "data_transformation": ["dplyr", "tidyr"],
     "performance_optimization": ["bench", "profvis"],
     "reproducibility": ["renv"],
+    "csv_import": ["readr", "data.table", "vroom"],
+    "data_cleaning": ["dplyr", "tidyr", "janitor"],
+    "data_validation": ["pointblank", "validate"],
+    "csv_analysis": ["readr", "dplyr", "ggplot2"],
+    "csv_export": ["readr", "data.table"],
+    "database_query": ["DBI", "dbplyr"],
+    "database_integration": ["DBI", "odbc"],
+    "sql_optimization": ["DBI", "dbplyr", "duckdb"],
+    "database_schema_design": ["DBI"],
+    "etl_pipeline": ["readr", "DBI", "duckdb"],
 }
+
+DOMAIN_CATEGORY_PATTERNS = (
+    (
+        "etl_pipeline",
+        r"\b(csv|tsv|delimited)\b.{0,80}\b(sql|database|duckdb|sqlite|postgres|mysql|mariadb)\b|"
+        r"\b(etl|elt|pipeline)\b.{0,80}\b(csv|database|sql)\b",
+    ),
+    (
+        "sql_optimization",
+        r"\b(sql|query|database)\b.{0,50}\b(optim|performance|slow|explain|query plan|index)\w*\b|"
+        r"\b(optim|performance|slow|explain)\w*\b.{0,50}\b(sql|query|database)\b",
+    ),
+    (
+        "database_schema_design",
+        r"\b(database|sql|table)\b.{0,50}\b(schema|normaliz|primary key|foreign key|migration)\w*\b|"  # noqa: E501  # Intentional user-facing prompt text.
+        r"\b(schema|normaliz|primary key|foreign key)\w*\b.{0,50}\b(database|sql|table)\b",
+    ),
+    (
+        "data_validation",
+        r"\b(csv|data|dataset|table)\b.{0,50}\b(validat|quality|integrity|constraint)\w*\b|"
+        r"\b(validat|quality|integrity)\w*\b.{0,50}\b(csv|data|dataset|table)\b",
+    ),
+    (
+        "data_cleaning",
+        r"\b(csv|data|dataset|table)\b.{0,50}\b(clean|cleaning|deduplicat|missing value)\w*\b|"
+        r"\b(clean|cleaning|deduplicat)\w*\b.{0,50}\b(csv|data|dataset|table)\b",
+    ),
+    (
+        "csv_import",
+        r"\b(import|read|ingest)\w*\b.{0,50}\b(csv|tsv|delimited)\b|"
+        r"\b(csv|tsv|delimited)\b.{0,50}\b(import|read|ingest)\w*\b",
+    ),
+    (
+        "csv_export",
+        r"\b(export|write|save)\w*\b.{0,50}\b(csv|tsv|spreadsheet)\b|"
+        r"\b(csv|tsv)\b.{0,50}\b(export|write|save)\w*\b",
+    ),
+    (
+        "database_integration",
+        r"\b(connect|connection|integrat|transaction)\w*\b.{0,50}\b(database|postgres|sqlite|duckdb|mysql|mariadb|sql server)\b|"  # noqa: E501  # Intentional user-facing prompt text.
+        r"\b(database|postgres|sqlite|duckdb|mysql|mariadb|sql server)\b.{0,50}\b(connect|connection|integrat|transaction)\w*\b",  # noqa: E501  # Intentional user-facing prompt text.
+    ),
+    (
+        "database_query",
+        r"\b(sql|query|join|cte|window function|aggregation)\w*\b.{0,70}\b(database|postgres|sqlite|duckdb|mysql|mariadb|sql server|table)\b|"  # noqa: E501  # Intentional user-facing prompt text.
+        r"\b(database|postgres|sqlite|duckdb|mysql|mariadb|sql server)\b.{0,70}\b(sql|query|join)\w*\b",  # noqa: E501  # Intentional user-facing prompt text.
+    ),
+    (
+        "csv_analysis",
+        r"\b(analy[sz]|summari[sz]|explor|visuali[sz])\w*\b.{0,60}\b(csv|tsv|data|dataset)\b|"
+        r"\b(csv|tsv|data|dataset)\b.{0,60}\b(analy[sz]|summari[sz]|explor)\w*\b",
+    ),
+)
 
 NAMESPACE_PATTERN = re.compile(
     r"(?<![A-Za-z0-9._])([A-Za-z][A-Za-z0-9.]*)\s*::\s*([A-Za-z.][A-Za-z0-9._]*)"
@@ -136,6 +222,9 @@ def classify_request(request: str, explicit_category: str | None = None) -> str:
             )
         return normalized
     folded = request.casefold()
+    for category, pattern in DOMAIN_CATEGORY_PATTERNS:
+        if re.search(pattern, folded, re.IGNORECASE):
+            return category
     for category, pattern in CATEGORY_PATTERNS:
         if re.search(pattern, folded, re.IGNORECASE):
             return category

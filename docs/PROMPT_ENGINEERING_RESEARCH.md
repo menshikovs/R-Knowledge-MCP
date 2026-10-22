@@ -8,7 +8,7 @@ problems and should not be combined behind a misleading “optimize” operation
 
 The [MCP Prompts specification](https://modelcontextprotocol.io/specification/2026-07-28/server/prompts)
 defines prompts as user-controlled templates discoverable with `prompts/list`
-and fetched with `prompts/get`. This project registers seven standard Prompts
+and fetched with `prompts/get`. This project registers thirteen standard Prompts
 in its SDK FastMCP server and verifies listing/fetching over local in-memory and
 Streamable HTTP sessions. Prompts are static local drafts. They do not inspect
 project files or call package APIs.

@@ -88,6 +88,46 @@ CATEGORY_REQUIREMENTS = {
         "Measure a representative baseline, identify the bottleneck and show equivalent outputs after optimization.",  # noqa: E501  # Long user-facing copy or regex.
         "Измерьте репрезентативный baseline, найдите узкое место и подтвердите эквивалентность результата.",  # noqa: E501  # Long user-facing copy or regex.
     ),
+    "csv_import": (
+        "Inspect a small sanitized sample or file metadata first. State delimiter, encoding, decimal mark, quoting, header, missing-value rules and date/time zone. Treat inferred column types as provisional; request explicit schema evidence when absent. For large files, compare memory and chunked readers before choosing one.",  # noqa: E501  # Long user-facing copy or regex.
+        "Сначала изучите небольшой обезличенный пример или метаданные файла. Уточните разделитель, кодировку, десятичный знак, кавычки, заголовок, NA и часовой пояс. Считайте выведенные типы предварительными; при отсутствии схемы запросите её. Для крупных файлов сравните потребление памяти и чтение частями.",  # noqa: E501  # Long user-facing copy or regex.
+    ),
+    "data_cleaning": (
+        "Inspect names, types, missingness and duplicate candidates before changing data. State each cleaning rule, preserve the input, and report changed or removed rows; do not declare duplicates without a key or user rule.",  # noqa: E501  # Long user-facing copy or regex.
+        "Перед очисткой изучите названия и типы колонок, пропуски и возможные дубли. Укажите каждое правило, сохраните исходные данные и сообщите об изменённых или удалённых строках; не объявляйте строки дублями без ключа или заданного правила.",  # noqa: E501  # Long user-facing copy or regex.
+    ),
+    "data_validation": (
+        "Define measurable checks for columns, types, ranges, allowed values, missingness and key uniqueness. Report failures separately; validation must not silently repair rows or write data.",  # noqa: E501  # Long user-facing copy or regex.
+        "Задайте измеримые проверки колонок, типов, диапазонов, допустимых значений, пропусков и уникальности ключей. Отдельно сообщите о нарушениях; проверка не должна молча исправлять строки или записывать данные.",  # noqa: E501  # Long user-facing copy or regex.
+    ),
+    "csv_analysis": (
+        "Inspect the supplied schema and parsing assumptions first. Make locale, date/time zone, missing-value and duplicate handling explicit. If context is absent, request column names/types or a small sanitized sample, not the full dataset.",  # noqa: E501  # Long user-facing copy or regex.
+        "Сначала изучите схему и допущения парсинга. Явно укажите локаль, часовой пояс, обработку пропусков и дублей. Если контекста нет, запросите названия и типы колонок или небольшой обезличенный пример, а не весь набор данных.",  # noqa: E501  # Long user-facing copy or regex.
+    ),
+    "csv_export": (
+        "Do not assume a schema; use only supplied definitions or inspect/ask for column names and types before transforming. Specify delimiter, encoding, decimal mark, quoting, header, missing values and time zone. Use a safe project-relative path. For spreadsheets, assess CSV formula injection and neutralize untrusted cells without altering canonical data.",  # noqa: E501  # Long user-facing copy or regex.
+        "Используйте только переданную схему; если её нет, изучите её или запросите названия и типы колонок. Укажите разделитель, кодировку, десятичный знак, кавычки, заголовок, NA и часовой пояс. Используйте безопасный относительный путь. Для табличных приложений оцените CSV formula injection и обезвреживайте недоверенные ячейки, не меняя исходные данные.",  # noqa: E501  # Long user-facing copy or regex.
+    ),
+    "database_query": (
+        "Require the SQL dialect, schema, keys and result shape. Never call SQL portable across engines without checking syntax. Parameterize values, validate and quote identifiers separately, and account for NULL, types, time zones, joins, pagination and transactions.",  # noqa: E501  # Long user-facing copy or regex.
+        "Уточните SQL-диалект, схему, ключи и форму результата. Не называйте SQL переносимым между СУБД без проверки синтаксиса. Параметризуйте значения, отдельно проверяйте и экранируйте идентификаторы; учитывайте NULL, типы, часовые пояса, JOIN, пагинацию и транзакции.",  # noqa: E501  # Long user-facing copy or regex.
+    ),
+    "database_integration": (
+        "Verify the CRAN driver API for the named dialect. Keep least-privilege credentials in environment-based secret configuration; never embed them. Prefer read-only access for inspection, release resources reliably, and use explicit transactions for writes.",  # noqa: E501  # Long user-facing copy or regex.
+        "Проверьте API CRAN-драйвера для выбранного диалекта. Храните учётные данные с минимальными правами в переменных среды или secret manager, не встраивайте их в код. Для осмотра предпочитайте read-only доступ, освобождайте ресурсы и явно управляйте транзакциями записи.",  # noqa: E501  # Long user-facing copy or regex.
+    ),
+    "sql_optimization": (
+        "Measure the target engine's query plan and workload before tuning. Check selectivity, indexes and data transfer; neither adding an index nor choosing DuckDB is universally best. Preserve semantics and compare results after each change.",  # noqa: E501  # Long user-facing copy or regex.
+        "Перед оптимизацией измерьте план запроса и нагрузку выбранной СУБД. Проверьте селективность, индексы и передачу данных; индекс или DuckDB не являются универсально лучшим решением. Сохраняйте семантику и сравнивайте результат после каждого изменения.",  # noqa: E501  # Long user-facing copy or regex.
+    ),
+    "database_schema_design": (
+        "Use only supplied table and column definitions. State keys, NULL/uniqueness constraints, type mappings and index rationale. Inspect the current schema first; DROP, TRUNCATE, unrestricted DELETE, migrations and bulk overwrite require explicit authorization, backup and rollback plan.",  # noqa: E501  # Long user-facing copy or regex.
+        "Используйте только переданные определения таблиц и колонок. Укажите ключи, ограничения NULL и уникальности, соответствие типов и обоснование индексов. Сначала изучите текущую схему; DROP, TRUNCATE, неограниченный DELETE, миграции и массовая перезапись требуют явного разрешения, резервной копии и плана отката.",  # noqa: E501  # Long user-facing copy or regex.
+    ),
+    "etl_pipeline": (
+        "Plan schema inspection, validation, explicit CSV-to-SQL type mapping, idempotent duplicate handling, justified chunking, error records, transactions/rollback, row-count and integrity checks. Never execute database commands from this prompt. DuckDB is an option for local analytics, not a universal default.",  # noqa: E501  # Long user-facing copy or regex.
+        "Спланируйте осмотр схемы, валидацию, явное соответствие типов CSV и SQL, идемпотентную обработку дублей, обоснованную пакетную загрузку, журнал ошибок, транзакции и откат, сверку строк и целостности. Не выполняйте SQL из этого промпта. DuckDB подходит для части локальной аналитики, но не является выбором по умолчанию.",  # noqa: E501  # Long user-facing copy or regex.
+    ),
 }
 
 STAGES = {

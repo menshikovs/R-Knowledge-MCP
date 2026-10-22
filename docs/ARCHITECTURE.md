@@ -40,6 +40,16 @@ task success or prove that generated work is correct. See
 [`PROMPT_INTELLIGENCE.md`](PROMPT_INTELLIGENCE.md) and
 [`PROMPT_ENGINEERING_RESEARCH.md`](PROMPT_ENGINEERING_RESEARCH.md).
 
+CSV/SQL templates accept bounded `structured_context` JSON for caller-observed
+CSV columns/types, delimiter/encoding/sample rows, database dialect and schema,
+indexes, estimated size, access mode, package versions and performance needs.
+The context is validated and preserved as untrusted caller input. No paths are
+opened and no database is contacted. A dialect can select its matching CRAN
+driver candidate; package availability and function aliases are checked through
+the existing provider before an API is labeled verified. Current docs are not
+substituted for a caller-requested historical package version. A sample is
+limited to three sanitized records and is never sent to an injected enhancer.
+
 ## Provider contract
 
 `PackageRepository` is a structural Protocol with repository identity, optional
