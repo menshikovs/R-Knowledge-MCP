@@ -1066,9 +1066,7 @@ class PromptIntelligence:
                                 "function": function,
                                 "repository": identity["repository"],
                                 "status": error_code or "source_unavailable",
-                                "verification_status": result.get(
-                                    "verification_status", "failed"
-                                ),
+                                "verification_status": result.get("verification_status", "failed"),
                                 "source_url": result.get("source_url")
                                 or (error.get("source_url") if isinstance(error, dict) else None),
                                 "checked_at": result.get("checked_at"),

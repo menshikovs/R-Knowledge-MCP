@@ -52,8 +52,7 @@ async def test_workflow_returns_structured_error_when_official_docs_are_unavaila
     assert result["verification_status"] == "partial"
     assert len(result["errors"]) == 3
     assert all(
-        error["error"]["error"]["code"] == "source_unavailable"
-        for error in result["errors"]
+        error["error"]["error"]["code"] == "source_unavailable" for error in result["errors"]
     )
     assert all(
         error["error"]["error"]["source_url"].startswith("https://docs.invalid/")
