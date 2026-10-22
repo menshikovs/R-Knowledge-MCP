@@ -15,10 +15,10 @@ MAX_PAGE = 2 << 20
 MAX_TEXT = 8 << 10
 DOCS = {
     "shiny": {
-        "reactivity": "https://shiny.posit.co/r/articles/build/reactivity-overview",
+        "reactivity": "https://shiny.posit.co/r/articles/build/reactivity-overview/",
         "isolation": "https://shiny.posit.co/r/articles/build/isolation/",
-        "modules": "https://shiny.posit.co/r/articles/improve/modules",
-        "async": "https://shiny.posit.co/r/articles/improve/nonblocking",
+        "modules": "https://shiny.posit.co/r/articles/improve/modules/",
+        "async": "https://shiny.posit.co/r/articles/improve/nonblocking/",
         "basics": "https://shiny.posit.co/r/articles/start/basics/",
     },
     "positron": {

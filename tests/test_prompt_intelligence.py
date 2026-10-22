@@ -85,6 +85,9 @@ class KnowledgeFixture:
             "package_version": "2.1.0",
             "format": "text/x-r-doc (raw Rd; macros not evaluated)",
             "sources": [{"source_url": CRAN_URL, "checked_at": CHECKED}],
+            "source_url": CRAN_URL,
+            "checked_at": CHECKED,
+            "verification_status": "verified",
         }
 
     async def get_bioconductor_version(self, r_version):
