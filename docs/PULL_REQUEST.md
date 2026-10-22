@@ -1,48 +1,55 @@
-# Implement initial source-attributed CRAN Knowledge MCP server
+# Add independent CRAN and Bioconductor repository providers
 
-Adds a working read-only MCP server with all five tools: `search_packages`,
-`get_package_info`, `get_dependencies`, `get_function_docs`, and
-`check_package_version`. Supports stdio and stateless Streamable HTTP using the
-official SDK FastMCP. The initially empty repository has an MIT-only `main`
-baseline; implementation changes are isolated in `feat/initial-cran-knowledge-mcp`.
+Extends the working CRAN MCP server while preserving default CRAN calls and the
+existing version checker. This is a stacked change based on
+`feat/initial-cran-knowledge-mcp`; main still has only the MIT baseline.
 
-Versions and dependencies come from the canonical CRAN `src/contrib/PACKAGES`
-index. Metadata and raw Rd documentation come from the exact indexed source
-archive, with package/version identity and available index MD5 checks. CRAN's
-R-specific Recommended entries with `Path` overrides cannot overwrite canonical
-root records. All results retain source URLs and original UTC verification times.
-Client-supplied installed versions remain explicitly unverified and separate.
+## Behavior
 
-Async httpx downloads use fixed HTTPS routes, no redirects/environment proxies,
-bounded downloads, deadlines and a bounded TTL/LRU cache shared across HTTP
-requests. Archive parsing is bounded and in memory, with no filesystem
-extraction, R/package execution or Rd macro evaluation. Search and documentation
-support pagination. Source failures produce explicit error objects.
+- Independent CranProvider and BioconductorProvider implement PackageRepository.
+  Shared source/document and bounded HTTP layers remain repository-neutral.
+- Official config.yaml dynamically resolves release/stable, devel, history and R
+  mappings. No current release is coded. Supports software, annotation and
+  experiment data PACKAGES with exact numeric release/package identities.
+- Search/info/dependencies/docs support cran, bioconductor and all. Combined
+  responses retain independent names and partial failures. Missing data cannot
+  fall back to another release.
+- Adds get_bioconductor_version, check_package_compatibility and
+  get_package_vignettes. check_package_version remains CRAN-specific.
+- Bioconductor dependencies resolve against selected-release indices and current
+  CRAN; CRAN can opt in explicitly. Verbatim DCF constraints are retained.
+- Application responses include identity, versions, URLs, UTC checks and status.
+  Unknown R, devel and historical/current CRAN mixing carry explicit warnings.
 
-Includes Docker with an unprivileged runtime, CLI, pyproject.toml, MIT license,
-AGENTS.md, Codex connection instructions, and GitHub Actions for Python 3.11–3.14
-and Docker. Current official SDK and source documentation were reviewed before
-implementation. The maintained `mcp>=1.30,<2` line preserves the requested FastMCP
-API; SDK 2 renamed it to MCPServer.
+## Safety
+
+Independent fixed HTTPS routes, no redirects/proxies/arbitrary URLs, bounded
+cache/download/archive/output. Safe YAML loading. No R, package code, Rd macro
+or vignette execution. Vignette links are actually listed on a version-checked
+package page and restricted to the pinned official host/package/release path.
 
 ## Validation
 
-- 51 tests passed on Windows / Python 3.14.
-- 51 tests passed in the Linux Docker image / Python 3.11.
-- Ruff lint and format checks passed.
-- Docker image build and container CLI smoke check passed.
-- Live CRAN smoke check passed for all five tools against dplyr, including actual
-  filter Rd documentation and version/source provenance. No version was assumed.
+- 91 offline tests passed on Windows/Python 3.14 and Docker Linux/Python 3.11.
+- Covers DESeq2/ggplot2, both dependency directions, categories, release/devel/
+  history, R patch constraints, source failures, absent packages, unsafe YAML,
+  SSRF, vignette version mismatch, paging and MCP protocol calls.
+- Ruff lint/format, Docker build and container CLI checks passed.
+- Live official-source checks passed for search, metadata, dependencies, raw Rd,
+  vignette listings, R mapping, direct compatibility and release/devel discovery.
+- Historical DESeq2 metadata was checked against the previous official release,
+  selected dynamically without an assumed release number.
 
-## Remaining limitations
+## Limits and follow-up
 
-- Search covers package names/titles, not descriptions or full manuals.
-- Documentation is raw paginated Rd matched by literal aliases. Conditional
-  content and custom macros are not rendered or evaluated.
-- renv.lock, historical versions and local installed-package inspection are
-  deferred. Follow-up tasks and acceptance criteria are in [ROADMAP.md](ROADMAP.md).
-- Oversized artifacts and index/archive release races produce explicit errors.
-- No hosted endpoint, deployment, paid services, authentication or per-client
-  rate limiting. Public hosting needs ingress/resource policy review.
+Compatibility covers R/release and direct required dependency metadata; it is
+not a transitive solver or installation/platform test. Historical Bioconductor
+uses current CRAN candidates with a warning. A separate follow-up with acceptance
+criteria is in [issues/reproducible-compatibility.md](issues/reproducible-compatibility.md).
 
-No deployment, package publication or merge is part of this change.
+Rd remains raw with literal aliases; vignette content is not fetched or run.
+Oversized data archives fail explicitly. History requires three retrievable
+indices; there are no fake metadata or compatibility results.
+
+README, AGENTS.md, architecture docs and roadmap are updated. No deployment,
+paid service, publication or merge is part of this change.

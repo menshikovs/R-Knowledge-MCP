@@ -55,6 +55,33 @@ class CatalogParser(HTMLParser):
             self.rows[self.cells[0]] = self.cells[1]
 
 
+class PackagePageParser(CatalogParser):
+    """Collect published links and Version cells without evaluating HTML."""
+
+    def __init__(self):
+        super().__init__()
+        self.links: list[tuple[str, str]] = []
+        self._href: str | None = None
+        self._label: list[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        super().handle_starttag(tag, attrs)
+        if tag == "a":
+            self._href = dict(attrs).get("href")
+            self._label = []
+
+    def handle_data(self, data):
+        super().handle_data(data)
+        if self._href is not None:
+            self._label.append(data)
+
+    def handle_endtag(self, tag):
+        super().handle_endtag(tag)
+        if tag == "a" and self._href is not None:
+            self.links.append((self._href, " ".join("".join(self._label).split())))
+            self._href = None
+
+
 def source_files(body: bytes, package: str) -> dict[str, bytes]:
     # Bound gzip expansion before tar parsing (including headers and padding).
     try:

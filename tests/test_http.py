@@ -46,7 +46,7 @@ async def test_timeout():
 )
 async def test_route_allowlist(path):
     async with httpx.AsyncClient() as client:
-        with pytest.raises(KnowledgeError, match="fixed CRAN"):
+        with pytest.raises(KnowledgeError, match="fixed repository"):
             await CranHTTP(client).fetch(path)
 
 

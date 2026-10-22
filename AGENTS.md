@@ -2,8 +2,19 @@
 
 - Use Python 3.11+ and the official `mcp` SDK. This release deliberately pins
   `mcp>=1.30,<2` for FastMCP; SDK 2 renamed it to MCPServer. Migrate explicitly.
-- Keep transport registration in `server.py`, domain operations in `service.py`,
-  HTTP policy in `http.py`, data-only parsing in `parsers.py`.
+- Keep MCP registration in `server.py`, routing/envelopes in `service.py`,
+  repository behavior in `providers/`, release discovery in `releases.py`,
+  HTTP policy in `http.py`, and data-only parsing in `parsers.py`.
+- `PackageRepository` is the provider contract. Keep CranProvider and
+  BioconductorProvider independent; share repository-neutral source logic only.
+- Discover Bioconductor release/devel and R mappings from official config.yaml.
+  Never hard-code current releases or substitute release for unavailable history.
+- Distinguish package version, repository, category, Bioconductor release/channel,
+  client R version, and verification status. Combined responses expose partial
+  failures and retain separate identities for duplicate package names.
+- Compatibility covers only stated metadata checks; never claim tested
+  installation or a solved transitive graph. Warn about unknown R, devel,
+  historical/current CRAN mismatches and unresolved dependency origins.
 - Verify upstream documentation before changing SDK or CRAN source contracts.
 - Never invent metadata, versions, documentation, or successful fallback results.
   Preserve source URLs and actual UTC check times, including cache timestamps.

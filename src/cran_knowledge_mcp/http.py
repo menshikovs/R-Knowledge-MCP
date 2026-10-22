@@ -1,7 +1,8 @@
-"""Bounded async downloads from fixed, first-party CRAN routes only."""
+"""Bounded async transport with independent fixed repository route policies."""
 
 import asyncio
 import re
+from abc import ABC, abstractmethod
 from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -23,7 +24,7 @@ ARCHIVE_ROUTE = re.compile(
 
 def package_name(value: str) -> str:
     if not PACKAGE.fullmatch(value):
-        raise KnowledgeError("invalid_input", "Invalid CRAN package name")
+        raise KnowledgeError("invalid_input", "Invalid R package name")
     return value
 
 
@@ -43,11 +44,21 @@ class Artifact:
     checked_at: str
 
     def provenance(self) -> dict:
-        return {"source_url": self.source_url, "checked_at": self.checked_at}
+        return {
+            "source_url": self.source_url,
+            "checked_at": self.checked_at,
+            "verification_status": "verified",
+        }
 
 
-class CranHTTP:
+class RepositoryHTTP(ABC):
     """Process-local TTL/LRU cache. Errors are never cached or replaced by stale data."""
+
+    base_url: str
+
+    @abstractmethod
+    def allowed_path(self, path: str) -> bool:
+        """Validate a relative route before constructing any URL."""
 
     def __init__(self, client: httpx.AsyncClient, ttl: float = 300, cache_bytes: int = 64 << 20):
         self.client = client
@@ -59,10 +70,12 @@ class CranHTTP:
         self._lock = asyncio.Lock()
 
     async def fetch(self, path: str) -> Artifact:
-        if path not in (INDEX, CATALOG) and not ARCHIVE_ROUTE.fullmatch(path):
-            raise KnowledgeError("blocked_url", "Only fixed CRAN source routes are allowed")
-        url = BASE + path
+        if not self.allowed_path(path):
+            raise KnowledgeError("blocked_url", "Only fixed repository source routes are allowed")
+        url = self.base_url + path
         limit = (25 if path.endswith(".tar.gz") else 16) << 20
+        if path == "/config.yaml":
+            limit = 1 << 20
         async with self._lock:
             now = monotonic()
             if path in self._cache:
@@ -84,7 +97,9 @@ class CranHTTP:
                             code = (
                                 "not_found" if response.status_code == 404 else "source_unavailable"
                             )
-                            raise KnowledgeError(code, f"CRAN HTTP {response.status_code}", url)
+                            raise KnowledgeError(
+                                code, f"Repository HTTP {response.status_code}", url
+                            )
                         if response.headers.get("content-encoding", "identity") != "identity":
                             raise KnowledgeError(
                                 "invalid_source", "Unexpected HTTP compression", url
@@ -94,11 +109,11 @@ class CranHTTP:
                             chunks.extend(chunk)
                             if len(chunks) > limit:
                                 raise KnowledgeError(
-                                    "source_too_large", "CRAN download exceeds limit", url
+                                    "source_too_large", "Repository download exceeds limit", url
                                 )
             except (httpx.HTTPError, TimeoutError) as exc:
                 raise KnowledgeError(
-                    "source_unavailable", "CRAN request failed or timed out", url
+                    "source_unavailable", "Repository request failed or timed out", url
                 ) from exc
             item = Artifact(bytes(chunks), url, datetime.now(UTC).isoformat())
             if len(item.body) <= self.cache_bytes:
@@ -109,6 +124,31 @@ class CranHTTP:
                 self._cache[path] = (monotonic() + self.ttl, item)
                 self._bytes += len(item.body)
             return item
+
+
+class CranHTTP(RepositoryHTTP):
+    base_url = BASE
+
+    def allowed_path(self, path: str) -> bool:
+        return (
+            path in (INDEX, CATALOG)
+            or bool(ARCHIVE_ROUTE.fullmatch(path))
+            or bool(re.fullmatch(r"/web/packages/[A-Za-z][A-Za-z0-9.]{0,99}/index\.html", path))
+        )
+
+
+class BioconductorHTTP(RepositoryHTTP):
+    base_url = "https://bioconductor.org"
+
+    def allowed_path(self, path: str) -> bool:
+        prefix = r"/packages/[0-9]+\.[0-9]+/(?:bioc|data/annotation|data/experiment)"
+        return path == "/config.yaml" or bool(
+            re.fullmatch(
+                prefix + r"/(?:src/contrib/(?:PACKAGES|[A-Za-z][A-Za-z0-9.]{0,99}_"
+                r"[0-9]+(?:[.-][0-9]+)*\.tar\.gz)|html/[A-Za-z][A-Za-z0-9.]{0,99}\.html)",
+                path,
+            )
+        )
 
 
 def make_client() -> httpx.AsyncClient:

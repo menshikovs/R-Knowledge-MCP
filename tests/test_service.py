@@ -8,9 +8,12 @@ from cran_knowledge_mcp.service import bounded
 async def test_all_tools_and_provenance(service):
     api, _, calls = service
     search = await api.search_packages("synthetic data")
-    assert search["results"] == [
-        {"package": "ExamplePkg", "title": "Synthetic Data Tools", "latest_cran_version": "2.10-1"}
-    ]
+    assert len(search["results"]) == 1
+    assert {k: search["results"][0][k] for k in ("package", "title", "latest_cran_version")} == {
+        "package": "ExamplePkg",
+        "title": "Synthetic Data Tools",
+        "latest_cran_version": "2.10-1",
+    }
     info = await api.get_package_info("ExamplePkg")
     assert info["authors"] == "Test Author"
     assert info["license"] == "MIT"

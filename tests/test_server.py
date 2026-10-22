@@ -16,6 +16,9 @@ TOOLS = {
     "get_dependencies",
     "get_function_docs",
     "check_package_version",
+    "get_bioconductor_version",
+    "check_package_compatibility",
+    "get_package_vignettes",
 }
 
 
