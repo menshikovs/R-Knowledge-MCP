@@ -19,6 +19,9 @@ TOOLS = {
     "get_bioconductor_version",
     "check_package_compatibility",
     "get_package_vignettes",
+    "get_package_agent_guidance",
+    "get_context7_docs",
+    "get_package_knowledge",
 }
 
 
@@ -37,6 +40,12 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         assert result.structuredContent["latest_cran_version"] == "2.10-1"
         result = await session.call_tool("get_package_info", {"package": "../bad"})
         assert result.structuredContent["error"]["code"] == "invalid_input"
+        knowledge = await session.call_tool("get_package_knowledge", {"package": "ExamplePkg"})
+        assert knowledge.structuredContent["verification_status"] == "partial"
+        assert (
+            knowledge.structuredContent["sections"]["agent_guidance"]["status"] == "not_requested"
+        )
+        assert knowledge.structuredContent["sections"]["package_info"]["source_url"]
 
 
 async def test_streamable_http_initialization_and_tool_call(service, monkeypatch):

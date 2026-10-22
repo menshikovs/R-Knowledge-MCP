@@ -86,10 +86,60 @@ Version cell matches PACKAGES. Links must stay within the pinned package path on
 the official host. The server reports `listed_by_official_package_page` and
 `content_fetched=false`; it does not claim to have downloaded or run linked docs.
 
+## GitHub AGENTS.md provider
+
+`GitHubAgentsProvider` receives only `DESCRIPTION` URL values after the selected
+CRAN/Bioconductor provider checks the source archive against its index. It
+accepts one unambiguous HTTPS `github.com/{owner}/{repo}` reference. The fixed
+`api.github.com` transport verifies the canonical repository name, resolves an
+explicit branch/tag/SHA through the commits endpoint, and traverses the
+recursive tree for that immutable commit SHA. The GitHub tree API exposes a
+`truncated` marker; truncation is an explicit incomplete-source error, never a
+verified absence. AGENTS.md blobs are fetched by validated blob SHA, never by a
+URL embedded in repository data. Redirects are rejected.
+
+The response includes each path, its directory subtree scope, exact commit SHA,
+GitHub source URL and per-file check time. A complete tree with no matching
+files is `verified_absent`. The provider does not guess a tag from the package
+version: clients select a branch, tag or SHA, and the resolved SHA is returned.
+Tree JSON is capped at 4 MiB, individual files at 32 KiB, total file text at
+96 KiB, and count at 24. Files are UTF-8 data; no shell, R or external command
+runs. Content is marked `untrusted_reference_only` and cannot override system
+instructions.
+
+## Context7 provider
+
+`Context7Provider` is disabled when `CONTEXT7_API_KEY` is unset. Its only routes
+are the documented library-search and context endpoints on `context7.com`; the
+key is sent in a bearer header, never to the caller or URL. The provider starts
+from verified package `DESCRIPTION` URLs, searches by package name and official
+GitHub repository hint, and requires exactly one returned Context7 library ID
+matching that repository before retrieving docs. This prevents a same-name
+library from being silently substituted. It pins the R package version only
+when Context7 explicitly lists an exact match; otherwise it labels docs
+unpinned.
+
+Questions are bounded and common credential patterns are redacted before they
+leave the server. Context7 responses are capped at 4 MiB and 48 KiB of returned
+fragment text. Successful documentation results are cached for six hours;
+errors, including HTTP 429 and Retry-After, are surfaced. Each fragment
+identifies its library, source URL, package/repository identity, version scope
+and check time. Context7 remains a secondary indexed source, not an authority
+above official package archives or docs.
+
+`get_package_knowledge` combines package info and dependencies with optional
+AGENTS.md and Context7 sections. Every section preserves its own errors and
+provenance. Omitting a revision or question is explicitly `not_requested`, not
+evidence that the respective source has no content.
+
 ## Validation
 
-Offline tests use synthetic HTTP responses, including real package names with
-deliberately synthetic versions. They cover CRAN regressions, release/devel/history,
-all three categories, cross-repository dependencies, R compatibility, unavailable
-sources, malformed YAML, missing packages, pinned vignette links, pagination and
-MCP stdio/HTTP. Optional smoke scripts exercise real official sources separately.
+Offline tests use synthetic HTTP responses, including mocked GitHub and Context7
+APIs, and real package names with deliberately synthetic versions. They cover
+CRAN regressions, release/devel/history, all three categories,
+cross-repository dependencies, R compatibility, unavailable sources, malformed
+YAML, missing packages, pinned vignette links, pagination, external repository
+matching, commit-pinned nested AGENTS.md scopes, verified absence versus
+truncated trees, Context7 version selection, key isolation, redaction and rate
+limits, and MCP stdio/HTTP. Optional smoke scripts exercise real official
+sources separately.

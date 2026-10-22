@@ -1,6 +1,7 @@
 """Repository router, provenance envelopes and conservative cross-repository checks."""
 
 import asyncio
+import os
 import re
 from collections import OrderedDict
 from collections.abc import Awaitable
@@ -10,6 +11,8 @@ from .errors import KnowledgeError
 from .http import BioconductorHTTP, CranHTTP, package_name, version_parts
 from .providers import BioconductorProvider, CranProvider, PackageRepository
 from .providers.bioconductor import CATEGORIES
+from .providers.context7 import Context7Provider
+from .providers.github_agents import GitHubAgentsProvider
 from .releases import BioconductorReleases, r_minor
 
 
@@ -33,12 +36,22 @@ def failure(exc: KnowledgeError, package=None, repository=None, bioc_version=Non
 
 
 class KnowledgeService:
-    def __init__(self, http: CranHTTP, providers: dict[str, PackageRepository] | None = None):
+    def __init__(
+        self,
+        http: CranHTTP,
+        providers: dict[str, PackageRepository] | None = None,
+        agents_provider: GitHubAgentsProvider | None = None,
+        context7_provider: Context7Provider | None = None,
+    ):
         self.http = http  # Backward-compatible injection point for offline clients/tests.
         self.bioc_http = BioconductorHTTP(http.client)
         self.releases = BioconductorReleases(self.bioc_http)
         self.providers = providers if providers is not None else {"cran": CranProvider(http)}
         self._bioc: OrderedDict[str, BioconductorProvider] = OrderedDict()
+        self.agents = agents_provider or GitHubAgentsProvider(http.client)
+        self.context7 = context7_provider or Context7Provider(
+            http.client, os.environ.get("CONTEXT7_API_KEY")
+        )
 
     async def provider(self, repository: str, bioc_version: str | None = None):
         if repository == "bioconductor":
@@ -244,6 +257,136 @@ class KnowledgeService:
 
     async def get_package_vignettes(self, package, repository="cran", bioc_version=None):
         return await self._dispatch("get_package_vignettes", package, repository, bioc_version)
+
+    async def _external_package_metadata(self, package, repository, bioc_version):
+        package_name(package)
+        provider = await self.provider(repository, bioc_version)
+        info = await provider.get_package_info(package)
+        enriched = self.enrich(info, provider)
+        return provider, enriched
+
+    async def get_package_agent_guidance(
+        self, package, revision, repository="cran", bioc_version=None
+    ):
+        provider, info = await self._external_package_metadata(package, repository, bioc_version)
+        return await self.agents.get_package_agent_guidance(
+            package,
+            info["package_version"],
+            info.get("urls"),
+            revision,
+            repository,
+            provider.bioc_version,
+        )
+
+    async def get_context7_docs(self, package, question, repository="cran", bioc_version=None):
+        provider, info = await self._external_package_metadata(package, repository, bioc_version)
+        return await self.context7.get_context7_docs(
+            package,
+            info["package_version"],
+            info.get("urls"),
+            question,
+            repository,
+            provider.bioc_version,
+        )
+
+    async def get_package_knowledge(
+        self,
+        package,
+        repository="cran",
+        bioc_version=None,
+        question=None,
+        revision=None,
+    ):
+        if repository == "all":
+            raise KnowledgeError(
+                "invalid_input",
+                "Select cran or bioconductor so each knowledge bundle has one package identity",
+            )
+        provider = await self.provider(repository, bioc_version)
+        info = await self._one("get_package_info", package, repository, bioc_version)
+        dependencies = await self._one("get_dependencies", package, repository, bioc_version)
+        sections = {"package_info": info, "dependencies": dependencies}
+        if "error" in info:
+            sections["agent_guidance"] = {
+                "status": "not_attempted",
+                "reason": "package metadata could not be verified",
+            }
+            sections["context7_docs"] = {
+                "status": "not_attempted",
+                "reason": "package metadata could not be verified",
+            }
+        else:
+            if revision:
+                try:
+                    sections["agent_guidance"] = await self.agents.get_package_agent_guidance(
+                        package,
+                        info["package_version"],
+                        info.get("urls"),
+                        revision,
+                        repository,
+                        provider.bioc_version,
+                    )
+                except KnowledgeError as exc:
+                    sections["agent_guidance"] = failure(
+                        exc, package, repository, provider.bioc_version
+                    )
+            else:
+                sections["agent_guidance"] = {
+                    "status": "not_requested",
+                    "reason": "Specify revision (branch, tag or commit ref) to inspect AGENTS.md",
+                }
+            if question:
+                try:
+                    sections["context7_docs"] = await self.context7.get_context7_docs(
+                        package,
+                        info["package_version"],
+                        info.get("urls"),
+                        question,
+                        repository,
+                        provider.bioc_version,
+                    )
+                except KnowledgeError as exc:
+                    sections["context7_docs"] = failure(
+                        exc, package, repository, provider.bioc_version
+                    )
+            else:
+                sections["context7_docs"] = {
+                    "status": "not_requested",
+                    "reason": "Supply a concrete question to retrieve indexed documentation",
+                }
+        errors = [
+            {"section": name, "error": result["error"]}
+            for name, result in sections.items()
+            if isinstance(result, dict) and "error" in result
+        ]
+        sources = [
+            source
+            for result in sections.values()
+            if isinstance(result, dict)
+            for source in result.get("sources", [])
+        ]
+        overall = (
+            "partial"
+            if errors
+            or any(
+                result.get("status") == "not_requested"
+                for result in sections.values()
+                if isinstance(result, dict)
+            )
+            else "verified"
+        )
+        return {
+            "package": package,
+            "repository": repository,
+            "package_version": info.get("package_version"),
+            "bioc_version": provider.bioc_version,
+            "sections": sections,
+            "errors": errors,
+            "source_url": info.get("source_url"),
+            "checked_at": max((s["checked_at"] for s in sources), default=info.get("checked_at")),
+            "verification_status": overall,
+            "sources": sources,
+        }
 
     async def check_package_version(self, package, installed_version):
         provider = await self.provider("cran")

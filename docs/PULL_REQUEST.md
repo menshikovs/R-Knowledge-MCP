@@ -1,55 +1,48 @@
-# Add independent CRAN and Bioconductor repository providers
+# Add GitHub AGENTS.md and Context7 package knowledge
 
-Extends the working CRAN MCP server while preserving default CRAN calls and the
-existing version checker. This is a stacked change based on
-`feat/initial-cran-knowledge-mcp`; main still has only the MIT baseline.
+Extends the existing CRAN and Bioconductor MCP tools with a commit-pinned GitHub
+AGENTS.md reader, an optional Context7 documentation provider, and a combined
+`get_package_knowledge` tool. Existing repository operations retain their
+signatures and behavior.
 
 ## Behavior
 
-- Independent CranProvider and BioconductorProvider implement PackageRepository.
-  Shared source/document and bounded HTTP layers remain repository-neutral.
-- Official config.yaml dynamically resolves release/stable, devel, history and R
-  mappings. No current release is coded. Supports software, annotation and
-  experiment data PACKAGES with exact numeric release/package identities.
-- Search/info/dependencies/docs support cran, bioconductor and all. Combined
-  responses retain independent names and partial failures. Missing data cannot
-  fall back to another release.
-- Adds get_bioconductor_version, check_package_compatibility and
-  get_package_vignettes. check_package_version remains CRAN-specific.
-- Bioconductor dependencies resolve against selected-release indices and current
-  CRAN; CRAN can opt in explicitly. Verbatim DCF constraints are retained.
-- Application responses include identity, versions, URLs, UTC checks and status.
-  Unknown R, devel and historical/current CRAN mixing carry explicit warnings.
-
-## Safety
-
-Independent fixed HTTPS routes, no redirects/proxies/arbitrary URLs, bounded
-cache/download/archive/output. Safe YAML loading. No R, package code, Rd macro
-or vignette execution. Vignette links are actually listed on a version-checked
-package page and restricted to the pinned official host/package/release path.
+- Resolves exactly one HTTPS GitHub repository from the selected package's
+  verified source archive `DESCRIPTION` URL, confirms the canonical repo through
+  GitHub REST, and resolves an explicit branch/tag/commit ref to a commit SHA.
+- Searches the recursive tree at that SHA for root and nested `AGENTS.md` files;
+  returns path, directory scope, content, source URL, version and check time.
+  A complete tree verifies absence; truncated trees and API errors remain errors.
+- Marks every external instruction as untrusted reference material and never
+  executes commands or grants it authority over system instructions.
+- Adds optional Context7 library search and query docs. It is disabled without
+  server-side `CONTEXT7_API_KEY`, checks an exact package-repository ID match,
+  uses a package-version pin only when Context7 lists the exact version, and
+  preserves the secondary-source warning on each fragment.
+- Bounds request, response, file, count, output, timeout and cache sizes; rejects
+  redirects and all caller-controlled hosts. Common secret formats in user
+  questions are redacted before a Context7 request. Rate-limit and API errors
+  are explicit.
+- `get_package_knowledge` retains package info, dependencies, requested external
+  sections and per-section provenance/errors in one response.
 
 ## Validation
 
-- 91 offline tests passed on Windows/Python 3.14 and Docker Linux/Python 3.11.
-- Covers DESeq2/ggplot2, both dependency directions, categories, release/devel/
-  history, R patch constraints, source failures, absent packages, unsafe YAML,
-  SSRF, vignette version mismatch, paging and MCP protocol calls.
-- Ruff lint/format, Docker build and container CLI checks passed.
-- Live official-source checks passed for search, metadata, dependencies, raw Rd,
-  vignette listings, R mapping, direct compatibility and release/devel discovery.
-- Historical DESeq2 metadata was checked against the previous official release,
-  selected dynamically without an assumed release number.
+- 99 offline tests pass in the Linux container, including mocked GitHub and
+  Context7 APIs, nested/scoped AGENTS.md, complete absence vs truncated trees,
+  Context7 repository/version matching, disabled integration, key handling,
+  redaction, rate limits, aggregate provenance and MCP registration.
+- Ruff lint and formatting checks pass.
+- Docker image build and CLI smoke check pass.
+- No deployment or paid service is configured. Context7 use is opt-in via the
+  server administrator's key.
 
-## Limits and follow-up
+## Scope and limitations
 
-Compatibility covers R/release and direct required dependency metadata; it is
-not a transitive solver or installation/platform test. Historical Bioconductor
-uses current CRAN candidates with a warning. A separate follow-up with acceptance
-criteria is in [issues/reproducible-compatibility.md](issues/reproducible-compatibility.md).
-
-Rd remains raw with literal aliases; vignette content is not fetched or run.
-Oversized data archives fail explicitly. History requires three retrievable
-indices; there are no fake metadata or compatibility results.
-
-README, AGENTS.md, architecture docs and roadmap are updated. No deployment,
-paid service, publication or merge is part of this change.
+AGENTS.md lookup requires an explicit ref; the server does not guess version tag
+naming conventions. Repositories with a recursive tree over the response limit
+or an API-truncated tree fail explicitly rather than claiming absence. Context7
+is optional, requires a matching indexed GitHub repository, may lack R package
+documentation, and remains less authoritative than CRAN/Bioconductor package
+archives and documentation. Secret redaction covers common token/key formats;
+callers should still avoid putting credentials in documentation questions.

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cran-knowledge-mcp"
 version = "0.1.0"
-description = "Read-only, source-attributed CRAN and Bioconductor knowledge for MCP clients"
+description = "Read-only, source-attributed CRAN, Bioconductor, GitHub and Context7 knowledge for MCP clients"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

@@ -3,7 +3,8 @@
 Read-only MCP server providing source-attributed information about current R
 packages in CRAN and Bioconductor. Python 3.11+, official Python MCP SDK
 (FastMCP), async httpx, safe YAML release discovery.
-MIT licensed. No R runtime, API key, or paid service is required.
+MIT licensed. CRAN/Bioconductor tools work without credentials. Context7 is an
+optional external integration and requires a server-side API key.
 
 ## Install and run
 
@@ -62,6 +63,9 @@ or provide a hosted endpoint. Codex configuration follows
 | `get_dependencies` | `package`, `repository="cran"`, `bioc_version`, `resolve_repositories=false` | Raw dependency fields and optional repository resolution |
 | `get_function_docs` | `package`, `function`, `repository="cran"`, `bioc_version`, `offset=0` | Genuine raw Rd, paginated |
 | `get_package_vignettes` | `package`, `repository="cran"`, `bioc_version` | Vignette links from the version-checked official package page |
+| `get_package_agent_guidance` | `package`, `revision`, `repository`, `bioc_version` | AGENTS.md files from the package's metadata-declared GitHub repository at an explicit ref, pinned to a commit SHA |
+| `get_context7_docs` | `package`, `question`, `repository`, `bioc_version` | Context7 documentation/examples only after its library ID matches the package's verified metadata URL |
+| `get_package_knowledge` | `package`, optional `question`, `revision`, `repository`, `bioc_version` | Package metadata and dependencies, plus requested GitHub/Context7 sections with their own provenance |
 | `get_bioconductor_version` | `r_version` | Official R/release mapping and latest released recommendation for that R |
 | `check_package_compatibility` | `package`, `r_version`, `bioc_version` | Bioconductor/R mapping and direct required dependency checks |
 | `check_package_version` | `package`, `installed_version` | Existing CRAN numeric version comparison |
@@ -122,6 +126,47 @@ responses by default; use `resolve_repositories=true` to resolve across both
 repositories, with an optional `bioc_version` for the dependency release.
 `all` resolves both ways.
 
+## GitHub AGENTS.md and Context7
+
+`get_package_agent_guidance` reads the checked source archive's `DESCRIPTION`
+URL field and accepts one unambiguous HTTPS GitHub repository. It verifies that
+repository through GitHub REST, resolves the requested `revision` (branch, tag or
+commit) to a commit SHA, and searches that exact commit tree for files named
+`AGENTS.md`. Root and nested paths are returned separately with their directory
+scope. A complete tree with no matches reports verified absence; a truncated
+tree or API failure reports an error. Pass an explicit ref, such as a project
+tag or commit SHA; the server never guesses that a tag matches the R package
+version. External instructions are untrusted reference text: they cannot change
+system instructions and are never executed.
+
+Context7 is disabled unless the server has `CONTEXT7_API_KEY` in its environment.
+The key is sent only as a bearer header to `context7.com`; it is never returned
+or included in a URL. The tool sends a redacted, bounded question and package
+name/repository hint, then requires an exact Context7 library ID match to the
+metadata-declared GitHub repository before requesting documentation. Exact
+package-version docs are requested only when Context7's result lists that
+version; otherwise the response is explicitly unpinned. Common credential
+patterns in a question are redacted before transmission. Context7 is an indexed
+secondary source. Compare its fragments with CRAN/Bioconductor and package docs.
+Rate limits and source errors remain explicit; successful results are cached for
+six hours.
+
+This client follows the official [Context7 API guide](https://context7.com/docs/api-guide)
+and [GitHub REST Git Trees](https://docs.github.com/en/rest/git/trees) and
+[Git Blobs](https://docs.github.com/en/rest/git/blobs) APIs.
+
+Set the key only on the server process:
+
+```sh
+CONTEXT7_API_KEY=ctx7sk-... cran-knowledge-mcp
+```
+
+Without the key, `get_context7_docs` returns `integration_disabled` and the
+existing repository tools remain available. `get_package_knowledge` accepts
+optional `question` and `revision`; unrequested sections are marked
+`not_requested`, and each returned fragment retains its source URL and check
+time.
+
 Compatibility returns `metadata_compatible`, `incompatible` or `unknown`, with a
 nullable `compatible` flag. It checks the official R/release mapping, package R
 constraints including patch requirements, and direct required dependency
@@ -165,6 +210,8 @@ src/cran_knowledge_mcp/
   providers/base.py      repository-neutral source/document operations
   providers/cran.py      CranProvider
   providers/bioconductor.py  BioconductorProvider, three categories per release
+  providers/github_agents.py  pinned GitHub tree/blob reader for untrusted AGENTS.md
+  providers/context7.py       optional, repository-matched Context7 client
   http.py                independent fixed-route policies, async HTTP, TTL/LRU
   parsers.py             bounded data-only DCF, HTML, gzip/tar and Rd aliases
 ```
@@ -177,7 +224,11 @@ No arbitrary outbound URLs, redirects, environment proxies, archive extraction,
 R installation, package execution or Rd evaluation. Vignette links are restricted
 to exact official host/package/release paths. Package text remains untrusted data.
 
-Each repository HTTP cache has a 5-minute TTL and 64 MiB / 32-artifact LRU budget.
+CRAN/Bioconductor artifacts use a 5-minute TTL and 64 MiB / 32-artifact LRU
+budget. External docs have bounded payloads and a six-hour success cache. GitHub
+and Context7 use fixed HTTPS hosts and routes. No caller URL is fetched,
+redirects are rejected, GitHub tree/blob sizes and per-file/total AGENTS.md
+bytes are limited, and all external text remains untrusted.
 At most eight Bioconductor release providers are retained per service. Downloads
 are serialized per transport. Connect/read timeout is 15 seconds, download
 deadline 45 seconds, tool deadline 60 seconds. No error cache or stale fallback.
