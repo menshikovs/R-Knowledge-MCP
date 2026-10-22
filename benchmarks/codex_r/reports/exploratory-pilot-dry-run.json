@@ -1,0 +1,162 @@
+{
+  "status": "synthetic_only",
+  "plan_type": "exploratory_offline_preflight_only",
+  "results": [
+    {
+      "record_type": "exploratory_dry_run_not_trial",
+      "synthetic": true,
+      "trial_id": "R01-C",
+      "model": "gpt-6-luna",
+      "condition": "C",
+      "status": "simulated_ready",
+      "events": [
+        {
+          "type": "turn.completed",
+          "usage": null
+        }
+      ],
+      "usage": null,
+      "benchmark_record_created": false,
+      "launch_permitted": false
+    },
+    {
+      "record_type": "exploratory_dry_run_not_trial",
+      "synthetic": true,
+      "trial_id": "R11-B",
+      "model": "gpt-6-luna",
+      "condition": "B",
+      "status": "simulated_ready",
+      "events": [
+        {
+          "type": "turn.completed",
+          "usage": null
+        }
+      ],
+      "usage": null,
+      "benchmark_record_created": false,
+      "launch_permitted": false
+    },
+    {
+      "record_type": "exploratory_dry_run_not_trial",
+      "synthetic": true,
+      "trial_id": "R06-C",
+      "model": "gpt-6-luna",
+      "condition": "C",
+      "status": "simulated_ready",
+      "events": [
+        {
+          "type": "turn.completed",
+          "usage": null
+        }
+      ],
+      "usage": null,
+      "benchmark_record_created": false,
+      "launch_permitted": false
+    },
+    {
+      "record_type": "exploratory_dry_run_not_trial",
+      "synthetic": true,
+      "trial_id": "R11-C",
+      "model": "gpt-6-luna",
+      "condition": "C",
+      "status": "simulated_ready",
+      "events": [
+        {
+          "type": "turn.completed",
+          "usage": null
+        }
+      ],
+      "usage": null,
+      "benchmark_record_created": false,
+      "launch_permitted": false
+    },
+    {
+      "record_type": "exploratory_dry_run_not_trial",
+      "synthetic": true,
+      "trial_id": "R01-B",
+      "model": "gpt-6-luna",
+      "condition": "B",
+      "status": "simulated_ready",
+      "events": [
+        {
+          "type": "turn.completed",
+          "usage": null
+        }
+      ],
+      "usage": null,
+      "benchmark_record_created": false,
+      "launch_permitted": false
+    },
+    {
+      "record_type": "exploratory_dry_run_not_trial",
+      "synthetic": true,
+      "trial_id": "R06-A",
+      "model": "gpt-6-luna",
+      "condition": "A",
+      "status": "simulated_ready",
+      "events": [
+        {
+          "type": "turn.completed",
+          "usage": null
+        }
+      ],
+      "usage": null,
+      "benchmark_record_created": false,
+      "launch_permitted": false
+    },
+    {
+      "record_type": "exploratory_dry_run_not_trial",
+      "synthetic": true,
+      "trial_id": "R06-B",
+      "model": "gpt-6-luna",
+      "condition": "B",
+      "status": "simulated_ready",
+      "events": [
+        {
+          "type": "turn.completed",
+          "usage": null
+        }
+      ],
+      "usage": null,
+      "benchmark_record_created": false,
+      "launch_permitted": false
+    },
+    {
+      "record_type": "exploratory_dry_run_not_trial",
+      "synthetic": true,
+      "trial_id": "R11-A",
+      "model": "gpt-6-luna",
+      "condition": "A",
+      "status": "simulated_ready",
+      "events": [
+        {
+          "type": "turn.completed",
+          "usage": null
+        }
+      ],
+      "usage": null,
+      "benchmark_record_created": false,
+      "launch_permitted": false
+    },
+    {
+      "record_type": "exploratory_dry_run_not_trial",
+      "synthetic": true,
+      "trial_id": "R01-A",
+      "model": "gpt-6-luna",
+      "condition": "A",
+      "status": "simulated_ready",
+      "events": [
+        {
+          "type": "turn.completed",
+          "usage": null
+        }
+      ],
+      "usage": null,
+      "benchmark_record_created": false,
+      "launch_permitted": false
+    }
+  ],
+  "sessions_created": 0,
+  "paid_calls_made": 0,
+  "launch_permitted": false
+}
