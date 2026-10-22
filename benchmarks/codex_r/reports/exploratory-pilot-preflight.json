@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-10-22T18:03:32.447705+00:00",
+  "checked_at": "2026-10-22T18:21:02.847989+00:00",
   "plan_type": "exploratory_offline_preflight_only",
   "model": {
     "id": "gpt-6-luna",
@@ -14,12 +14,18 @@
     "account_access_status": "MODEL_ACCESS_UNVERIFIED"
   },
   "codex_cli": {
-    "status": "verified_local_cli_metadata",
-    "version": "codex-cli 0.162.0-alpha.17.2",
+    "status": "verified",
+    "available": true,
+    "executable": "C:\\Users\\User001\\AppData\\Roaming\\npm\\codex.CMD",
+    "version": "codex-cli 0.162.1",
+    "metadata_verified": true,
+    "capabilities_verified": true,
     "supports_model_flag": true,
     "supports_json_events": true,
     "supports_ephemeral_mode": true,
-    "checked_without_inference": true
+    "checked_without_inference": true,
+    "inference_performed": false,
+    "failure": null
   },
   "tool_inventory": {
     "A": {

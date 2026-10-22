@@ -2,7 +2,9 @@
 
 import importlib.util
 import json
+import subprocess
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 
@@ -19,6 +21,7 @@ def load():
 
 
 pilot = load()
+CLI_HELP = "Usage: codex exec\n  -m, --model <MODEL>\n  --json\n  --ephemeral\n"
 controller_spec = importlib.util.spec_from_file_location(
     "codex_controller", ROOT / "runner/controller.py"
 )
@@ -59,18 +62,122 @@ def test_tool_inventories_are_exactly_zero_fifteen_and_twenty():
     assert result["B"]["verification_basis"] == "local stdio ListTools response"
 
 
-def test_preflight_is_machine_readable_and_blocked_without_authorizing_paid_work():
+def _serialized_preflight_cli(monkeypatch, *, executable, run_side_effect=None, which_error=None):
+    if which_error:
+        monkeypatch.setattr(pilot.shutil, "which", Mock(side_effect=which_error))
+    else:
+        monkeypatch.setattr(pilot.shutil, "which", Mock(return_value=executable))
+    runner = Mock(side_effect=run_side_effect)
+    monkeypatch.setattr(pilot.subprocess, "run", runner)
     report = pilot.build_preflight(pilot.make_plan())
     restored = json.loads(json.dumps(report))
-    assert restored["status"] == "blocked"
-    assert restored["launch_permitted"] is False
-    assert restored["sessions_created"] == restored["paid_calls_made"] == 0
-    assert restored["model"]["account_access_status"] == "MODEL_ACCESS_UNVERIFIED"
-    assert restored["budget"]["provider_enforced_aggregate_limit"] == (
+    assert report["status"] == "blocked"
+    assert report["launch_permitted"] is False
+    assert set(restored["codex_cli"]) == pilot.CLI_REPORT_FIELDS
+    assert restored["codex_cli"]["checked_without_inference"] is True
+    assert restored["codex_cli"]["inference_performed"] is False
+    return restored["codex_cli"], runner
+
+
+def test_preflight_is_machine_readable_and_blocked_without_authorizing_paid_work(monkeypatch):
+    cli, runner = _serialized_preflight_cli(monkeypatch, executable=None)
+    assert cli["status"] == "not_installed"
+    assert cli["metadata_verified"] is False
+    assert cli["capabilities_verified"] is False
+    assert cli["supports_model_flag"] is None
+    assert runner.call_count == 0
+    report = json.loads(json.dumps(pilot.build_preflight(pilot.make_plan())))
+    assert report["status"] == "blocked"
+    assert report["launch_permitted"] is False
+    assert report["sessions_created"] == report["paid_calls_made"] == 0
+    assert report["model"]["account_access_status"] == "MODEL_ACCESS_UNVERIFIED"
+    assert report["budget"]["provider_enforced_aggregate_limit"] == (
         "HARD_AGGREGATE_BUDGET_UNVERIFIED"
     )
-    assert restored["isolation"]["status"] == "AGENT_ISOLATION_UNVERIFIED"
-    assert restored["codex_cli"]["checked_without_inference"] is True
+    assert report["isolation"]["status"] == "AGENT_ISOLATION_UNVERIFIED"
+
+
+def test_cli_metadata_success_is_not_inference(monkeypatch):
+    cli, runner = _serialized_preflight_cli(
+        monkeypatch,
+        executable="/usr/bin/codex",
+        run_side_effect=[
+            subprocess.CompletedProcess([], 0, "codex-cli 0.162.1\n", ""),
+            subprocess.CompletedProcess([], 0, CLI_HELP, ""),
+        ],
+    )
+    assert cli["status"] == "verified"
+    assert cli["metadata_verified"] is True
+    assert cli["capabilities_verified"] is True
+    assert cli["supports_model_flag"] is True
+    assert cli["supports_json_events"] is True
+    assert cli["supports_ephemeral_mode"] is True
+    assert cli["version"] == "codex-cli 0.162.1"
+    assert runner.call_count == 2
+    assert runner.call_args_list[0].args[0] == ["/usr/bin/codex", "--version"]
+    assert runner.call_args_list[1].args[0] == ["/usr/bin/codex", "exec", "--help"]
+
+
+def test_cli_discovery_error_has_stable_unverified_schema(monkeypatch):
+    cli, runner = _serialized_preflight_cli(
+        monkeypatch, executable=None, which_error=PermissionError("denied")
+    )
+    assert cli["status"] == "discovery_error"
+    assert cli["available"] is None
+    assert cli["metadata_verified"] is False
+    assert cli["failure"] == "executable_discovery_failed"
+    assert runner.call_count == 0
+
+
+@pytest.mark.parametrize(
+    ("side_effect", "failure"),
+    [
+        ([subprocess.CalledProcessError(1, "codex --version")], "version_command_failed"),
+        (
+            [
+                subprocess.CompletedProcess([], 0, "codex-cli 0.162.1", ""),
+                subprocess.TimeoutExpired("codex exec --help", timeout=5),
+            ],
+            "help_command_failed",
+        ),
+    ],
+)
+def test_cli_metadata_command_errors_have_stable_schema(monkeypatch, side_effect, failure):
+    cli, _ = _serialized_preflight_cli(
+        monkeypatch, executable="/usr/bin/codex", run_side_effect=side_effect
+    )
+    assert cli["status"] == "metadata_error"
+    assert cli["available"] is True
+    assert cli["metadata_verified"] is False
+    assert cli["capabilities_verified"] is False
+    assert cli["failure"] == failure
+    assert cli["supports_model_flag"] is None
+
+
+def test_unsupported_cli_version_and_missing_capabilities_are_not_verified(monkeypatch):
+    cli, runner = _serialized_preflight_cli(
+        monkeypatch,
+        executable="/usr/bin/codex",
+        run_side_effect=[subprocess.CompletedProcess([], 0, "Codex preview build", "")],
+    )
+    assert cli["status"] == "unsupported_version"
+    assert cli["metadata_verified"] is False
+    assert cli["failure"] == "unrecognized_version_format"
+    assert runner.call_count == 1
+
+    cli, _ = _serialized_preflight_cli(
+        monkeypatch,
+        executable="/usr/bin/codex",
+        run_side_effect=[
+            subprocess.CompletedProcess([], 0, "codex-cli 0.1.0", ""),
+            subprocess.CompletedProcess([], 0, "Usage: codex exec", ""),
+        ],
+    )
+    assert cli["status"] == "unsupported_version"
+    assert cli["metadata_verified"] is True
+    assert cli["capabilities_verified"] is True
+    assert cli["supports_model_flag"] is False
+    assert cli["failure"] == "required_cli_capability_missing"
 
 
 def test_plan_rejects_model_mismatch_and_condition_inventory_drift():

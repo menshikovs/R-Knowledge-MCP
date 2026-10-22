@@ -11,6 +11,7 @@ import importlib.util
 import json
 import random
 import re
+import shutil
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
@@ -28,6 +29,22 @@ BUDGET_CENTS = 1_000
 TRIAL_TIMEOUT_SECONDS = 900
 MODEL_DOC_URL = "https://developers.openai.com/api/docs/models"
 GPT6_GUIDE_URL = "https://developers.openai.com/api/docs/guides/latest-model"
+CLI_REPORT_FIELDS = frozenset(
+    {
+        "status",
+        "available",
+        "executable",
+        "version",
+        "metadata_verified",
+        "capabilities_verified",
+        "supports_model_flag",
+        "supports_json_events",
+        "supports_ephemeral_mode",
+        "checked_without_inference",
+        "inference_performed",
+        "failure",
+    }
+)
 
 
 class PilotError(ValueError):
@@ -121,22 +138,96 @@ def tool_inventory_status(plan: dict) -> dict:
 def local_cli_metadata() -> dict:
     """Read only CLI version/help; never invoke a prompt, login or model request."""
     try:
-        version = subprocess.run(
-            ["codex", "--version"], capture_output=True, text=True, timeout=5, check=True
-        ).stdout.strip()
-        help_text = subprocess.run(
-            ["codex", "exec", "--help"], capture_output=True, text=True, timeout=5, check=True
-        ).stdout
-    except (OSError, subprocess.SubprocessError) as exc:
-        return {"status": "unavailable", "detail": type(exc).__name__}
-    return {
-        "status": "verified_local_cli_metadata",
-        "version": version,
+        executable = shutil.which("codex")
+    except OSError:
+        return _cli_report("discovery_error", failure="executable_discovery_failed")
+    if executable is None:
+        return _cli_report("not_installed", available=False, failure="executable_not_found")
+
+    try:
+        result = subprocess.run(
+            [executable, "--version"], capture_output=True, text=True, timeout=5, check=True
+        )
+    except (OSError, subprocess.SubprocessError):
+        return _cli_report(
+            "metadata_error",
+            available=True,
+            executable=executable,
+            failure="version_command_failed",
+        )
+
+    version = result.stdout.strip().splitlines()[0][:200] if result.stdout.strip() else ""
+    if not re.fullmatch(r"codex-cli \d+\.\d+\.\d+(?:[-+][A-Za-z0-9.-]+)?", version):
+        return _cli_report(
+            "unsupported_version",
+            available=True,
+            executable=executable,
+            version=version or None,
+            failure="unrecognized_version_format",
+        )
+
+    try:
+        help_result = subprocess.run(
+            [executable, "exec", "--help"], capture_output=True, text=True, timeout=5, check=True
+        )
+    except (OSError, subprocess.SubprocessError):
+        return _cli_report(
+            "metadata_error",
+            available=True,
+            executable=executable,
+            version=version,
+            failure="help_command_failed",
+        )
+
+    help_text = help_result.stdout
+    capabilities = {
         "supports_model_flag": bool(re.search(r"(?m)^\s+-m, --model", help_text)),
         "supports_json_events": "--json" in help_text,
         "supports_ephemeral_mode": "--ephemeral" in help_text,
-        "checked_without_inference": True,
     }
+    supported = all(capabilities.values())
+    return _cli_report(
+        "verified" if supported else "unsupported_version",
+        available=True,
+        executable=executable,
+        version=version,
+        metadata_verified=True,
+        capabilities_verified=True,
+        failure=None if supported else "required_cli_capability_missing",
+        **capabilities,
+    )
+
+
+def _cli_report(
+    status: str,
+    *,
+    available: bool | None = None,
+    executable: str | None = None,
+    version: str | None = None,
+    metadata_verified: bool = False,
+    capabilities_verified: bool = False,
+    supports_model_flag: bool | None = None,
+    supports_json_events: bool | None = None,
+    supports_ephemeral_mode: bool | None = None,
+    failure: str | None = None,
+) -> dict:
+    """Return a stable CLI schema and explicitly state that no inference ran."""
+    report = {
+        "status": status,
+        "available": available,
+        "executable": executable,
+        "version": version,
+        "metadata_verified": metadata_verified,
+        "capabilities_verified": capabilities_verified,
+        "supports_model_flag": supports_model_flag,
+        "supports_json_events": supports_json_events,
+        "supports_ephemeral_mode": supports_ephemeral_mode,
+        "checked_without_inference": True,
+        "inference_performed": False,
+        "failure": failure,
+    }
+    assert set(report) == CLI_REPORT_FIELDS
+    return report
 
 
 def build_preflight(plan: dict, *, checked_at: datetime | None = None) -> dict:

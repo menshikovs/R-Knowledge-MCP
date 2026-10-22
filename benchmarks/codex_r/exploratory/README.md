@@ -25,6 +25,14 @@ unverified:
   MCP interface self-test, but that does not prove candidate process, filesystem,
   endpoint, credential, or session isolation.
 
+The `codex_cli` object always has the same fields. Its `status` distinguishes
+`not_installed`, `discovery_error`, `metadata_error`, `unsupported_version`, and
+`verified`; capability values remain null until help metadata is available.
+`checked_without_inference: true` and `inference_performed: false` describe the
+preflight procedure in every branch. They do not assert that the CLI exists or
+that its capabilities were verified; those are reported separately by
+`available`, `metadata_verified`, and `capabilities_verified`.
+
 These states are blocking. There is no command here that creates or launches a
 Codex session. Do not substitute a different model, transport, or budget scheme.
 Any later paid experiment requires explicit authorization and a separately
@@ -70,11 +78,9 @@ of the actual Codex-side effective inventory for a future session.
   nine proposed sessions. Session `spend_control` is a per-session amount in
   cents; session usage and consumed amounts are best-effort and can be null or
   change as accounting arrives.
-- The PATH-based CLI subprocess reports `codex-cli 0.162.0-alpha.17.2`; the
-  interactive PowerShell `codex --version` resolved a different executable and
-  reported `0.162.1`. This executable mismatch itself needs resolving before
-  any future run. Both checks were metadata-only and did not inspect credentials
-  or invoke inference.
+- The preflight discovers `codex` with `shutil.which` and invokes version/help
+  against that exact executable path. These metadata-only checks do not invoke
+  inference or inspect credentials.
 
 Public API documentation verifies interface support, not account availability,
 actual charges, or an execution boundary. The exploratory results must not be
