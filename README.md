@@ -198,8 +198,12 @@ compatibility before recommending a package.
 
 Failures include `error.code`, `message`, source URL when known, and `attempted_at`;
 `verification_status` is `failed`. Unknown versions/check times remain `null`.
-MCP schema errors are handled by the SDK. Clients must inspect status, `error`
-and aggregate `errors` before using results.
+Complete tool failures now set MCP `isError=true`, while preserving the structured
+`error.code` envelope. Partial results keep `isError=false` and retain their
+section-level failures. Clients should inspect `isError` first, then check
+`verification_status` and aggregate `errors` before using results. See
+[MCP tool errors and partial results](docs/MCP_ERRORS.md) for the compatibility
+note and response examples.
 
 Bioconductor dependency responses retain raw Depends/Imports/Suggests/LinkingTo
 and add `resolved_dependencies`: candidates in the selected release and current

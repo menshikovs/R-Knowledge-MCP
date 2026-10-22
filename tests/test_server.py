@@ -104,7 +104,9 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         assert not result.isError
         assert result.structuredContent["latest_cran_version"] == "2.10-1"
         result = await session.call_tool("get_package_info", {"package": "../bad"})
+        assert result.isError is True
         assert result.structuredContent["error"]["code"] == "invalid_input"
+        assert json.loads(result.content[0].text) == result.structuredContent
         result = await session.call_tool(
             "get_package_info", {"package": "ExamplePkg", "verify_archive": False}
         )
@@ -121,16 +123,19 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
             "analyze_quarto_document",
             {"source": "---\ntitle: Test\n---\n```{r}\n1 + 1\n```"},
         )
+        assert analysis.isError is False
         assert analysis.structuredContent["not_executed"] is True
         shiny = await session.call_tool("analyze_shiny_app", {"source": "shinyApp(ui, server)"})
         assert shiny.structuredContent["analysis"] == "static_heuristics"
         docs = await session.call_tool(
             "get_shiny_docs", {"package": "shiny", "function": "page_sidebar"}
         )
+        assert docs.isError is True
         assert docs.structuredContent["error"]["code"] == "function_owner_mismatch"
         visual = await session.call_tool(
             "analyze_ggplot_code", {"source": "ggplot(df) + geom_point(aes(x = missing))"}
         )
+        assert visual.isError is False
         assert visual.structuredContent["not_executed"] is True
         assert visual.structuredContent["analysis"] == "analyze_ggplot_code"
         generated = await session.call_tool(
@@ -142,6 +147,7 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
                 "enhancement_mode": "deterministic",
             },
         )
+        assert generated.isError is False
         assert generated.structuredContent["not_executed"] is True
         assert generated.structuredContent["structured_context"]["delimiter"] == ";"
         assert "UTF-8" in generated.structuredContent["prompt_text"]
@@ -156,6 +162,7 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
                 "include_provenance": False,
             },
         )
+        assert composed.isError is False
         assert composed.structuredContent["composition_mode"] == "composed"
         assert len(composed.structuredContent["workflow_stages"]) == 2
         assert composed.structuredContent["sources"] == []
@@ -283,6 +290,25 @@ async def test_streamable_http_initialization_and_tool_call(service, monkeypatch
                 response.json()["result"]["structuredContent"]["metadata_verification_level"]
                 == "description_version_matched"
             )
+            response = await client.post(
+                "/mcp",
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 5,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "get_package_info",
+                        "arguments": {"package": "../bad"},
+                    },
+                },
+            )
+            assert response.status_code == 200
+            error_result = response.json()["result"]
+            assert error_result["isError"] is True
+            assert error_result["structuredContent"]["error"]["code"] == "invalid_input"
+            assert (
+                json.loads(error_result["content"][0]["text"]) == error_result["structuredContent"]
+            )
             # Stateless requests share the ASGI-owned cache, not a fresh one per request.
             response = await client.post(
                 "/mcp",
@@ -313,4 +339,9 @@ async def test_stdio_subprocess_initialize_and_error():
             assert {tool.name for tool in (await session.list_tools()).tools} == TOOLS
             assert {prompt.name for prompt in (await session.list_prompts()).prompts} == PROMPTS
             result = await session.call_tool("get_dependencies", {"package": "../bad"})
+            assert result.isError is True
             assert json.loads(result.content[0].text)["error"]["code"] == "invalid_input"
+            result = await session.call_tool(
+                "analyze_shiny_app", {"source": "shinyApp(ui, server)"}
+            )
+            assert result.isError is False

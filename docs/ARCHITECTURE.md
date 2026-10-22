@@ -6,6 +6,12 @@ envelopes, combines independent results, and checks direct compatibility.
 The ASGI lifespan owns the shared client and service/cache across stateless HTTP
 requests; stdio owns the same resources for its process session.
 
+The FastMCP boundary converts the service's explicit complete-failure envelopes
+into SDK `CallToolResult` objects with `isError=true`, preserving the existing
+envelope in both structured and text content. Partial aggregates remain
+successful tool results. SDK argument failures and unexpected exceptions are
+sanitized at this boundary; see [MCP tool errors](MCP_ERRORS.md).
+
 ## Prompt Intelligence
 
 `prompt_intelligence/` composes deterministic, editable R-task prompts from a
