@@ -1,20 +1,126 @@
 """Official SDK FastMCP adapter and CLI (stdio by default)."""
 
 import argparse
+import json
 import logging
 import os
+import re
 from contextlib import asynccontextmanager
 from typing import Any, Literal
 
 from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.fastmcp.exceptions import ToolError
 from mcp.server.transport_security import TransportSecuritySettings
-from mcp.types import ToolAnnotations
+from mcp.shared.exceptions import UrlElicitationRequiredError
+from mcp.types import CallToolResult, TextContent, ToolAnnotations
+from pydantic import ValidationError
 
 from .config import prompt_intelligence_enabled
+from .errors import KnowledgeError
 from .http import CranHTTP, make_client
 from .prompt_intelligence import PromptIntelligence
 from .prompt_intelligence.native_prompts import register_native_prompts
-from .service import KnowledgeService, bounded
+from .service import KnowledgeService, bounded, failure
+
+
+def _is_failed_envelope(result: Any) -> bool:
+    """Classify only the application's explicit top-level failure envelope."""
+    if not isinstance(result, dict) or result.get("verification_status") != "failed":
+        return False
+    error = result.get("error")
+    if (
+        isinstance(error, dict)
+        and isinstance(error.get("code"), str)
+        and isinstance(error.get("message"), str)
+    ):
+        return True
+    # Repository aggregation keeps provider errors in `errors` and has no usable results.
+    return isinstance(result.get("errors"), list) and not result.get("results")
+
+
+def _safe_error_context(arguments: dict[str, Any]) -> dict[str, str | None]:
+    package = arguments.get("package")
+    repository = arguments.get("repository")
+    bioc_version = arguments.get("bioc_version")
+    return {
+        "package": package
+        if isinstance(package, str) and re.fullmatch(r"[A-Za-z][A-Za-z0-9.]{0,99}", package)
+        else None,
+        "repository": repository
+        if isinstance(repository, str) and repository in {"cran", "bioconductor", "all"}
+        else None,
+        "bioc_version": bioc_version
+        if isinstance(bioc_version, str)
+        and re.fullmatch(r"(?:[0-9]+\.[0-9]+|release|devel)", bioc_version)
+        else None,
+    }
+
+
+class ErrorAwareFastMCP(FastMCP):
+    """FastMCP adapter that retains application error envelopes in tool results."""
+
+    async def call_tool(self, name: str, arguments: dict[str, Any]) -> CallToolResult:
+        context = self.get_context()
+        try:
+            converted = await self._tool_manager.call_tool(
+                name, arguments, context=context, convert_result=True
+            )
+            return self._normalize_result(converted)
+        except UrlElicitationRequiredError:
+            raise
+        except Exception as exc:
+            cause = exc.__cause__
+            if isinstance(cause, ValidationError) and cause.title.endswith("Arguments"):
+                code, message = "invalid_input", "Tool arguments failed validation"
+            elif isinstance(exc, ToolError) and str(exc).startswith("Unknown tool:"):
+                code, message = "tool_not_found", "The requested tool is not available"
+            else:
+                logging.getLogger(__name__).error(
+                    "MCP tool execution failed (tool=%s error_type=%s)",
+                    name,
+                    type(cause or exc).__name__,
+                )
+                code, message = (
+                    "internal_error",
+                    "The tool could not complete due to an internal error",
+                )
+            envelope = failure(KnowledgeError(code, message), **_safe_error_context(arguments))
+            return self._result(envelope, is_error=True)
+
+    @staticmethod
+    def _normalize_result(converted: Any) -> CallToolResult:
+        if isinstance(converted, CallToolResult):
+            return converted
+        if isinstance(converted, tuple) and len(converted) == 2:
+            content, structured = converted
+        elif isinstance(converted, dict):
+            structured = converted
+            content = [
+                TextContent(
+                    type="text",
+                    text=json.dumps(converted, ensure_ascii=False, separators=(",", ":")),
+                )
+            ]
+        else:
+            return CallToolResult(content=list(converted), isError=False)
+        return CallToolResult(
+            content=list(content),
+            structuredContent=structured,
+            isError=_is_failed_envelope(structured),
+        )
+
+    @staticmethod
+    def _result(envelope: dict[str, Any], *, is_error: bool) -> CallToolResult:
+        return CallToolResult(
+            content=[
+                TextContent(
+                    type="text",
+                    text=json.dumps(envelope, ensure_ascii=False, separators=(",", ":")),
+                )
+            ],
+            structuredContent=envelope,
+            isError=is_error,
+        )
 
 
 def create_server(
@@ -31,7 +137,7 @@ def create_server(
         async with make_client() as client:
             yield KnowledgeService(CranHTTP(client))
 
-    server = FastMCP(
+    server = ErrorAwareFastMCP(
         "R Knowledge MCP",
         lifespan=lifespan,
         host=host,
