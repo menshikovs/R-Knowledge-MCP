@@ -1,0 +1,2777 @@
+{
+  "methodology": {
+    "network": "disabled; deterministic synthetic metadata fixture",
+    "token_estimate": "ceil(UTF-8 byte count / 4), rough estimate only",
+    "scenario_count": 20,
+    "detail_levels": [
+      "concise",
+      "standard",
+      "comprehensive"
+    ]
+  },
+  "records": [
+    {
+      "scenario": "simple-ggplot-scatter",
+      "detail_level": "concise",
+      "characters": 3120,
+      "utf8_bytes": 3128,
+      "estimated_tokens_utf8_bytes_div_4": 782,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "ggplot2-visualization"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "simple-ggplot-scatter",
+      "detail_level": "standard",
+      "characters": 3186,
+      "utf8_bytes": 3194,
+      "estimated_tokens_utf8_bytes_div_4": 799,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "ggplot2-visualization"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "simple-ggplot-scatter",
+      "detail_level": "comprehensive",
+      "characters": 3560,
+      "utf8_bytes": 3568,
+      "estimated_tokens_utf8_bytes_div_4": 892,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "ggplot2-visualization"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "simple-dplyr-filter",
+      "detail_level": "concise",
+      "characters": 3644,
+      "utf8_bytes": 3662,
+      "estimated_tokens_utf8_bytes_div_4": 916,
+      "repeated_nonempty_lines": 5,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "data-transformation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "dplyr:0.0.0-fixture:verified",
+        "tidyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "simple-dplyr-filter",
+      "detail_level": "standard",
+      "characters": 3710,
+      "utf8_bytes": 3728,
+      "estimated_tokens_utf8_bytes_div_4": 932,
+      "repeated_nonempty_lines": 5,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "data-transformation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "dplyr:0.0.0-fixture:verified",
+        "tidyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "simple-dplyr-filter",
+      "detail_level": "comprehensive",
+      "characters": 4084,
+      "utf8_bytes": 4102,
+      "estimated_tokens_utf8_bytes_div_4": 1026,
+      "repeated_nonempty_lines": 5,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "data-transformation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "dplyr:0.0.0-fixture:verified",
+        "tidyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "simple-readr-csv",
+      "detail_level": "concise",
+      "characters": 5380,
+      "utf8_bytes": 5418,
+      "estimated_tokens_utf8_bytes_div_4": 1355,
+      "repeated_nonempty_lines": 10,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources",
+        "Verified function documentation"
+      ],
+      "selected_templates": [
+        "csv-import"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "readr:0.0.0-fixture:verified",
+        "data.table:0.0.0-fixture:verified",
+        "vroom:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_delim:verified",
+        "data.table::fread:verified",
+        "vroom::vroom:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "simple-readr-csv",
+      "detail_level": "standard",
+      "characters": 5446,
+      "utf8_bytes": 5484,
+      "estimated_tokens_utf8_bytes_div_4": 1371,
+      "repeated_nonempty_lines": 10,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources",
+        "Verified function documentation"
+      ],
+      "selected_templates": [
+        "csv-import"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "readr:0.0.0-fixture:verified",
+        "data.table:0.0.0-fixture:verified",
+        "vroom:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_delim:verified",
+        "data.table::fread:verified",
+        "vroom::vroom:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "simple-readr-csv",
+      "detail_level": "comprehensive",
+      "characters": 5820,
+      "utf8_bytes": 5858,
+      "estimated_tokens_utf8_bytes_div_4": 1465,
+      "repeated_nonempty_lines": 10,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources",
+        "Verified function documentation"
+      ],
+      "selected_templates": [
+        "csv-import"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "readr:0.0.0-fixture:verified",
+        "data.table:0.0.0-fixture:verified",
+        "vroom:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_delim:verified",
+        "data.table::fread:verified",
+        "vroom::vroom:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "simple-group-summary",
+      "detail_level": "concise",
+      "characters": 5195,
+      "utf8_bytes": 5233,
+      "estimated_tokens_utf8_bytes_div_4": 1309,
+      "repeated_nonempty_lines": 10,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources",
+        "Verified function documentation"
+      ],
+      "selected_templates": [
+        "csv-analysis"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "readr:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_csv:verified",
+        "dplyr::summarise:verified",
+        "ggplot2::ggplot:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "simple-group-summary",
+      "detail_level": "standard",
+      "characters": 5261,
+      "utf8_bytes": 5299,
+      "estimated_tokens_utf8_bytes_div_4": 1325,
+      "repeated_nonempty_lines": 10,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources",
+        "Verified function documentation"
+      ],
+      "selected_templates": [
+        "csv-analysis"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "readr:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_csv:verified",
+        "dplyr::summarise:verified",
+        "ggplot2::ggplot:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "simple-group-summary",
+      "detail_level": "comprehensive",
+      "characters": 5635,
+      "utf8_bytes": 5673,
+      "estimated_tokens_utf8_bytes_div_4": 1419,
+      "repeated_nonempty_lines": 10,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources",
+        "Verified function documentation"
+      ],
+      "selected_templates": [
+        "csv-analysis"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "readr:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_csv:verified",
+        "dplyr::summarise:verified",
+        "ggplot2::ggplot:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "simple-sqlite-query",
+      "detail_level": "concise",
+      "characters": 6012,
+      "utf8_bytes": 6048,
+      "estimated_tokens_utf8_bytes_div_4": 1512,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Role",
+        "Objective",
+        "Project context",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources",
+        "Verified function documentation"
+      ],
+      "selected_templates": [
+        "sql-query"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "DBI:0.0.0-fixture:verified",
+        "RSQLite:0.0.0-fixture:verified",
+        "dbplyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "DBI::dbGetQuery:verified",
+        "DBI::dbBind:verified",
+        "dbplyr::show_query:verified",
+        "RSQLite::SQLite:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed."
+      ],
+      "warnings": [
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "simple-sqlite-query",
+      "detail_level": "standard",
+      "characters": 6078,
+      "utf8_bytes": 6114,
+      "estimated_tokens_utf8_bytes_div_4": 1529,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Role",
+        "Objective",
+        "Project context",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources",
+        "Verified function documentation"
+      ],
+      "selected_templates": [
+        "sql-query"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "DBI:0.0.0-fixture:verified",
+        "RSQLite:0.0.0-fixture:verified",
+        "dbplyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "DBI::dbGetQuery:verified",
+        "DBI::dbBind:verified",
+        "dbplyr::show_query:verified",
+        "RSQLite::SQLite:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed."
+      ],
+      "warnings": [
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "simple-sqlite-query",
+      "detail_level": "comprehensive",
+      "characters": 6452,
+      "utf8_bytes": 6488,
+      "estimated_tokens_utf8_bytes_div_4": 1622,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Role",
+        "Objective",
+        "Project context",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources",
+        "Verified function documentation"
+      ],
+      "selected_templates": [
+        "sql-query"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "DBI:0.0.0-fixture:verified",
+        "RSQLite:0.0.0-fixture:verified",
+        "dbplyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "DBI::dbGetQuery:verified",
+        "DBI::dbBind:verified",
+        "dbplyr::show_query:verified",
+        "RSQLite::SQLite:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed."
+      ],
+      "warnings": [
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "medium-clean-validate-csv",
+      "detail_level": "concise",
+      "characters": 6891,
+      "utf8_bytes": 6927,
+      "estimated_tokens_utf8_bytes_div_4": 1732,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-cleaning",
+        "csv-validation",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "validate:0.0.0-fixture:verified",
+        "pointblank:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "testthat:0.0.0-fixture:verified",
+        "tidyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "dplyr::mutate:verified",
+        "dplyr::distinct:verified",
+        "pointblank::create_agent:verified",
+        "validate::validator:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "medium-clean-validate-csv",
+      "detail_level": "standard",
+      "characters": 6892,
+      "utf8_bytes": 6928,
+      "estimated_tokens_utf8_bytes_div_4": 1732,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-cleaning",
+        "csv-validation",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "validate:0.0.0-fixture:verified",
+        "pointblank:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "testthat:0.0.0-fixture:verified",
+        "tidyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "dplyr::mutate:verified",
+        "dplyr::distinct:verified",
+        "pointblank::create_agent:verified",
+        "validate::validator:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "medium-clean-validate-csv",
+      "detail_level": "comprehensive",
+      "characters": 6897,
+      "utf8_bytes": 6933,
+      "estimated_tokens_utf8_bytes_div_4": 1734,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-cleaning",
+        "csv-validation",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "validate:0.0.0-fixture:verified",
+        "pointblank:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "testthat:0.0.0-fixture:verified",
+        "tidyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "dplyr::mutate:verified",
+        "dplyr::distinct:verified",
+        "pointblank::create_agent:verified",
+        "validate::validator:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "medium-shiny-module",
+      "detail_level": "concise",
+      "characters": 3545,
+      "utf8_bytes": 3561,
+      "estimated_tokens_utf8_bytes_div_4": 891,
+      "repeated_nonempty_lines": 5,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "shiny-app"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "shiny:0.0.0-fixture:verified",
+        "bslib:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "medium-shiny-module",
+      "detail_level": "standard",
+      "characters": 3611,
+      "utf8_bytes": 3627,
+      "estimated_tokens_utf8_bytes_div_4": 907,
+      "repeated_nonempty_lines": 5,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "shiny-app"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "shiny:0.0.0-fixture:verified",
+        "bslib:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "medium-shiny-module",
+      "detail_level": "comprehensive",
+      "characters": 3985,
+      "utf8_bytes": 4001,
+      "estimated_tokens_utf8_bytes_div_4": 1001,
+      "repeated_nonempty_lines": 5,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "shiny-app"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "shiny:0.0.0-fixture:verified",
+        "bslib:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "medium-debug-legend",
+      "detail_level": "concise",
+      "characters": 3128,
+      "utf8_bytes": 3136,
+      "estimated_tokens_utf8_bytes_div_4": 784,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "ggplot2-visualization"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "medium-debug-legend",
+      "detail_level": "standard",
+      "characters": 3194,
+      "utf8_bytes": 3202,
+      "estimated_tokens_utf8_bytes_div_4": 801,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "ggplot2-visualization"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "medium-debug-legend",
+      "detail_level": "comprehensive",
+      "characters": 3568,
+      "utf8_bytes": 3576,
+      "estimated_tokens_utf8_bytes_div_4": 894,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "ggplot2-visualization"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "medium-postgres-parameters",
+      "detail_level": "concise",
+      "characters": 5292,
+      "utf8_bytes": 5328,
+      "estimated_tokens_utf8_bytes_div_4": 1332,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Role",
+        "Objective",
+        "Project context",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources",
+        "Verified function documentation"
+      ],
+      "selected_templates": [
+        "sql-query"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "DBI:0.0.0-fixture:verified",
+        "RPostgres:0.0.0-fixture:verified",
+        "dbplyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "DBI::dbGetQuery:verified",
+        "DBI::dbBind:verified",
+        "dbplyr::show_query:verified",
+        "RPostgres::Postgres:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed."
+      ],
+      "warnings": [
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "medium-postgres-parameters",
+      "detail_level": "standard",
+      "characters": 5358,
+      "utf8_bytes": 5394,
+      "estimated_tokens_utf8_bytes_div_4": 1349,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Role",
+        "Objective",
+        "Project context",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources",
+        "Verified function documentation"
+      ],
+      "selected_templates": [
+        "sql-query"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "DBI:0.0.0-fixture:verified",
+        "RPostgres:0.0.0-fixture:verified",
+        "dbplyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "DBI::dbGetQuery:verified",
+        "DBI::dbBind:verified",
+        "dbplyr::show_query:verified",
+        "RPostgres::Postgres:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed."
+      ],
+      "warnings": [
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "medium-postgres-parameters",
+      "detail_level": "comprehensive",
+      "characters": 5732,
+      "utf8_bytes": 5768,
+      "estimated_tokens_utf8_bytes_div_4": 1442,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Role",
+        "Objective",
+        "Project context",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources",
+        "Verified function documentation"
+      ],
+      "selected_templates": [
+        "sql-query"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "DBI:0.0.0-fixture:verified",
+        "RPostgres:0.0.0-fixture:verified",
+        "dbplyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "DBI::dbGetQuery:verified",
+        "DBI::dbBind:verified",
+        "dbplyr::show_query:verified",
+        "RPostgres::Postgres:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed."
+      ],
+      "warnings": [
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "medium-quarto-report",
+      "detail_level": "concise",
+      "characters": 5320,
+      "utf8_bytes": 5342,
+      "estimated_tokens_utf8_bytes_div_4": 1336,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "quarto-report",
+        "data-visualization",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "knitr:0.0.0-fixture:verified",
+        "ggplot2:0.0.0-fixture:verified",
+        "testthat:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "medium-quarto-report",
+      "detail_level": "standard",
+      "characters": 5321,
+      "utf8_bytes": 5343,
+      "estimated_tokens_utf8_bytes_div_4": 1336,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "quarto-report",
+        "data-visualization",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "knitr:0.0.0-fixture:verified",
+        "ggplot2:0.0.0-fixture:verified",
+        "testthat:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "medium-quarto-report",
+      "detail_level": "comprehensive",
+      "characters": 5326,
+      "utf8_bytes": 5348,
+      "estimated_tokens_utf8_bytes_div_4": 1337,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "quarto-report",
+        "data-visualization",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "knitr:0.0.0-fixture:verified",
+        "ggplot2:0.0.0-fixture:verified",
+        "testthat:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "workflow-csv-dplyr-ggplot-quarto",
+      "detail_level": "concise",
+      "characters": 9415,
+      "utf8_bytes": 9467,
+      "estimated_tokens_utf8_bytes_div_4": 2367,
+      "repeated_nonempty_lines": 10,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-import",
+        "csv-cleaning",
+        "csv-analysis",
+        "ggplot2-visualization",
+        "quarto-report",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "readr:0.0.0-fixture:verified",
+        "data.table:0.0.0-fixture:verified",
+        "vroom:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_delim:verified",
+        "data.table::fread:verified",
+        "vroom::vroom:verified",
+        "dplyr::mutate:verified",
+        "dplyr::distinct:verified",
+        "readr::read_csv:verified",
+        "dplyr::summarise:verified",
+        "ggplot2::ggplot:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "workflow-csv-dplyr-ggplot-quarto",
+      "detail_level": "standard",
+      "characters": 9416,
+      "utf8_bytes": 9468,
+      "estimated_tokens_utf8_bytes_div_4": 2367,
+      "repeated_nonempty_lines": 10,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-import",
+        "csv-cleaning",
+        "csv-analysis",
+        "ggplot2-visualization",
+        "quarto-report",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "readr:0.0.0-fixture:verified",
+        "data.table:0.0.0-fixture:verified",
+        "vroom:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_delim:verified",
+        "data.table::fread:verified",
+        "vroom::vroom:verified",
+        "dplyr::mutate:verified",
+        "dplyr::distinct:verified",
+        "readr::read_csv:verified",
+        "dplyr::summarise:verified",
+        "ggplot2::ggplot:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "workflow-csv-dplyr-ggplot-quarto",
+      "detail_level": "comprehensive",
+      "characters": 9421,
+      "utf8_bytes": 9473,
+      "estimated_tokens_utf8_bytes_div_4": 2369,
+      "repeated_nonempty_lines": 10,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-import",
+        "csv-cleaning",
+        "csv-analysis",
+        "ggplot2-visualization",
+        "quarto-report",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "readr:0.0.0-fixture:verified",
+        "data.table:0.0.0-fixture:verified",
+        "vroom:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_delim:verified",
+        "data.table::fread:verified",
+        "vroom::vroom:verified",
+        "dplyr::mutate:verified",
+        "dplyr::distinct:verified",
+        "readr::read_csv:verified",
+        "dplyr::summarise:verified",
+        "ggplot2::ggplot:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "workflow-csv-postgres-sql-r",
+      "detail_level": "concise",
+      "characters": 10118,
+      "utf8_bytes": 10168,
+      "estimated_tokens_utf8_bytes_div_4": 2542,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-import",
+        "sql-database",
+        "csv-analysis",
+        "sql-query",
+        "csv-validation",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "validate:0.0.0-fixture:verified",
+        "DBI:0.0.0-fixture:verified",
+        "RPostgres:0.0.0-fixture:verified",
+        "readr:0.0.0-fixture:verified",
+        "pointblank:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_delim:verified",
+        "DBI::dbConnect:verified",
+        "DBI::dbWithTransaction:verified",
+        "readr::read_csv:verified",
+        "DBI::dbGetQuery:verified",
+        "DBI::dbBind:verified",
+        "pointblank::create_agent:verified",
+        "validate::validator:verified",
+        "RPostgres::Postgres:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed.",
+        "Database schema was not supplied; inspect it using an authorized read-only path before proposing queries or migrations.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached",
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "workflow-csv-postgres-sql-r",
+      "detail_level": "standard",
+      "characters": 10119,
+      "utf8_bytes": 10169,
+      "estimated_tokens_utf8_bytes_div_4": 2543,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-import",
+        "sql-database",
+        "csv-analysis",
+        "sql-query",
+        "csv-validation",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "validate:0.0.0-fixture:verified",
+        "DBI:0.0.0-fixture:verified",
+        "RPostgres:0.0.0-fixture:verified",
+        "readr:0.0.0-fixture:verified",
+        "pointblank:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_delim:verified",
+        "DBI::dbConnect:verified",
+        "DBI::dbWithTransaction:verified",
+        "readr::read_csv:verified",
+        "DBI::dbGetQuery:verified",
+        "DBI::dbBind:verified",
+        "pointblank::create_agent:verified",
+        "validate::validator:verified",
+        "RPostgres::Postgres:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed.",
+        "Database schema was not supplied; inspect it using an authorized read-only path before proposing queries or migrations.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached",
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "workflow-csv-postgres-sql-r",
+      "detail_level": "comprehensive",
+      "characters": 10124,
+      "utf8_bytes": 10174,
+      "estimated_tokens_utf8_bytes_div_4": 2544,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-import",
+        "sql-database",
+        "csv-analysis",
+        "sql-query",
+        "csv-validation",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "validate:0.0.0-fixture:verified",
+        "DBI:0.0.0-fixture:verified",
+        "RPostgres:0.0.0-fixture:verified",
+        "readr:0.0.0-fixture:verified",
+        "pointblank:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_delim:verified",
+        "DBI::dbConnect:verified",
+        "DBI::dbWithTransaction:verified",
+        "readr::read_csv:verified",
+        "DBI::dbGetQuery:verified",
+        "DBI::dbBind:verified",
+        "pointblank::create_agent:verified",
+        "validate::validator:verified",
+        "RPostgres::Postgres:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed.",
+        "Database schema was not supplied; inspect it using an authorized read-only path before proposing queries or migrations.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached",
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "workflow-deseq2-visualization-quarto",
+      "detail_level": "concise",
+      "characters": 7316,
+      "utf8_bytes": 7356,
+      "estimated_tokens_utf8_bytes_div_4": 1839,
+      "repeated_nonempty_lines": 7,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "bioconductor-analysis",
+        "data-visualization",
+        "quarto-report",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "DESeq2:0.0.0-fixture:verified",
+        "SummarizedExperiment:0.0.0-fixture:verified",
+        "ggplot2:0.0.0-fixture:verified",
+        "knitr:0.0.0-fixture:verified",
+        "testthat:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached",
+        "selected_bioconductor_release_not_mapped_to_r_version",
+        "Bioconductor release and package versions are source-grounded only when the caller supplies an R version or explicitly selects a release."
+      ]
+    },
+    {
+      "scenario": "workflow-deseq2-visualization-quarto",
+      "detail_level": "standard",
+      "characters": 7317,
+      "utf8_bytes": 7357,
+      "estimated_tokens_utf8_bytes_div_4": 1840,
+      "repeated_nonempty_lines": 7,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "bioconductor-analysis",
+        "data-visualization",
+        "quarto-report",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "DESeq2:0.0.0-fixture:verified",
+        "SummarizedExperiment:0.0.0-fixture:verified",
+        "ggplot2:0.0.0-fixture:verified",
+        "knitr:0.0.0-fixture:verified",
+        "testthat:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached",
+        "selected_bioconductor_release_not_mapped_to_r_version",
+        "Bioconductor release and package versions are source-grounded only when the caller supplies an R version or explicitly selects a release."
+      ]
+    },
+    {
+      "scenario": "workflow-deseq2-visualization-quarto",
+      "detail_level": "comprehensive",
+      "characters": 7322,
+      "utf8_bytes": 7362,
+      "estimated_tokens_utf8_bytes_div_4": 1841,
+      "repeated_nonempty_lines": 7,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "bioconductor-analysis",
+        "data-visualization",
+        "quarto-report",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "DESeq2:0.0.0-fixture:verified",
+        "SummarizedExperiment:0.0.0-fixture:verified",
+        "ggplot2:0.0.0-fixture:verified",
+        "knitr:0.0.0-fixture:verified",
+        "testthat:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached",
+        "selected_bioconductor_release_not_mapped_to_r_version",
+        "Bioconductor release and package versions are source-grounded only when the caller supplies an R version or explicitly selects a release."
+      ]
+    },
+    {
+      "scenario": "workflow-sql-clean-shiny",
+      "detail_level": "concise",
+      "characters": 7506,
+      "utf8_bytes": 7542,
+      "estimated_tokens_utf8_bytes_div_4": 1886,
+      "repeated_nonempty_lines": 6,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "sql-query",
+        "data-transformation",
+        "shiny-app",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "shiny:0.0.0-fixture:verified",
+        "DBI:0.0.0-fixture:verified",
+        "RPostgres:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "tidyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "DBI::dbGetQuery:verified",
+        "DBI::dbBind:verified",
+        "RPostgres::Postgres:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed.",
+        "Database schema was not supplied; inspect it using an authorized read-only path before proposing queries or migrations.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached",
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "workflow-sql-clean-shiny",
+      "detail_level": "standard",
+      "characters": 7507,
+      "utf8_bytes": 7543,
+      "estimated_tokens_utf8_bytes_div_4": 1886,
+      "repeated_nonempty_lines": 6,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "sql-query",
+        "data-transformation",
+        "shiny-app",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "shiny:0.0.0-fixture:verified",
+        "DBI:0.0.0-fixture:verified",
+        "RPostgres:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "tidyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "DBI::dbGetQuery:verified",
+        "DBI::dbBind:verified",
+        "RPostgres::Postgres:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed.",
+        "Database schema was not supplied; inspect it using an authorized read-only path before proposing queries or migrations.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached",
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "workflow-sql-clean-shiny",
+      "detail_level": "comprehensive",
+      "characters": 7512,
+      "utf8_bytes": 7548,
+      "estimated_tokens_utf8_bytes_div_4": 1887,
+      "repeated_nonempty_lines": 6,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "sql-query",
+        "data-transformation",
+        "shiny-app",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "shiny:0.0.0-fixture:verified",
+        "DBI:0.0.0-fixture:verified",
+        "RPostgres:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "tidyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "DBI::dbGetQuery:verified",
+        "DBI::dbBind:verified",
+        "RPostgres::Postgres:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed.",
+        "Database schema was not supplied; inspect it using an authorized read-only path before proposing queries or migrations.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached",
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "workflow-explicit-templates",
+      "detail_level": "concise",
+      "characters": 7197,
+      "utf8_bytes": 7239,
+      "estimated_tokens_utf8_bytes_div_4": 1810,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-import",
+        "csv-validation",
+        "csv-analysis",
+        "quarto-report"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "validate:0.0.0-fixture:verified",
+        "pointblank:0.0.0-fixture:verified",
+        "readr:0.0.0-fixture:verified",
+        "knitr:0.0.0-fixture:verified",
+        "data.table:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_delim:verified",
+        "data.table::fread:verified",
+        "pointblank::create_agent:verified",
+        "validate::validator:verified",
+        "readr::read_csv:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "workflow-explicit-templates",
+      "detail_level": "standard",
+      "characters": 7198,
+      "utf8_bytes": 7240,
+      "estimated_tokens_utf8_bytes_div_4": 1810,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-import",
+        "csv-validation",
+        "csv-analysis",
+        "quarto-report"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "validate:0.0.0-fixture:verified",
+        "pointblank:0.0.0-fixture:verified",
+        "readr:0.0.0-fixture:verified",
+        "knitr:0.0.0-fixture:verified",
+        "data.table:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_delim:verified",
+        "data.table::fread:verified",
+        "pointblank::create_agent:verified",
+        "validate::validator:verified",
+        "readr::read_csv:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "workflow-explicit-templates",
+      "detail_level": "comprehensive",
+      "characters": 7203,
+      "utf8_bytes": 7245,
+      "estimated_tokens_utf8_bytes_div_4": 1812,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-import",
+        "csv-validation",
+        "csv-analysis",
+        "quarto-report"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "validate:0.0.0-fixture:verified",
+        "pointblank:0.0.0-fixture:verified",
+        "readr:0.0.0-fixture:verified",
+        "knitr:0.0.0-fixture:verified",
+        "data.table:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "readr::read_delim:verified",
+        "data.table::fread:verified",
+        "pointblank::create_agent:verified",
+        "validate::validator:verified",
+        "readr::read_csv:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "safety-explicit-constraints",
+      "detail_level": "concise",
+      "characters": 3358,
+      "utf8_bytes": 3368,
+      "estimated_tokens_utf8_bytes_div_4": 842,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Explicit constraints",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "data-visualization"
+      ],
+      "preserved_constraints": [
+        "Do not install packages.",
+        "Save the result as plot.png."
+      ],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "safety-explicit-constraints",
+      "detail_level": "standard",
+      "characters": 3424,
+      "utf8_bytes": 3434,
+      "estimated_tokens_utf8_bytes_div_4": 859,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Explicit constraints",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "data-visualization"
+      ],
+      "preserved_constraints": [
+        "Do not install packages.",
+        "Save the result as plot.png."
+      ],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "safety-explicit-constraints",
+      "detail_level": "comprehensive",
+      "characters": 3798,
+      "utf8_bytes": 3808,
+      "estimated_tokens_utf8_bytes_div_4": 952,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Explicit constraints",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "data-visualization"
+      ],
+      "preserved_constraints": [
+        "Do not install packages.",
+        "Save the result as plot.png."
+      ],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": []
+    },
+    {
+      "scenario": "safety-missing-docs",
+      "detail_level": "concise",
+      "characters": 3924,
+      "utf8_bytes": 3948,
+      "estimated_tokens_utf8_bytes_div_4": 987,
+      "repeated_nonempty_lines": 7,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "data-transformation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "tidyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "ggplot2::unknown_plot:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "safety-missing-docs",
+      "detail_level": "standard",
+      "characters": 3990,
+      "utf8_bytes": 4014,
+      "estimated_tokens_utf8_bytes_div_4": 1004,
+      "repeated_nonempty_lines": 7,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "data-transformation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "tidyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "ggplot2::unknown_plot:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "safety-missing-docs",
+      "detail_level": "comprehensive",
+      "characters": 4364,
+      "utf8_bytes": 4388,
+      "estimated_tokens_utf8_bytes_div_4": 1097,
+      "repeated_nonempty_lines": 7,
+      "sections": [
+        "Role",
+        "Objective",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "data-transformation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified",
+        "dplyr:0.0.0-fixture:verified",
+        "tidyr:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "ggplot2::unknown_plot:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "safety-conflicting-workflow",
+      "detail_level": "concise",
+      "characters": 7200,
+      "utf8_bytes": 7238,
+      "estimated_tokens_utf8_bytes_div_4": 1810,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-validation",
+        "csv-import",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "validate:0.0.0-fixture:verified",
+        "pointblank:0.0.0-fixture:verified",
+        "readr:0.0.0-fixture:verified",
+        "testthat:0.0.0-fixture:verified",
+        "data.table:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "pointblank::create_agent:verified",
+        "validate::validator:verified",
+        "readr::read_delim:verified",
+        "data.table::fread:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "safety-conflicting-workflow",
+      "detail_level": "standard",
+      "characters": 7201,
+      "utf8_bytes": 7239,
+      "estimated_tokens_utf8_bytes_div_4": 1810,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-validation",
+        "csv-import",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "validate:0.0.0-fixture:verified",
+        "pointblank:0.0.0-fixture:verified",
+        "readr:0.0.0-fixture:verified",
+        "testthat:0.0.0-fixture:verified",
+        "data.table:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "pointblank::create_agent:verified",
+        "validate::validator:verified",
+        "readr::read_delim:verified",
+        "data.table::fread:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "safety-conflicting-workflow",
+      "detail_level": "comprehensive",
+      "characters": 7206,
+      "utf8_bytes": 7244,
+      "estimated_tokens_utf8_bytes_div_4": 1811,
+      "repeated_nonempty_lines": 9,
+      "sections": [
+        "Project objective",
+        "Technical context",
+        "Architecture",
+        "Implementation plan",
+        "Data contracts",
+        "Shared constraints",
+        "Security requirements",
+        "Testing strategy",
+        "Acceptance criteria",
+        "Verified package facts",
+        "Unresolved conflicts and unknowns",
+        "Sources and provenance",
+        "Final delivery instructions"
+      ],
+      "selected_templates": [
+        "csv-validation",
+        "csv-import",
+        "r-test-generation"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "validate:0.0.0-fixture:verified",
+        "pointblank:0.0.0-fixture:verified",
+        "readr:0.0.0-fixture:verified",
+        "testthat:0.0.0-fixture:verified",
+        "data.table:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "pointblank::create_agent:verified",
+        "validate::validator:verified",
+        "readr::read_delim:verified",
+        "data.table::fread:verified"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "CSV column names and types are unknown; inspect a bounded, sanitized sample or metadata before selecting transformations."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "safety-destructive-sql",
+      "detail_level": "concise",
+      "characters": 4072,
+      "utf8_bytes": 4088,
+      "estimated_tokens_utf8_bytes_div_4": 1022,
+      "repeated_nonempty_lines": 5,
+      "sections": [
+        "Role",
+        "Objective",
+        "Project context",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "data-analysis"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "DBI:0.0.0-fixture:verified",
+        "RPostgres:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "RPostgres::Postgres:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached",
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "safety-destructive-sql",
+      "detail_level": "standard",
+      "characters": 4138,
+      "utf8_bytes": 4154,
+      "estimated_tokens_utf8_bytes_div_4": 1039,
+      "repeated_nonempty_lines": 5,
+      "sections": [
+        "Role",
+        "Objective",
+        "Project context",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "data-analysis"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "DBI:0.0.0-fixture:verified",
+        "RPostgres:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "RPostgres::Postgres:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached",
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "safety-destructive-sql",
+      "detail_level": "comprehensive",
+      "characters": 4512,
+      "utf8_bytes": 4528,
+      "estimated_tokens_utf8_bytes_div_4": 1132,
+      "repeated_nonempty_lines": 5,
+      "sections": [
+        "Role",
+        "Objective",
+        "Project context",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "data-analysis"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "DBI:0.0.0-fixture:verified",
+        "RPostgres:0.0.0-fixture:verified"
+      ],
+      "function_references": [
+        "RPostgres::Postgres:docs_not_found"
+      ],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions.",
+        "SQL syntax and driver references are scoped to the caller-specified database dialect; cross-engine portability is not assumed."
+      ],
+      "warnings": [
+        "grounding_package_limit_reached",
+        "function_documentation_unavailable_or_ambiguous"
+      ]
+    },
+    {
+      "scenario": "safety-version-mismatch",
+      "detail_level": "concise",
+      "characters": 3256,
+      "utf8_bytes": 3264,
+      "estimated_tokens_utf8_bytes_div_4": 816,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Role",
+        "Objective",
+        "Project context",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "ggplot2-visualization"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "requested_package_version_differs_from_current_metadata:ggplot2:1.0.0",
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "safety-version-mismatch",
+      "detail_level": "standard",
+      "characters": 3322,
+      "utf8_bytes": 3330,
+      "estimated_tokens_utf8_bytes_div_4": 833,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Role",
+        "Objective",
+        "Project context",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "ggplot2-visualization"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "requested_package_version_differs_from_current_metadata:ggplot2:1.0.0",
+        "grounding_package_limit_reached"
+      ]
+    },
+    {
+      "scenario": "safety-version-mismatch",
+      "detail_level": "comprehensive",
+      "characters": 3696,
+      "utf8_bytes": 3704,
+      "estimated_tokens_utf8_bytes_div_4": 926,
+      "repeated_nonempty_lines": 3,
+      "sections": [
+        "Role",
+        "Objective",
+        "Project context",
+        "Original request (preserve its intent)",
+        "Technical requirements",
+        "Verified facts — Packages and versions",
+        "Implementation guidance",
+        "Suggested stages",
+        "Testing",
+        "Acceptance criteria",
+        "Security and authority boundaries",
+        "Assumptions",
+        "Open questions and unknowns",
+        "Expected delivery",
+        "Sources"
+      ],
+      "selected_templates": [
+        "ggplot2-visualization"
+      ],
+      "preserved_constraints": [],
+      "verified_package_references": [
+        "ggplot2:0.0.0-fixture:verified"
+      ],
+      "function_references": [],
+      "assumptions": [
+        "Only the user-supplied request and project context are known; no files or local environment were read.",
+        "Template package candidates are optional suggestions, not requirements; verified versions do not imply installed versions."
+      ],
+      "warnings": [
+        "requested_package_version_differs_from_current_metadata:ggplot2:1.0.0",
+        "grounding_package_limit_reached"
+      ]
+    }
+  ]
+}

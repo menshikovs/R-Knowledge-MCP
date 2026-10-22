@@ -37,6 +37,8 @@ class PromptSpecification:
     security_boundaries: list[str]
     output_expectations: list[str]
     sources: list[PromptSource] = field(default_factory=list)
+    function_documentation: list[dict[str, Any]] = field(default_factory=list)
+    structured_context: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

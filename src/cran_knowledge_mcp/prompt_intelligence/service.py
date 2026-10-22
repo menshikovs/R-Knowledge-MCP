@@ -525,12 +525,14 @@ class PromptIntelligence:
             project_context=context,
             assumptions=assumptions,
             unknowns=unknowns,
-            implementation_guidance=[instruction, *structured_guidance],
+            implementation_guidance=structured_guidance,
             testing_requirements=testing_requirements,
             acceptance_criteria=acceptance,
             security_boundaries=security,
             output_expectations=output_expectations,
             sources=sources,
+            function_documentation=function_docs,
+            structured_context=structured_context,
         )
         prompt_text = render_prompt(spec, language=language, include_sources=include_sources)
         verified_doc_refs = [item for item in function_docs if item.get("status") == "verified"]
