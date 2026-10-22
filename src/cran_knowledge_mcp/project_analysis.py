@@ -18,6 +18,21 @@ SECRET_FIELD = re.compile(
 )
 
 
+def _text_size(text, maximum, label):
+    limit_label = f"{maximum // 1024} KiB" if maximum % 1024 == 0 else f"{maximum} bytes"
+    if not isinstance(text, str):
+        raise KnowledgeError("invalid_input", f"{label} must be text")
+    if len(text) > maximum:
+        raise KnowledgeError("input_too_large", f"{label} exceeds {limit_label}")
+    try:
+        size = len(text.encode("utf-8"))
+    except UnicodeError as exc:
+        raise KnowledgeError("invalid_input", f"{label} must be valid Unicode") from exc
+    if size > maximum:
+        raise KnowledgeError("input_too_large", f"{label} exceeds {limit_label}")
+    return size
+
+
 class _UniqueSafeLoader(yaml.SafeLoader):
     """SafeLoader variant that reports duplicate mapping keys instead of hiding them."""
 
@@ -49,10 +64,7 @@ class _UniqueSafeLoader(yaml.SafeLoader):
 
 
 def _yaml(text: str):
-    if not isinstance(text, str):
-        raise KnowledgeError("invalid_input", "YAML input must be text")
-    if len(text.encode("utf-8")) > MAX_TEXT:
-        raise KnowledgeError("input_too_large", "YAML input exceeds 256 KiB")
+    _text_size(text, MAX_TEXT, "YAML input")
     try:
         value = yaml.load(text, Loader=_UniqueSafeLoader)
     except (yaml.YAMLError, TypeError, RecursionError) as exc:
@@ -63,7 +75,7 @@ def _yaml(text: str):
         return None, "YAML root must be a mapping"
     try:
         return _normalize_yaml(value), None
-    except (TypeError, ValueError, UnicodeError) as exc:
+    except (TypeError, ValueError, UnicodeError, RecursionError) as exc:
         return None, str(exc)[:300]
 
 
@@ -99,8 +111,7 @@ def _redact_metadata(value, parent_key=""):
 def _document_front_matter(source: str):
     if not isinstance(source, str):
         raise KnowledgeError("invalid_input", "QMD source must be text")
-    if len(source.encode("utf-8")) > MAX_TEXT:
-        raise KnowledgeError("input_too_large", "QMD source exceeds 256 KiB")
+    _text_size(source, MAX_TEXT, "QMD source")
     lines = source.splitlines()
     if not lines or lines[0].strip() != "---":
         return {}, None, 0
@@ -371,15 +382,16 @@ def _validated_paths(values):
 def analyze_r_workspace(files: dict[str, str]):
     if not isinstance(files, dict) or not files or len(files) > 100:
         raise KnowledgeError("invalid_input", "Provide 1..100 explicitly selected project files")
-    total = sum(len(value.encode("utf-8")) for value in files.values() if isinstance(value, str))
-    if total > MAX_MANIFEST:
-        raise KnowledgeError("input_too_large", "Workspace manifest exceeds 512 KiB")
     safe_files = {}
+    total = 0
     for name, content in files.items():
-        if not isinstance(name, str) or not isinstance(content, str) or len(content) > MAX_MANIFEST:
+        if not isinstance(name, str) or not isinstance(content, str):
             raise KnowledgeError(
                 "invalid_input", "Workspace entries must map names to bounded text"
             )
+        total += _text_size(content, MAX_MANIFEST, "Workspace file")
+        if total > MAX_MANIFEST:
+            raise KnowledgeError("input_too_large", "Workspace manifest exceeds 512 KiB")
         _validated_paths([name])
         safe_files[name] = content
 
@@ -422,7 +434,10 @@ def analyze_r_workspace(files: dict[str, str]):
                 "package_versions": {
                     name: entry.get("Version")
                     for name, entry in list(packages.items())[:250]
-                    if isinstance(name, str) and isinstance(entry, dict)
+                    if isinstance(name, str)
+                    and isinstance(entry, dict)
+                    and isinstance(entry.get("Version"), str)
+                    and len(entry["Version"]) <= 100
                 },
             }
         except (json.JSONDecodeError, ValueError, TypeError) as exc:
@@ -558,27 +573,25 @@ def analyze_shiny_app(source: str | None = None, files: dict[str, str] | None = 
     if (source is None) == (files is None):
         raise KnowledgeError("invalid_input", "Supply exactly one of `source` or `files`")
     if source is not None:
-        if not isinstance(source, str) or len(source.encode("utf-8")) > MAX_TEXT:
-            raise KnowledgeError(
-                "input_too_large", "Shiny source must be text no larger than 256 KiB"
-            )
+        _text_size(source, MAX_TEXT, "Shiny source")
         texts = {"app.R": source}
     else:
         if not isinstance(files, dict) or not files or len(files) > 50:
             raise KnowledgeError("invalid_input", "Provide 1..50 named R source files")
-        if sum(len(v.encode("utf-8")) for v in files.values() if isinstance(v, str)) > MAX_TEXT:
-            raise KnowledgeError("input_too_large", "Shiny file manifest exceeds 256 KiB")
         texts = {}
+        total = 0
         for path, text in files.items():
-            if not isinstance(text, str) or not path.endswith(".R"):
+            if not isinstance(path, str) or not isinstance(text, str) or not path.endswith(".R"):
                 raise KnowledgeError(
                     "invalid_input", "Shiny manifest accepts only named .R text files"
                 )
             _validated_paths([path])
+            total += _text_size(text, MAX_TEXT, "Shiny source file")
+            if total > MAX_TEXT:
+                raise KnowledgeError("input_too_large", "Shiny file manifest exceeds 256 KiB")
             texts[path] = text
     combined = "\n".join(texts.values())
-    if len(combined.encode("utf-8")) > MAX_TEXT:
-        raise KnowledgeError("input_too_large", "Combined Shiny source exceeds 256 KiB")
+    _text_size(combined, MAX_TEXT, "Combined Shiny source")
 
     inputs = re.findall(
         r"\b(?:textInput|numericInput|sliderInput|selectInput|selectizeInput|actionButton|"

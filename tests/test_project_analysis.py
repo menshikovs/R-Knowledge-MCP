@@ -50,6 +50,8 @@ def test_shiny_manifest_is_path_safe_bounded_and_requires_one_input():
         analyze_shiny_app(source="x" * ((256 << 10) + 1))
     result = analyze_shiny_app(files={"app.R": "shinyApp(ui, server)", "R/mod.R": "NS('x')"})
     assert result["application_shape"]["module_constructs_present"]
+    with pytest.raises(KnowledgeError, match="only named .R"):
+        analyze_shiny_app(files={1: "shinyApp(ui, server)"})
 
 
 def test_quarto_document_parses_yaml_and_r_chunk_options_without_running_code():
@@ -183,3 +185,21 @@ def test_workspace_rejects_unsafe_paths_and_malformed_metadata():
         analyze_r_workspace({"../.Renviron": "TOKEN=secret"})
     result = analyze_r_workspace({"renv.lock": "{"})
     assert result["findings"][0]["kind"] == "invalid_renv_lock"
+
+
+def test_workspace_does_not_echo_non_string_lock_versions():
+    result = analyze_r_workspace(
+        {"renv.lock": json.dumps({"Packages": {"sample": {"Version": {"nested": "data"}}}})}
+    )
+    assert result["renv_lock"]["package_versions"] == {}
+
+
+def test_quarto_handles_deep_yaml_without_recursion_error():
+    nested = "value: " + "[" * 1200 + "1" + "]" * 1200
+    result = analyze_quarto_document(f"---\n{nested}\n---\n")
+    assert "invalid_front_matter" in {item["kind"] for item in result["findings"]}
+
+
+def test_quarto_rejects_invalid_unicode():
+    with pytest.raises(KnowledgeError, match="valid Unicode"):
+        analyze_quarto_document("---\ntitle: \ud800\n---\n")

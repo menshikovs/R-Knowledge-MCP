@@ -4,7 +4,7 @@ import httpx
 import pytest
 
 from cran_knowledge_mcp.errors import KnowledgeError
-from cran_knowledge_mcp.http import INDEX, CranHTTP
+from cran_knowledge_mcp.http import CATALOG, INDEX, CranHTTP
 
 
 @pytest.mark.parametrize("status", [301, 302, 404, 429, 500, 503])
@@ -94,6 +94,28 @@ async def test_cache_expiry_and_concurrent_misses():
         source._cache[INDEX] = (0, a)
         c = await source.fetch(INDEX)
         assert c is not a and len(calls) == 2
+
+
+async def test_unrelated_routes_download_concurrently():
+    class DelayedTransport(httpx.AsyncBaseTransport):
+        def __init__(self):
+            self.active = 0
+            self.max_active = 0
+
+        async def handle_async_request(self, request):
+            self.active += 1
+            self.max_active = max(self.max_active, self.active)
+            try:
+                await asyncio.sleep(0.02)
+                return httpx.Response(200, content=request.url.path.encode())
+            finally:
+                self.active -= 1
+
+    transport = DelayedTransport()
+    async with httpx.AsyncClient(transport=transport) as client:
+        source = CranHTTP(client)
+        await asyncio.gather(source.fetch(INDEX), source.fetch(CATALOG))
+    assert transport.max_active == 2
 
 
 async def test_download_size_limit():

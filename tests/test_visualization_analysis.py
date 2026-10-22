@@ -83,3 +83,9 @@ def test_static_source_is_never_executed_and_caps_and_schema_validation_hold():
         assert exc.code == "input_too_large"
     else:
         raise AssertionError("oversized source should be rejected")
+    try:
+        analyze_ggplot_code("\ud800")
+    except KnowledgeError as exc:
+        assert exc.code == "invalid_input"
+    else:
+        raise AssertionError("invalid Unicode should be rejected")

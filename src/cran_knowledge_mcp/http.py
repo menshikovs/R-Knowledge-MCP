@@ -5,6 +5,7 @@ import random
 import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from time import monotonic
@@ -72,8 +73,29 @@ class RepositoryHTTP(ABC):
         self.request_timeout = positive_float("HTTP_TIMEOUT_SECONDS", 15)
         self._cache: OrderedDict[str, tuple[float, Artifact]] = OrderedDict()
         self._bytes = 0
-        # Serializes downloads, collapses concurrent cache misses and bounds memory in flight.
-        self._lock = asyncio.Lock()
+        # Coalesce identical requests without blocking unrelated repository routes.
+        self._cache_lock = asyncio.Lock()
+        self._path_lock_guard = asyncio.Lock()
+        self._path_locks: dict[str, asyncio.Lock] = {}
+        self._path_lock_users: dict[str, int] = {}
+        self._request_slots = asyncio.Semaphore(4)
+
+    @asynccontextmanager
+    async def _singleflight(self, path: str):
+        async with self._path_lock_guard:
+            lock = self._path_locks.setdefault(path, asyncio.Lock())
+            self._path_lock_users[path] = self._path_lock_users.get(path, 0) + 1
+        try:
+            async with lock:
+                yield
+        finally:
+            async with self._path_lock_guard:
+                users = self._path_lock_users[path] - 1
+                if users:
+                    self._path_lock_users[path] = users
+                else:
+                    self._path_lock_users.pop(path, None)
+                    self._path_locks.pop(path, None)
 
     async def fetch(self, path: str) -> Artifact:
         if not self.allowed_path(path):
@@ -82,86 +104,92 @@ class RepositoryHTTP(ABC):
         limit = (25 if path.endswith(".tar.gz") else 16) << 20
         if path == "/config.yaml":
             limit = 1 << 20
-        async with self._lock:
-            now = monotonic()
-            if path in self._cache:
-                expires, item = self._cache[path]
-                if expires > now:
-                    self._cache.move_to_end(path)
-                    return item
-                self._bytes -= len(self._cache.pop(path)[1].body)
-            try:
-                async with asyncio.timeout(45):
-                    for attempt in range(2):
-                        try:
-                            async with self.client.stream(
-                                "GET",
-                                url,
-                                follow_redirects=False,
-                                timeout=self.request_timeout,
-                                headers={"Accept-Encoding": "identity"},
-                            ) as response:
-                                if response.status_code == 429:
-                                    retry_after = self._retry_after(
-                                        response.headers.get("Retry-After")
-                                    )
+        async with self._singleflight(path):
+            async with self._cache_lock:
+                now = monotonic()
+                if path in self._cache:
+                    expires, item = self._cache[path]
+                    if expires > now:
+                        self._cache.move_to_end(path)
+                        return item
+                    self._bytes -= len(self._cache.pop(path)[1].body)
+            async with self._request_slots:
+                try:
+                    async with asyncio.timeout(45):
+                        for attempt in range(2):
+                            try:
+                                async with self.client.stream(
+                                    "GET",
+                                    url,
+                                    follow_redirects=False,
+                                    timeout=self.request_timeout,
+                                    headers={"Accept-Encoding": "identity"},
+                                ) as response:
+                                    if response.status_code == 429:
+                                        retry_after = self._retry_after(
+                                            response.headers.get("Retry-After")
+                                        )
+                                        if (
+                                            attempt == 0
+                                            and retry_after is not None
+                                            and retry_after <= 1
+                                        ):
+                                            await asyncio.sleep(retry_after)
+                                            continue
+                                        message = "Repository rate limit exceeded"
+                                        if retry_after is not None:
+                                            message += f"; retry after {retry_after:g} seconds"
+                                        raise KnowledgeError("rate_limited", message, url)
                                     if (
-                                        attempt == 0
-                                        and retry_after is not None
-                                        and retry_after <= 1
+                                        response.status_code in (500, 502, 503, 504)
+                                        and attempt == 0
                                     ):
-                                        await asyncio.sleep(retry_after)
+                                        await asyncio.sleep(0.1 + random.random() * 0.2)
                                         continue
-                                    message = "Repository rate limit exceeded"
-                                    if retry_after is not None:
-                                        message += f"; retry after {retry_after:g} seconds"
-                                    raise KnowledgeError("rate_limited", message, url)
-                                if response.status_code in (500, 502, 503, 504) and attempt == 0:
+                                    if response.status_code != 200:
+                                        code = (
+                                            "not_found"
+                                            if response.status_code == 404
+                                            else "source_unavailable"
+                                        )
+                                        raise KnowledgeError(
+                                            code, f"Repository HTTP {response.status_code}", url
+                                        )
+                                    if (
+                                        response.headers.get("content-encoding", "identity")
+                                        != "identity"
+                                    ):
+                                        raise KnowledgeError(
+                                            "invalid_source", "Unexpected HTTP compression", url
+                                        )
+                                    chunks = bytearray()
+                                    async for chunk in response.aiter_bytes(chunk_size=65536):
+                                        chunks.extend(chunk)
+                                        if len(chunks) > limit:
+                                            raise KnowledgeError(
+                                                "source_too_large",
+                                                "Repository download exceeds limit",
+                                                url,
+                                            )
+                                    break
+                            except httpx.HTTPError:
+                                if attempt == 0:
                                     await asyncio.sleep(0.1 + random.random() * 0.2)
                                     continue
-                                if response.status_code != 200:
-                                    code = (
-                                        "not_found"
-                                        if response.status_code == 404
-                                        else "source_unavailable"
-                                    )
-                                    raise KnowledgeError(
-                                        code, f"Repository HTTP {response.status_code}", url
-                                    )
-                                if (
-                                    response.headers.get("content-encoding", "identity")
-                                    != "identity"
-                                ):
-                                    raise KnowledgeError(
-                                        "invalid_source", "Unexpected HTTP compression", url
-                                    )
-                                chunks = bytearray()
-                                async for chunk in response.aiter_bytes(chunk_size=65536):
-                                    chunks.extend(chunk)
-                                    if len(chunks) > limit:
-                                        raise KnowledgeError(
-                                            "source_too_large",
-                                            "Repository download exceeds limit",
-                                            url,
-                                        )
-                                break
-                        except httpx.HTTPError:
-                            if attempt == 0:
-                                await asyncio.sleep(0.1 + random.random() * 0.2)
-                                continue
-                            raise
-            except (httpx.HTTPError, TimeoutError) as exc:
-                raise KnowledgeError(
-                    "source_unavailable", "Repository request failed or timed out", url
-                ) from exc
+                                raise
+                except (httpx.HTTPError, TimeoutError) as exc:
+                    raise KnowledgeError(
+                        "source_unavailable", "Repository request failed or timed out", url
+                    ) from exc
             item = Artifact(bytes(chunks), url, datetime.now(UTC).isoformat())
-            if len(item.body) <= self.cache_bytes:
-                while self._cache and (
-                    self._bytes + len(item.body) > self.cache_bytes or len(self._cache) >= 32
-                ):
-                    self._bytes -= len(self._cache.popitem(last=False)[1].body)
-                self._cache[path] = (monotonic() + self.ttl, item)
-                self._bytes += len(item.body)
+            async with self._cache_lock:
+                if len(item.body) <= self.cache_bytes:
+                    while self._cache and (
+                        self._bytes + len(item.body) > self.cache_bytes or len(self._cache) >= 32
+                    ):
+                        self._bytes -= len(self._cache.popitem(last=False)[1].body)
+                    self._cache[path] = (monotonic() + self.ttl, item)
+                    self._bytes += len(item.body)
             return item
 
     @staticmethod

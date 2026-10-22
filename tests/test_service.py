@@ -134,3 +134,22 @@ async def test_response_bound():
         return {"text": "x" * 60001}
 
     assert (await bounded(operation()))["error"]["code"] == "response_too_large"
+
+
+async def test_bounded_turns_invalid_unicode_results_into_tool_errors():
+    async def operation():
+        return {"text": "\ud800"}
+
+    result = await bounded(operation())
+    assert result["verification_status"] == "failed"
+    assert result["error"]["code"] == "invalid_input"
+
+
+async def test_bounded_hides_unexpected_exception_details(caplog):
+    async def operation():
+        raise RuntimeError("private implementation detail")
+
+    result = await bounded(operation())
+    assert result["error"]["code"] == "internal_error"
+    assert "private implementation detail" not in str(result)
+    assert "RuntimeError" in caplog.text

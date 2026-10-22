@@ -42,7 +42,11 @@ class Call:
 def _input(source):
     if not isinstance(source, str):
         raise KnowledgeError("invalid_input", "R source must be text")
-    if len(source.encode("utf-8")) > MAX_SOURCE:
+    try:
+        encoded_size = len(source.encode("utf-8"))
+    except UnicodeError as exc:
+        raise KnowledgeError("invalid_input", "R source must be valid Unicode") from exc
+    if encoded_size > MAX_SOURCE:
         raise KnowledgeError("input_too_large", "R source exceeds 256 KiB")
     return source
 

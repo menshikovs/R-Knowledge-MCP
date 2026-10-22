@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import logging
 import re
 from collections import OrderedDict
 from collections.abc import Awaitable
@@ -606,7 +607,8 @@ class KnowledgeService:
                 "invalid_input",
                 f"scenario must be one of: {', '.join(sorted(VISUALIZATION_WORKFLOWS))}",
             )
-        package_versions = package_versions or {}
+        if package_versions is None:
+            package_versions = {}
         if not isinstance(package_versions, dict) or len(package_versions) > 5:
             raise KnowledgeError("invalid_input", "Supply at most five explicit package versions")
         if any(
@@ -652,8 +654,13 @@ class KnowledgeService:
 
     async def _visualization_analysis(self, analyzer, source, schemas, package_versions, renv_lock):
         if renv_lock is not None:
-            if not isinstance(renv_lock, str) or len(renv_lock.encode("utf-8")) > 512 << 10:
+            if not isinstance(renv_lock, str) or len(renv_lock) > 512 << 10:
                 raise KnowledgeError("invalid_input", "renv.lock text is limited to 512 KiB")
+            try:
+                if len(renv_lock.encode("utf-8")) > 512 << 10:
+                    raise KnowledgeError("invalid_input", "renv.lock text is limited to 512 KiB")
+            except UnicodeError as exc:
+                raise KnowledgeError("invalid_input", "renv.lock must be valid Unicode") from exc
             try:
                 lock = json.loads(renv_lock)
             except (ValueError, TypeError) as exc:
@@ -1146,6 +1153,15 @@ async def bounded(operation: Awaitable[dict], **context) -> dict:
         return result
     except TimeoutError:
         error = KnowledgeError("timeout", "Tool deadline exceeded")
+    except UnicodeError:
+        error = KnowledgeError("invalid_input", "Input or result contains invalid Unicode")
+    except RecursionError:
+        error = KnowledgeError("input_too_complex", "Input nesting exceeds safe processing limits")
     except KnowledgeError as exc:
         error = exc
+    except Exception as exc:
+        logging.getLogger(__name__).error("Unhandled MCP tool failure (%s)", type(exc).__name__)
+        error = KnowledgeError(
+            "internal_error", "The tool could not complete due to an internal error"
+        )
     return failure(error, **context)
