@@ -50,8 +50,16 @@ async def bioc_service():
     for version in ("9.38", "9.39", "9.40", "9.41"):
         for category, content in (
             ("bioc", SOFTWARE),
-            ("data/annotation", b"Package: org.Example.db\nVersion: 999.0\n"),
-            ("data/experiment", b"Package: ExampleData\nVersion: 999.0\n"),
+            (
+                "data/annotation",
+                b"Package: org.Example.db\nVersion: 999.0\n"
+                b"\nPackage: org.Hs.eg.db\nVersion: 999.2\nLicense: Artistic-2.0\n",
+            ),
+            (
+                "data/experiment",
+                b"Package: ExampleData\nVersion: 999.0\n"
+                b"\nPackage: scRNAseq\nVersion: 999.3\nLicense: Artistic-2.0\n",
+            ),
         ):
             routes[("bioconductor.org", f"/packages/{version}/{category}/src/contrib/PACKAGES")] = (
                 content
@@ -157,6 +165,53 @@ async def test_pinned_metadata_docs_and_channels(bioc_service, selection, versio
     assert docs["bioc_version"] == version
     assert f"/packages/{version}/" in docs["source_url"]
     assert all("/packages/release/" not in r.url.path for r in calls)
+
+
+@pytest.mark.parametrize(
+    ("package", "selection", "version", "category"),
+    [
+        ("DESeq2", "release", "999.1", "software"),
+        ("org.Hs.eg.db", "release", "999.2", "annotation"),
+        ("scRNAseq", "release", "999.3", "experiment"),
+        ("DESeq2", "9.38", "999.1", "software"),
+    ],
+)
+async def test_lightweight_bioconductor_metadata_uses_selected_category_index(
+    bioc_service, package, selection, version, category
+):
+    api, _, calls = bioc_service
+    result = await api.get_package_info(
+        package, repository="bioconductor", bioc_version=selection, verify_archive=False
+    )
+    assert result["package_version"] == version
+    assert result["metadata_verification_level"] == "index_verified"
+    assert result["category"] == category
+    assert result["verification_status"] == "verified"
+    assert result["bioc_version"] == ("9.38" if selection == "9.38" else "9.40")
+    assert result["metadata_fields_missing"]
+    assert not any(request.url.path.endswith(".tar.gz") for request in calls)
+    assert any(f"/packages/{result['bioc_version']}/" in s["source_url"] for s in result["sources"])
+
+
+async def test_large_bioconductor_index_metadata_avoids_archive_transfer(bioc_service):
+    api, routes, calls = bioc_service
+    result = await api.get_package_info("scRNAseq", "bioconductor", "release", verify_archive=False)
+    transferred = sum(
+        len(routes[(request.url.host, request.url.path)])
+        for request in calls
+        if isinstance(routes.get((request.url.host, request.url.path)), bytes)
+    )
+    assert result["category"] == "experiment"
+    assert result["metadata_verification_level"] == "index_verified"
+    assert len(calls) == 4  # config plus the three release-scoped category indexes
+    expected = [
+        ("bioconductor.org", "/config.yaml"),
+        ("bioconductor.org", "/packages/9.40/bioc/src/contrib/PACKAGES"),
+        ("bioconductor.org", "/packages/9.40/data/annotation/src/contrib/PACKAGES"),
+        ("bioconductor.org", "/packages/9.40/data/experiment/src/contrib/PACKAGES"),
+    ]
+    assert transferred == sum(len(routes[key]) for key in expected)
+    assert not any(request.url.path.endswith(".tar.gz") for request in calls)
 
 
 async def test_compatibility_r_mapping_and_patch_constraints(bioc_service):

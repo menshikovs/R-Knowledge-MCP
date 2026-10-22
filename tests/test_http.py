@@ -72,6 +72,8 @@ async def test_timeout():
         "/src/contrib/../x",
         "/src/contrib/a_1.tar.gz?x=1",
         "/web/packages/a",
+        "/web/packages/a/DESCRIPTION?x=1",
+        "/web/packages/a/../DESCRIPTION",
     ],
 )
 async def test_route_allowlist(path):
@@ -126,6 +128,63 @@ async def test_download_size_limit():
     ) as client:
         with pytest.raises(KnowledgeError, match="exceeds limit"):
             await CranHTTP(client).fetch(INDEX)
+
+
+async def test_oversized_archive_failures_are_narrowly_cached_and_expire(monkeypatch):
+    class TinyArchiveHTTP(CranHTTP):
+        @staticmethod
+        def _response_limit(path):
+            return 8 if path.endswith(".tar.gz") else CranHTTP._response_limit(path)
+
+    now = [1000.0]
+    monkeypatch.setattr("cran_knowledge_mcp.http.monotonic", lambda: now[0])
+    calls = []
+
+    def handler(request):
+        calls.append(request.url.path)
+        return httpx.Response(200, content=b"x" * 9)
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        source = TinyArchiveHTTP(client)
+        first = "/src/contrib/ExamplePkg_1.0.tar.gz"
+        other = "/src/contrib/OtherPkg_1.0.tar.gz"
+        with pytest.raises(KnowledgeError) as original:
+            await source.fetch(first)
+        assert original.value.code == "source_too_large" and not original.value.cached
+        with pytest.raises(KnowledgeError) as cached:
+            await source.fetch(first)
+        assert cached.value.code == "source_too_large" and cached.value.cached
+        with pytest.raises(KnowledgeError):
+            await source.fetch(other)
+        assert calls == [first, other]
+        now[0] += 61
+        with pytest.raises(KnowledgeError) as expired:
+            await source.fetch(first)
+        assert expired.value.code == "source_too_large" and not expired.value.cached
+        assert calls == [first, other, first]
+
+
+async def test_oversized_failure_cache_has_a_hard_entry_bound(monkeypatch):
+    class TinyArchiveHTTP(CranHTTP):
+        @staticmethod
+        def _response_limit(path):
+            return 1 if path.endswith(".tar.gz") else CranHTTP._response_limit(path)
+
+    monkeypatch.setattr("cran_knowledge_mcp.http.OVERSIZED_FAILURE_CAPACITY", 2)
+    async with httpx.AsyncClient(
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, content=b"xx"))
+    ) as client:
+        source = TinyArchiveHTTP(client)
+        paths = [f"/src/contrib/ExamplePkg{n}_1.0.tar.gz" for n in range(3)]
+        for path in paths:
+            with pytest.raises(KnowledgeError, match="exceeds limit"):
+                await source.fetch(path)
+    assert list(source._oversized_failures) == paths[-2:]
+
+
+def test_repository_response_limits_remain_bounded_by_route():
+    assert CranHTTP._response_limit("/src/contrib/ExamplePkg_1.0.tar.gz") == 25 << 20
+    assert CranHTTP._response_limit("/web/packages/ExamplePkg/DESCRIPTION") == 2 << 20
 
 
 async def test_cache_byte_budget():

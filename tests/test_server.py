@@ -73,6 +73,9 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         tools = (await session.list_tools()).tools
         assert {tool.name for tool in tools} == TOOLS
         assert all(tool.annotations.readOnlyHint for tool in tools)
+        package_info_tool = next(tool for tool in tools if tool.name == "get_package_info")
+        assert package_info_tool.inputSchema["properties"]["verify_archive"]["type"] == "boolean"
+        assert "verify_archive" not in package_info_tool.inputSchema.get("required", [])
         prompts = (await session.list_prompts()).prompts
         assert {prompt.name for prompt in prompts} == PROMPTS
         prompt = await session.get_prompt(
@@ -102,6 +105,12 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         assert result.structuredContent["latest_cran_version"] == "2.10-1"
         result = await session.call_tool("get_package_info", {"package": "../bad"})
         assert result.structuredContent["error"]["code"] == "invalid_input"
+        result = await session.call_tool(
+            "get_package_info", {"package": "ExamplePkg", "verify_archive": False}
+        )
+        assert result.structuredContent["metadata_verification_level"] == (
+            "description_version_matched"
+        )
         knowledge = await session.call_tool("get_package_knowledge", {"package": "ExamplePkg"})
         assert knowledge.structuredContent["verification_status"] == "partial"
         assert (
@@ -257,6 +266,23 @@ async def test_streamable_http_initialization_and_tool_call(service, monkeypatch
             )
             assert response.status_code == 200
             assert response.json()["result"]["structuredContent"]["package"] == "ExamplePkg"
+            response = await client.post(
+                "/mcp",
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 4,
+                    "method": "tools/call",
+                    "params": {
+                        "name": "get_package_info",
+                        "arguments": {"package": "ExamplePkg", "verify_archive": False},
+                    },
+                },
+            )
+            assert response.status_code == 200
+            assert (
+                response.json()["result"]["structuredContent"]["metadata_verification_level"]
+                == "description_version_matched"
+            )
             # Stateless requests share the ASGI-owned cache, not a fresh one per request.
             response = await client.post(
                 "/mcp",
@@ -268,7 +294,7 @@ async def test_streamable_http_initialization_and_tool_call(service, monkeypatch
                 },
             )
             assert response.status_code == 200
-            assert len(calls) == 1
+            assert len(calls) == 2
             blocked = await client.post("/mcp", headers={"Host": "evil.test"}, json={})
             assert blocked.status_code == 421
 

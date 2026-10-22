@@ -128,12 +128,13 @@ def failure(exc: KnowledgeError, package=None, repository=None, bioc_version=Non
         "source_url": exc.source_url,
         "checked_at": None,
         "verification_status": "failed",
-        "sources": [],
+        "sources": list(exc.related_sources),
         "error": {
             "code": exc.code,
             "message": str(exc),
             "source_url": exc.source_url,
             "attempted_at": datetime.now(UTC).isoformat(),
+            **({"cached": True} if exc.cached else {}),
         },
     }
 
@@ -188,7 +189,7 @@ class KnowledgeService:
             package_version=result.get("package_version", result.get("latest_cran_version")),
             source_url=primary.get("source_url"),
             checked_at=primary.get("checked_at"),
-            verification_status="verified",
+            verification_status=result.get("verification_status", "verified"),
         )
         result.setdefault("package", None)
         if isinstance(provider, BioconductorProvider):
@@ -328,8 +329,19 @@ class KnowledgeService:
         )
         return aggregate
 
-    async def get_package_info(self, package, repository="cran", bioc_version=None):
-        return await self._dispatch("get_package_info", package, repository, bioc_version)
+    async def get_package_info(
+        self, package, repository="cran", bioc_version=None, verify_archive=True
+    ):
+        if not isinstance(verify_archive, bool):
+            raise KnowledgeError("invalid_input", "verify_archive must be a boolean")
+        mode = {} if verify_archive else {"verify_archive": False}
+        return await self._dispatch(
+            "get_package_info",
+            package,
+            repository,
+            bioc_version,
+            **mode,
+        )
 
     async def get_dependencies(
         self, package, repository="cran", bioc_version=None, resolve_repositories=False

@@ -201,11 +201,12 @@ def create_server(
         ctx: Context,
         repository: Literal["cran", "bioconductor", "all"] = "cran",
         bioc_version: str | None = None,
+        verify_archive: bool = True,
     ) -> dict[str, Any]:
-        """Get versioned DESCRIPTION metadata from CRAN or a selected Bioconductor release."""
+        """Get metadata with index/DESCRIPTION lookup or deep archive verification."""
         return await bounded(
             ctx.request_context.lifespan_context.get_package_info(
-                package, repository, bioc_version
+                package, repository, bioc_version, verify_archive
             ),
             package=package,
             repository=repository,

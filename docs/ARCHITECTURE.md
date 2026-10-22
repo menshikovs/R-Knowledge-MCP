@@ -85,6 +85,65 @@ client timeout and repository artifact cache within validated bounds.
 `MCP_TRANSPORT`, `MCP_HOST`, `MCP_PORT`, and `LOG_LEVEL` configure the CLI;
 Context7 credentials are read only from `CONTEXT7_API_KEY`.
 
+## Package metadata assurance and retrieval modes
+
+`get_package_info(..., verify_archive=True)` preserves the original deep path by
+default. It selects the canonical index record, downloads that exact version's
+source archive, checks the indexed MD5 when supplied, parses DESCRIPTION in
+memory, and matches its package name and version. It never extracts files to
+disk or executes package code. Results include `metadata_verification_level`:
+`archive_checksum_verified` when an indexed checksum was present and matched,
+or `description_version_matched` when the archive DESCRIPTION matched but the
+index supplied no checksum.
+
+The opt-in `verify_archive=False` path is bounded and source-specific. CRAN uses
+the fixed `web/packages/{package}/DESCRIPTION` route, parses exactly one DCF
+record, and requires exact package/version equality with the current
+`src/contrib/PACKAGES` record. This level is `description_version_matched`; it
+does not claim an archive checksum. If the optional DESCRIPTION route is 404,
+the service returns `verification_status="partial"`, verified index-level
+fields, `metadata_verification_level="index_verified"`, a source-specific
+`metadata_error`, and `metadata_fields_missing`. Other failures remain errors.
+Contradictory or malformed DESCRIPTION data is never merged with index values.
+
+For Bioconductor, lightweight mode uses the package's record from the exact
+selected release and category index and returns `index_verified`. The official
+indices are available independently under `bioc`, `data/annotation`, and
+`data/experiment`; their records consistently provide version and dependency
+fields, while fields such as Title, Description, Author, and URL can be absent.
+Those fields remain null and are listed in `metadata_fields_missing`. Historical
+and devel lookups stay pinned to their resolved numeric release; no page or
+metadata from another release is substituted. The Bioconductor config provenance
+and category are retained in the result.
+
+The default remains deep for compatibility. The MCP `get_package_info` tool
+exposes `verify_archive` as an optional boolean whose default is `true`. The
+selected assurance is additive to the existing `verification_status` and
+provenance contract. For example, index data may be verified while its level is
+only `index_verified`; consumers must not infer archive integrity from the
+general status.
+
+Trust-sensitive consumers retain deep verification: `get_package_knowledge`,
+GitHub AGENTS.md repository identity, Context7 repository matching, and Prompt
+Intelligence package grounding continue to call package metadata with the
+default. `get_function_docs` always uses the exact archive, index checksum when
+available, and literal Rd alias checks. Dependencies and Bioconductor
+compatibility use versioned package indices. `get_package_vignettes` keeps its
+existing selected-page version check. Lightweight metadata does not change
+these trust anchors.
+
+`RepositoryHTTP` also keeps a short, bounded negative cache only for deterministic
+`source_too_large` responses: exact fixed route, 60-second TTL, at most 128
+entries. CRAN and Bioconductor use separate transport instances; Bioconductor
+paths contain release and category, and archive paths include the exact package
+version. Rate limits, transport errors, 404s and authentication failures are not
+negative-cached. Cache hits are marked on the returned error and do not imply
+package absence.
+
+Deterministic MockTransport comparisons and measured byte/request totals are in
+[Data sources and performance](sources.md). They are bounded test fixtures, not
+production latency or bandwidth claims.
+
 ## Bioconductor identity and release resolution
 
 Package identity is `(repository, bioc_version, category, package, package_version)`.
