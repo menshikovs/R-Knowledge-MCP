@@ -25,6 +25,13 @@ keeps its application codes in `structuredContent.error.code`, and serializes
 the envelope in `content` for older clients. Input-schema failures that occur
 inside FastMCP are normalized at the same adapter boundary.
 
+FastMCP 1.x does not expose a public result middleware hook for this
+post-processing step. The adapter mirrors the installed `FastMCP.call_tool`
+flow and accesses its internal `_tool_manager`; this is version-sensitive.
+The project remains constrained to MCP SDK `<2`, and the protocol tests guard
+the behavior for supported SDK updates. Recheck this adapter if the SDK changes
+its FastMCP call path or before upgrading its major version.
+
 Clients should check `isError` first, then inspect `structuredContent.error`
 for a failed call. If `isError` is false, consumers may still need to check
 `verification_status` and aggregate `errors`; partial data remains useful and
