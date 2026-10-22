@@ -32,7 +32,7 @@ def create_server(
             yield KnowledgeService(CranHTTP(client))
 
     server = FastMCP(
-        "CRAN Knowledge MCP",
+        "R Knowledge MCP",
         lifespan=lifespan,
         host=host,
         port=port,
@@ -612,7 +612,7 @@ def create_http_app(allowed_hosts: list[str] | None = None):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Read-only CRAN Knowledge MCP")
+    parser = argparse.ArgumentParser(description="Read-only R Knowledge MCP")
     parser.add_argument(
         "--transport",
         choices=["stdio", "streamable-http"],

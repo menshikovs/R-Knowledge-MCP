@@ -17,9 +17,15 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
       - run: pytest
+      - name: Build and install wheel
+        run: |
+          python -m pip wheel . --no-deps --wheel-dir dist
+          python -m pip install --no-deps dist/*.whl
+      - name: Check installed CLI
+        run: r-knowledge-mcp --help
   docker:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker build -t cran-knowledge-mcp:test .
-      - run: docker run --rm cran-knowledge-mcp:test --help
+      - run: docker build -t r-knowledge-mcp:test .
+      - run: docker run --rm r-knowledge-mcp:test --help
