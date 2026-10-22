@@ -117,6 +117,24 @@ budget starts. Include PI and MCP waiting in elapsed time. Allow zero external
 reruns; repairs within the original budget are permitted and counted if observable.
 If hard uniform token enforcement is unavailable, do not start a compliant pilot.
 
+### Controller status
+
+`runner/controller.py` now provides a fail-closed preflight and an offline
+synthetic dry-run. It derives the exact A/B/C tool configuration from the plan,
+checks public workspace contents, redacts credential-shaped strings and exercises
+missing-usage, timeout and cleanup paths. It does not start Codex, inspect
+credentials, contact a model endpoint or create benchmark records. The preflight
+currently returns `blocked`; see [controller documentation](runner/CONTROLLER.md)
+for the exact token-budget and isolation blockers. Do not interpret a dry-run as a
+candidate attempt.
+
+```sh
+python benchmarks/codex_r/runner/controller.py preflight \
+  --plan plan.json --trial R01-A-1
+python benchmarks/codex_r/runner/controller.py dry-run \
+  --plan plan.json --trial R01-A-1 --output dry-run.json
+```
+
 ## Seal, score, import and report
 
 Terminate the candidate session, export its source files, and prohibit further

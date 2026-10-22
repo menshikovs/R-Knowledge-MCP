@@ -206,8 +206,14 @@ JSON events, model/config flags and workspace selection. Official
 and [MCP configuration](https://learn.chatgpt.com/docs/config-file/config-reference)
 were consulted. A supported uniform hard token/cost controller and a fully isolated,
 authenticated model/agent execution service were not verified. No paid calls or
-agent sessions were made. The functional path is **external-run import**, not
-a fictional automated agent runner. See configs/CAPABILITIES.md.
+agent sessions were made. A follow-up branch adds an offline controller
+preflight and fake-process dry-run; real execution still fails closed. The current
+Managed Agents API adds isolated environments and monetary spend controls, but its
+documented session token usage is best effort and not a preemptive cumulative
+30,000-token cap. A monetary limit is not substituted. No paid calls or model
+requests were made. See
+[the controller status](../benchmarks/codex_r/runner/CONTROLLER.md) and
+[capability audit](../benchmarks/codex_r/configs/CAPABILITIES.md).
 
 The checked-in reports directory contains infrastructure evidence only. No mock
 trial is published as an observation. Python tests use explicitly synthetic trial
@@ -235,15 +241,16 @@ These observations validate infrastructure, not comparative agent performance.
 
 Follow [the benchmark README](../benchmarks/codex_r/README.md) for environment build,
 private oracle validation, preregistration, public workspace preparation, condition
-gateway, artifact scoring, external-record import and report generation.
+gateway, controller dry-run, artifact scoring, external-record import and report generation.
 Retain raw private JSONL evidence and source hashes; validate against
 configs/result.schema.json and the cross-field importer. Normal PR CI runs only
 Python infrastructure tests: manifest/fixture loading, schema, report/score rules,
 deterministic scheduling, actual public tool names, allowlist/error handling and
 mount boundaries. It starts no paid trials and requires no CRAN downloads.
 
-Next: provision/audit the external isolated controller and hard budgets, pre-register
-an authorized exact model, execute the randomized 72-run pilot, independently audit
+Next: provide an isolated controller with a preemptive cumulative token guard,
+verify all boundary checks, pre-register an authorized exact model, execute the
+randomized 72-run pilot, independently audit
 API/repair/safety metrics, then publish complete raw synthetic-task evidence and
 paired summaries. Extend tasks/repetitions only in a new preregistered protocol.
 Any production defect revealed by future trials belongs in a separate issue/PR.
