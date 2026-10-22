@@ -27,9 +27,9 @@ GitHub AGENTS.md and Context7 providers.
 
 ## Validation
 
-- Full `pytest` suite, `ruff check .`, `ruff format --check .`, Docker image build
-  and packaged CLI checks are run for this branch; exact results are recorded
-  in the PR description at creation time.
+- Docker image build succeeded; the full Linux Docker suite passed (**127
+  tests**), `ruff check .` and `ruff format --check .` passed, and the packaged
+  CLI help check passed.
 - New tests mock external documentation HTTP and cover static analysis,
   malformed/unsafe metadata, secret redaction, bounded inputs, provenance,
   service behavior and MCP registration.
