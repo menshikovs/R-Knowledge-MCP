@@ -16,6 +16,7 @@ dev = ["pytest>=8,<10", "pytest-asyncio>=0.24,<2", "ruff>=0.11,<1"]
 
 [project.scripts]
 cran-knowledge-mcp = "cran_knowledge_mcp.server:main"
+r-knowledge-mcp = "cran_knowledge_mcp.server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -1,4 +1,4 @@
-# CRAN Knowledge MCP
+# R Knowledge MCP
 
 Read-only MCP server providing source-attributed information about current R
 packages in CRAN and Bioconductor. Python 3.11+, official Python MCP SDK
@@ -16,9 +16,12 @@ python -m venv .venv
 source .venv/bin/activate
 # Windows PowerShell instead: .venv\Scripts\Activate.ps1
 python -m pip install -e '.[dev]'
-cran-knowledge-mcp                         # stdio (default)
-cran-knowledge-mcp --transport streamable-http  # http://127.0.0.1:8000/mcp
+r-knowledge-mcp                         # stdio (default)
+r-knowledge-mcp --transport streamable-http  # http://127.0.0.1:8000/mcp
 ```
+
+The `cran-knowledge-mcp` command remains available as a backward-compatible
+alias, and the Python import package remains `cran_knowledge_mcp`.
 
 The project pins **mcp>=1.30,<2**. SDK 2 is the current stable major and renamed
 FastMCP to MCPServer; using the maintained 1.x line preserves the requested
@@ -30,16 +33,16 @@ and [migration guide](https://py.sdk.modelcontextprotocol.io/migration/).
 Use an absolute executable path from the installed virtual environment:
 
 ```sh
-codex mcp add cran-knowledge -- /absolute/path/cran-knowledge-mcp/.venv/bin/cran-knowledge-mcp
+codex mcp add r-knowledge -- /absolute/path/R-Knowledge-MCP/.venv/bin/r-knowledge-mcp
 codex mcp list
 ```
 
-On Windows the executable is `.venv\Scripts\cran-knowledge-mcp.exe`.
+On Windows the executable is `.venv\Scripts\r-knowledge-mcp.exe`.
 Alternatively put this in `~/.codex/config.toml` (use your actual absolute path):
 
 ```toml
-[mcp_servers.cran_knowledge]
-command = "/absolute/path/cran-knowledge-mcp/.venv/bin/cran-knowledge-mcp"
+[mcp_servers.r_knowledge]
+command = "/absolute/path/R-Knowledge-MCP/.venv/bin/r-knowledge-mcp"
 ```
 
 For a running local HTTP server:
@@ -201,7 +204,7 @@ and [GitHub REST Git Trees](https://docs.github.com/en/rest/git/trees) and
 Set the key only on the server process:
 
 ```sh
-CONTEXT7_API_KEY=ctx7sk-... cran-knowledge-mcp
+CONTEXT7_API_KEY=ctx7sk-... r-knowledge-mcp
 ```
 
 Without the key, `get_context7_docs` returns `not_configured` and the
@@ -312,10 +315,10 @@ limiting here. Upstream documentation retains its package license.
 ## Docker
 
 ```sh
-docker build -t cran-knowledge-mcp .
-docker run --rm -p 127.0.0.1:8000:8000 cran-knowledge-mcp
+docker build -t r-knowledge-mcp .
+docker run --rm -p 127.0.0.1:8000:8000 r-knowledge-mcp
 # stdio:
-docker run --rm -i cran-knowledge-mcp --transport stdio
+docker run --rm -i r-knowledge-mcp --transport stdio
 ```
 
 The container runs as an unprivileged user. Binding `0.0.0.0` inside the container

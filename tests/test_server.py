@@ -204,7 +204,7 @@ async def test_streamable_http_initialization_and_tool_call(service, monkeypatch
                 },
             )
             assert response.status_code == 200
-            assert response.json()["result"]["serverInfo"]["name"] == "CRAN Knowledge MCP"
+            assert response.json()["result"]["serverInfo"]["name"] == "R Knowledge MCP"
             assert "mcp-session-id" not in response.headers
             response = await client.post(
                 "/mcp",
