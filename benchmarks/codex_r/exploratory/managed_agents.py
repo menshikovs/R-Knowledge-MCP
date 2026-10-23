@@ -115,6 +115,12 @@ class ManagedAgentsClient:
             trust_env=False,
             transport=transport,
         )
+        self._session_creation_attempted = False
+        self.session_creation_attempted = False
+        self.session_creation_uncertain = False
+        self.task_submission_attempted = False
+        self.task_submission_uncertain = False
+        self._submitted_sessions: set[str] = set()
 
     def _request_json(
         self,
@@ -152,16 +158,46 @@ class ManagedAgentsClient:
         return value
 
     def create_session(self, context: dict, *, gateway_url: str | None = None) -> dict:
+        if self._session_creation_attempted:
+            raise ManagedAgentsError("This client is restricted to one session creation attempt")
         config = build_agent_config(context, gateway_url=gateway_url)
+        self._session_creation_attempted = True
+        self.session_creation_attempted = True
+        self.session_creation_uncertain = True
         # No initial input: the session executor must be connected before a turn starts.
         record = self._request_json("POST", "/v1/agents/sessions", body=config)
-        checked = validate_environment_record(record)
-        if record.get("agent", {}).get("model") != "gpt-6-luna":
-            raise ManagedAgentsError("Resolved session model differs from the fixed pilot model")
-        if record.get("agent", {}).get("reasoning", {}).get("effort") != "medium":
-            raise ManagedAgentsError("Resolved session reasoning differs from the fixed effort")
-        if record.get("agent", {}).get("tools") != []:
-            raise ManagedAgentsError("Effective session tools are not verified as empty for R01-A")
+        session_id = record.get("id") if isinstance(record, dict) else None
+        try:
+            checked = validate_environment_record(record)
+            agent = record.get("agent")
+            if not isinstance(agent, dict) or agent.get("model") != "gpt-6-luna":
+                raise ManagedAgentsError(
+                    "Resolved session model differs from the fixed pilot model"
+                )
+            reasoning = agent.get("reasoning")
+            if not isinstance(reasoning, dict) or reasoning.get("effort") != "medium":
+                raise ManagedAgentsError("Resolved session reasoning differs from the fixed effort")
+            if agent.get("tools") != []:
+                raise ManagedAgentsError(
+                    "Effective session tools are not verified as empty for R01-A"
+                )
+        except ManagedAgentsError as exc:
+            if isinstance(session_id, str) and SESSION_ID.fullmatch(session_id):
+                try:
+                    self.delete_session(session_id)
+                except ManagedAgentsError as cleanup_error:
+                    raise ManagedAgentsError(
+                        "Created session failed validation and deletion was not confirmed"
+                    ) from cleanup_error
+                self.session_creation_uncertain = False
+            raise exc
+        self.session_creation_uncertain = False
+        checked["resolved_agent"] = {
+            "model": agent["model"],
+            "reasoning_effort": reasoning["effort"],
+            "tools": [],
+            "verified_from_session_response": True,
+        }
         return checked
 
     def submit_task(
@@ -169,12 +205,17 @@ class ManagedAgentsClient:
     ) -> dict:
         if not SESSION_ID.fullmatch(session_id) or not isinstance(task, str) or not task.strip():
             raise ManagedAgentsError("Session or task input is invalid")
+        if session_id in self._submitted_sessions:
+            raise ManagedAgentsError("A task submission was already attempted for this session")
         if len(task.encode("utf-8")) > MAX_EVENT_BYTES:
             raise ManagedAgentsError("Task input exceeded the event size limit")
         key = idempotency_key or uuid.uuid4().hex
         if not re.fullmatch(r"[A-Za-z0-9_-]{16,128}", key):
             raise ManagedAgentsError("Idempotency key is invalid")
-        return self._request_json(
+        self._submitted_sessions.add(session_id)
+        self.task_submission_attempted = True
+        self.task_submission_uncertain = True
+        result = self._request_json(
             "POST",
             f"/v1/agents/sessions/{session_id}/events",
             headers={"Idempotency-Key": key},
@@ -192,6 +233,8 @@ class ManagedAgentsClient:
                 ]
             },
         )
+        self.task_submission_uncertain = False
+        return result
 
     def send_and_stream(
         self,

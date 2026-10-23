@@ -1,6 +1,6 @@
 # Single-trial Codex runtime integration
 
-## Status: Codex executor is containerized and starts offline; paid execution remains blocked
+## Status: one-trial lifecycle is wired; no live trial has been run
 
 The primary interface selected for a future real turn is the documented
 OpenAI Managed Agents API with a self-hosted Docker executor. GPT-6 Luna
@@ -60,14 +60,30 @@ redaction. The SSE client subscribes using the documented
 `/v1/agents/sessions/{id}/events?stream=true` route before submitting input.
 Tests use `httpx.MockTransport` and synthetic values only. They do not establish
 API-account model access. Session creation and inference were never called.
-Existing CLI `run-one` stays fail-closed; the injected controller is not wired
-to an automatic or batch launch command.
+The live CLI is single-trial only. It does not support an automatic or batch
+launch command.
 
-Authorization records now require and bind the immutable candidate image ID
-and a fingerprint of the Codex Docker recipe/runtime policy, in addition to the
-task inputs, workspace, model, reasoning, and controller version. This prevents
-reusing a one-time authorization after changing the reviewed runtime. It does
-not make the current blocked preflight pass or authorize a live trial.
+`adapter.py run-one` now invokes the production `R01ALifecycleController` and
+the existing Managed Agents client, Docker executor, fixed-host egress proxy,
+scorer, and balance ledger. It accepts only R01-A / Condition A, permits one
+session and one task submission, has no retry or batch mode, and enforces the
+900-second deadline. A short-lived authorization binds the exact public
+workspace, immutable Codex image ID, runtime fingerprint, fixed per-user WSL
+state directory, balance snapshot, model, reasoning and zero-tool configuration.
+The consumed-trial marker is persistent: do not delete the state directory or
+marker to try again. Synthetic lifecycle records cannot be imported as real
+benchmark outcomes.
+
+The `authorize-one` command does not contact OpenAI or inspect credentials. It
+requires explicit typed authorization for exactly one paid attempt and a
+separate operator attestation that the executor key is restricted. The API
+cannot independently prove the key's permissions. Official guidance says the
+executor key is readable by agent code, so this remains a material limitation;
+the application API key stays controller-side and is filtered out of the
+candidate process environment. The real launch checks Docker images, public
+workspace contents, model/reasoning/tools returned by session creation, and
+executor connection before submitting the one task. A prerequisite that needs
+session creation is attempted only within this authorized single-trial path.
 
 ## Relay and lifecycle investigation for this task
 
@@ -95,10 +111,12 @@ CONNECT proxy. Local Docker probes verify negative controls and a synthetic
 CONNECT, not a live relay test.
 
 The managed-session API methods are still only tested against synthetic
-HTTPX responses. No session has been created, so the actual `remote_url`,
+HTTPX responses. No live session has been created, so the actual `remote_url`,
 registered executor handshake, API key scope/revocation, model/account access,
 or resolved session settings are not observed. The code does not claim that a
-mock event stream proves executor protocol compatibility.
+mock event stream proves executor protocol compatibility. The manually
+authorized `run-one` path verifies the returned settings and executor
+connection before its sole task submission.
 
 `lifecycle.py` now joins the existing authorization validator/consumer,
 cross-process `SingleTrialLease`, balance ledger, Managed Agents client,
@@ -137,10 +155,9 @@ The frozen R image is a local benchmark artifact, not a public registry image.
 Docker BuildKit tried to pull its digest from Docker Hub, so use Docker
 Desktop's legacy builder while this local-only base is in use:
 
-```powershell
-$env:DOCKER_BUILDKIT = "0"
-docker build --no-cache `
-  -f benchmarks/codex_r/runtime/candidate.Dockerfile `
+```bash
+DOCKER_BUILDKIT=0 docker build --no-cache \
+  -f benchmarks/codex_r/runtime/candidate.Dockerfile \
   -t rkmcp-codex-runtime:codex-0.163.0 .
 docker image inspect rkmcp-codex-runtime:codex-0.163.0 --format '{{.Id}}'
 ```
@@ -149,12 +166,12 @@ Prepare a fresh public R01 workspace outside the evaluator repository, then
 run the actual binary startup/security check with the immutable local candidate
 image ID:
 
-```powershell
-python benchmarks/codex_r/exploratory/adapter.py prepare `
-  --task R01 --workspace C:\tmp\public-R01-A
-python benchmarks/codex_r/exploratory/adapter.py codex-runtime-probe `
-  --image sha256:LOCAL_CODEX_CANDIDATE_IMAGE_ID `
-  --workspace C:\tmp\public-R01-A --timeout-seconds 5
+```bash
+python benchmarks/codex_r/exploratory/adapter.py prepare \
+  --task R01 --workspace "$HOME/.cache/rkmcp/public-R01-A"
+python benchmarks/codex_r/exploratory/adapter.py codex-runtime-probe \
+  --image "$(docker image inspect rkmcp-codex-runtime:codex-0.163.0 --format '{{.Id}}')" \
+  --workspace "$HOME/.cache/rkmcp/public-R01-A" --timeout-seconds 5
 ```
 
 The probe is explicitly an offline binary-startup record, not a trial. It does
@@ -167,14 +184,107 @@ No real API key is read by CI tests.
 The task workspace created for the local test was removed after verification.
 The original strict benchmark, score importer and oracle were not modified.
 
+## One manually authorized WSL2 launch
+
+These commands describe exactly one R01-A attempt. Run them from the Linux
+distribution integrated with the existing Docker Desktop. Do not run the
+authorization or launch command unless you intend to incur possible charges.
+The displayed prepaid balance may be stale and delayed accounting can cause
+charges to exceed it; the client-side ledger is not a hard spend limit. The
+documented executor key is readable by agent-generated code. Use a separate,
+narrowly scoped key and revoke it after the attempt. Never put either key in
+command arguments or files.
+
+```bash
+set -euo pipefail
+cd "$HOME/src/R-Knowledge-MCP"  # repository checkout
+ADAPTER=benchmarks/codex_r/exploratory/adapter.py
+STATE="$HOME/.local/state/r-knowledge-mcp/r01a"
+WORKSPACE="$HOME/.cache/rkmcp/public-R01-A"
+IMAGE="$(docker image inspect rkmcp-codex-runtime:codex-0.163.0 --format '{{.Id}}')"
+
+# Prepare only when absent; the command refuses to overwrite an existing tree.
+if [[ ! -e "$WORKSPACE" ]]; then
+  python "$ADAPTER" prepare --task R01 --workspace "$WORKSPACE"
+fi
+
+# Keys are entered without echo. The controller filters the application key
+# from the candidate process. The executor key is visible to candidate code.
+read -rsp 'Controller OpenAI API key: ' OPENAI_API_KEY; echo
+export OPENAI_API_KEY
+read -rsp 'Restricted executor CODEX_API_KEY: ' OPENAI_EXECUTOR_API_KEY; echo
+export OPENAI_EXECUTOR_API_KEY
+
+# Replace these placeholders with a fresh operator dashboard observation and
+# a conservative reserve. The estimate is informational and non-binding.
+BALANCE_CENTS=1000
+RESERVE_CENTS=300
+ESTIMATE_CENTS=150
+BALANCE_CHECKED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+mkdir -p "$STATE"
+python "$ADAPTER" authorize-one --trial R01-A \
+  --workspace "$WORKSPACE" --image "$IMAGE" \
+  --available-balance-cents "$BALANCE_CENTS" \
+  --reserve-cents "$RESERVE_CENTS" \
+  --estimated-spend-cents "$ESTIMATE_CENTS" \
+  --balance-source operator_dashboard \
+  --balance-checked-at "$BALANCE_CHECKED_AT" \
+  --confirm 'AUTHORIZE ONE PAID TRIAL R01-A' \
+  --confirm-restricted-key-scope 'CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A' \
+  --authorization-output "$STATE/authorization.json"
+
+# Sole launch command: at most one session and one task, no retries or batches.
+# Keep this terminal attached for the mandatory post-trial review checkpoint.
+python "$ADAPTER" run-one --trial R01-A \
+  --workspace "$WORKSPACE" --image "$IMAGE" \
+  --authorization "$STATE/authorization.json" \
+  --result "$STATE/r01a-result.json"
+unset OPENAI_API_KEY OPENAI_EXECUTOR_API_KEY
+```
+
+The balance and estimate above are examples and must be replaced with current
+operator observations. `authorize-one` itself makes no OpenAI call and reads no
+credential. It writes a five-minute, one-use authorization bound to the exact
+workspace, image digest, runtime fingerprint, model, reasoning, balance data,
+and fixed WSL state directory. A persistent marker prevents another R01-A
+launch. Do not delete or replace the state directory to retry.
+
+To cancel from a second WSL terminal while the foreground launch is active, run
+the verified cancellation command below; pressing Ctrl+C in the launch
+terminal is also supported. Cleanup failure blocks artifact export:
+
+```bash
+cd "$HOME/src/R-Knowledge-MCP"
+python benchmarks/codex_r/exploratory/adapter.py cancel-one
+```
+
+After the launch process exits, check Docker/session cleanup and inspect its
+saved audit:
+
+```bash
+cd "$HOME/src/R-Knowledge-MCP"
+STATE="$HOME/.local/state/r-knowledge-mcp/r01a"
+python benchmarks/codex_r/exploratory/adapter.py verify-cleanup \
+  --result "$STATE/r01a-result.json"
+python benchmarks/codex_r/exploratory/adapter.py inspect-result \
+  --result "$STATE/r01a-result.json"
+sed -n '1,240p' "$STATE/r01a-result.json"
+```
+
+The run stops for review of usage, provider-reported spend, independent score,
+and a newly checked balance. Missing usage or unreconciled spend stops the
+ledger. No later trial is authorized automatically. Cleanup verification does
+not establish billing reconciliation.
+
 ## Exact blockers before a real R01-A turn
 
 - A path-aware endpoint broker and separately verified outbound WSS relay are
   not implemented. The CONNECT proxy enforces exact hosts and port 443 only;
   it cannot inspect TLS-encrypted API paths or dynamic signed relay targets.
   Live WSS through this proxy remains unverified.
-- No documented restricted executor environment key was supplied to the
-  container, and no Managed Agents session/environment was created.
+- No live Managed Agents session/environment has been created. The launch path
+  passes the documented executor key only as `CODEX_API_KEY` to the executor;
+  the permissions depend on the operator-supplied key and attestation.
 - Account-level access to `gpt-6-luna` and the resolved live `medium` setting
   remain unverified; do not verify by creating a session during ordinary CI.
 - The executor process is tested against a synthetic local CONNECT sink only.

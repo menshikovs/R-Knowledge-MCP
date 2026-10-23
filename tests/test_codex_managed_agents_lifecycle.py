@@ -363,10 +363,17 @@ def test_real_docker_synthetic_lifecycle_never_creates_a_trial_record(tmp_path):
         "R01-A",
         workspace,
         candidate_image_digest=codex_image,
+        state_directory=state_directory,
     )
     authorization = adapter.create_authorization(
         context,
         typed_confirmation="AUTHORIZE ONE PAID TRIAL R01-A",
+        available_balance_cents=1000,
+        reserve_cents=200,
+        estimated_spend_cents=100,
+        balance_source="synthetic fixture",
+        balance_checked_at=datetime.now(UTC).isoformat(),
+        restricted_key_scope_confirmation="CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A",
     )
     fake_client = FakeClient(workspace)
     topology = docker_runtime.RestrictedEgressNetwork()
