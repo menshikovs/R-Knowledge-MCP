@@ -65,20 +65,17 @@ if env | cut -d= -f1 | grep -E \
   fail credential_environment_present
 fi
 [ -x "$(command -v curl)" ] || fail curl_unavailable_for_egress_probe
-if env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy \
-  curl --noproxy '*' --connect-timeout 2 --max-time 3 -fsS \
+if curl --noproxy '*' --connect-timeout 2 --max-time 3 -fsS \
   https://example.com/ >/dev/null 2>&1; then
   fail arbitrary_internet_reachable
 fi
-if env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy \
-  curl --noproxy '*' --connect-timeout 1 --max-time 2 -fsS \
+if curl --noproxy '*' --connect-timeout 1 --max-time 2 -fsS \
   http://model-proxy:8080/v1/responses >/dev/null 2>&1; then
   fail model_proxy_reachable_in_offline_condition_A
 fi
-if env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy \
-  curl --noproxy '*' --connect-timeout 1 --max-time 2 -fsS \
+if curl --noproxy '*' --connect-timeout 1 --max-time 2 -fsS \
   http://cran-knowledge-mcp:8000/mcp >/dev/null 2>&1; then
-  fail_direct_gateway_bypass_reachable
+  fail direct_gateway_bypass_reachable
 fi
 printf '%s\n' 'docker boundary probe passed'
 """
@@ -598,10 +595,29 @@ class DockerCandidateRuntime:
         }
 
     def _logs(self, container_id: str) -> str:
-        output = self._docker("logs", container_id).stdout
+        result = self._docker("logs", container_id)
+        output = result.stdout + result.stderr
         if len(output) > MAX_OUTPUT_BYTES:
             raise DockerRuntimeError("Container probe logs exceeded their byte limit")
         return output.decode("utf-8", "replace")
+
+    @staticmethod
+    def _docker_wait_exit_code(result: subprocess.CompletedProcess) -> int:
+        if result.returncode != 0:
+            raise DockerRuntimeError(
+                "Docker wait command failed",
+                code="cli_nonzero",
+                docker_cli_exit_code=result.returncode,
+                exception_category="subprocess",
+            )
+        output = result.stdout.strip()
+        if not re.fullmatch(rb"[0-9]+", output):
+            raise DockerRuntimeError(
+                "Docker wait returned no valid container exit status",
+                code="invalid_inspection",
+                exception_category="subprocess",
+            )
+        return int(output)
 
     def run_boundary_probe(self, workspace: Path, *, trial_id: str = "R01-A") -> dict:
         """Run a fixed no-inference security probe and always remove its container."""
@@ -621,9 +637,16 @@ class DockerCandidateRuntime:
             policy = self._inspect_policy(container_id, workspace_path)
             self._docker("start", container_id)
             wait = _bounded_run([self.docker, "wait", container_id], timeout=10)
-            if wait.returncode != 0 or wait.stdout.strip() != b"0":
+            exit_code = self._docker_wait_exit_code(wait)
+            if exit_code != 0:
                 logs = self._logs(container_id)
-                raise DockerRuntimeError("Docker security probe failed: " + logs[-1000:])
+                detail = logs[-1000:] or "container emitted no log output"
+                raise DockerRuntimeError(
+                    f"Docker security probe exited with status {exit_code}: {detail}",
+                    code="cli_nonzero",
+                    container_exit_code=exit_code,
+                    exception_category="subprocess",
+                )
             logs = self._logs(container_id)
             if "docker boundary probe passed" not in logs:
                 raise DockerRuntimeError("Docker probe did not emit its success record")
@@ -725,12 +748,29 @@ class DockerCandidateRuntime:
         }
 
 
-def prepared_r01_workspace(destination: Path) -> dict:
+def _grant_candidate_directory_access(workspace: Path) -> None:
+    """Grant UID 65534 access to this one generated workspace directory."""
+    if os.name != "posix":
+        raise DockerRuntimeError("Candidate workspace ACLs require a POSIX host")
+    setfacl = shutil.which("setfacl")
+    if not setfacl:
+        raise DockerRuntimeError("POSIX setfacl is required for the candidate workspace")
+    result = _bounded_run(
+        [setfacl, "-m", "u:65534:rwx", "--", str(Path(workspace).resolve(strict=True))],
+        timeout=10,
+    )
+    if result.returncode != 0:
+        raise DockerRuntimeError("Could not grant the candidate UID workspace-directory access")
+
+
+def prepared_r01_workspace(destination: Path, *, candidate_writable: bool = False) -> dict:
     """Export exactly R01's public files to a fresh path outside the repository."""
     destination = Path(destination)
     if destination.exists() or destination.resolve().is_relative_to(REPO.resolve()):
         raise DockerRuntimeError("Choose a new workspace outside the evaluator repository")
     pilot.bench.prepare("R01", destination)
+    if candidate_writable:
+        _grant_candidate_directory_access(destination)
     controller = _load_controller()
     report = controller.validate_public_workspace(destination, "R01")
     return {"path": str(destination.resolve()), "files": report["files"]}

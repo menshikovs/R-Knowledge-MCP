@@ -4,7 +4,10 @@ import importlib.util
 import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
+from types import SimpleNamespace
+from uuid import uuid4
 
 import pytest
 
@@ -56,6 +59,78 @@ def test_fixed_r01_probe_configuration_has_no_host_capability_mounts(tmp_path):
     assert "docker.sock" not in args[args.index("--mount") + 1]
     assert "CODEX_HOME=/tmp" in args
     assert args[args.index("--env") + 1] == "HOME=/tmp"
+
+
+def test_boundary_probe_shell_failure_commands_are_defined_and_portable():
+    assert "fail direct_gateway_bypass_reachable" in docker_runtime.PROBE_SCRIPT
+    assert "fail_direct_gateway_bypass_reachable" not in docker_runtime.PROBE_SCRIPT
+    # Proxy variables are explicitly empty in _create_args, so env -u is not
+    # needed and would unnecessarily depend on non-POSIX env extensions.
+    assert "env -u " not in docker_runtime.PROBE_SCRIPT
+
+
+def test_docker_wait_classifies_cli_failure_and_container_exit_status():
+    def completed(returncode, stdout=b"", stderr=b""):
+        return subprocess.CompletedProcess(["docker", "wait"], returncode, stdout, stderr)
+
+    assert docker_runtime.DockerCandidateRuntime._docker_wait_exit_code(
+        completed(0, b"0\n")
+    ) == 0
+    assert docker_runtime.DockerCandidateRuntime._docker_wait_exit_code(
+        completed(0, b"20\n")
+    ) == 20
+    with pytest.raises(docker_runtime.DockerRuntimeError) as cli_error:
+        docker_runtime.DockerCandidateRuntime._docker_wait_exit_code(
+            completed(125, stderr=b"daemon unavailable")
+        )
+    assert cli_error.value.diagnostics["docker_cli_exit_code"] == 125
+    with pytest.raises(docker_runtime.DockerRuntimeError, match="valid container exit status"):
+        docker_runtime.DockerCandidateRuntime._docker_wait_exit_code(completed(0))
+
+
+def test_container_logs_include_stderr_for_failure_diagnostics():
+    def command_runner(argv, *, timeout, env):
+        assert argv[1:3] == ["logs", "a" * 64]
+        return subprocess.CompletedProcess(argv, 0, b"", b"probe failed: public_fixture_missing\n")
+
+    runtime = docker_runtime.DockerCandidateRuntime(
+        "sha256:" + "a" * 64, docker="docker", command_runner=command_runner
+    )
+    assert runtime._logs("a" * 64) == "probe failed: public_fixture_missing\n"
+
+
+def test_prepared_candidate_workspace_grants_only_directory_acl_to_executor_uid(monkeypatch):
+    commands = []
+    monkeypatch.setattr(docker_runtime, "os", SimpleNamespace(name="posix"))
+    monkeypatch.setattr(docker_runtime.shutil, "which", lambda name: "/usr/bin/setfacl")
+
+    def fake_run(argv, *, timeout):
+        commands.append((argv, timeout))
+        return subprocess.CompletedProcess(argv, 0, b"", b"")
+
+    monkeypatch.setattr(docker_runtime, "_bounded_run", fake_run)
+    temp_root = Path(tempfile.gettempdir()) / f"synthetic-r01-public-{uuid4().hex}"
+    temp_root.mkdir(mode=0o755)
+    try:
+        destination = temp_root / "workspace"
+        report = docker_runtime.prepared_r01_workspace(destination, candidate_writable=True)
+
+        assert sorted(report["files"]) == ["TASK.md", "data/records.csv", "renv.lock"]
+        assert len(commands) == 1
+        argv, timeout = commands[0]
+        assert argv == [
+            "/usr/bin/setfacl",
+            "-m",
+            "u:65534:rwx",
+            "--",
+            str(destination.resolve()),
+        ]
+        assert "-R" not in argv and timeout == 10
+        assert (destination / "TASK.md").is_file()
+        assert (destination / "data/records.csv").is_file()
+        assert (destination / "renv.lock").is_file()
+    finally:
+        shutil.rmtree(temp_root)
 
 
 def test_restricted_executor_uses_private_proxy_and_fail_closed_dns(tmp_path):
@@ -124,7 +199,7 @@ def test_real_docker_denies_host_evaluator_secret_and_network_access(tmp_path):
     (tmp_path / "other-trial").mkdir()
     (tmp_path / "other-trial" / "private-marker").write_text("synthetic\n")
     workspace = tmp_path / "candidate-R01-A"
-    docker_runtime.prepared_r01_workspace(workspace)
+    docker_runtime.prepared_r01_workspace(workspace, candidate_writable=True)
     report = runtime.run_boundary_probe(workspace)
 
     assert report["record_type"] == "docker_candidate_boundary_probe_not_agent_trial"
@@ -181,7 +256,7 @@ def test_frozen_image_digest_and_embedded_lockfile_are_verified():
 def test_real_codex_exec_server_starts_in_offline_isolated_candidate(tmp_path_factory):
     runtime = _codex_runtime()
     workspace = tmp_path_factory.getbasetemp() / "public-candidate-R01-A"
-    docker_runtime.prepared_r01_workspace(workspace)
+    docker_runtime.prepared_r01_workspace(workspace, candidate_writable=True)
     report = runtime.run_offline_executor_probe(workspace, timeout_seconds=5)
 
     assert report["record_type"] == "codex_exec_server_offline_startup_probe_not_trial"
