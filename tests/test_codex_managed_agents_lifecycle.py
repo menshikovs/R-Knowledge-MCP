@@ -236,6 +236,48 @@ def test_stream_failure_cancels_and_requires_spend_checkpoint(tmp_path):
     assert leases[0].released
 
 
+def test_create_session_diagnostic_is_preserved_in_safe_lifecycle_audit(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    prepare_workspace(workspace)
+    controller, _client, runtime, topology, ledger, leases = make_controller(workspace)
+
+    class SessionRejectedClient(FakeClient):
+        def create_session(self, _context):
+            error = RuntimeError("safe synthetic rejection")
+            error.diagnostics = {
+                "operation": "create_session",
+                "category": "http_rejection",
+                "http_status": 403,
+                "reason": "Managed Agents API rejected the request with HTTP 403",
+                "authorization": "Bearer never-store-this",
+                "response_body": "must-not-appear",
+            }
+            raise error
+
+    controller.client = SessionRejectedClient(workspace)
+    context = {"trial_id": "R01-A", "expected_tools": [], "workspace": str(workspace)}
+    report = controller.run_one(
+        context=context,
+        authorization={"synthetic": True},
+        state_directory=tmp_path / "state",
+    )
+
+    assert report["failure"] == {
+        "operation": "create_session",
+        "category": "http_rejection",
+        "http_status": 403,
+        "reason": "Managed Agents API rejected the request with HTTP 403",
+    }
+    assert report["failure_category"] == "http_rejection"
+    assert report["inference_submitted"] is False
+    assert report["sessions_created_count"] == 0
+    assert "never-store-this" not in str(report)
+    assert "must-not-appear" not in str(report)
+    assert runtime.stopped is False
+    assert topology.cleaned and ledger.active_trial_id is None and leases[0].released
+
+
 def test_deadline_watchdog_terminates_executor_and_requires_checkpoint(tmp_path):
     workspace = tmp_path / "workspace"
     workspace.mkdir()

@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import ssl
 from pathlib import Path
 
 import httpx
@@ -190,6 +191,92 @@ def test_ambiguous_session_creation_failure_is_marked_uncertain_without_retry():
         assert client.session_creation_uncertain is True
         with pytest.raises(ManagedAgentsError, match="one session creation attempt"):
             client.create_session(context())
+    finally:
+        client.close()
+
+
+@pytest.mark.parametrize("status", [400, 401, 403, 404])
+def test_session_creation_http_rejection_has_safe_structured_diagnostics(status):
+    def handler(request):
+        return httpx.Response(
+            status,
+            json={"error": "synthetic body must not be logged", "api_key": "secret-value"},
+            request=request,
+        )
+
+    client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
+    try:
+        with pytest.raises(ManagedAgentsError) as raised:
+            client.create_session(context())
+        assert raised.value.diagnostics == {
+            "operation": "create_session",
+            "category": "http_rejection",
+            "http_status": status,
+            "reason": f"Managed Agents API rejected the request with HTTP {status}",
+        }
+        assert "synthetic body" not in str(raised.value)
+        assert client.session_creation_attempted is True
+        assert client.session_creation_uncertain is True
+    finally:
+        client.close()
+
+
+def test_transport_and_tls_failures_have_distinct_safe_diagnostics():
+    def network_failure(request):
+        raise httpx.ConnectError("Authorization: Bearer synthetic-secret", request=request)
+
+    client = ManagedAgentsClient(
+        "synthetic-app-secret", transport=httpx.MockTransport(network_failure)
+    )
+    try:
+        with pytest.raises(ManagedAgentsError) as raised:
+            client.create_session(context())
+        assert raised.value.diagnostics["category"] == "network_error"
+        assert raised.value.diagnostics["http_status"] is None
+        assert "synthetic-secret" not in str(raised.value)
+    finally:
+        client.close()
+
+    def tls_failure(request):
+        try:
+            raise ssl.SSLError("synthetic certificate detail")
+        except ssl.SSLError as cause:
+            raise httpx.ConnectError("TLS transport failed", request=request) from cause
+
+    client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(tls_failure))
+    try:
+        with pytest.raises(ManagedAgentsError) as raised:
+            client.create_session(context())
+        assert raised.value.diagnostics["category"] == "tls_error"
+        assert "certificate detail" not in str(raised.value)
+    finally:
+        client.close()
+
+
+@pytest.mark.parametrize(
+    ("response", "category"),
+    [
+        (httpx.Response(200, content=b"not-json"), "invalid_json"),
+        (httpx.Response(200, json=["not", "an object"]), "response_schema_validation"),
+        (httpx.Response(200, json={"id": "invalid-schema"}), "response_schema_validation"),
+    ],
+)
+def test_session_creation_payload_failures_have_safe_diagnostics(response, category):
+    def handler(request):
+        if request.method == "DELETE":
+            return httpx.Response(200, json={"id": "invalid-schema", "deleted": True})
+        return response
+
+    client = ManagedAgentsClient(
+        "synthetic-app-secret",
+        transport=httpx.MockTransport(handler),
+    )
+    try:
+        with pytest.raises(ManagedAgentsError) as raised:
+            client.create_session(context())
+        assert raised.value.diagnostics["operation"] == "create_session"
+        assert raised.value.diagnostics["category"] == category
+        assert raised.value.diagnostics["http_status"] == 200
     finally:
         client.close()
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import re
+import ssl
 import time
 import uuid
 from collections.abc import Callable
@@ -28,6 +29,22 @@ SESSION_ID = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
 
 class ManagedAgentsError(RuntimeError):
     """The API response or session environment did not match the pinned protocol."""
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        category: str = "managed_agents_error",
+        http_status: int | None = None,
+        operation: str | None = None,
+    ):
+        super().__init__(message)
+        self.diagnostics = {
+            "operation": operation,
+            "category": category,
+            "http_status": http_status,
+            "reason": message,
+        }
 
 
 def build_agent_config(context: dict, *, gateway_url: str | None = None) -> dict:
@@ -121,6 +138,7 @@ class ManagedAgentsClient:
         self.task_submission_attempted = False
         self.task_submission_uncertain = False
         self._submitted_sessions: set[str] = set()
+        self._last_response_status: int | None = None
 
     def _request_json(
         self,
@@ -129,32 +147,71 @@ class ManagedAgentsClient:
         *,
         body: dict | None = None,
         headers: dict[str, str] | None = None,
+        operation: str | None = None,
     ) -> dict:
         if not path.startswith("/v1/agents/") or ".." in path or "?" in path or "#" in path:
             raise ManagedAgentsError("Refused a non-protocol API route")
+        self._last_response_status = None
         try:
             with self._client.stream(method, path, json=body, headers=headers) as response:
+                self._last_response_status = response.status_code
                 if response.is_redirect:
-                    raise ManagedAgentsError("Managed Agents API redirects are not accepted")
+                    raise ManagedAgentsError(
+                        "Managed Agents API redirects are not accepted",
+                        category="http_rejection",
+                        http_status=response.status_code,
+                        operation=operation,
+                    )
                 if not response.is_success:
                     raise ManagedAgentsError(
-                        f"Managed Agents API returned HTTP {response.status_code}"
+                        f"Managed Agents API rejected the request with HTTP {response.status_code}",
+                        category="http_rejection",
+                        http_status=response.status_code,
+                        operation=operation,
                     )
                 content = bytearray()
                 for chunk in response.iter_bytes():
                     if len(content) + len(chunk) > MAX_API_RESPONSE_BYTES:
                         raise ManagedAgentsError(
-                            "Managed Agents API response exceeded the size limit"
+                            "Managed Agents API response exceeded the size limit",
+                            category="response_limit",
+                            http_status=response.status_code,
+                            operation=operation,
                         )
                     content.extend(chunk)
+        except ManagedAgentsError:
+            raise
         except httpx.HTTPError as exc:
-            raise ManagedAgentsError("Managed Agents API request failed") from exc
+            cause = exc
+            tls_error = False
+            while cause is not None:
+                if isinstance(cause, ssl.SSLError):
+                    tls_error = True
+                    break
+                cause = cause.__cause__
+            raise ManagedAgentsError(
+                "Managed Agents API TLS connection failed"
+                if tls_error
+                else "Managed Agents API transport failed",
+                category="tls_error" if tls_error else "network_error",
+                operation=operation,
+            ) from exc
         try:
             value = json.loads(content)
         except (ValueError, json.JSONDecodeError) as exc:
-            raise ManagedAgentsError("Managed Agents API returned invalid JSON") from exc
+            raise ManagedAgentsError(
+                "Managed Agents API returned invalid JSON",
+                category="invalid_json",
+                http_status=self._last_response_status,
+                operation=operation,
+            ) from exc
         if not isinstance(value, dict):
-            raise ManagedAgentsError("Managed Agents API returned an unexpected object")
+            raise ManagedAgentsError(
+                "Managed Agents API returned a non-object JSON value",
+                category="response_schema_validation",
+                http_status=self._last_response_status,
+                operation=operation,
+            )
         return value
 
     def create_session(self, context: dict, *, gateway_url: str | None = None) -> dict:
@@ -165,7 +222,9 @@ class ManagedAgentsClient:
         self.session_creation_attempted = True
         self.session_creation_uncertain = True
         # No initial input: the session executor must be connected before a turn starts.
-        record = self._request_json("POST", "/v1/agents/sessions", body=config)
+        record = self._request_json(
+            "POST", "/v1/agents/sessions", body=config, operation="create_session"
+        )
         session_id = record.get("id") if isinstance(record, dict) else None
         try:
             checked = validate_environment_record(record)
@@ -182,6 +241,15 @@ class ManagedAgentsClient:
                     "Effective session tools are not verified as empty for R01-A"
                 )
         except ManagedAgentsError as exc:
+            exc.diagnostics.update(
+                operation="create_session",
+                http_status=exc.diagnostics.get("http_status") or self._last_response_status,
+                category=(
+                    exc.diagnostics.get("category")
+                    if exc.diagnostics.get("category") != "managed_agents_error"
+                    else "response_schema_validation"
+                ),
+            )
             if isinstance(session_id, str) and SESSION_ID.fullmatch(session_id):
                 try:
                     self.delete_session(session_id)
