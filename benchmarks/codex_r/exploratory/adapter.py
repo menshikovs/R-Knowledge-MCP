@@ -52,6 +52,10 @@ MAX_EVENT_STREAM_BYTES = 32 << 20
 MAX_EVENT_COUNT = 100_000
 MAX_AUTHORIZATION_TTL_SECONDS = 300
 RECOVERY_ATTEMPT_ID = "R01-A/recovery-after-attempt-2"
+FINAL_CONTINUATION_ATTEMPT_ID = "R01-A/final-continuation"
+SESSION_QUIESCENCE_SOURCE = "https://api.openai.com/v1/agents/sessions"
+SESSION_QUIESCENCE_CONFIRMATION = "CONFIRM NO ACTIVE MANAGED AGENTS SESSIONS R01-A"
+SESSION_QUIESCENCE_MAX_AGE_SECONDS = 300
 INTERNAL_PROBE_FLAG = "--internal-local-timeout-probe"
 SECRET_PATTERNS = (
     re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]+=*"),
@@ -164,6 +168,10 @@ def build_trial_context(
     previous_attempt_result: Path | None = None,
     first_attempt_result: Path | None = None,
     previous_attempt_authorization: Path | None = None,
+    first_attempt_authorization: Path | None = None,
+    attempt_two_result: Path | None = None,
+    attempt_two_authorization: Path | None = None,
+    session_quiescence_evidence: Path | None = None,
 ) -> dict:
     """Resolve one exploratory assignment and bind its exact control values."""
     pilot.validate_plan(plan)
@@ -175,7 +183,12 @@ def build_trial_context(
     ):
         raise AdapterError("Candidate image must be identified by an immutable sha256 digest")
     expected_tools = set(pilot.bench.manifest()["conditions"][selected["condition"]]["tools"])
-    if attempt_id not in {"R01-A/attempt-1", "R01-A/attempt-2", RECOVERY_ATTEMPT_ID}:
+    if attempt_id not in {
+        "R01-A/attempt-1",
+        "R01-A/attempt-2",
+        RECOVERY_ATTEMPT_ID,
+        FINAL_CONTINUATION_ATTEMPT_ID,
+    }:
         raise AdapterError(
             "Only the first two attempts or one separately authorized recovery are supported"
         )
@@ -184,6 +197,7 @@ def build_trial_context(
     previous_provider_status = None
     recovery_first_audit_sha256 = None
     previous_authorization_sha256 = None
+    final_provenance = None
     if attempt_id == "R01-A/attempt-2":
         if previous_attempt_result is None:
             raise AdapterError("Attempt 2 requires the preserved first-attempt cleanup audit")
@@ -215,6 +229,30 @@ def build_trial_context(
         previous_authorization_sha256 = recovery["authorization_sha256"]
         previous_failure_classification = "attempt_two_pre_session_local_failure"
         previous_provider_status = "not_contacted"
+    elif attempt_id == FINAL_CONTINUATION_ATTEMPT_ID:
+        paths = (
+            first_attempt_result,
+            first_attempt_authorization,
+            attempt_two_result,
+            attempt_two_authorization,
+            previous_attempt_result,
+            previous_attempt_authorization,
+            session_quiescence_evidence,
+        )
+        if any(path is None for path in paths):
+            raise AdapterError(
+                "Final continuation requires all prior audits, authorizations, and session evidence"
+            )
+        final_provenance = _verify_final_continuation_provenance(
+            state_directory or default_state_directory(),
+            Path(first_attempt_result),
+            Path(first_attempt_authorization),
+            Path(attempt_two_result),
+            Path(attempt_two_authorization),
+            Path(previous_attempt_result),
+            Path(previous_attempt_authorization),
+            Path(session_quiescence_evidence),
+        )
     context = {
         "trial_id": selected["trial_id"],
         "attempt_id": attempt_id,
@@ -223,6 +261,7 @@ def build_trial_context(
         "previous_attempt_provider_status": previous_provider_status,
         "recovery_first_attempt_audit_sha256": recovery_first_audit_sha256,
         "previous_attempt_authorization_sha256": previous_authorization_sha256,
+        "final_continuation_provenance": final_provenance,
         "previous_attempt_result": (
             str(Path(previous_attempt_result).resolve())
             if previous_attempt_result is not None
@@ -236,6 +275,18 @@ def build_trial_context(
             if previous_attempt_authorization is not None
             else None
         ),
+        "first_attempt_authorization": str(Path(first_attempt_authorization).resolve())
+        if first_attempt_authorization
+        else None,
+        "attempt_two_result": str(Path(attempt_two_result).resolve())
+        if attempt_two_result
+        else None,
+        "attempt_two_authorization": str(Path(attempt_two_authorization).resolve())
+        if attempt_two_authorization
+        else None,
+        "session_quiescence_evidence": str(Path(session_quiescence_evidence).resolve())
+        if session_quiescence_evidence
+        else None,
         "task": selected["task"],
         "condition": selected["condition"],
         "model": pilot.MODEL,
@@ -421,6 +472,10 @@ def create_authorization(
     previous_attempt_result: Path | None = None,
     first_attempt_result: Path | None = None,
     previous_attempt_authorization: Path | None = None,
+    first_attempt_authorization: Path | None = None,
+    attempt_two_result: Path | None = None,
+    attempt_two_authorization: Path | None = None,
+    session_quiescence_evidence: Path | None = None,
 ) -> dict:
     """Create a narrowly scoped, short-lived consent record (never starts Codex)."""
     if (
@@ -456,6 +511,7 @@ def create_authorization(
         "R01-A/attempt-1",
         "R01-A/attempt-2",
         RECOVERY_ATTEMPT_ID,
+        FINAL_CONTINUATION_ATTEMPT_ID,
     }:
         raise AdapterError("Authorization attempt or recovery identity is invalid")
     if attempt_id == "R01-A/attempt-2":
@@ -487,6 +543,32 @@ def create_authorization(
             or recovery["authorization_sha256"] != context["previous_attempt_authorization_sha256"]
         ):
             raise AdapterError("Recovery provenance changed after preparation")
+    elif attempt_id == FINAL_CONTINUATION_ATTEMPT_ID:
+        if any(
+            path is None
+            for path in (
+                first_attempt_result,
+                first_attempt_authorization,
+                attempt_two_result,
+                attempt_two_authorization,
+                previous_attempt_result,
+                previous_attempt_authorization,
+                session_quiescence_evidence,
+            )
+        ):
+            raise AdapterError("Final continuation requires all prior provenance inputs")
+        verified = _verify_final_continuation_provenance(
+            Path(state_directory),
+            Path(first_attempt_result),
+            Path(first_attempt_authorization),
+            Path(attempt_two_result),
+            Path(attempt_two_authorization),
+            Path(previous_attempt_result),
+            Path(previous_attempt_authorization),
+            Path(session_quiescence_evidence),
+        )
+        if verified != context.get("final_continuation_provenance"):
+            raise AdapterError("Final continuation provenance changed after preparation")
     elif (Path(state_directory) / "consumed-trials" / "R01-A.json").exists():
         raise AdapterError("Attempt 1 has already been consumed; it cannot be replayed")
     confirmation_scope = context["trial_id"] if attempt_id == "R01-A/attempt-1" else attempt_id
@@ -531,6 +613,11 @@ def create_authorization(
                 "previous_attempt_result",
                 "first_attempt_result",
                 "previous_attempt_authorization",
+                "final_continuation_provenance",
+                "first_attempt_authorization",
+                "attempt_two_result",
+                "attempt_two_authorization",
+                "session_quiescence_evidence",
                 "task",
                 "condition",
                 "model",
@@ -613,6 +700,11 @@ def validate_authorization(
             "previous_attempt_result",
             "first_attempt_result",
             "previous_attempt_authorization",
+            "final_continuation_provenance",
+            "first_attempt_authorization",
+            "attempt_two_result",
+            "attempt_two_authorization",
+            "session_quiescence_evidence",
             "task",
             "condition",
             "model",
@@ -657,6 +749,27 @@ def validate_authorization(
             or recovery["authorization_sha256"] != context["previous_attempt_authorization_sha256"]
         ):
             raise AdapterError("Recovery audit or authorization provenance changed")
+    elif context.get("attempt_id") == FINAL_CONTINUATION_ATTEMPT_ID:
+        verified = _verify_final_continuation_provenance(
+            Path(context["state_directory"]),
+            Path(context["first_attempt_result"]),
+            Path(context["first_attempt_authorization"]),
+            Path(context["attempt_two_result"]),
+            Path(context["attempt_two_authorization"]),
+            Path(context["previous_attempt_result"]),
+            Path(context["previous_attempt_authorization"]),
+            Path(context["session_quiescence_evidence"]),
+            lease=lease,
+        )
+        if verified != context.get("final_continuation_provenance"):
+            raise AdapterError("Final continuation provenance or session evidence changed")
+        consumed_marker = (
+            Path(context["state_directory"])
+            / "consumed-authorizations"
+            / f"{authorization['authorization_id']}.json"
+        )
+        if consumed_marker.exists() or consumed_marker.is_symlink():
+            raise AdapterError("Final-continuation authorization has already been consumed")
     try:
         issued = datetime.fromisoformat(authorization["issued_at"].replace("Z", "+00:00"))
         expires = datetime.fromisoformat(authorization["expires_at"].replace("Z", "+00:00"))
@@ -802,12 +915,18 @@ def consume_authorization(
     consumed_trials = root / "consumed-trials"
     consumed_trials.mkdir(parents=True, exist_ok=True)
     attempt_id = context.get("attempt_id", "R01-A/attempt-1")
-    if attempt_id not in {"R01-A/attempt-1", "R01-A/attempt-2", RECOVERY_ATTEMPT_ID}:
-        raise AdapterError("No authorization beyond the one bounded recovery is permitted")
+    if attempt_id not in {
+        "R01-A/attempt-1",
+        "R01-A/attempt-2",
+        RECOVERY_ATTEMPT_ID,
+        FINAL_CONTINUATION_ATTEMPT_ID,
+    }:
+        raise AdapterError("No authorization beyond the one final continuation is permitted")
     marker_name = {
         "R01-A/attempt-1": f"{context['trial_id']}.json",
         "R01-A/attempt-2": f"{context['trial_id']}-attempt-2.json",
         RECOVERY_ATTEMPT_ID: f"{context['trial_id']}-recovery-after-attempt-2.json",
+        FINAL_CONTINUATION_ATTEMPT_ID: f"{context['trial_id']}-final-continuation.json",
     }[attempt_id]
     trial_marker = consumed_trials / marker_name
     if attempt_id == "R01-A/attempt-2":
@@ -839,6 +958,20 @@ def consume_authorization(
             or recovery["authorization_sha256"] != context["previous_attempt_authorization_sha256"]
         ):
             raise AdapterError("Recovery audit or authorization changed after authorization")
+    elif attempt_id == FINAL_CONTINUATION_ATTEMPT_ID:
+        verified = _verify_final_continuation_provenance(
+            root,
+            Path(context["first_attempt_result"]),
+            Path(context["first_attempt_authorization"]),
+            Path(context["attempt_two_result"]),
+            Path(context["attempt_two_authorization"]),
+            Path(context["previous_attempt_result"]),
+            Path(context["previous_attempt_authorization"]),
+            Path(context["session_quiescence_evidence"]),
+            lease=lease,
+        )
+        if verified != context.get("final_continuation_provenance"):
+            raise AdapterError("Final continuation provenance changed after authorization")
     try:
         with trial_marker.open("x", encoding="utf-8") as output:
             json.dump(
@@ -919,6 +1052,10 @@ def create_authorization_file(
     previous_attempt_result: Path | None = None,
     first_attempt_result: Path | None = None,
     previous_attempt_authorization: Path | None = None,
+    first_attempt_authorization: Path | None = None,
+    attempt_two_result: Path | None = None,
+    attempt_two_authorization: Path | None = None,
+    session_quiescence_evidence: Path | None = None,
 ) -> dict:
     """Create a one-use authorization without contacting Docker or OpenAI."""
     if Path(output).resolve().is_relative_to(REPO.resolve()):
@@ -933,6 +1070,10 @@ def create_authorization_file(
         previous_attempt_result=previous_attempt_result,
         first_attempt_result=first_attempt_result,
         previous_attempt_authorization=previous_attempt_authorization,
+        first_attempt_authorization=first_attempt_authorization,
+        attempt_two_result=attempt_two_result,
+        attempt_two_authorization=attempt_two_authorization,
+        session_quiescence_evidence=session_quiescence_evidence,
     )
     authorization = create_authorization(
         context,
@@ -947,6 +1088,10 @@ def create_authorization_file(
         previous_attempt_result=previous_attempt_result,
         first_attempt_result=first_attempt_result,
         previous_attempt_authorization=previous_attempt_authorization,
+        first_attempt_authorization=first_attempt_authorization,
+        attempt_two_result=attempt_two_result,
+        attempt_two_authorization=attempt_two_authorization,
+        session_quiescence_evidence=session_quiescence_evidence,
     )
     validate_authorization(authorization, context)
     # This file is owner-only and must retain the opaque nonce used to reject replay.
@@ -1113,6 +1258,10 @@ def run_one(
     previous_attempt_result: Path | None = None,
     first_attempt_result: Path | None = None,
     previous_attempt_authorization: Path | None = None,
+    first_attempt_authorization: Path | None = None,
+    attempt_two_result: Path | None = None,
+    attempt_two_authorization: Path | None = None,
+    session_quiescence_evidence: Path | None = None,
 ):
     """Run exactly one fully authorized R01-A lifecycle; never retries or batches."""
     context = build_trial_context(
@@ -1125,6 +1274,10 @@ def run_one(
         previous_attempt_result=previous_attempt_result,
         first_attempt_result=first_attempt_result,
         previous_attempt_authorization=previous_attempt_authorization,
+        first_attempt_authorization=first_attempt_authorization,
+        attempt_two_result=attempt_two_result,
+        attempt_two_authorization=attempt_two_authorization,
+        session_quiescence_evidence=session_quiescence_evidence,
     )
     validate_authorization(authorization, context)
     controller = _make_live_controller(context, authorization, Path(state_directory))
@@ -1213,6 +1366,297 @@ def verify_cleanup(
             and not names
             and not networks
         ),
+    }
+
+
+def _verify_final_continuation_provenance(
+    state_directory: Path,
+    first_result_path: Path,
+    first_auth_path: Path,
+    second_result_path: Path,
+    second_auth_path: Path,
+    third_result_path: Path,
+    third_auth_path: Path,
+    session_evidence_path: Path,
+    *,
+    lease: SingleTrialLease | None = None,
+) -> dict[str, object]:
+    """Validate immutable history and fresh, independent session-quiescence evidence."""
+    root = Path(state_directory).resolve()
+    paths = [
+        Path(path)
+        for path in (
+            first_result_path,
+            first_auth_path,
+            second_result_path,
+            second_auth_path,
+            third_result_path,
+            third_auth_path,
+            session_evidence_path,
+        )
+    ]
+    if any(not path.resolve().is_relative_to(root) for path in paths):
+        raise AdapterError(
+            "Final-continuation provenance must remain inside the external state directory"
+        )
+
+    def read_json(path: Path, limit: int) -> tuple[bytes, dict]:
+        if path.is_symlink() or not path.is_file() or path.stat().st_size > limit:
+            raise AdapterError("Final-continuation provenance is linked, missing, or oversized")
+        try:
+            raw = path.read_bytes()
+            value = json.loads(raw)
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise AdapterError("Final-continuation provenance is unavailable or invalid") from exc
+        if not isinstance(value, dict):
+            raise AdapterError("Final-continuation provenance must contain JSON objects")
+        return raw, value
+
+    first_raw, first = read_json(paths[0], 8 << 20)
+    first_auth_raw, first_auth = read_json(paths[1], 64 << 10)
+    second_raw, second = read_json(paths[2], 8 << 20)
+    second_auth_raw, second_auth = read_json(paths[3], 64 << 10)
+    third_raw, third = read_json(paths[4], 8 << 20)
+    third_auth_raw, third_auth = read_json(paths[5], 64 << 10)
+    evidence_raw, evidence = read_json(paths[6], 8 << 20)
+
+    # Reuse the original attempt-1 contract; the old attempt-2 audit remains a
+    # pre-session local failure and is checked without making deletion claims.
+    _verify_first_attempt_for_retry(root, paths[0], lease=lease)
+    second_states = (
+        tuple(
+            item.get("state") if isinstance(item, dict) else item
+            for item in second.get("states", [])
+        )
+        if isinstance(second.get("states"), list)
+        else ()
+    )
+    if not (
+        second.get("record_type") == "managed_agents_r01a_lifecycle_audit_not_benchmark_result"
+        and second.get("synthetic") is False
+        and second.get("trial_id") == "R01-A"
+        and second.get("attempt_id") == "R01-A/attempt-2"
+        and second.get("failure_category") == "AdapterError"
+        and second_states
+        in {
+            ("prepare", "terminate_container", "cleanup"),
+            ("prepare", "consume_authorization", "terminate_container", "cleanup"),
+        }
+        and second.get("session_creation_attempted") is False
+        and second.get("sessions_created_count") == 0
+        and second.get("session_creation_uncertain") is False
+        and second.get("task_submission_attempted") is False
+        and second.get("task_submission_uncertain") is False
+        and second.get("task_submissions_attempted_count") == 0
+        and second.get("inference_submitted") is False
+        and second.get("cleanup_verified") is True
+        and second.get("container_termination_verified") is True
+        and second.get("topology_cleanup_verified") is True
+    ):
+        raise AdapterError("Attempt-2 audit does not match the preserved pre-session failure")
+
+    third_failure = third.get("failure")
+    third_category = (
+        third_failure.get("category")
+        if isinstance(third_failure, dict)
+        else third.get("failure_category")
+    )
+    if not (
+        third.get("record_type") == "managed_agents_r01a_lifecycle_audit_not_benchmark_result"
+        and third.get("synthetic") is False
+        and third.get("trial_id") == "R01-A"
+        and third.get("attempt_id") == RECOVERY_ATTEMPT_ID
+        and third.get("session_creation_attempted") is True
+        and third.get("session_created") is True
+        and third.get("sessions_created_count") == 1
+        and type(third.get("session_creation_http_status")) is int
+        and third.get("session_creation_http_status") == 201
+        and third_category == "response_schema_validation"
+        and (
+            not isinstance(third_failure, dict)
+            or third_failure.get("category") == third.get("failure_category")
+        )
+        and third.get("task_submission_attempted") is False
+        and third.get("task_submission_uncertain") is False
+        and third.get("task_submissions_attempted_count") == 0
+        and third.get("inference_submitted") is False
+        and third.get("container_termination_verified") is True
+        and third.get("topology_cleanup_verified") is True
+    ):
+        raise AdapterError(
+            "Third-attempt audit does not prove the recorded HTTP 201 pre-task failure"
+        )
+    local_cleanup = verify_cleanup(root, paths[4], lease=lease)
+    if not local_cleanup.get("local_cleanup_verified"):
+        raise AdapterError(
+            "Third-attempt local Docker/network cleanup is not independently verified"
+        )
+
+    # The old audit format cannot establish remote session deletion. A true
+    # session_deleted_verified value is deliberately not accepted as evidence.
+    third_remote_state = "unknown_until_independent_inventory"
+    ignored_legacy_deletion_claim = third.get("session_deleted_verified") is True
+
+    auth_specs = (
+        (first_auth, "R01-A/attempt-1", "R01-A"),
+        (second_auth, "R01-A/attempt-2", "R01-A-attempt-2"),
+        (third_auth, RECOVERY_ATTEMPT_ID, "R01-A-recovery-after-attempt-2"),
+    )
+    auth_ids = []
+    for auth, expected_attempt, marker_stem in auth_specs:
+        auth_id = auth.get("authorization_id")
+        if (
+            auth.get("authorized") is not True
+            or auth.get("attempt_id") != expected_attempt
+            or not re.fullmatch(r"[a-f0-9]{32}", str(auth_id))
+            or not isinstance(auth.get("scope"), dict)
+            or auth["scope"].get("attempt_id") != expected_attempt
+            or auth["scope"].get("trial_id") != "R01-A"
+        ):
+            raise AdapterError("Prior authorization history has an invalid identity")
+        auth_ids.append(auth_id)
+        if expected_attempt != "R01-A/attempt-2":
+            marker_path = root / "consumed-trials" / f"{marker_stem}.json"
+            if marker_path.is_symlink() or not marker_path.is_file():
+                raise AdapterError("A consumed historical trial marker is missing")
+            try:
+                marker = json.loads(marker_path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                raise AdapterError("A historical consumed marker is invalid") from exc
+            if (
+                not isinstance(marker, dict)
+                or marker.get("trial_id") != "R01-A"
+                or marker.get("authorization_id") != auth_id
+            ):
+                raise AdapterError("Historical consumed marker does not match its authorization")
+            consumed_auth = root / "consumed-authorizations" / f"{auth_id}.json"
+            if consumed_auth.is_symlink() or not consumed_auth.is_file():
+                raise AdapterError("A historical authorization-consumption marker is missing")
+            try:
+                consumed_record = json.loads(consumed_auth.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                raise AdapterError("A historical authorization marker is invalid") from exc
+            if (
+                not isinstance(consumed_record, dict)
+                or consumed_record.get("authorization_id") != auth_id
+                or consumed_record.get("trial_id") != "R01-A"
+            ):
+                raise AdapterError("Historical authorization marker has a mismatched identity")
+        else:
+            marker_path = root / "consumed-trials" / "R01-A-attempt-2.json"
+            if marker_path.exists() or marker_path.is_symlink():
+                raise AdapterError(
+                    "Attempt 2 already has a consumed marker; no further continuation is allowed"
+                )
+            if (root / "consumed-authorizations" / f"{auth_id}.json").exists():
+                raise AdapterError(
+                    "Attempt-2 authorization was consumed; no further continuation is allowed"
+                )
+            first_digest = hashlib.sha256(first_raw).hexdigest()
+            if auth["scope"].get("previous_attempt_audit_sha256") != first_digest:
+                raise AdapterError("Attempt-2 authorization does not bind the first audit")
+            try:
+                second_expires = datetime.fromisoformat(auth["expires_at"].replace("Z", "+00:00"))
+            except (KeyError, AttributeError, ValueError) as exc:
+                raise AdapterError("Attempt-2 authorization expiration is invalid") from exc
+            if second_expires.utcoffset() != timedelta(0) or second_expires > datetime.now(UTC):
+                raise AdapterError("Attempt-2 authorization must remain expired and unreusable")
+
+    if len(set(auth_ids)) != 3:
+        raise AdapterError("Historical authorizations must have distinct identities")
+    if third.get("authorization_id") not in (None, auth_ids[2]):
+        raise AdapterError("Third-attempt audit does not match its authorization")
+    if (
+        third_auth.get("scope", {}).get("previous_attempt_audit_sha256")
+        != hashlib.sha256(second_raw).hexdigest()
+        or third_auth.get("scope", {}).get("recovery_first_attempt_audit_sha256")
+        != hashlib.sha256(first_raw).hexdigest()
+        or third_auth.get("scope", {}).get("previous_attempt_authorization_sha256")
+        != hashlib.sha256(second_auth_raw).hexdigest()
+    ):
+        raise AdapterError(
+            "Third authorization does not bind the preserved first and second history"
+        )
+    final_marker = root / "consumed-trials" / "R01-A-final-continuation.json"
+    if final_marker.exists() or final_marker.is_symlink():
+        raise AdapterError(
+            "The one final-continuation marker already exists; a fifth attempt is forbidden"
+        )
+
+    if (
+        evidence.get("record_type") != "managed_agents_session_quiescence_evidence"
+        or evidence.get("source_url") != SESSION_QUIESCENCE_SOURCE
+        or evidence.get("operator_confirmation") != SESSION_QUIESCENCE_CONFIRMATION
+        or evidence.get("not_based_on_agents_logs") is not True
+        or evidence.get("all_pages_checked") is not True
+    ):
+        raise AdapterError("Independent session inventory confirmation is missing or invalid")
+    try:
+        checked_at = datetime.fromisoformat(str(evidence["checked_at"]).replace("Z", "+00:00"))
+    except (KeyError, ValueError) as exc:
+        raise AdapterError("Session inventory timestamp is invalid") from exc
+    now = datetime.now(UTC)
+    if (
+        checked_at.utcoffset() != timedelta(0)
+        or checked_at > now
+        or now - checked_at > timedelta(seconds=SESSION_QUIESCENCE_MAX_AGE_SECONDS)
+    ):
+        raise AdapterError("Independent session inventory must be fresh and UTC-timestamped")
+    pages = evidence.get("pages")
+    if not isinstance(pages, list) or not pages:
+        raise AdapterError(
+            "Session inventory must include every page of the official list response"
+        )
+    session_ids: set[str] = set()
+    # The official AgentSession enum is idle/in_progress/requires_action/failed.
+    # Only failed is terminal; idle can still accept another turn.
+    terminal = {"failed"}
+    for index, page in enumerate(pages):
+        if not isinstance(page, dict) or not isinstance(page.get("data"), list):
+            raise AdapterError("Session inventory page is malformed")
+        if type(page.get("has_more")) is not bool or page["has_more"] != (index < len(pages) - 1):
+            raise AdapterError("Session inventory pagination is incomplete or inconsistent")
+        if index:
+            previous_last_id = pages[index - 1].get("last_id")
+            if (
+                not isinstance(previous_last_id, str)
+                or not previous_last_id
+                or page.get("after") != previous_last_id
+            ):
+                raise AdapterError("Session inventory pagination cursor chain is inconsistent")
+        if page["has_more"]:
+            last_session = page["data"][-1] if page["data"] else None
+            if (
+                not isinstance(last_session, dict)
+                or not isinstance(page.get("last_id"), str)
+                or not page["last_id"]
+                or page["last_id"] != last_session.get("id")
+            ):
+                raise AdapterError(
+                    "Session inventory page does not provide a valid continuation cursor"
+                )
+        for session in page["data"]:
+            if not isinstance(session, dict) or not isinstance(session.get("id"), str):
+                raise AdapterError("Session inventory contains an unidentifiable record")
+            session_id = session["id"]
+            if session_id in session_ids:
+                raise AdapterError("Session inventory contains duplicate records")
+            session_ids.add(session_id)
+            status = session.get("status")
+            if not isinstance(status, str) or status.casefold() not in terminal:
+                raise AdapterError("An active or unrecognized Managed Agents session remains")
+
+    return {
+        "first_audit_sha256": hashlib.sha256(first_raw).hexdigest(),
+        "first_authorization_sha256": hashlib.sha256(first_auth_raw).hexdigest(),
+        "attempt_two_audit_sha256": hashlib.sha256(second_raw).hexdigest(),
+        "attempt_two_authorization_sha256": hashlib.sha256(second_auth_raw).hexdigest(),
+        "third_audit_sha256": hashlib.sha256(third_raw).hexdigest(),
+        "third_authorization_sha256": hashlib.sha256(third_auth_raw).hexdigest(),
+        "session_evidence_sha256": hashlib.sha256(evidence_raw).hexdigest(),
+        "third_server_session_state": third_remote_state,
+        "legacy_session_deletion_claim_ignored": ignored_legacy_deletion_claim,
+        "independent_inventory_active_sessions": 0,
     }
 
 
@@ -1669,7 +2113,12 @@ def main(argv=None) -> int:
     auth_parser.add_argument(
         "--attempt-id",
         required=True,
-        choices=["R01-A/attempt-1", "R01-A/attempt-2", RECOVERY_ATTEMPT_ID],
+        choices=[
+            "R01-A/attempt-1",
+            "R01-A/attempt-2",
+            RECOVERY_ATTEMPT_ID,
+            FINAL_CONTINUATION_ATTEMPT_ID,
+        ],
     )
     auth_parser.add_argument("--workspace", type=Path, required=True)
     auth_parser.add_argument("--image", required=True)
@@ -1684,12 +2133,21 @@ def main(argv=None) -> int:
     auth_parser.add_argument("--previous-attempt-result", type=Path)
     auth_parser.add_argument("--first-attempt-result", type=Path)
     auth_parser.add_argument("--previous-attempt-authorization", type=Path)
+    auth_parser.add_argument("--first-attempt-authorization", type=Path)
+    auth_parser.add_argument("--attempt-two-result", type=Path)
+    auth_parser.add_argument("--attempt-two-authorization", type=Path)
+    auth_parser.add_argument("--session-quiescence-evidence", type=Path)
     run_parser = sub.add_parser("run-one")
     run_parser.add_argument("--trial", required=True, choices=["R01-A"])
     run_parser.add_argument(
         "--attempt-id",
         required=True,
-        choices=["R01-A/attempt-1", "R01-A/attempt-2", RECOVERY_ATTEMPT_ID],
+        choices=[
+            "R01-A/attempt-1",
+            "R01-A/attempt-2",
+            RECOVERY_ATTEMPT_ID,
+            FINAL_CONTINUATION_ATTEMPT_ID,
+        ],
     )
     run_parser.add_argument("--workspace", type=Path, required=True)
     run_parser.add_argument("--image", required=True)
@@ -1698,6 +2156,10 @@ def main(argv=None) -> int:
     run_parser.add_argument("--previous-attempt-result", type=Path)
     run_parser.add_argument("--first-attempt-result", type=Path)
     run_parser.add_argument("--previous-attempt-authorization", type=Path)
+    run_parser.add_argument("--first-attempt-authorization", type=Path)
+    run_parser.add_argument("--attempt-two-result", type=Path)
+    run_parser.add_argument("--attempt-two-authorization", type=Path)
+    run_parser.add_argument("--session-quiescence-evidence", type=Path)
     sub.add_parser("cancel-one")
     cleanup_parser = sub.add_parser("verify-cleanup")
     cleanup_parser.add_argument("--result", type=Path, required=True)
@@ -1745,6 +2207,10 @@ def main(argv=None) -> int:
                 previous_attempt_result=args.previous_attempt_result,
                 first_attempt_result=args.first_attempt_result,
                 previous_attempt_authorization=args.previous_attempt_authorization,
+                first_attempt_authorization=args.first_attempt_authorization,
+                attempt_two_result=args.attempt_two_result,
+                attempt_two_authorization=args.attempt_two_authorization,
+                session_quiescence_evidence=args.session_quiescence_evidence,
             )
             code = 0
         elif args.command == "cancel-one":
@@ -1826,6 +2292,10 @@ def main(argv=None) -> int:
                 previous_attempt_result=args.previous_attempt_result,
                 first_attempt_result=args.first_attempt_result,
                 previous_attempt_authorization=args.previous_attempt_authorization,
+                first_attempt_authorization=args.first_attempt_authorization,
+                attempt_two_result=args.attempt_two_result,
+                attempt_two_authorization=args.attempt_two_authorization,
+                session_quiescence_evidence=args.session_quiescence_evidence,
             )
             _private_json_write(args.result, result)
             code = 0 if result.get("cleanup_verified") else 2

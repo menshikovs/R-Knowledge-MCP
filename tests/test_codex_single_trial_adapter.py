@@ -869,6 +869,359 @@ def test_attempt_two_is_blocked_without_verified_cleanup_or_prior_consumption(
         )
 
 
+def _final_continuation_fixture(tmp_path, monkeypatch):
+    state = tmp_path / "state"
+    (state / "consumed-trials").mkdir(parents=True)
+    (state / "consumed-authorizations").mkdir()
+    first_result = state / "r01a-result.json"
+    first_result.write_text(
+        json.dumps(
+            {
+                "record_type": "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
+                "synthetic": False,
+                "trial_id": "R01-A",
+                "attempt_id": "R01-A/attempt-1",
+                "failure_category": "ManagedAgentsError",
+                "session_creation_attempted": True,
+                "session_created": False,
+                "sessions_created_count": 0,
+                "inference_submitted": False,
+                "task_submission_attempted": False,
+                "task_submissions_attempted_count": 0,
+                "cleanup_verified": True,
+                "container_termination_verified": True,
+                "session_deleted_verified": True,
+                "topology_cleanup_verified": True,
+            }
+        )
+    )
+    first_id, second_id, third_id = "1" * 32, "2" * 32, "3" * 32
+    first_auth = {
+        "authorization_id": first_id,
+        "authorized": True,
+        "attempt_id": "R01-A/attempt-1",
+        "scope": {"trial_id": "R01-A", "attempt_id": "R01-A/attempt-1"},
+    }
+    first_auth_path = state / "authorization.json"
+    first_auth_path.write_text(json.dumps(first_auth))
+    first_marker = state / "consumed-trials" / "R01-A.json"
+    first_marker.write_text(json.dumps({"trial_id": "R01-A", "authorization_id": first_id}))
+    (state / "consumed-authorizations" / f"{first_id}.json").write_text(
+        json.dumps({"authorization_id": first_id, "trial_id": "R01-A"})
+    )
+
+    second_result = state / "r01a-result-attempt-2.json"
+    second_result.write_text(
+        json.dumps(
+            {
+                "record_type": "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
+                "synthetic": False,
+                "trial_id": "R01-A",
+                "attempt_id": "R01-A/attempt-2",
+                "failure_category": "AdapterError",
+                "states": ["prepare", "terminate_container", "cleanup"],
+                "session_creation_attempted": False,
+                "session_created": False,
+                "sessions_created_count": 0,
+                "session_creation_uncertain": False,
+                "task_submission_attempted": False,
+                "task_submission_uncertain": False,
+                "task_submissions_attempted_count": 0,
+                "inference_submitted": False,
+                "cleanup_verified": True,
+                "container_termination_verified": True,
+                "topology_cleanup_verified": True,
+            }
+        )
+    )
+    second_auth = {
+        "authorization_id": second_id,
+        "authorized": True,
+        "consumed": False,
+        "attempt_id": "R01-A/attempt-2",
+        "typed_confirmation": "AUTHORIZE ONE PAID TRIAL R01-A/attempt-2",
+        "issued_at": "2026-01-01T00:00:00+00:00",
+        "expires_at": "2026-01-01T00:01:00+00:00",
+        "scope": {
+            "trial_id": "R01-A",
+            "attempt_id": "R01-A/attempt-2",
+            "previous_attempt_result": str(first_result.resolve()),
+            "previous_attempt_audit_sha256": hashlib.sha256(first_result.read_bytes()).hexdigest(),
+            "state_directory": str(state.resolve()),
+        },
+    }
+    second_auth_path = state / "authorization-attempt-2.json"
+    second_auth_path.write_text(json.dumps(second_auth))
+
+    third_result = state / "r01a-result-recovery-after-attempt-2.json"
+    third_audit = {
+        "record_type": "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
+        "synthetic": False,
+        "trial_id": "R01-A",
+        "attempt_id": "R01-A/recovery-after-attempt-2",
+        "failure_category": "response_schema_validation",
+        "failure": {"operation": "create_session", "category": "response_schema_validation"},
+        "session_creation_attempted": True,
+        "session_created": True,
+        "sessions_created_count": 1,
+        "session_creation_http_status": 201,
+        "session_state": "unknown",
+        "session_deleted_verified": None,
+        "task_submission_attempted": False,
+        "task_submission_uncertain": False,
+        "task_submissions_attempted_count": 0,
+        "inference_submitted": False,
+        "container_termination_verified": True,
+        "topology_cleanup_verified": True,
+        "cleanup_verified": False,
+    }
+    third_result.write_text(json.dumps(third_audit))
+    third_auth = {
+        "authorization_id": third_id,
+        "authorized": True,
+        "consumed": False,
+        "attempt_id": adapter.RECOVERY_ATTEMPT_ID,
+        "scope": {
+            "trial_id": "R01-A",
+            "attempt_id": adapter.RECOVERY_ATTEMPT_ID,
+            "previous_attempt_audit_sha256": hashlib.sha256(second_result.read_bytes()).hexdigest(),
+            "recovery_first_attempt_audit_sha256": hashlib.sha256(
+                first_result.read_bytes()
+            ).hexdigest(),
+            "previous_attempt_authorization_sha256": hashlib.sha256(
+                second_auth_path.read_bytes()
+            ).hexdigest(),
+        },
+    }
+    third_auth_path = state / "authorization-recovery-after-attempt-2.json"
+    third_auth_path.write_text(json.dumps(third_auth))
+    third_marker = state / "consumed-trials" / "R01-A-recovery-after-attempt-2.json"
+    third_marker.write_text(json.dumps({"trial_id": "R01-A", "authorization_id": third_id}))
+    (state / "consumed-authorizations" / f"{third_id}.json").write_text(
+        json.dumps({"authorization_id": third_id, "trial_id": "R01-A"})
+    )
+
+    evidence = {
+        "record_type": "managed_agents_session_quiescence_evidence",
+        "source_url": adapter.SESSION_QUIESCENCE_SOURCE,
+        "checked_at": datetime.now(UTC).isoformat(),
+        "operator_confirmation": adapter.SESSION_QUIESCENCE_CONFIRMATION,
+        "not_based_on_agents_logs": True,
+        "all_pages_checked": True,
+        "pages": [{"data": [{"id": "sess-old", "status": "failed"}], "has_more": False}],
+    }
+    evidence_path = state / "session-quiescence.json"
+    evidence_path.write_text(json.dumps(evidence))
+    monkeypatch.setattr(
+        adapter,
+        "verify_cleanup",
+        lambda *_args, **_kwargs: {"local_cleanup_verified": True, "cleanup_verified": False},
+    )
+    return {
+        "state": state,
+        "first_result": first_result,
+        "first_auth": first_auth_path,
+        "second_result": second_result,
+        "second_auth": second_auth_path,
+        "third_result": third_result,
+        "third_auth": third_auth_path,
+        "evidence": evidence_path,
+        "third_audit": third_audit,
+    }
+
+
+def test_final_continuation_accepts_actual_third_attempt_shape_and_binds_all_history(
+    tmp_path, monkeypatch
+):
+    files = _final_continuation_fixture(tmp_path, monkeypatch)
+    hashes = adapter._verify_final_continuation_provenance(
+        files["state"],
+        files["first_result"],
+        files["first_auth"],
+        files["second_result"],
+        files["second_auth"],
+        files["third_result"],
+        files["third_auth"],
+        files["evidence"],
+    )
+    assert hashes["third_server_session_state"] == "unknown_until_independent_inventory"
+    assert hashes["independent_inventory_active_sessions"] == 0
+    assert (
+        hashes["first_authorization_sha256"]
+        == hashlib.sha256(files["first_auth"].read_bytes()).hexdigest()
+    )
+    assert (
+        hashes["attempt_two_authorization_sha256"]
+        == hashlib.sha256(files["second_auth"].read_bytes()).hexdigest()
+    )
+    assert (
+        hashes["third_authorization_sha256"]
+        == hashlib.sha256(files["third_auth"].read_bytes()).hexdigest()
+    )
+
+    workspace = tmp_path / "public-R01"
+    monkeypatch.setattr(adapter, "REPO", tmp_path / "repository-root")
+    workspace.mkdir()
+    monkeypatch.setattr(
+        adapter,
+        "_load_controller",
+        lambda: SimpleNamespace(
+            validate_public_workspace=lambda *_args: {
+                "boundary_verified": False,
+                "files": ["TASK.md", "data/records.csv", "renv.lock"],
+            }
+        ),
+    )
+    context = adapter.build_trial_context(
+        pilot.make_plan(),
+        "R01-A",
+        workspace,
+        candidate_image_digest="sha256:" + "b" * 64,
+        state_directory=files["state"],
+        attempt_id=adapter.FINAL_CONTINUATION_ATTEMPT_ID,
+        first_attempt_result=files["first_result"],
+        first_attempt_authorization=files["first_auth"],
+        attempt_two_result=files["second_result"],
+        attempt_two_authorization=files["second_auth"],
+        previous_attempt_result=files["third_result"],
+        previous_attempt_authorization=files["third_auth"],
+        session_quiescence_evidence=files["evidence"],
+    )
+    auth = adapter.create_authorization(
+        context,
+        typed_confirmation=f"AUTHORIZE ONE PAID TRIAL {adapter.FINAL_CONTINUATION_ATTEMPT_ID}",
+        available_balance_cents=1000,
+        reserve_cents=200,
+        estimated_spend_cents=100,
+        balance_source="offline test fixture",
+        balance_checked_at=datetime.now(UTC).isoformat(),
+        restricted_key_scope_confirmation="CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A",
+        attempt_id=adapter.FINAL_CONTINUATION_ATTEMPT_ID,
+        first_attempt_result=files["first_result"],
+        first_attempt_authorization=files["first_auth"],
+        attempt_two_result=files["second_result"],
+        attempt_two_authorization=files["second_auth"],
+        previous_attempt_result=files["third_result"],
+        previous_attempt_authorization=files["third_auth"],
+        session_quiescence_evidence=files["evidence"],
+    )
+    assert auth["scope"]["final_continuation_provenance"] == hashes
+    assert adapter.validate_authorization(auth, context) is auth
+    assert not (files["state"] / "consumed-trials" / "R01-A-final-continuation.json").exists()
+    original_third_bytes = files["third_result"].read_bytes()
+    files["third_audit"]["session_deleted_verified"] = True
+    files["third_result"].write_text(json.dumps(files["third_audit"]))
+    accepted_legacy_claim = adapter._verify_final_continuation_provenance(
+        files["state"],
+        files["first_result"],
+        files["first_auth"],
+        files["second_result"],
+        files["second_auth"],
+        files["third_result"],
+        files["third_auth"],
+        files["evidence"],
+    )
+    assert (
+        accepted_legacy_claim["third_server_session_state"] == "unknown_until_independent_inventory"
+    )
+    assert accepted_legacy_claim["legacy_session_deletion_claim_ignored"] is True
+    files["third_result"].write_bytes(original_third_bytes)
+    files["first_result"].write_bytes(files["first_result"].read_bytes() + b" ")
+    with pytest.raises(adapter.AdapterError):
+        adapter._verify_final_continuation_provenance(
+            files["state"],
+            files["first_result"],
+            files["first_auth"],
+            files["second_result"],
+            files["second_auth"],
+            files["third_result"],
+            files["third_auth"],
+            files["evidence"],
+        )
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        {"session_creation_http_status": 400},
+        {"failure_category": "http_rejection"},
+        {"task_submission_attempted": True},
+        {"task_submission_uncertain": True},
+        {"task_submissions_attempted_count": 1},
+        {"inference_submitted": True},
+        {"container_termination_verified": False},
+        {"topology_cleanup_verified": False},
+    ],
+)
+def test_final_continuation_rejects_unsafe_third_attempt_audit(tmp_path, monkeypatch, mutation):
+    files = _final_continuation_fixture(tmp_path, monkeypatch)
+    files["third_audit"].update(mutation)
+    files["third_result"].write_text(json.dumps(files["third_audit"]))
+    with pytest.raises(adapter.AdapterError):
+        adapter._verify_final_continuation_provenance(
+            files["state"],
+            files["first_result"],
+            files["first_auth"],
+            files["second_result"],
+            files["second_auth"],
+            files["third_result"],
+            files["third_auth"],
+            files["evidence"],
+        )
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        {"all_pages_checked": False},
+        {"not_based_on_agents_logs": False},
+        {"source_url": "https://example.com/sessions"},
+        {"operator_confirmation": ""},
+        {"pages": [{"data": [{"id": "active", "status": "in_progress"}], "has_more": False}]},
+        {"pages": [{"data": [{"id": "idle", "status": "idle"}], "has_more": False}]},
+        {"pages": [{"data": [{"id": "pending", "status": "requires_action"}], "has_more": False}]},
+        {"pages": [{"data": [{"id": "unknown", "status": "mystery"}], "has_more": False}]},
+        {"pages": [{"data": [], "has_more": True}]},
+        {"checked_at": "2020-01-01T00:00:00+00:00"},
+        {
+            "pages": [
+                {
+                    "data": [{"id": "one", "status": "failed"}],
+                    "has_more": True,
+                    "last_id": "one",
+                },
+                {"data": [], "has_more": False, "after": "wrong-cursor"},
+            ]
+        },
+    ],
+)
+def test_final_continuation_requires_complete_fresh_independent_session_inventory(
+    tmp_path, monkeypatch, mutation
+):
+    files = _final_continuation_fixture(tmp_path, monkeypatch)
+    evidence = json.loads(files["evidence"].read_text())
+    evidence.update(mutation)
+    files["evidence"].write_text(json.dumps(evidence))
+    with pytest.raises(adapter.AdapterError):
+        adapter._verify_final_continuation_provenance(
+            files["state"],
+            files["first_result"],
+            files["first_auth"],
+            files["second_result"],
+            files["second_auth"],
+            files["third_result"],
+            files["third_auth"],
+            files["evidence"],
+        )
+
+
+def test_final_continuation_rejects_a_fifth_attempt_identity():
+    with pytest.raises(
+        adapter.AdapterError, match="first two attempts or one separately authorized recovery"
+    ):
+        adapter.build_trial_context(pilot.make_plan(), "R01-A", attempt_id="R01-A/attempt-5")
+
+
 def test_lifecycle_audit_is_not_valid_strict_benchmark_result():
     bench = adapter._load_module(ROOT / "runner" / "bench.py", "test_lifecycle_not_benchmark")
     strict = {}
