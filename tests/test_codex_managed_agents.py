@@ -184,6 +184,7 @@ def test_sse_subscription_precedes_submission_and_redacts_credentials():
     finally:
         client.close()
     assert [request.method for request in requests] == ["GET", "POST"]
+    assert dict(requests[0].url.params) == {"stream": "true"}
     assert events[0]["type"] == "agent.session.turn.completed"
     assert events[0]["access_token"] == "[REDACTED]"
     assert "synthetic-app-secret" not in json.dumps(events)

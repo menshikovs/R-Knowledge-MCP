@@ -48,11 +48,55 @@ created.
 controller-side HTTPX calls for session creation, event submission/streaming,
 cancellation and deletion, response/event byte limits, redirect rejection,
 fixed official URL checks, idempotent task submission and event secret
-redaction. Tests use `httpx.MockTransport` and synthetic values only. They do
-not establish API-account model access. Session creation and turn execution
-were never called. Existing adapter `run-one` stays fail-closed; the full
-session lifecycle is not connected to artifact sealing, scoring, the balance
-checkpoint, or the required egress broker.
+redaction. The SSE client subscribes using the documented
+`/v1/agents/sessions/{id}/events?stream=true` route before submitting input.
+Tests use `httpx.MockTransport` and synthetic values only. They do not establish
+API-account model access. Session creation and turn execution were never
+called. Existing adapter `run-one` stays fail-closed; the full session
+lifecycle is not connected to artifact sealing, scoring, the balance
+checkpoint, or an egress broker.
+
+Authorization records now require and bind the immutable candidate image ID
+and a fingerprint of the Codex Docker recipe/runtime policy, in addition to the
+task inputs, workspace, model, reasoning, and controller version. This prevents
+reusing a one-time authorization after changing the reviewed runtime. It does
+not make the current blocked preflight pass or authorize a live trial.
+
+## Relay and lifecycle investigation for this task
+
+The current official self-hosted executor guide documents an application
+request to `https://api.openai.com` and an outbound WebSocket to
+`wss://codex-cloud-environments.chatgpt.com`. It says to pass the returned
+`session.environment.remote_url` unchanged to `codex exec-server --remote` and
+provides the separate environment key as `CODEX_API_KEY`. It explicitly warns
+that agent-generated code can read that environment key. The official guide
+does not specify a local forward-proxy interface, a path-aware proxy protocol,
+a TLS interception CA workflow, or signed relay URL matching rules. The
+installed pinned CLI's `exec-server --help` lists `--remote` and transport
+choices, but does not document a supported proxy/path-policy interface.
+
+Consequently this change does not invent a proxy setting, terminate TLS, or
+allow unrestricted CONNECT. A TCP/TLS pass-through can constrain destination
+hosts but cannot inspect encrypted HTTP paths. TLS termination would require
+the candidate to trust an interception certificate and would violate the
+normal certificate-validation boundary. The candidate stays on Docker
+`network=none`; no HTTPS/WSS route is enabled. The local Docker probe remains
+the verified negative evidence for direct egress denial, not a relay test.
+
+The managed-session API methods are still only tested against synthetic
+HTTPX responses. No session has been created, so the actual `remote_url`,
+registered executor handshake, API key scope/revocation, model/account access,
+or resolved session settings are not observed. The code does not claim that a
+mock event stream proves executor protocol compatibility.
+
+The currently implemented pieces are not wired into a full trial lifecycle:
+exclusive lease/authorization consumption, live executor connection, task
+submission and cancellation, verified agent termination, allowlisted artifact
+handoff, scorer execution, real usage/spending reconciliation, and the operator
+checkpoint are not joined in an end-to-end runner. No command is presented as
+an offline end-to-end trial because doing so with a fake relay/session/scorer
+would misrepresent the requested evidence. The original scorer and strict
+benchmark files remain untouched.
 
 Condition A's generated Agents API configuration has zero MCP tools. Runtime
 tool discovery is still unverified because it would require a real session.
@@ -99,7 +143,9 @@ The original strict benchmark, score importer and oracle were not modified.
 ## Exact blockers before a real R01-A turn
 
 - A trusted, path-aware endpoint broker and separately verified outbound WSS
-  relay are not implemented. The candidate currently has no network.
+  relay are not implemented. Official OpenAI docs do not specify the required
+  path-aware proxy interface or signed-target validation contract. The
+  candidate currently has no network.
 - No documented restricted executor environment key was supplied to the
   container, and no Managed Agents session/environment was created.
 - Account-level access to `gpt-6-luna` and the resolved live `medium` setting
@@ -107,6 +153,9 @@ The original strict benchmark, score importer and oracle were not modified.
 - The executor process is tested only as a local loopback service. Its remote
   registration and WebSocket lifecycle, 900-second agent cancellation, API
   session deletion and cleanup combination are not verified.
+- Session deletion only removes the public API session; official lifecycle
+  guidance says provider compute must be stopped separately. A future runner
+  must verify Docker container termination independently before artifact export.
 - Artifact export after termination, sealed scoring handoff, and the final
   balance/usage/correctness checkpoint are not wired to an agent turn.
 - A's zero-MCP configuration is deterministic but has not been observed in an
@@ -124,14 +173,18 @@ remains separate and unchanged.
 - [GPT-6 Luna model](https://developers.openai.com/api/docs/models/gpt-6-luna)
   documents Responses tools, MCP, and `reasoning.effort: medium` support.
 - [Self-hosted sandboxes](https://developers.openai.com/api/docs/guides/agents-api/environments/self-hosted)
-  documents `codex exec-server`, the registration and WebSocket hosts, and the
-  restricted environment-key arrangement.
+  documents the two outbound hosts, the unchanged `remote_url`,
+  `codex exec-server --remote`, and the restricted environment-key arrangement.
 - [Sandbox security](https://developers.openai.com/api/docs/guides/agents-api/environments/security)
   says agent-generated code can read environment credentials and that the
   application API key must stay outside the environment.
 - [MCP connections](https://developers.openai.com/api/docs/guides/agents-api/tools/mcp)
   documents environment-origin MCP connections and `allowed_tools`.
 - [Session events](https://developers.openai.com/api/docs/guides/agents-api/sessions/events)
-  documents input, cancellation and event-stream behavior.
+  documents the `?stream=true` SSE route, input ordering, cancellation and
+  event-stream behavior.
+- [Sandbox lifecycle](https://developers.openai.com/api/docs/guides/agents-api/environments/lifecycle)
+  states that session deletion does not stop provider compute and describes
+  connection, reconnection, and cleanup ownership.
 - [Codex 0.163.0 release](https://github.com/openai/codex/releases/tag/rust-v0.163.0)
   supplies the SHA-256-pinned Linux package used by the candidate Dockerfile.

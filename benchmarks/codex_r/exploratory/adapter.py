@@ -126,12 +126,39 @@ def environment_fingerprint(task_id: str) -> str:
     return digest.hexdigest()
 
 
-def build_trial_context(plan: dict, trial_id: str, workspace: Path | None = None) -> dict:
+def execution_configuration_fingerprint() -> str:
+    """Bind authorization to the reviewed Codex image recipe and Docker policy."""
+    digest = hashlib.sha256()
+    for path in (
+        ROOT / "runtime" / "candidate.Dockerfile",
+        ROOT / "exploratory" / "docker_runtime.py",
+    ):
+        resolved = path.resolve(strict=True)
+        if not resolved.is_relative_to(ROOT.resolve()):
+            raise AdapterError("Execution configuration escaped the benchmark root")
+        digest.update(resolved.relative_to(ROOT.resolve()).as_posix().encode())
+        digest.update(b"\0")
+        digest.update(resolved.read_bytes())
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
+def build_trial_context(
+    plan: dict,
+    trial_id: str,
+    workspace: Path | None = None,
+    *,
+    candidate_image_digest: str | None = None,
+) -> dict:
     """Resolve one exploratory assignment and bind its exact control values."""
     pilot.validate_plan(plan)
     selected = next((row for row in plan["trials"] if row["trial_id"] == trial_id), None)
     if selected is None:
         raise AdapterError("Trial ID is not assigned by the nine-trial pilot plan")
+    if candidate_image_digest is not None and not re.fullmatch(
+        r"sha256:[a-f0-9]{64}", candidate_image_digest
+    ):
+        raise AdapterError("Candidate image must be identified by an immutable sha256 digest")
     expected_tools = set(pilot.bench.manifest()["conditions"][selected["condition"]]["tools"])
     context = {
         "trial_id": selected["trial_id"],
@@ -142,6 +169,8 @@ def build_trial_context(plan: dict, trial_id: str, workspace: Path | None = None
         "timeout_seconds": pilot.TRIAL_TIMEOUT_SECONDS,
         "expected_tools": sorted(expected_tools),
         "environment_fingerprint": environment_fingerprint(selected["task"]),
+        "execution_config_digest": execution_configuration_fingerprint(),
+        "candidate_image_digest": candidate_image_digest,
         "controller_version": CONTROLLER_VERSION,
         "workspace": str(workspace.resolve()) if workspace is not None else None,
     }
@@ -307,6 +336,30 @@ def create_authorization(
     ttl_seconds: int = 300,
 ) -> dict:
     """Create a narrowly scoped, short-lived consent record (never starts Codex)."""
+    if (
+        not isinstance(context, dict)
+        or context.get("trial_id") != "R01-A"
+        or context.get("task") != "R01"
+        or context.get("condition") != "A"
+        or context.get("model") != pilot.MODEL
+        or context.get("reasoning_effort") != pilot.REASONING_EFFORT
+        or context.get("timeout_seconds") != pilot.TRIAL_TIMEOUT_SECONDS
+        or context.get("expected_tools") != []
+    ):
+        raise AdapterError("Authorization is restricted to the fixed R01-A configuration")
+    if not re.fullmatch(r"sha256:[a-f0-9]{64}", str(context.get("candidate_image_digest", ""))):
+        raise AdapterError("Authorization requires the reviewed immutable candidate image digest")
+    if not re.fullmatch(r"[a-f0-9]{64}", str(context.get("execution_config_digest", ""))):
+        raise AdapterError("Authorization requires the reviewed execution configuration digest")
+    workspace = context.get("workspace")
+    if not isinstance(workspace, str) or not workspace:
+        raise AdapterError("Authorization requires the prepared public R01 workspace")
+    try:
+        workspace_report = _load_controller().validate_public_workspace(workspace, "R01")
+    except (OSError, ValueError) as exc:
+        raise AdapterError("Authorization workspace is not the exact public R01 input set") from exc
+    if workspace_report["files"] != ["TASK.md", "data/records.csv", "renv.lock"]:
+        raise AdapterError("Authorization workspace inventory differs from R01 inputs")
     expected_confirmation = f"AUTHORIZE ONE PAID TRIAL {context['trial_id']}"
     if typed_confirmation != expected_confirmation:
         raise AdapterError("Typed confirmation must name exactly the selected paid trial")
@@ -330,6 +383,8 @@ def create_authorization(
                 "model",
                 "reasoning_effort",
                 "environment_fingerprint",
+                "candidate_image_digest",
+                "execution_config_digest",
                 "workspace",
                 "controller_version",
             )
@@ -373,6 +428,8 @@ def validate_authorization(
             "model",
             "reasoning_effort",
             "environment_fingerprint",
+            "candidate_image_digest",
+            "execution_config_digest",
             "workspace",
             "controller_version",
         )
