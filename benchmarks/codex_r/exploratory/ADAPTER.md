@@ -227,7 +227,7 @@ RESERVE_CENTS=300
 ESTIMATE_CENTS=150
 BALANCE_CHECKED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 mkdir -p "$STATE"
-python "$ADAPTER" authorize-one --trial R01-A \
+python "$ADAPTER" authorize-one --trial R01-A --attempt-id R01-A/attempt-1 \
   --workspace "$WORKSPACE" --image "$IMAGE" \
   --available-balance-cents "$BALANCE_CENTS" \
   --reserve-cents "$RESERVE_CENTS" \
@@ -240,7 +240,7 @@ python "$ADAPTER" authorize-one --trial R01-A \
 
 # Sole launch command: at most one session and one task, no retries or batches.
 # Keep this terminal attached for the mandatory post-trial review checkpoint.
-python "$ADAPTER" run-one --trial R01-A \
+python "$ADAPTER" run-one --trial R01-A --attempt-id R01-A/attempt-1 \
   --workspace "$WORKSPACE" --image "$IMAGE" \
   --authorization "$STATE/authorization.json" \
   --result "$STATE/r01a-result.json"
@@ -282,6 +282,61 @@ The run stops for review of usage, provider-reported spend, independent score,
 and a newly checked balance. Missing usage or unreconciled spend stops the
 ledger. No later trial is authorized automatically. Cleanup verification does
 not establish billing reconciliation.
+
+## Explicit second R01-A attempt
+
+The original R01-A authorization, result, and `consumed-trials/R01-A.json`
+marker are immutable. The second attempt keeps scientific `trial_id` equal to
+`R01-A`, and records `attempt_id` as `R01-A/attempt-2`. It uses new files
+`authorization-attempt-2.json` and `r01a-result-attempt-2.json`, plus its own
+`consumed-trials/R01-A-attempt-2.json` marker. There is no third attempt or
+automatic retry. Do not remove state files or markers.
+
+Authorization accepts either a structured HTTP 4xx rejection at `create_session`
+or the known legacy audit shape (`failure_category: ManagedAgentsError`, one
+session-creation attempt, and no structured `failure` object). The legacy case
+is labeled `legacy_create_session_failure_unclassified` with provider status
+`unknown`; it does not imply a confirmed HTTP rejection. Both paths require zero
+created sessions, zero task submissions/inference, and verified
+container/session/network cleanup. It independently checks that
+Docker has no active trial lock, candidate container, or R01-A network, then
+binds the prior audit's SHA-256 into the new authorization. This permits the
+known API-rejection case even if the prior controller conservatively marked
+session creation uncertain; other failure categories remain blocked.
+
+With the WSL environment and keys set as above, use these exact attempt-2
+commands. Set the first audit path to the original result without renaming or
+editing it, and refresh balance values immediately before authorization:
+
+```bash
+FIRST_RESULT="$STATE/r01a-result.json"
+SECOND_AUTH="$STATE/authorization-attempt-2.json"
+SECOND_RESULT="$STATE/r01a-result-attempt-2.json"
+BALANCE_CENTS=1000
+RESERVE_CENTS=300
+ESTIMATE_CENTS=150
+BALANCE_CHECKED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+python "$ADAPTER" authorize-one --trial R01-A --attempt-id R01-A/attempt-2 \
+  --workspace "$WORKSPACE" --image "$IMAGE" \
+  --previous-attempt-result "$FIRST_RESULT" \
+  --available-balance-cents "$BALANCE_CENTS" \
+  --reserve-cents "$RESERVE_CENTS" \
+  --estimated-spend-cents "$ESTIMATE_CENTS" \
+  --balance-source operator_dashboard \
+  --balance-checked-at "$BALANCE_CHECKED_AT" \
+  --confirm 'AUTHORIZE ONE PAID TRIAL R01-A/attempt-2' \
+  --confirm-restricted-key-scope 'CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A' \
+  --authorization-output "$SECOND_AUTH"
+
+python "$ADAPTER" run-one --trial R01-A --attempt-id R01-A/attempt-2 \
+  --workspace "$WORKSPACE" --image "$IMAGE" \
+  --previous-attempt-result "$FIRST_RESULT" \
+  --authorization "$SECOND_AUTH" --result "$SECOND_RESULT"
+
+python "$ADAPTER" verify-cleanup --result "$SECOND_RESULT"
+python "$ADAPTER" inspect-result --result "$SECOND_RESULT"
+```
 
 ## Exact blockers before a real R01-A turn
 

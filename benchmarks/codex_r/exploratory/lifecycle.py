@@ -163,6 +163,7 @@ class R01ALifecycleController:
             ),
             "synthetic": self.synthetic_mode,
             "trial_id": "R01-A",
+            "attempt_id": context.get("attempt_id", "R01-A/attempt-1"),
             "model": "gpt-6-luna",
             "reasoning_effort": "medium",
             "states": [],

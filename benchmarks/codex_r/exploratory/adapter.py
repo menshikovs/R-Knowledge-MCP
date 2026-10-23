@@ -159,6 +159,8 @@ def build_trial_context(
     *,
     candidate_image_digest: str | None = None,
     state_directory: Path | None = None,
+    attempt_id: str = "R01-A/attempt-1",
+    previous_attempt_result: Path | None = None,
 ) -> dict:
     """Resolve one exploratory assignment and bind its exact control values."""
     pilot.validate_plan(plan)
@@ -170,8 +172,33 @@ def build_trial_context(
     ):
         raise AdapterError("Candidate image must be identified by an immutable sha256 digest")
     expected_tools = set(pilot.bench.manifest()["conditions"][selected["condition"]]["tools"])
+    if attempt_id not in {"R01-A/attempt-1", "R01-A/attempt-2"}:
+        raise AdapterError("Only the explicitly bounded first or second attempt is supported")
+    previous_audit_sha256 = None
+    previous_failure_classification = None
+    previous_provider_status = None
+    if attempt_id == "R01-A/attempt-2":
+        if previous_attempt_result is None:
+            raise AdapterError("Attempt 2 requires the preserved first-attempt cleanup audit")
+        prior_failure = _verify_first_attempt_for_retry(
+            state_directory or default_state_directory(), previous_attempt_result
+        )
+        previous_failure_classification = prior_failure["classification"]
+        previous_provider_status = prior_failure["provider_status"]
+        previous_audit_sha256 = hashlib.sha256(
+            Path(previous_attempt_result).read_bytes()
+        ).hexdigest()
     context = {
         "trial_id": selected["trial_id"],
+        "attempt_id": attempt_id,
+        "previous_attempt_audit_sha256": previous_audit_sha256,
+        "previous_attempt_failure_classification": previous_failure_classification,
+        "previous_attempt_provider_status": previous_provider_status,
+        "previous_attempt_result": (
+            str(Path(previous_attempt_result).resolve())
+            if previous_attempt_result is not None
+            else None
+        ),
         "task": selected["task"],
         "condition": selected["condition"],
         "model": pilot.MODEL,
@@ -353,6 +380,8 @@ def create_authorization(
     balance_source: str,
     balance_checked_at: str,
     restricted_key_scope_confirmation: str,
+    attempt_id: str = "R01-A/attempt-1",
+    previous_attempt_result: Path | None = None,
 ) -> dict:
     """Create a narrowly scoped, short-lived consent record (never starts Codex)."""
     if (
@@ -384,7 +413,21 @@ def create_authorization(
         raise AdapterError("Authorization workspace is not the exact public R01 input set") from exc
     if workspace_report["files"] != ["TASK.md", "data/records.csv", "renv.lock"]:
         raise AdapterError("Authorization workspace inventory differs from R01 inputs")
-    expected_confirmation = f"AUTHORIZE ONE PAID TRIAL {context['trial_id']}"
+    if context.get("attempt_id") != attempt_id or attempt_id not in {
+        "R01-A/attempt-1",
+        "R01-A/attempt-2",
+    }:
+        raise AdapterError("Authorization attempt identity is invalid")
+    if attempt_id == "R01-A/attempt-2":
+        if previous_attempt_result is None:
+            raise AdapterError("Attempt 2 requires the preserved first-attempt audit")
+        if not (Path(state_directory) / "consumed-trials" / "R01-A.json").is_file():
+            raise AdapterError("Attempt 1 authorization marker is missing")
+        _verify_first_attempt_for_retry(Path(state_directory), previous_attempt_result)
+    elif (Path(state_directory) / "consumed-trials" / "R01-A.json").exists():
+        raise AdapterError("Attempt 1 has already been consumed; it cannot be replayed")
+    confirmation_scope = context["trial_id"] if attempt_id == "R01-A/attempt-1" else attempt_id
+    expected_confirmation = f"AUTHORIZE ONE PAID TRIAL {confirmation_scope}"
     if typed_confirmation != expected_confirmation:
         raise AdapterError("Typed confirmation must name exactly the selected paid trial")
     if restricted_key_scope_confirmation != "CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A":
@@ -416,6 +459,11 @@ def create_authorization(
             key: context[key]
             for key in (
                 "trial_id",
+                "attempt_id",
+                "previous_attempt_audit_sha256",
+                "previous_attempt_failure_classification",
+                "previous_attempt_provider_status",
+                "previous_attempt_result",
                 "task",
                 "condition",
                 "model",
@@ -429,6 +477,7 @@ def create_authorization(
             )
         },
         "typed_confirmation": expected_confirmation,
+        "attempt_id": attempt_id,
         "restricted_key_scope_operator_attested": True,
         "consumed": False,
         "balance_snapshot": {
@@ -455,6 +504,7 @@ def validate_authorization(
         "expires_at",
         "scope",
         "typed_confirmation",
+        "attempt_id",
         "restricted_key_scope_operator_attested",
         "consumed",
         "balance_snapshot",
@@ -469,13 +519,25 @@ def validate_authorization(
         raise AdapterError("Authorization has already been consumed")
     if not re.fullmatch(r"[a-f0-9]{32}", str(authorization["authorization_id"])):
         raise AdapterError("Authorization ID is invalid")
-    if authorization["typed_confirmation"] != f"AUTHORIZE ONE PAID TRIAL {context['trial_id']}":
+    confirmation_scope = (
+        context["trial_id"]
+        if context.get("attempt_id") == "R01-A/attempt-1"
+        else context.get("attempt_id")
+    )
+    if authorization["typed_confirmation"] != f"AUTHORIZE ONE PAID TRIAL {confirmation_scope}":
         raise AdapterError("Authorization confirmation does not match this trial")
+    if authorization["attempt_id"] != context.get("attempt_id"):
+        raise AdapterError("Authorization attempt identity does not match")
     scope = authorization["scope"]
     expected_scope = {
         key: context[key]
         for key in (
             "trial_id",
+            "attempt_id",
+            "previous_attempt_audit_sha256",
+            "previous_attempt_failure_classification",
+            "previous_attempt_provider_status",
+            "previous_attempt_result",
             "task",
             "condition",
             "model",
@@ -490,6 +552,17 @@ def validate_authorization(
     }
     if scope != expected_scope:
         raise AdapterError("Authorization scope differs from the prepared trial context")
+    if context.get("attempt_id") == "R01-A/attempt-2":
+        previous_path = context.get("previous_attempt_result")
+        if (
+            not previous_path
+            or not _verify_first_attempt_for_retry(
+                Path(context["state_directory"]), Path(previous_path)
+            )
+            or hashlib.sha256(Path(previous_path).read_bytes()).hexdigest()
+            != context.get("previous_attempt_audit_sha256")
+        ):
+            raise AdapterError("Attempt 1 audit or cleanup verification changed")
     try:
         issued = datetime.fromisoformat(authorization["issued_at"].replace("Z", "+00:00"))
         expires = datetime.fromisoformat(authorization["expires_at"].replace("Z", "+00:00"))
@@ -600,7 +673,25 @@ def consume_authorization(authorization: dict, context: dict, state_directory: P
     consumed.mkdir(parents=True, exist_ok=True)
     consumed_trials = root / "consumed-trials"
     consumed_trials.mkdir(parents=True, exist_ok=True)
-    trial_marker = consumed_trials / f"{context['trial_id']}.json"
+    attempt_id = context.get("attempt_id", "R01-A/attempt-1")
+    if attempt_id not in {"R01-A/attempt-1", "R01-A/attempt-2"}:
+        raise AdapterError("No authorization beyond attempt 2 is permitted")
+    marker_name = (
+        f"{context['trial_id']}.json"
+        if attempt_id == "R01-A/attempt-1"
+        else f"{context['trial_id']}-attempt-2.json"
+    )
+    trial_marker = consumed_trials / marker_name
+    if attempt_id == "R01-A/attempt-2":
+        first_marker = consumed_trials / "R01-A.json"
+        previous_path = context.get("previous_attempt_result")
+        if not first_marker.is_file() or not previous_path:
+            raise AdapterError("The consumed first attempt and its audit must be preserved")
+        _verify_first_attempt_for_retry(root, Path(previous_path))
+        if hashlib.sha256(Path(previous_path).read_bytes()).hexdigest() != context.get(
+            "previous_attempt_audit_sha256"
+        ):
+            raise AdapterError("Attempt 1 audit changed after authorization")
     try:
         with trial_marker.open("x", encoding="utf-8") as output:
             json.dump(
@@ -677,6 +768,8 @@ def create_authorization_file(
     balance_checked_at: str,
     restricted_key_scope_confirmation: str,
     output: Path,
+    attempt_id: str = "R01-A/attempt-1",
+    previous_attempt_result: Path | None = None,
 ) -> dict:
     """Create a one-use authorization without contacting Docker or OpenAI."""
     if Path(output).resolve().is_relative_to(REPO.resolve()):
@@ -687,6 +780,8 @@ def create_authorization_file(
         Path(workspace),
         candidate_image_digest=candidate_image_digest,
         state_directory=state_directory,
+        attempt_id=attempt_id,
+        previous_attempt_result=previous_attempt_result,
     )
     authorization = create_authorization(
         context,
@@ -697,6 +792,8 @@ def create_authorization_file(
         balance_source=balance_source,
         balance_checked_at=balance_checked_at,
         restricted_key_scope_confirmation=restricted_key_scope_confirmation,
+        attempt_id=attempt_id,
+        previous_attempt_result=previous_attempt_result,
     )
     validate_authorization(authorization, context)
     # This file is owner-only and must retain the opaque nonce used to reject replay.
@@ -859,6 +956,8 @@ def run_one(
     state_directory: Path,
     workspace: Path,
     candidate_image_digest: str,
+    attempt_id: str = "R01-A/attempt-1",
+    previous_attempt_result: Path | None = None,
 ):
     """Run exactly one fully authorized R01-A lifecycle; never retries or batches."""
     context = build_trial_context(
@@ -867,6 +966,8 @@ def run_one(
         Path(workspace),
         candidate_image_digest=candidate_image_digest,
         state_directory=Path(state_directory),
+        attempt_id=attempt_id,
+        previous_attempt_result=previous_attempt_result,
     )
     validate_authorization(authorization, context)
     controller = _make_live_controller(context, authorization, Path(state_directory))
@@ -938,6 +1039,61 @@ def verify_cleanup(state_directory: Path, result_path: Path, docker: str | None 
         "local_cleanup_verified": not lock_exists and not names and not networks,
         "cleanup_verified": live_audit_clean and not lock_exists and not names and not networks,
     }
+
+
+def _verify_first_attempt_for_retry(state_directory: Path, result_path: Path) -> dict[str, object]:
+    """Require the immutable, clean audit for the already-consumed first try."""
+    cleanup = verify_cleanup(state_directory, result_path)
+    if not cleanup["local_cleanup_verified"]:
+        raise AdapterError("Attempt 1 cleanup is not verified; attempt 2 remains blocked")
+    audit = json.loads(Path(result_path).read_text(encoding="utf-8"))
+    if not isinstance(audit, dict):
+        raise AdapterError("First-attempt audit is not an object")
+    common_valid = (
+        audit.get("record_type") == "managed_agents_r01a_lifecycle_audit_not_benchmark_result"
+        and audit.get("trial_id") == "R01-A"
+        and audit.get("attempt_id", "R01-A/attempt-1") == "R01-A/attempt-1"
+        and audit.get("session_created") is False
+        and type(audit.get("sessions_created_count")) is int
+        and audit.get("sessions_created_count") == 0
+        and audit.get("inference_submitted") is False
+        and audit.get("task_submission_attempted") is not True
+        and type(audit.get("task_submissions_attempted_count")) is int
+        and audit.get("task_submissions_attempted_count") == 0
+        and audit.get("container_termination_verified") is True
+        and audit.get("session_deleted_verified") is True
+        and audit.get("topology_cleanup_verified") is True
+        and audit.get("cleanup_verified") is True
+    )
+    if not common_valid:
+        raise AdapterError("First-attempt audit reports work or cleanup that is not verified")
+
+    failure = audit.get("failure")
+    status = failure.get("http_status") if isinstance(failure, dict) else None
+    if (
+        isinstance(failure, dict)
+        and failure.get("operation") == "create_session"
+        and failure.get("category") == "http_rejection"
+        and type(status) is int
+        and 400 <= status < 500
+    ):
+        if audit.get("session_creation_attempted") is not True:
+            raise AdapterError("First-attempt audit does not confirm one session-creation attempt")
+        return {"classification": "http_rejection", "provider_status": status}
+
+    # Older audit schema from before structured diagnostics. Do not infer or
+    # synthesize an HTTP status; unknown status remains explicit uncertainty.
+    legacy_valid = (
+        "failure" not in audit
+        and audit.get("failure_category") == "ManagedAgentsError"
+        and audit.get("session_creation_attempted") is True
+    )
+    if legacy_valid:
+        return {
+            "classification": "legacy_create_session_failure_unclassified",
+            "provider_status": "unknown",
+        }
+    raise AdapterError("First-attempt failure is not an eligible session-creation rejection")
 
 
 def cancel_running_trial(state_directory: Path) -> dict:
@@ -1186,6 +1342,9 @@ def main(argv=None) -> int:
     docker_timeout_parser.add_argument("--timeout-seconds", type=float, default=1.0)
     auth_parser = sub.add_parser("authorize-one")
     auth_parser.add_argument("--trial", required=True, choices=["R01-A"])
+    auth_parser.add_argument(
+        "--attempt-id", required=True, choices=["R01-A/attempt-1", "R01-A/attempt-2"]
+    )
     auth_parser.add_argument("--workspace", type=Path, required=True)
     auth_parser.add_argument("--image", required=True)
     auth_parser.add_argument("--available-balance-cents", type=int, required=True)
@@ -1196,12 +1355,17 @@ def main(argv=None) -> int:
     auth_parser.add_argument("--confirm", required=True)
     auth_parser.add_argument("--confirm-restricted-key-scope", required=True)
     auth_parser.add_argument("--authorization-output", type=Path, required=True)
+    auth_parser.add_argument("--previous-attempt-result", type=Path)
     run_parser = sub.add_parser("run-one")
     run_parser.add_argument("--trial", required=True, choices=["R01-A"])
+    run_parser.add_argument(
+        "--attempt-id", required=True, choices=["R01-A/attempt-1", "R01-A/attempt-2"]
+    )
     run_parser.add_argument("--workspace", type=Path, required=True)
     run_parser.add_argument("--image", required=True)
     run_parser.add_argument("--authorization", type=Path, required=True)
     run_parser.add_argument("--result", type=Path, required=True)
+    run_parser.add_argument("--previous-attempt-result", type=Path)
     sub.add_parser("cancel-one")
     cleanup_parser = sub.add_parser("verify-cleanup")
     cleanup_parser.add_argument("--result", type=Path, required=True)
@@ -1245,6 +1409,8 @@ def main(argv=None) -> int:
                 balance_checked_at=balance_checked_at.isoformat(),
                 restricted_key_scope_confirmation=args.confirm_restricted_key_scope,
                 output=args.authorization_output,
+                attempt_id=args.attempt_id,
+                previous_attempt_result=args.previous_attempt_result,
             )
             code = 0
         elif args.command == "cancel-one":
@@ -1322,6 +1488,8 @@ def main(argv=None) -> int:
                 state_directory=default_state_directory(),
                 workspace=args.workspace,
                 candidate_image_digest=args.image,
+                attempt_id=args.attempt_id,
+                previous_attempt_result=args.previous_attempt_result,
             )
             _private_json_write(args.result, result)
             code = 0 if result.get("cleanup_verified") else 2
