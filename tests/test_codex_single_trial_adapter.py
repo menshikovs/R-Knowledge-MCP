@@ -83,10 +83,15 @@ def test_preflight_is_honest_and_never_ready_without_isolation_and_access():
     assert "SECURE_CODEX_EXECUTION_BACKEND_NOT_IMPLEMENTED" in report["blocking_conditions"]
 
 
-def test_authorization_is_single_row_scoped_expiring_and_one_use():
+def test_authorization_is_single_row_scoped_expiring_and_one_use(tmp_path):
     plan = pilot.make_plan()
-    row = plan["trials"][0]
-    context = adapter.build_trial_context(plan, row["trial_id"])
+    row = next(item for item in plan["trials"] if item["trial_id"] == "R01-A")
+    image_digest = "sha256:" + "b" * 64
+    workspace = tmp_path / "public-R01"
+    adapter.prepare_workspace("R01", workspace)
+    context = adapter.build_trial_context(
+        plan, row["trial_id"], workspace, candidate_image_digest=image_digest
+    )
     now = datetime(2026, 10, 23, tzinfo=UTC)
     authorization = adapter.create_authorization(
         context,
@@ -97,7 +102,13 @@ def test_authorization_is_single_row_scoped_expiring_and_one_use():
     with pytest.raises(adapter.AdapterError, match="does not match"):
         adapter.validate_authorization(
             authorization,
-            adapter.build_trial_context(plan, plan["trials"][1]["trial_id"]),
+            {**context, "trial_id": "R06-B"},
+            now=now,
+        )
+    with pytest.raises(adapter.AdapterError, match="scope differs"):
+        adapter.validate_authorization(
+            authorization,
+            {**context, "candidate_image_digest": "sha256:" + "c" * 64},
             now=now,
         )
     authorization["consumed"] = True
@@ -134,12 +145,24 @@ def test_offline_timeout_probe_terminates_its_synthetic_process_tree():
     assert result["descendant_cleanup_verified"] is True
 
 
-def test_run_one_stays_blocked_before_any_session_can_start():
+def test_run_one_stays_blocked_before_any_session_can_start(tmp_path):
     plan = pilot.make_plan()
-    trial_id = plan["trials"][0]["trial_id"]
-    context = adapter.build_trial_context(plan, trial_id)
+    trial_id = "R01-A"
+    workspace = tmp_path / "public-R01"
+    adapter.prepare_workspace("R01", workspace)
+    with pytest.raises(adapter.AdapterError, match="image digest"):
+        adapter.create_authorization(
+            adapter.build_trial_context(plan, trial_id, workspace),
+            typed_confirmation=f"AUTHORIZE ONE PAID TRIAL {trial_id}",
+        )
     authorization = adapter.create_authorization(
-        context, typed_confirmation=f"AUTHORIZE ONE PAID TRIAL {trial_id}"
+        adapter.build_trial_context(
+            plan,
+            trial_id,
+            workspace,
+            candidate_image_digest="sha256:" + "b" * 64,
+        ),
+        typed_confirmation=f"AUTHORIZE ONE PAID TRIAL {trial_id}",
     )
     with pytest.raises(adapter.AdapterError, match="execution is blocked"):
         adapter.run_one(

@@ -216,7 +216,10 @@ class ManagedAgentsClient:
         terminal = False
         try:
             with self._client.stream(
-                "GET", path, headers={"Accept": "text/event-stream"}
+                "GET",
+                path,
+                params={"stream": "true"},
+                headers={"Accept": "text/event-stream"},
             ) as stream:
                 if stream.is_redirect:
                     raise ManagedAgentsError("Managed Agents event stream redirected")
