@@ -105,6 +105,11 @@ and validate a one-row authorization record, but **does not launch Codex**;
 egress and gateway backend is available. Its local process probe is synthetic
 and is not an agent or model trial.
 
+The optional [Docker/WSL2 boundary probe](ADAPTER.md#offline-use) uses the
+existing frozen R image and verifies a real no-network, unprivileged container
+with only the public candidate workspace mounted. This verifies the fixed
+container probe, not Codex-agent isolation or a usable model connection.
+
 ## Official interface references
 
 - [GPT-6 Luna model](https://developers.openai.com/api/docs/models/gpt-6-luna)
