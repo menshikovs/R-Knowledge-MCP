@@ -39,16 +39,57 @@ No benchmark/scorer/oracle data, model configuration, URL allowlist, deadline be
 | Protocol behavior | `type` fields remain unchanged; connected then completed SSE events still submit once and terminate normally. |
 | Ordinary source URL | Nonsensitive source URL remains unchanged in general adapter output. |
 
-## Verification results
+## Independent verification results
 
-- `ruff check . --exclude .review-tmp,.review-tmp2,.review-tmp3` — **passed**. The exclusions are inaccessible leftover pytest temp directories from the prior Windows review attempt.
-- `ruff format --check benchmarks/codex_r tests` — **passed**, 69 files already formatted.
-- Filesystem-free selected pytest cases — **2 passed**: `test_f10_preserves_protocol_type_and_terminal_event_handling` and `test_f10_sanitization_key_collision_fails_closed`.
-- The lifecycle/private-writer/inspection pytest case was attempted with a fresh unique `--basetemp` under `%TEMP%`, outside the repository. Pytest failed during `tmp_path` fixture setup with `PermissionError: [WinError 5] Access is denied` on that root. It did not execute; this is an environment failure, not a test pass. The regression is present in source but persistence and inspection assertions remain unverified by execution here.
+### Test provenance and offline safety
+
+The five executed tests use only synthetic event JSON and credentials. The event streaming regressions use `httpx.MockTransport`; JSONL parsing and strict benchmark validation are local pure-function checks. Their source contains no Docker calls, `subprocess` boundary, network socket, credential lookup, authorization flow, or live service dependency. The audit/inspection test uses a temporary local fixture and the production private writer/inspection path; it was attempted separately but pytest failed before entering the test body.
+
+### Commands and exact results
+
+Windows PowerShell, repository venv, all paths below relative to the repository:
+
+```powershell
+& .\.venv\Scripts\ruff.exe check . --exclude .review-tmp,.review-tmp2,.review-tmp3
+& .\.venv\Scripts\ruff.exe format --check benchmarks/codex_r tests
+& .\.venv\Scripts\python.exe -m pytest `
+  tests/test_codex_executor_contract_integration.py::test_f10_preserves_protocol_type_and_terminal_event_handling `
+  tests/test_codex_executor_contract_integration.py::test_f10_sanitization_key_collision_fails_closed `
+  tests/test_codex_managed_agents.py::test_sse_subscription_precedes_submission_and_redacts_credentials `
+  tests/test_codex_single_trial_adapter.py::test_jsonl_events_are_bounded_and_credentials_are_redacted `
+  tests/test_codex_single_trial_adapter.py::test_lifecycle_audit_is_not_valid_strict_benchmark_result `
+  -q -p no:cacheprovider
+```
+
+- Ruff check: **passed**. The three excluded `.review-tmp*` directories were already present from the preceding Windows verification attempt and deny directory access; none was deleted or repaired.
+- Ruff format check: **passed**, 69 files already formatted.
+- Selected filesystem-free pytest command: **5 passed, 0 failed, 0 skipped, 0 deselected**.
+- Audit/private-writer/inspection test attempt:
+
+```powershell
+$fresh = Join-Path $env:TEMP ('r01a-f10-verify-' + [guid]::NewGuid().ToString('N'))
+& .\.venv\Scripts\python.exe -m pytest `
+  tests/test_codex_executor_contract_integration.py::test_f10_sanitizes_keys_values_audit_stdout_and_inspection `
+  -q --basetemp $fresh -p no:cacheprovider
+```
+
+Result: **0 passed, 0 failed, 0 skipped, 1 setup error, 0 deselected**. `tmp_path` fixture setup raised `PermissionError: [WinError 5] Access is denied` while enumerating the newly created external temp root. The test body did not run; lifecycle audit serialization, private adapter writer, captured output, and inspection confidentiality therefore remain unverified by pytest in this environment.
+
+The P0-B `test_read_only_recovery_and_synthetic_audit_cannot_import_as_real` regression is synthetic and denies network access, but requires `tmp_path`; it was not run because the same pytest temp-fixture failure prevents reaching its test body.
+
+### Read-only environment diagnosis
+
+- `wsl.exe --list --quiet` and `wsl.exe -l -v` both return `Wsl/EnumerateDistros/Service/E_ACCESSDENIED`. Ubuntu WSL2 could not be identified or invoked, so no Linux test run was possible.
+- `%TEMP%` parent ACL inspection showed inherited Modify/Read/Write entries. A newly created control directory could be listed. The pytest basetemp roots themselves reject directory listing and `icacls` with Access Denied; their reported PowerShell mode is `d-----`. The prior `.review-tmp`, `.review-tmp2`, and `.review-tmp3` roots have the same read-only-inspection result.
+- No pytest directory was deleted, repaired, chmodded, or otherwise changed during this verification. The denial appears specific to those pytest roots in the managed Windows environment; its originating ACL/security mechanism could not be established read-only.
 - No Docker, authenticated API, authorization, inference, or external network activity was performed.
 
 ## Remaining confidentiality limitations
 
 The sanitizer detects exact configured key material plus reviewed common token, bearer, signature, and sensitive-field patterns. It cannot identify an arbitrary unknown secret that has no credential-shaped marker and is absent from configured secret values. Unsupported values or key collisions fail closed, which can stop an audit from being written; the lifecycle retains its existing uncertainty/NO-GO behavior and does not serialize raw fallback data. General metadata URLs are retained unless they contain sensitive components or userinfo; executor event/audit URLs are fully redacted.
 
-**Final execution status remains NO-GO.** Independent live compatibility, remote session state, and authorization remain outside this hotfix.
+## Independent verification status
+
+**PARTIAL.** Key sanitization, collision fail-closed behavior, event type preservation, terminal handling, existing SSE credential scrubbing, JSONL sanitization, and synthetic-result rejection passed offline. Saved lifecycle audit/private-writer/inspection output is not independently verified because the corresponding pytest test could not leave fixture setup. WSL verification was unavailable.
+
+**Final execution status remains NO-GO.** Independent live compatibility, remote session state, and authorization remain outside this hotfix. Do not authorize another R01-A attempt.
