@@ -310,6 +310,20 @@ not establish billing reconciliation.
   actual Codex agent session. B/C candidate gateway networking and effective
   15/20 tool inventories remain future work.
 
+### Session-creation failure diagnostics
+
+If a future authorized attempt fails while creating a Managed Agents session,
+the lifecycle audit will retain a bounded `failure` object with `operation`
+(`create_session`), `category`, `http_status` when an HTTP response was
+received, and a short sanitized `reason`. Categories distinguish
+`http_rejection`, `network_error`, `tls_error`, `invalid_json`, and
+`response_schema_validation`; an oversized response is `response_limit`.
+Transport and response parsing errors do not include exception messages from
+the HTTP library. HTTP bodies, authorization headers, API keys, and signed
+executor URLs are never copied into this diagnostic object. A network failure
+has a null HTTP status because no response status was received. A protocol or
+schema failure after HTTP success retains that success status (normally 2xx).
+
 The operator's prepaid balance and disabled automatic top-ups do not create a
 hard spend cap. Before a future paid trial, require a current operator-confirmed
 balance, reserve, one-row authorization, and review after that trial. Never

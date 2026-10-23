@@ -306,6 +306,15 @@ class R01ALifecycleController:
             state("finish")
         except BaseException as exc:
             primary_error = exc
+            diagnostics = getattr(exc, "diagnostics", None)
+            if isinstance(diagnostics, dict):
+                # Only a small, provider-neutral allowlist is persisted. Never
+                # serialize exception text, headers, body bytes, or remote URLs.
+                record["failure"] = {
+                    key: diagnostics.get(key)
+                    for key in ("operation", "category", "http_status", "reason")
+                    if diagnostics.get(key) is None or isinstance(diagnostics.get(key), (str, int))
+                }
         finally:
             if deadline_timer is not None:
                 deadline_timer.cancel()
@@ -416,7 +425,12 @@ class R01ALifecycleController:
                 record["failure_category"] = type(exc).__name__
                 record["status"] = "post_execution_step_failed_checkpoint_required"
         else:
-            record["failure_category"] = type(primary_error).__name__
+            diagnostics = getattr(primary_error, "diagnostics", None)
+            record["failure_category"] = (
+                diagnostics.get("category")
+                if isinstance(diagnostics, dict)
+                else type(primary_error).__name__
+            )
             record["status"] = "attempt_failed_checkpoint_required"
 
         if self.ledger.active_trial_id == "R01-A":
