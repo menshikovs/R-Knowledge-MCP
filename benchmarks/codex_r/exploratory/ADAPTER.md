@@ -59,10 +59,9 @@ fixed official URL checks, idempotent task submission and event secret
 redaction. The SSE client subscribes using the documented
 `/v1/agents/sessions/{id}/events?stream=true` route before submitting input.
 Tests use `httpx.MockTransport` and synthetic values only. They do not establish
-API-account model access. Session creation and turn execution were never
-called. Existing adapter `run-one` stays fail-closed; session lifecycle,
-artifact sealing, scoring and balance checkpoint are not wired into an
-end-to-end runner.
+API-account model access. Session creation and inference were never called.
+Existing CLI `run-one` stays fail-closed; the injected controller is not wired
+to an automatic or batch launch command.
 
 Authorization records now require and bind the immutable candidate image ID
 and a fingerprint of the Codex Docker recipe/runtime policy, in addition to the
@@ -81,7 +80,10 @@ that agent-generated code can read that environment key. The official guide
 does not specify a local forward-proxy interface, a path-aware proxy protocol,
 a TLS interception CA workflow, or signed relay URL matching rules. The
 installed pinned CLI's `exec-server --help` lists `--remote` and transport
-choices, but does not document a supported proxy/path-policy interface.
+choices, but does not document a path-policy interface. The offline integration
+starts the production restricted topology and runs Codex against a separate
+local fake CONNECT sink. It deliberately does not connect that Codex process
+to the outbound sidecar, so the test cannot establish live registration.
 
 Consequently this change does not invent a proxy setting, terminate TLS, or
 allow unrestricted CONNECT. A TCP/TLS pass-through can constrain destination
@@ -98,13 +100,30 @@ registered executor handshake, API key scope/revocation, model/account access,
 or resolved session settings are not observed. The code does not claim that a
 mock event stream proves executor protocol compatibility.
 
-The implemented pieces are not wired into a full trial lifecycle: exclusive
-lease/authorization consumption, executor connection, task submission and
-cancellation, verified agent termination, allowlisted artifact handoff,
-scorer execution, real usage/spending reconciliation, and the operator
-checkpoint are not joined in an end-to-end runner. Offline probes are labeled
-as tests and never produce trial records. The original scorer and strict
-benchmark files remain untouched.
+`lifecycle.py` now joins the existing authorization validator/consumer,
+cross-process `SingleTrialLease`, balance ledger, Managed Agents client,
+restricted Docker topology, executor, artifact sealer, and isolated R scorer
+for exactly one R01-A attempt. The controller records ordered lifecycle states,
+uses dependency injection for its API client, cancels on failed streams, and
+keeps the lease until verified termination, session deletion, network cleanup,
+scoring, and the mandatory spending checkpoint have completed. A watchdog
+starts immediately before task submission and force-removes the container at
+the configured deadline (no more than 900 seconds); cleanup verifies removal
+again. It rejects additional files, links, special files, and over-limit workspaces before
+artifact sealing. If cleanup cannot be verified, it retains the lock and does
+not export artifacts. A missing or unreconciled operator checkpoint stops the
+ledger; the client-side ledger is not a provider spending limit.
+
+The same controller has a synthetic mode that accepts only an explicitly
+synthetic injected client and returns a distinct
+`synthetic_r01a_lifecycle_audit_not_benchmark_result` record. The Docker
+integration test uses the pinned Codex binary and local synthetic CONNECT 403,
+synthetic control-plane events, the existing restricted topology setup, the
+allowlisted artifact export, and the real frozen-image scorer. No OpenAI host
+is contacted; the resulting score is synthetic test evidence and cannot be
+imported as a benchmark result. The normal controller still requires explicit
+fresh authorization and every live verification gate to be true. No live
+session, model request, or inference was started in this change.
 
 Condition A's generated Agents API configuration has zero MCP tools. Runtime
 tool discovery is still unverified because it would require a real session.
@@ -158,14 +177,18 @@ The original strict benchmark, score importer and oracle were not modified.
   container, and no Managed Agents session/environment was created.
 - Account-level access to `gpt-6-luna` and the resolved live `medium` setting
   remain unverified; do not verify by creating a session during ordinary CI.
-- The executor process is tested only as a local loopback service. Its remote
-  registration and WebSocket lifecycle, 900-second agent cancellation, API
-  session deletion and cleanup combination are not verified.
+- The executor process is tested against a synthetic local CONNECT sink only.
+  Remote registration, actual TLS/WSS lifecycle, account access, and observed
+  effective model settings remain unverified. The live `send_and_stream`
+  cancellation and 900-second path is covered with synthetic API tests, not a
+  real service session.
 - Session deletion only removes the public API session; official lifecycle
   guidance says provider compute must be stopped separately. A future runner
   must verify Docker container termination independently before artifact export.
-- Artifact export after termination, sealed scoring handoff, and the final
-  balance/usage/correctness checkpoint are not wired to an agent turn.
+- The lifecycle controller now wires verified termination, artifact export,
+  scorer handoff, and the balance/usage/correctness checkpoint. It has been
+  exercised offline with synthetic responses; live end-to-end behavior is
+  unverified.
 - A's zero-MCP configuration is deterministic but has not been observed in an
   actual Codex agent session. B/C candidate gateway networking and effective
   15/20 tool inventories remain future work.
