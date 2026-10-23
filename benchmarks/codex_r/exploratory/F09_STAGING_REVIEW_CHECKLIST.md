@@ -38,10 +38,13 @@ complete-record boundary without an external trusted anchor.
   exact time window, maximum duration, and abort owner.
 - [ ] Use a dedicated staging project and newly issued credentials. Do not use
   R01-A authorization markers or production credentials.
-- [ ] Confirm the application credential can create/read/delete only the
-  required staging agent sessions and cannot call task submission or Responses
-  APIs. Confirm the environment credential has only executor-connect permission
-  and belongs to the same project, organization and user.
+- [ ] In the OpenAI Platform dashboard, verify the project identity and that the
+  application credential belongs to the approved project and has only the
+  session permissions needed for this zero-task check. Do not grant
+  `api.responses.write` for this check. Verify the separate environment
+  credential is restricted to executor connection. Confirm both credentials
+  align to the approved organization, project and user/service account. The
+  local project-ID environment variable is not proof of any of these facts.
 - [ ] Set `RKMCP_CONNECTIVITY_STAGING_PROJECT_ID` to the approved project ID and
   independently verify the value without displaying credentials.
 - [ ] Use a reviewed POSIX host, owner-only state directory outside the
@@ -52,17 +55,27 @@ complete-record boundary without an external trusted anchor.
   API and executor gateway destinations. Confirm no arbitrary direct egress,
   redirects, ambient proxy settings, credential mounts or evaluator/oracle
   mounts are available to the executor.
-- [ ] Record that no-input session creation may still incur provider charges;
-  obtain an explicit cost ceiling and billing-owner acknowledgement. Do not
-  represent the check as guaranteed zero-cost.
+- [ ] Obtain an externally approved positive integer spend limit in USD cents
+  and written billing-owner acknowledgment before preparing a session. Supply
+  the approval reference and acknowledgment to the harness; it has no default
+  limit and rejects missing, null, boolean, fractional, zero, negative, string,
+  or unapproved limits before transport. It never rounds or converts. The code
+  checks the approval record's shape but does not authenticate the approver or
+  reference.
+- [ ] Verify the current official Agents API schema, including the exact
+  `spend_control.limit` integer-USD-cent type and enforcement semantics, before
+  any live use. This repository has no local schema copy. Do not assume the
+  limit makes the session zero-cost; record any remaining provider charges and
+  exposure.
 
 ## Pre-run review
 
 - [ ] Review this harness and selected tests at the approved source hash. Verify
   no code path imports or calls `R01ALifecycleController.run_one`,
   `ManagedAgentsClient.send_and_stream`, task submission, or Responses APIs.
-- [ ] Verify the session body contains only the approved agent and fixed
-  self-hosted environment configuration, with no task/input/instructions/tools.
+- [ ] Verify the session body contains only the approved agent, fixed
+  self-hosted environment configuration and externally approved positive
+  integer-USD-cent `spend_control.limit`, with no task/input/instructions/tools.
 - [ ] Verify TLS certificate validation is enabled, the API host is fixed,
   redirects are disabled, ambient proxy variables are ignored, and executor
   remote URLs pass the shared validator unchanged.

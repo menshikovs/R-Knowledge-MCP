@@ -30,6 +30,7 @@ StagingAgentsClient = harness_module.StagingAgentsClient
 StagingJournal = harness_module.StagingJournal
 StagingLease = harness_module.StagingLease
 DockerExecutorAdapter = harness_module.DockerExecutorAdapter
+SpendControlApproval = harness_module.SpendControlApproval
 
 APP_KEY = "synthetic-application-secret-do-not-persist"
 ENV_KEY = "synthetic-environment-secret-do-not-persist"
@@ -37,6 +38,11 @@ SESSION_ID = "sess_synthetic123"
 ENVIRONMENT_ID = "env_synthetic123"
 REMOTE_URL = "https://api.openai.com/v1/agents/api?route=synthetic-signed-route"
 AGENT = {"model": "synthetic-connectivity-model", "tools": []}
+SYNTHETIC_SPEND_APPROVAL = SpendControlApproval(
+    limit=1250,
+    approval_reference="synthetic-only-approval",
+    billing_owner_acknowledged=True,
+)
 
 
 def _event(kind, environment_id=ENVIRONMENT_ID):
@@ -183,7 +189,14 @@ def _saved_audit(lease):
 
 
 def _http_client(
-    tmp_path, events, *, calls=None, timeline=None, create_status=200, delete_status=200
+    tmp_path,
+    events,
+    *,
+    calls=None,
+    timeline=None,
+    create_status=200,
+    delete_status=200,
+    spend_approval=SYNTHETIC_SPEND_APPROVAL,
 ):
     calls = calls if calls is not None else []
     event_bytes = _sse(events)
@@ -194,9 +207,10 @@ def _http_client(
             timeline.append(f"http:{request.method}")
         if request.method == "POST" and request.url.path == "/v1/agents/sessions":
             body = json.loads(request.content)
-            assert set(body) == {"agent", "environment"}
+            assert set(body) == {"agent", "environment", "spend_control"}
             assert "input" not in body and "events" not in body
             assert body["environment"]["type"] == "self_hosted"
+            assert body["spend_control"] == {"limit": 1250}
             return httpx.Response(
                 create_status,
                 json={
@@ -224,6 +238,7 @@ def _http_client(
     client = StagingAgentsClient(
         APP_KEY,
         project_id="synthetic-staging-project",
+        spend_control_approval=spend_approval,
         transport=httpx.MockTransport(handler),
         synthetic=True,
     )
@@ -246,6 +261,39 @@ def test_public_surface_cannot_submit_tasks_or_responses_and_create_has_no_input
     assert [call.method for call in calls] == ["POST", "GET", "DELETE"]
     assert executor.starts == 1
     assert executor.stops[0][0] == "synthetic-container-id"
+
+
+@pytest.mark.parametrize(
+    "approval",
+    [
+        None,
+        SpendControlApproval(None, "synthetic-approval", True),
+        SpendControlApproval(0, "synthetic-approval", True),
+        SpendControlApproval(-1, "synthetic-approval", True),
+        SpendControlApproval(1.0, "synthetic-approval", True),
+        SpendControlApproval(1.5, "synthetic-approval", True),
+        SpendControlApproval("1250", "synthetic-approval", True),
+        SpendControlApproval("12.5", "synthetic-approval", True),
+        SpendControlApproval(False, "synthetic-approval", True),
+        SpendControlApproval(float("nan"), "synthetic-approval", True),
+        SpendControlApproval(float("inf"), "synthetic-approval", True),
+        SpendControlApproval(True, "synthetic-approval", True),
+        SpendControlApproval(1.0, "", True),
+        SpendControlApproval(1.0, "synthetic-approval", False),
+    ],
+)
+def test_missing_or_invalid_spend_control_fails_before_transport(tmp_path, approval):
+    calls = []
+    api, _ = _http_client(tmp_path, [], calls=calls, spend_approval=approval)
+
+    with pytest.raises(ConnectivityError) as raised:
+        api.create_session(AGENT)
+
+    assert raised.value.code in {
+        "spend_control_approval_required",
+        "spend_control_approval_invalid",
+    }
+    assert calls == []
 
 
 def test_nested_environment_connected_event_is_projected_and_accepted(tmp_path):

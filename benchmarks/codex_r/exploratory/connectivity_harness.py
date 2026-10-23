@@ -112,6 +112,41 @@ class ConnectivityError(RuntimeError):
         self.uncertain = bool(uncertain)
 
 
+class SpendControlApproval:
+    """Externally approved finite session spend limit; never supplies a default."""
+
+    __slots__ = ("limit", "approval_reference", "billing_owner_acknowledged", "_sealed")
+
+    def __init__(self, limit, approval_reference, billing_owner_acknowledged):
+        object.__setattr__(self, "limit", limit)
+        object.__setattr__(self, "approval_reference", approval_reference)
+        object.__setattr__(self, "billing_owner_acknowledged", billing_owner_acknowledged)
+        object.__setattr__(self, "_sealed", True)
+
+    def __setattr__(self, name, value):
+        if getattr(self, "_sealed", False):
+            raise AttributeError("Spend control approval is immutable")
+        object.__setattr__(self, name, value)
+
+
+SPEND_APPROVAL_REFERENCE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
+
+
+def _validated_spend_control(approval: SpendControlApproval | None) -> dict:
+    if type(approval) is not SpendControlApproval:
+        raise ConnectivityError("spend_control_approval_required")
+    limit = approval.limit
+    positive_integer_cents = type(limit) is int and limit > 0
+    if (
+        not positive_integer_cents
+        or not isinstance(approval.approval_reference, str)
+        or not SPEND_APPROVAL_REFERENCE.fullmatch(approval.approval_reference)
+        or approval.billing_owner_acknowledged is not True
+    ):
+        raise ConnectivityError("spend_control_approval_invalid")
+    return {"limit": limit}
+
+
 class DurabilityError(RuntimeError):
     """Private staging evidence could not be written durably."""
 
@@ -610,6 +645,7 @@ class StagingAgentsClient:
         application_api_key: str,
         *,
         project_id: str,
+        spend_control_approval: SpendControlApproval | None = None,
         transport: httpx.BaseTransport | None = None,
         timeout: float = 15.0,
         synthetic: bool = False,
@@ -634,6 +670,7 @@ class StagingAgentsClient:
             raise ValueError("Verified staging project and credential scope unavailable")
         self.synthetic = synthetic
         self._key = application_api_key
+        self._spend_control_approval = spend_control_approval
         self.project_id_hash = _sha256(project_id)
         self._client = httpx.Client(
             base_url=API_ORIGIN,
@@ -666,7 +703,11 @@ class StagingAgentsClient:
         if not allowed:
             raise ConnectivityError("route_rejected")
         if method == "POST":
-            if not isinstance(body, dict) or set(body) != {"agent", "environment"}:
+            if not isinstance(body, dict) or set(body) != {
+                "agent",
+                "environment",
+                "spend_control",
+            }:
                 raise ConnectivityError("create_body_rejected")
             try:
                 self._validate_agent_config(body["agent"])
@@ -678,6 +719,14 @@ class StagingAgentsClient:
                 or set(environment) != {"type", "workspace_directory"}
                 or environment.get("type") != "self_hosted"
                 or environment.get("workspace_directory") != "/workspace"
+            ):
+                raise ConnectivityError("create_body_rejected")
+            spend_control = body["spend_control"]
+            if (
+                not isinstance(spend_control, dict)
+                or set(spend_control) != {"limit"}
+                or type(spend_control.get("limit")) is not int
+                or spend_control["limit"] <= 0
             ):
                 raise ConnectivityError("create_body_rejected")
         try:
@@ -732,6 +781,7 @@ class StagingAgentsClient:
     def create_session(
         self, agent_config: dict, *, workspace_directory="/workspace", timeout: float | None = None
     ) -> dict:
+        spend_control = _validated_spend_control(self._spend_control_approval)
         agent = self._validate_agent_config(agent_config)
         if workspace_directory != "/workspace":
             raise ValueError("Staging workspace path is invalid")
@@ -742,6 +792,7 @@ class StagingAgentsClient:
                 "type": "self_hosted",
                 "workspace_directory": workspace_directory,
             },
+            "spend_control": spend_control,
         }
         if timeout is not None and not 0 < timeout <= MAX_CREATE_SECONDS:
             raise ValueError("Session creation timeout exceeds the reviewed cap")

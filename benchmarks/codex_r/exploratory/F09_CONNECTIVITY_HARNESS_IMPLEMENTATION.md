@@ -15,13 +15,24 @@ Status: **implemented for offline synthetic verification only**. R01-A remains
 
 The client has fixed HTTPS routes for session creation, event streaming and
 session deletion. The creation schema accepts only a reviewed agent
-configuration and a self-hosted environment with `/workspace`; there is no
-task input, task-submission method, Responses API method, R01-A controller, or
+configuration, a self-hosted environment with `/workspace`, and a required
+externally approved finite `spend_control.limit`; there is no task input,
+task-submission method, Responses API method, R01-A controller, or
 authorization-consumption path. Synthetic clients require `httpx.MockTransport`.
 The control-plane client pins the API origin, verifies TLS, ignores ambient
 proxy variables, and refuses redirects. An executor is injected; the narrow
 Docker adapter delegates only to the existing runtime start/stop boundary and
 does not itself launch Docker.
+
+The spend limit has no production default. A caller must supply a positive
+integer number of USD cents with an external approval reference and
+billing-owner acknowledgment; missing, null, boolean, fractional, non-positive,
+string, or otherwise invalid values are rejected before transport without
+rounding or conversion. These fields are structural evidence only and do not
+authenticate the approval. The request uses `spend_control.limit`, but this
+repository contains no official API schema copy. Its USD-cent units and
+enforcement semantics must be checked against the official schema before any
+live use. Live mode remains disabled.
 
 The state machine records create intent before the request, treats ambiguous
 creation as unknown without retry, rejects connection events after a monotonic
