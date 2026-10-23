@@ -985,6 +985,7 @@ def _final_continuation_fixture(tmp_path, monkeypatch):
         "synthetic": False,
         "trial_id": "R01-A",
         "attempt_id": "R01-A/recovery-after-attempt-2",
+        "authorization_id": third_id,
         "failure_category": "response_schema_validation",
         "failure": {
             "operation": "create_session",
@@ -1002,7 +1003,7 @@ def _final_continuation_fixture(tmp_path, monkeypatch):
         "topology_cleanup_verified": True,
         "cleanup_verified": False,
     }
-    third_result.write_text(json.dumps(third_audit))
+    adapter._private_json_write(third_result, third_audit)
     third_auth = {
         "authorization_id": third_id,
         "authorized": True,
@@ -1061,6 +1062,8 @@ def test_final_continuation_accepts_actual_third_attempt_shape_and_binds_all_his
     tmp_path, monkeypatch
 ):
     files = _final_continuation_fixture(tmp_path, monkeypatch)
+    persisted_third_audit = json.loads(files["third_result"].read_text())
+    assert persisted_third_audit["authorization_id"] == "[REDACTED]"
     hashes = adapter._verify_final_continuation_provenance(
         files["state"],
         files["first_result"],
@@ -1186,6 +1189,7 @@ def test_final_continuation_accepts_actual_third_attempt_shape_and_binds_all_his
                 "http_status": 201,
             }
         },
+        {"authorization_id": "not-the-third-authorization"},
         {"failure_category": "http_rejection"},
         {"task_submission_attempted": True},
         {"task_submission_uncertain": True},
@@ -1288,6 +1292,34 @@ def test_final_continuation_requires_consumed_first_authorization_marker(tmp_pat
     marker = files["state"] / "consumed-trials" / "R01-A.json"
     marker.write_text(json.dumps({"trial_id": "R01-A", "authorization_id": "f" * 32}))
     with pytest.raises(adapter.AdapterError, match="does not match its authorization"):
+        adapter._verify_final_continuation_provenance(
+            files["state"],
+            files["first_result"],
+            files["first_auth"],
+            files["second_result"],
+            files["second_auth"],
+            files["third_result"],
+            files["third_auth"],
+            files["evidence"],
+        )
+
+
+@pytest.mark.parametrize("missing_marker", ["trial", "authorization"])
+def test_redacted_third_audit_id_requires_valid_third_consumption_markers(
+    tmp_path, monkeypatch, missing_marker
+):
+    files = _final_continuation_fixture(tmp_path, monkeypatch)
+    marker = (
+        files["state"]
+        / ("consumed-trials" if missing_marker == "trial" else "consumed-authorizations")
+        / (
+            "R01-A-recovery-after-attempt-2.json"
+            if missing_marker == "trial"
+            else f"{'3' * 32}.json"
+        )
+    )
+    marker.unlink()
+    with pytest.raises(adapter.AdapterError):
         adapter._verify_final_continuation_provenance(
             files["state"],
             files["first_result"],

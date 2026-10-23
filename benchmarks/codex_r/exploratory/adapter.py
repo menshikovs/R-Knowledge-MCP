@@ -1674,7 +1674,7 @@ def _verify_final_continuation_provenance(
 
     if len(set(auth_ids)) != 3:
         raise AdapterError("Historical authorizations must have distinct identities")
-    if third.get("authorization_id") not in (None, auth_ids[2]):
+    if third.get("authorization_id") not in (None, auth_ids[2], "[REDACTED]"):
         raise AdapterError("Third-attempt audit does not match its authorization")
     if (
         third_auth.get("scope", {}).get("previous_attempt_audit_sha256")
