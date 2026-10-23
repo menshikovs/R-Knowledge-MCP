@@ -897,10 +897,36 @@ def _final_continuation_fixture(tmp_path, monkeypatch):
     )
     first_id, second_id, third_id = "1" * 32, "2" * 32, "3" * 32
     first_auth = {
+        "schema_version": 1,
         "authorization_id": first_id,
         "authorized": True,
-        "attempt_id": "R01-A/attempt-1",
-        "scope": {"trial_id": "R01-A", "attempt_id": "R01-A/attempt-1"},
+        "issued_at": "2026-01-01T00:00:00+00:00",
+        "expires_at": "2026-01-01T00:05:00+00:00",
+        "typed_confirmation": "AUTHORIZE ONE PAID TRIAL R01-A",
+        "restricted_key_scope_operator_attested": True,
+        "consumed": False,
+        "balance_snapshot": {
+            "available_balance_cents": 1000,
+            "reserve_cents": 200,
+            "estimated_spend_cents": 100,
+            "balance_source": "historical operator snapshot",
+            "checked_at": "2026-01-01T00:00:00+00:00",
+            "estimate_is_binding": False,
+            "ledger_is_hard_limit": False,
+        },
+        "scope": {
+            "trial_id": "R01-A",
+            "task": "R01",
+            "condition": "A",
+            "model": "gpt-6-luna",
+            "reasoning_effort": "medium",
+            "environment_fingerprint": "a" * 64,
+            "candidate_image_digest": "sha256:" + "b" * 64,
+            "execution_config_digest": "c" * 64,
+            "workspace": str((tmp_path / "public-R01").resolve()),
+            "state_directory": str(state.resolve()),
+            "controller_version": "1.0.0",
+        },
     }
     first_auth_path = state / "authorization.json"
     first_auth_path.write_text(json.dumps(first_auth))
@@ -960,15 +986,16 @@ def _final_continuation_fixture(tmp_path, monkeypatch):
         "trial_id": "R01-A",
         "attempt_id": "R01-A/recovery-after-attempt-2",
         "failure_category": "response_schema_validation",
-        "failure": {"operation": "create_session", "category": "response_schema_validation"},
+        "failure": {
+            "operation": "create_session",
+            "category": "response_schema_validation",
+            "http_status": 201,
+        },
         "session_creation_attempted": True,
-        "session_created": True,
-        "sessions_created_count": 1,
-        "session_creation_http_status": 201,
+        "session_created": False,
+        "sessions_created_count": 0,
         "session_state": "unknown",
         "session_deleted_verified": None,
-        "task_submission_attempted": False,
-        "task_submission_uncertain": False,
         "task_submissions_attempted_count": 0,
         "inference_submitted": False,
         "container_termination_verified": True,
@@ -1108,6 +1135,11 @@ def test_final_continuation_accepts_actual_third_attempt_shape_and_binds_all_his
     assert auth["scope"]["final_continuation_provenance"] == hashes
     assert adapter.validate_authorization(auth, context) is auth
     assert not (files["state"] / "consumed-trials" / "R01-A-final-continuation.json").exists()
+    historical_auth_bytes = files["first_auth"].read_bytes()
+    files["first_auth"].write_bytes(historical_auth_bytes + b" ")
+    with pytest.raises(adapter.AdapterError, match="provenance or session evidence changed"):
+        adapter.validate_authorization(auth, context)
+    files["first_auth"].write_bytes(historical_auth_bytes)
     original_third_bytes = files["third_result"].read_bytes()
     files["third_audit"]["session_deleted_verified"] = True
     files["third_result"].write_text(json.dumps(files["third_audit"]))
@@ -1144,6 +1176,16 @@ def test_final_continuation_accepts_actual_third_attempt_shape_and_binds_all_his
     "mutation",
     [
         {"session_creation_http_status": 400},
+        {"failure": {"operation": "create_session", "category": "response_schema_validation"}},
+        {"session_created": True},
+        {"sessions_created_count": 1},
+        {
+            "failure": {
+                "operation": "other",
+                "category": "response_schema_validation",
+                "http_status": 201,
+            }
+        },
         {"failure_category": "http_rejection"},
         {"task_submission_attempted": True},
         {"task_submission_uncertain": True},
@@ -1203,6 +1245,49 @@ def test_final_continuation_requires_complete_fresh_independent_session_inventor
     evidence.update(mutation)
     files["evidence"].write_text(json.dumps(evidence))
     with pytest.raises(adapter.AdapterError):
+        adapter._verify_final_continuation_provenance(
+            files["state"],
+            files["first_result"],
+            files["first_auth"],
+            files["second_result"],
+            files["second_auth"],
+            files["third_result"],
+            files["third_auth"],
+            files["evidence"],
+        )
+
+
+@pytest.mark.parametrize("mutation", ["top_level_attempt_id", "scope_attempt_id", "scope_field"])
+def test_final_continuation_rejects_nonlegacy_first_authorization_schema(
+    tmp_path, monkeypatch, mutation
+):
+    files = _final_continuation_fixture(tmp_path, monkeypatch)
+    first_auth = json.loads(files["first_auth"].read_text())
+    if mutation == "top_level_attempt_id":
+        first_auth["attempt_id"] = "R01-A/attempt-1"
+    elif mutation == "scope_attempt_id":
+        first_auth["scope"]["attempt_id"] = "R01-A/attempt-1"
+    else:
+        first_auth["scope"]["unrecognized"] = True
+    files["first_auth"].write_text(json.dumps(first_auth))
+    with pytest.raises(adapter.AdapterError, match="legacy contract"):
+        adapter._verify_final_continuation_provenance(
+            files["state"],
+            files["first_result"],
+            files["first_auth"],
+            files["second_result"],
+            files["second_auth"],
+            files["third_result"],
+            files["third_auth"],
+            files["evidence"],
+        )
+
+
+def test_final_continuation_requires_consumed_first_authorization_marker(tmp_path, monkeypatch):
+    files = _final_continuation_fixture(tmp_path, monkeypatch)
+    marker = files["state"] / "consumed-trials" / "R01-A.json"
+    marker.write_text(json.dumps({"trial_id": "R01-A", "authorization_id": "f" * 32}))
+    with pytest.raises(adapter.AdapterError, match="does not match its authorization"):
         adapter._verify_final_continuation_provenance(
             files["state"],
             files["first_result"],

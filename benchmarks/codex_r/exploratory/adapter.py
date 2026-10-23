@@ -1369,6 +1369,95 @@ def verify_cleanup(
     }
 
 
+def _validate_legacy_first_authorization(auth: dict, state_directory: Path) -> None:
+    """Accept only the original, pre-attempt-id R01-A authorization schema."""
+    legacy_fields = {
+        "schema_version",
+        "authorization_id",
+        "authorized",
+        "issued_at",
+        "expires_at",
+        "scope",
+        "typed_confirmation",
+        "restricted_key_scope_operator_attested",
+        "consumed",
+        "balance_snapshot",
+    }
+    scope_fields = {
+        "trial_id",
+        "task",
+        "condition",
+        "model",
+        "reasoning_effort",
+        "environment_fingerprint",
+        "candidate_image_digest",
+        "execution_config_digest",
+        "workspace",
+        "state_directory",
+        "controller_version",
+    }
+    balance_fields = {
+        "available_balance_cents",
+        "reserve_cents",
+        "estimated_spend_cents",
+        "balance_source",
+        "checked_at",
+        "estimate_is_binding",
+        "ledger_is_hard_limit",
+    }
+    scope = auth.get("scope") if isinstance(auth, dict) else None
+    balance = auth.get("balance_snapshot") if isinstance(auth, dict) else None
+    if (
+        not isinstance(auth, dict)
+        or set(auth) != legacy_fields
+        or auth.get("schema_version") != 1
+        or auth.get("authorized") is not True
+        or auth.get("consumed") is not False
+        or auth.get("typed_confirmation") != "AUTHORIZE ONE PAID TRIAL R01-A"
+        or auth.get("restricted_key_scope_operator_attested") is not True
+        or not re.fullmatch(r"[a-f0-9]{32}", str(auth.get("authorization_id", "")))
+        or not isinstance(scope, dict)
+        or set(scope) != scope_fields
+        or scope.get("trial_id") != "R01-A"
+        or scope.get("task") != "R01"
+        or scope.get("condition") != "A"
+        or scope.get("model") != pilot.MODEL
+        or scope.get("reasoning_effort") != pilot.REASONING_EFFORT
+        or not re.fullmatch(r"[a-f0-9]{64}", str(scope.get("environment_fingerprint", "")))
+        or not re.fullmatch(r"sha256:[a-f0-9]{64}", str(scope.get("candidate_image_digest", "")))
+        or not re.fullmatch(r"[a-f0-9]{64}", str(scope.get("execution_config_digest", "")))
+        or not isinstance(scope.get("workspace"), str)
+        or not Path(scope["workspace"]).is_absolute()
+        or scope.get("state_directory") != str(state_directory.resolve())
+        or not isinstance(scope.get("controller_version"), str)
+        or not scope["controller_version"]
+        or not isinstance(balance, dict)
+        or set(balance) != balance_fields
+        or any(
+            type(balance.get(key)) is not int or balance[key] < 0
+            for key in ("available_balance_cents", "reserve_cents", "estimated_spend_cents")
+        )
+        or not isinstance(balance.get("balance_source"), str)
+        or not balance["balance_source"]
+        or not isinstance(balance.get("checked_at"), str)
+        or balance.get("estimate_is_binding") is not False
+        or balance.get("ledger_is_hard_limit") is not False
+    ):
+        raise AdapterError("Original attempt-1 authorization does not match its legacy contract")
+    try:
+        issued = datetime.fromisoformat(auth["issued_at"].replace("Z", "+00:00"))
+        expires = datetime.fromisoformat(auth["expires_at"].replace("Z", "+00:00"))
+    except (AttributeError, ValueError) as exc:
+        raise AdapterError("Original attempt-1 authorization timestamps are invalid") from exc
+    if (
+        issued.utcoffset() != timedelta(0)
+        or expires.utcoffset() != timedelta(0)
+        or expires <= issued
+        or expires - issued > timedelta(seconds=MAX_AUTHORIZATION_TTL_SECONDS)
+    ):
+        raise AdapterError("Original attempt-1 authorization lifetime is invalid")
+
+
 def _verify_final_continuation_provenance(
     state_directory: Path,
     first_result_path: Path,
@@ -1461,23 +1550,40 @@ def _verify_final_continuation_provenance(
         if isinstance(third_failure, dict)
         else third.get("failure_category")
     )
+    third_statuses = []
+    if isinstance(third_failure, dict) and third_failure.get("http_status") is not None:
+        third_statuses.append(third_failure.get("http_status"))
+    if third.get("session_creation_http_status") is not None:
+        third_statuses.append(third.get("session_creation_http_status"))
+    legacy_response_state = (
+        third.get("session_created") is False
+        and type(third.get("sessions_created_count")) is int
+        and third.get("sessions_created_count") == 0
+    )
+    current_response_state = (
+        third.get("session_created") is True
+        and type(third.get("sessions_created_count")) is int
+        and third.get("sessions_created_count") == 1
+    )
     if not (
         third.get("record_type") == "managed_agents_r01a_lifecycle_audit_not_benchmark_result"
         and third.get("synthetic") is False
         and third.get("trial_id") == "R01-A"
         and third.get("attempt_id") == RECOVERY_ATTEMPT_ID
         and third.get("session_creation_attempted") is True
-        and third.get("session_created") is True
-        and third.get("sessions_created_count") == 1
-        and type(third.get("session_creation_http_status")) is int
-        and third.get("session_creation_http_status") == 201
+        and (legacy_response_state or current_response_state)
+        and third_statuses
+        and all(type(status) is int and status == 201 for status in third_statuses)
+        and isinstance(third_failure, dict)
+        and third_failure.get("operation") == "create_session"
         and third_category == "response_schema_validation"
         and (
-            not isinstance(third_failure, dict)
+            third.get("failure_category") is None
             or third_failure.get("category") == third.get("failure_category")
         )
-        and third.get("task_submission_attempted") is False
-        and third.get("task_submission_uncertain") is False
+        and third.get("task_submission_attempted") is not True
+        and third.get("task_submission_uncertain") is not True
+        and type(third.get("task_submissions_attempted_count")) is int
         and third.get("task_submissions_attempted_count") == 0
         and third.get("inference_submitted") is False
         and third.get("container_termination_verified") is True
@@ -1503,9 +1609,11 @@ def _verify_final_continuation_provenance(
         (third_auth, RECOVERY_ATTEMPT_ID, "R01-A-recovery-after-attempt-2"),
     )
     auth_ids = []
-    for auth, expected_attempt, marker_stem in auth_specs:
+    for auth_index, (auth, expected_attempt, marker_stem) in enumerate(auth_specs):
         auth_id = auth.get("authorization_id")
-        if (
+        if auth_index == 0:
+            _validate_legacy_first_authorization(auth, root)
+        elif (
             auth.get("authorized") is not True
             or auth.get("attempt_id") != expected_attempt
             or not re.fullmatch(r"[a-f0-9]{32}", str(auth_id))
@@ -1513,6 +1621,8 @@ def _verify_final_continuation_provenance(
             or auth["scope"].get("attempt_id") != expected_attempt
             or auth["scope"].get("trial_id") != "R01-A"
         ):
+            raise AdapterError("Prior authorization history has an invalid identity")
+        if not re.fullmatch(r"[a-f0-9]{32}", str(auth_id)):
             raise AdapterError("Prior authorization history has an invalid identity")
         auth_ids.append(auth_id)
         if expected_attempt != "R01-A/attempt-2":
