@@ -378,10 +378,106 @@ def test_consumed_trial_marker_prevents_a_second_authorization_in_fixed_state(tm
 
     first = authorize()
     adapter.consume_authorization(first, context, state)
-    second = authorize()
-    with pytest.raises(adapter.AdapterError, match="trial already has a consumed authorization"):
-        adapter.consume_authorization(second, context, state)
+    with pytest.raises(adapter.AdapterError, match="already been consumed"):
+        authorize()
     assert (state / "consumed-trials" / "R01-A.json").exists()
+
+
+def test_attempt_two_requires_immutable_clean_attempt_one_and_has_separate_marker(
+    tmp_path, monkeypatch
+):
+    workspace = tmp_path / "public-R01"
+    adapter.prepare_workspace("R01", workspace)
+    state = tmp_path / "state"
+    marker_dir = state / "consumed-trials"
+    marker_dir.mkdir(parents=True)
+    first_marker = marker_dir / "R01-A.json"
+    first_marker.write_text('{"trial_id":"R01-A","authorization_id":"first"}\n')
+    first_marker_before = first_marker.read_bytes()
+    first_result = tmp_path / "r01a-result-attempt-1.json"
+    first_audit = {
+        "record_type": "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
+        "trial_id": "R01-A",
+        "attempt_id": "R01-A/attempt-1",
+        "session_created": False,
+        "sessions_created_count": 0,
+        "inference_submitted": False,
+        "task_submissions_attempted_count": 0,
+        "session_creation_uncertain": True,
+        "container_termination_verified": True,
+        "session_deleted_verified": True,
+        "topology_cleanup_verified": True,
+        "failure": {
+            "operation": "create_session",
+            "category": "http_rejection",
+            "http_status": 403,
+            "reason": "Managed Agents API rejected the request with HTTP 403",
+        },
+    }
+    first_result.write_text(json.dumps(first_audit))
+    monkeypatch.setattr(
+        adapter,
+        "verify_cleanup",
+        lambda *_args, **_kwargs: {"cleanup_verified": False, "local_cleanup_verified": True},
+    )
+
+    context = adapter.build_trial_context(
+        pilot.make_plan(),
+        "R01-A",
+        workspace,
+        candidate_image_digest="sha256:" + "b" * 64,
+        state_directory=state,
+        attempt_id="R01-A/attempt-2",
+        previous_attempt_result=first_result,
+    )
+    now = datetime.now(UTC)
+    auth = adapter.create_authorization(
+        context,
+        typed_confirmation="AUTHORIZE ONE PAID TRIAL R01-A/attempt-2",
+        available_balance_cents=1000,
+        reserve_cents=200,
+        estimated_spend_cents=100,
+        balance_source="synthetic fixture",
+        balance_checked_at=now.isoformat(),
+        restricted_key_scope_confirmation="CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A",
+        attempt_id="R01-A/attempt-2",
+        previous_attempt_result=first_result,
+    )
+    assert auth["attempt_id"] == "R01-A/attempt-2"
+    assert auth["scope"]["trial_id"] == "R01-A"
+    assert auth["scope"]["previous_attempt_audit_sha256"]
+    assert adapter.validate_authorization(auth, context) is auth
+    adapter.consume_authorization(auth, context, state)
+    assert (marker_dir / "R01-A-attempt-2.json").exists()
+    assert first_marker.read_bytes() == first_marker_before
+
+    with pytest.raises(adapter.AdapterError, match="trial already has a consumed authorization"):
+        adapter.consume_authorization(auth, context, state)
+    with pytest.raises(adapter.AdapterError, match="bounded first or second"):
+        adapter.build_trial_context(pilot.make_plan(), "R01-A", attempt_id="R01-A/attempt-3")
+
+
+def test_attempt_two_is_blocked_without_verified_cleanup_or_prior_consumption(
+    tmp_path, monkeypatch
+):
+    workspace = tmp_path / "public-R01"
+    adapter.prepare_workspace("R01", workspace)
+    result = tmp_path / "first.json"
+    result.write_text("{}")
+    monkeypatch.setattr(
+        adapter,
+        "verify_cleanup",
+        lambda *_args, **_kwargs: {"cleanup_verified": False, "local_cleanup_verified": False},
+    )
+    with pytest.raises(adapter.AdapterError, match="cleanup is not verified"):
+        adapter.build_trial_context(
+            pilot.make_plan(),
+            "R01-A",
+            workspace,
+            state_directory=tmp_path / "state",
+            attempt_id="R01-A/attempt-2",
+            previous_attempt_result=result,
+        )
 
 
 def test_lifecycle_audit_is_not_valid_strict_benchmark_result():
