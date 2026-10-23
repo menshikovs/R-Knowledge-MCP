@@ -1,17 +1,21 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-10-22T18:21:02.847989+00:00",
+  "checked_at": "2026-10-23T07:08:32.729534+00:00",
   "plan_type": "exploratory_offline_preflight_only",
   "model": {
     "id": "gpt-6-luna",
     "documentation_status": "verified_public_documentation",
     "reasoning_effort": "medium",
+    "codex_reasoning_override": "documented_model_reasoning_effort_config_key",
+    "codex_model_flag": "checked_from_local_cli_help_only",
     "responses_api_function_calling": "documented",
     "source_urls": [
-      "https://developers.openai.com/api/docs/models",
-      "https://developers.openai.com/api/docs/guides/latest-model"
+      "https://developers.openai.com/api/docs/models/gpt-6-luna",
+      "https://developers.openai.com/api/docs/guides/reasoning",
+      "https://learn.chatgpt.com/docs/config-file/config-basic"
     ],
-    "account_access_status": "MODEL_ACCESS_UNVERIFIED"
+    "account_access_status": "MODEL_ACCESS_UNVERIFIED",
+    "effective_tool_inventory_status": "unverified_without_execution_session"
   },
   "codex_cli": {
     "status": "verified",
@@ -21,6 +25,8 @@
     "metadata_verified": true,
     "capabilities_verified": true,
     "supports_model_flag": true,
+    "supports_config_override": true,
+    "supports_reasoning_effort_override": true,
     "supports_json_events": true,
     "supports_ephemeral_mode": true,
     "checked_without_inference": true,
@@ -85,17 +91,46 @@
     }
   },
   "budget": {
-    "aggregate_ceiling_cents": 1000,
-    "provider_enforced_aggregate_limit": "HARD_AGGREGATE_BUDGET_UNVERIFIED",
-    "managed_agent_session_usage": "best_effort_and_may_be_delayed",
-    "synthetic_client_ledger_is_provider_enforcement": false,
+    "initial_available_balance_estimate_cents": 1000,
+    "balance_status": "operator_must_record_current_dashboard_balance_before_each_trial",
+    "balance_source": "operator_dashboard_snapshot",
+    "spend_source": "completed_session_report; optional_org_cost_buckets_are_only_a_cross_check",
+    "operator_reserve_cents": 200,
+    "reserve_is_configurable": true,
+    "policy": "balance_aware_best_effort_sequential_checkpoints",
+    "provider_enforced_aggregate_limit": "not_required_for_exploratory_pilot",
+    "ledger_is_hard_limit": false,
+    "usage_and_cost_reporting": "best_effort_and_may_be_delayed",
+    "delayed_accounting_warning": "Delayed usage/cost accounting may allow charges to exceed the currently reported prepaid balance. The client ledger cannot prevent this.",
+    "stop_conditions": [
+      "reported_balance_at_or_below_reserve",
+      "insufficient_reported_balance",
+      "missing_usage_or_spend_data",
+      "unreconciled_balance_or_spending"
+    ],
+    "sessions_may_run_concurrently": false,
     "source_urls": [
       "https://developers.openai.com/api/reference/python/resources/beta/subresources/agents/subresources/sessions/methods/create",
-      "https://developers.openai.com/api/docs/guides/agents-api/observability"
+      "https://developers.openai.com/api/docs/guides/agents-api/observability",
+      "https://developers.openai.com/api/docs/guides/rate-limits",
+      "https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/usage/methods/costs"
     ]
   },
   "isolation": {
     "status": "AGENT_ISOLATION_UNVERIFIED"
+  },
+  "blocking_conditions": [
+    "MODEL_ACCESS_UNVERIFIED",
+    "AGENT_ISOLATION_UNVERIFIED",
+    "HIDDEN_ORACLE_EXPOSURE_UNVERIFIED",
+    "EFFECTIVE_TOOL_INVENTORY_UNVERIFIED",
+    "PAID_TRIAL_AUTHORIZATION_MISSING"
+  ],
+  "trial_execution": {
+    "mode": "one_trial_per_explicit_authorization",
+    "automatic_batch_launch": false,
+    "checkpoint_required_after_each_trial": true,
+    "real_execution_adapter_status": "not_implemented_and_not_verified"
   },
   "launch_permitted": false,
   "sessions_created": 0,

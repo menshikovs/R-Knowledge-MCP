@@ -25,10 +25,11 @@ TASKS = ("R01", "R06", "R11")
 CONDITIONS = ("A", "B", "C")
 SEED = 1729
 TRIAL_COUNT = len(TASKS) * len(CONDITIONS)
-BUDGET_CENTS = 1_000
+INITIAL_BALANCE_ESTIMATE_CENTS = 1_000
+DEFAULT_RESERVE_CENTS = 200
 TRIAL_TIMEOUT_SECONDS = 900
-MODEL_DOC_URL = "https://developers.openai.com/api/docs/models"
-GPT6_GUIDE_URL = "https://developers.openai.com/api/docs/guides/latest-model"
+MODEL_DOC_URL = "https://developers.openai.com/api/docs/models/gpt-6-luna"
+GPT6_GUIDE_URL = "https://developers.openai.com/api/docs/guides/reasoning"
 CLI_REPORT_FIELDS = frozenset(
     {
         "status",
@@ -38,6 +39,8 @@ CLI_REPORT_FIELDS = frozenset(
         "metadata_verified",
         "capabilities_verified",
         "supports_model_flag",
+        "supports_config_override",
+        "supports_reasoning_effort_override",
         "supports_json_events",
         "supports_ephemeral_mode",
         "checked_without_inference",
@@ -49,6 +52,16 @@ CLI_REPORT_FIELDS = frozenset(
 
 class PilotError(ValueError):
     """Invalid exploratory pilot plan, preflight, or synthetic event."""
+
+
+def _is_utc_timestamp(value: str | None) -> bool:
+    if not isinstance(value, str):
+        return False
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return parsed.tzinfo is not None and parsed.utcoffset() == datetime.now(UTC).utcoffset()
 
 
 def _load_bench():
@@ -85,8 +98,10 @@ def make_plan(seed: int = SEED) -> dict:
         "model": MODEL,
         "reasoning_effort": REASONING_EFFORT,
         "trial_count": TRIAL_COUNT,
-        "aggregate_budget_usd": 10.00,
-        "aggregate_budget_cents": BUDGET_CENTS,
+        "initial_available_balance_estimate_usd": 10.00,
+        "initial_available_balance_estimate_cents": INITIAL_BALANCE_ESTIMATE_CENTS,
+        "default_spending_reserve_cents": DEFAULT_RESERVE_CENTS,
+        "spending_limit_type": "balance_aware_best_effort_not_hard_limit",
         "trial_timeout_seconds": TRIAL_TIMEOUT_SECONDS,
         "paid_execution_authorized": False,
         "sessions_created": 0,
@@ -182,9 +197,11 @@ def local_cli_metadata() -> dict:
     help_text = help_result.stdout
     capabilities = {
         "supports_model_flag": bool(re.search(r"(?m)^\s+-m, --model", help_text)),
+        "supports_config_override": bool(re.search(r"(?m)^\s+-c, --config", help_text)),
         "supports_json_events": "--json" in help_text,
         "supports_ephemeral_mode": "--ephemeral" in help_text,
     }
+    capabilities["supports_reasoning_effort_override"] = capabilities["supports_config_override"]
     supported = all(capabilities.values())
     return _cli_report(
         "verified" if supported else "unsupported_version",
@@ -207,6 +224,8 @@ def _cli_report(
     metadata_verified: bool = False,
     capabilities_verified: bool = False,
     supports_model_flag: bool | None = None,
+    supports_config_override: bool | None = None,
+    supports_reasoning_effort_override: bool | None = None,
     supports_json_events: bool | None = None,
     supports_ephemeral_mode: bool | None = None,
     failure: str | None = None,
@@ -220,6 +239,8 @@ def _cli_report(
         "metadata_verified": metadata_verified,
         "capabilities_verified": capabilities_verified,
         "supports_model_flag": supports_model_flag,
+        "supports_config_override": supports_config_override,
+        "supports_reasoning_effort_override": supports_reasoning_effort_override,
         "supports_json_events": supports_json_events,
         "supports_ephemeral_mode": supports_ephemeral_mode,
         "checked_without_inference": True,
@@ -242,23 +263,64 @@ def build_preflight(plan: dict, *, checked_at: datetime | None = None) -> dict:
             "id": MODEL,
             "documentation_status": "verified_public_documentation",
             "reasoning_effort": REASONING_EFFORT,
+            "codex_reasoning_override": "documented_model_reasoning_effort_config_key",
+            "codex_model_flag": "checked_from_local_cli_help_only",
             "responses_api_function_calling": "documented",
-            "source_urls": [MODEL_DOC_URL, GPT6_GUIDE_URL],
+            "source_urls": [
+                MODEL_DOC_URL,
+                GPT6_GUIDE_URL,
+                "https://learn.chatgpt.com/docs/config-file/config-basic",
+            ],
             "account_access_status": "MODEL_ACCESS_UNVERIFIED",
+            "effective_tool_inventory_status": "unverified_without_execution_session",
         },
         "codex_cli": local_cli_metadata(),
         "tool_inventory": tool_inventory_status(plan),
         "budget": {
-            "aggregate_ceiling_cents": BUDGET_CENTS,
-            "provider_enforced_aggregate_limit": "HARD_AGGREGATE_BUDGET_UNVERIFIED",
-            "managed_agent_session_usage": "best_effort_and_may_be_delayed",
-            "synthetic_client_ledger_is_provider_enforcement": False,
+            "initial_available_balance_estimate_cents": INITIAL_BALANCE_ESTIMATE_CENTS,
+            "balance_status": "operator_must_record_current_dashboard_balance_before_each_trial",
+            "balance_source": "operator_dashboard_snapshot",
+            "spend_source": (
+                "completed_session_report; optional_org_cost_buckets_are_only_a_cross_check"
+            ),
+            "operator_reserve_cents": DEFAULT_RESERVE_CENTS,
+            "reserve_is_configurable": True,
+            "policy": "balance_aware_best_effort_sequential_checkpoints",
+            "provider_enforced_aggregate_limit": "not_required_for_exploratory_pilot",
+            "ledger_is_hard_limit": False,
+            "usage_and_cost_reporting": "best_effort_and_may_be_delayed",
+            "delayed_accounting_warning": (
+                "Delayed usage/cost accounting may allow charges to exceed the "
+                "currently reported prepaid balance. The client ledger cannot prevent this."
+            ),
+            "stop_conditions": [
+                "reported_balance_at_or_below_reserve",
+                "insufficient_reported_balance",
+                "missing_usage_or_spend_data",
+                "unreconciled_balance_or_spending",
+            ],
+            "sessions_may_run_concurrently": False,
             "source_urls": [
                 "https://developers.openai.com/api/reference/python/resources/beta/subresources/agents/subresources/sessions/methods/create",
                 "https://developers.openai.com/api/docs/guides/agents-api/observability",
+                "https://developers.openai.com/api/docs/guides/rate-limits",
+                "https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/usage/methods/costs",
             ],
         },
         "isolation": {"status": "AGENT_ISOLATION_UNVERIFIED"},
+        "blocking_conditions": [
+            "MODEL_ACCESS_UNVERIFIED",
+            "AGENT_ISOLATION_UNVERIFIED",
+            "HIDDEN_ORACLE_EXPOSURE_UNVERIFIED",
+            "EFFECTIVE_TOOL_INVENTORY_UNVERIFIED",
+            "PAID_TRIAL_AUTHORIZATION_MISSING",
+        ],
+        "trial_execution": {
+            "mode": "one_trial_per_explicit_authorization",
+            "automatic_batch_launch": False,
+            "checkpoint_required_after_each_trial": True,
+            "real_execution_adapter_status": "not_implemented_and_not_verified",
+        },
         "launch_permitted": False,
         "sessions_created": 0,
         "paid_calls_made": 0,
@@ -266,45 +328,184 @@ def build_preflight(plan: dict, *, checked_at: datetime | None = None) -> dict:
     }
 
 
-class BudgetLedger:
-    """Synthetic client-side ledger; unknown or delayed settlement blocks progress."""
+class BalanceAwareLedger:
+    """Client-side balance checkpoint workflow; this is not a provider hard limit."""
 
-    def __init__(self, limit_cents: int = BUDGET_CENTS):
-        if type(limit_cents) is not int or limit_cents <= 0:
-            raise PilotError("Budget limit must be positive integer cents")
-        self.limit_cents = limit_cents
-        self.settled_cents = 0
-        self.reservations: dict[str, int | None] = {}
-        self.pending: set[str] = set()
+    def __init__(
+        self,
+        available_balance_cents: int | None = None,
+        *,
+        reserve_cents: int = DEFAULT_RESERVE_CENTS,
+        balance_source: str = "operator_dashboard",
+        checked_at: str | None = None,
+    ):
+        if available_balance_cents is not None and (
+            type(available_balance_cents) is not int or available_balance_cents < 0
+        ):
+            raise PilotError("Available balance must be non-negative integer cents or unknown")
+        if type(reserve_cents) is not int or reserve_cents < 0:
+            raise PilotError("Operator reserve must be non-negative integer cents")
+        if not balance_source or not isinstance(balance_source, str):
+            raise PilotError("Balance source must be named")
+        if available_balance_cents is not None and not _is_utc_timestamp(checked_at):
+            raise PilotError("A current UTC timestamp is required with a balance snapshot")
+        self.available_balance_cents = available_balance_cents
+        self.reserve_cents = reserve_cents
+        self.balance_source = balance_source
+        self.balance_checked_at = checked_at
+        self.opening_balance_cents = available_balance_cents
+        self.opening_balance_checked_at = checked_at
+        self.authorizations: list[dict] = []
+        self.completed_trials: list[dict] = []
+        self.active_trial_id: str | None = None
+        self.stopped_reason: str | None = None
 
-    @property
-    def reserved_cents(self) -> int:
-        return sum(amount for amount in self.reservations.values() if amount is not None)
+    def authorize_one(
+        self,
+        trial_id: str,
+        *,
+        operator_authorized: bool,
+        estimated_spend_cents: int | None,
+    ) -> dict:
+        """Record explicit authorization for one trial; does not launch it."""
+        if self.stopped_reason:
+            raise PilotError(f"Pilot is stopped: {self.stopped_reason}")
+        if not operator_authorized:
+            raise PilotError("Explicit operator authorization is required for each paid trial")
+        if self.active_trial_id is not None:
+            raise PilotError("A trial is active; concurrent paid sessions are prohibited")
+        if self.available_balance_cents is None:
+            self.stopped_reason = "available_credit_balance_unknown"
+            raise PilotError("Cannot proceed without a current reported available balance")
+        if self.available_balance_cents <= self.reserve_cents:
+            self.stopped_reason = "available_balance_at_or_below_reserve"
+            raise PilotError("Available balance does not exceed the operator reserve")
+        if type(estimated_spend_cents) is not int or estimated_spend_cents <= 0:
+            self.stopped_reason = "trial_spend_estimate_unavailable"
+            raise PilotError("A positive operator-estimated trial spend is required")
+        if self.available_balance_cents - self.reserve_cents < estimated_spend_cents:
+            self.stopped_reason = "estimated_trial_spend_exceeds_available_balance"
+            raise PilotError("Reported balance is insufficient for estimate plus reserve")
+        allowed_ids = {f"{task}-{condition}" for task in TASKS for condition in CONDITIONS}
+        if trial_id not in allowed_ids or trial_id in {
+            x["trial_id"] for x in self.completed_trials
+        }:
+            raise PilotError("Trial ID must be assigned in the pilot and not previously completed")
+        self.active_trial_id = trial_id
+        record = {
+            "trial_id": trial_id,
+            "authorized_by_operator": True,
+            "authorized_at": datetime.now(UTC).isoformat(),
+            "session_started": False,
+            "automatic_next_trial_authorized": False,
+            "available_balance_cents": self.available_balance_cents,
+            "reserve_cents": self.reserve_cents,
+            "operator_estimated_spend_cents": estimated_spend_cents,
+            "estimate_is_binding": False,
+            "ledger_is_hard_limit": False,
+        }
+        self.authorizations.append(record)
+        return record
 
-    def reserve(self, trial_id: str, amount_cents: int | None) -> None:
-        if not trial_id or trial_id in self.reservations:
-            raise PilotError("Trial reservation must be unique")
-        if self.pending or amount_cents is None:
-            raise PilotError("Unknown or delayed spend prevents another trial reservation")
-        if type(amount_cents) is not int or amount_cents <= 0:
-            raise PilotError("Reservation must be positive integer cents")
-        if self.settled_cents + self.reserved_cents + amount_cents > self.limit_cents:
-            raise PilotError("Synthetic aggregate budget ceiling would be exceeded")
-        self.reservations[trial_id] = amount_cents
-        self.pending.add(trial_id)
+    def checkpoint(
+        self,
+        trial_id: str,
+        *,
+        reported_spend_cents: int | None,
+        usage: dict | None,
+        correctness_review: str | None,
+        remaining_balance_cents: int | None,
+        reconciled: bool,
+        balance_source: str | None,
+        checked_at: str | None,
+    ) -> dict:
+        """Record required post-trial review; any unknown/mismatch stops the pilot."""
+        if self.active_trial_id != trial_id:
+            raise PilotError("No matching authorized trial is awaiting a checkpoint")
+        issues = []
+        if type(reported_spend_cents) is not int or reported_spend_cents < 0:
+            issues.append("spending_unavailable")
+        usage_fields = {
+            "input_tokens",
+            "output_tokens",
+            "reasoning_tokens",
+            "total_tokens",
+            "tool_calls",
+        }
+        if not isinstance(usage, dict) or not usage or not set(usage).issubset(usage_fields):
+            issues.append("usage_unavailable")
+        elif any(type(value) is not int or value < 0 for value in usage.values()):
+            issues.append("usage_unreconciled")
+        if not correctness_review or not isinstance(correctness_review, str):
+            issues.append("correctness_review_missing")
+        if not _is_utc_timestamp(checked_at):
+            issues.append("checkpoint_timestamp_missing_or_invalid")
+        if not balance_source or not isinstance(balance_source, str):
+            issues.append("balance_source_missing")
+        if type(remaining_balance_cents) is not int or remaining_balance_cents < 0:
+            issues.append("remaining_balance_unavailable")
+        if not reconciled:
+            issues.append("spending_or_balance_unreconciled")
+        if type(self.available_balance_cents) is not int or type(reported_spend_cents) is not int:
+            issues.append("opening_balance_or_spend_missing")
+        elif (
+            type(reported_spend_cents) is int
+            and type(remaining_balance_cents) is int
+            and (self.available_balance_cents - reported_spend_cents != remaining_balance_cents)
+        ):
+            issues.append("reported_balance_does_not_reconcile_with_spend")
 
-    def settle(self, trial_id: str, actual_cents: int | None, *, final: bool) -> None:
-        if trial_id not in self.pending:
-            raise PilotError("No pending reservation exists for this trial")
-        if actual_cents is None or not final:
-            return
-        if type(actual_cents) is not int or actual_cents < 0:
-            raise PilotError("Settled spend must be non-negative integer cents")
-        if actual_cents > self.reservations[trial_id]:
-            raise PilotError("Reported spend exceeds its synthetic reservation")
-        self.settled_cents += actual_cents
-        del self.reservations[trial_id]
-        self.pending.remove(trial_id)
+        checkpoint = {
+            "trial_id": trial_id,
+            "checked_at": checked_at,
+            "balance_source": balance_source,
+            "opening_balance_cents": self.available_balance_cents,
+            "reported_spend_cents": reported_spend_cents,
+            "usage": usage,
+            "correctness_review": correctness_review,
+            "remaining_balance_cents": remaining_balance_cents,
+            "reconciled": not issues,
+            "stop_reasons": issues,
+            "automatic_next_trial_authorized": False,
+            "ledger_is_hard_limit": False,
+        }
+        self.completed_trials.append(checkpoint)
+        self.active_trial_id = None
+        if issues:
+            self.stopped_reason = ",".join(issues)
+        else:
+            self.available_balance_cents = remaining_balance_cents
+            self.balance_source = balance_source or self.balance_source
+            self.balance_checked_at = checked_at
+            if remaining_balance_cents <= self.reserve_cents:
+                self.stopped_reason = "available_balance_at_or_below_reserve"
+        return checkpoint
+
+    def audit_record(self) -> dict:
+        """Return a JSON-safe appendable audit snapshot containing no credentials."""
+        return {
+            "schema_version": 1,
+            "record_type": "exploratory_pilot_balance_ledger_not_provider_limit",
+            "plan_type": "exploratory_offline_preflight_only",
+            "model": MODEL,
+            "reasoning_effort": REASONING_EFFORT,
+            "opening_balance_cents": self.opening_balance_cents,
+            "opening_balance_checked_at": self.opening_balance_checked_at,
+            "balance_cents": self.available_balance_cents,
+            "balance_checked_at": self.balance_checked_at,
+            "balance_source": self.balance_source,
+            "reserve_cents": self.reserve_cents,
+            "ledger_is_hard_limit": False,
+            "delayed_accounting_may_exceed_reported_balance": True,
+            "active_trial_id": self.active_trial_id,
+            "stopped_reason": self.stopped_reason,
+            "authorizations": list(self.authorizations),
+            "checkpoints": list(self.completed_trials),
+        }
+
+
+# Compatibility import name; semantics are balance-aware and best-effort.
+BudgetLedger = BalanceAwareLedger
 
 
 class FakeProcess:

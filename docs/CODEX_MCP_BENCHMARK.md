@@ -254,3 +254,31 @@ randomized 72-run pilot, independently audit
 API/repair/safety metrics, then publish complete raw synthetic-task evidence and
 paired summaries. Extend tasks/repetitions only in a new preregistered protocol.
 Any production defect revealed by future trials belongs in a separate issue/PR.
+
+## Separate exploratory prepaid-balance pilot
+
+The nine-row exploratory pilot in
+[`benchmarks/codex_r/exploratory/README.md`](../benchmarks/codex_r/exploratory/README.md)
+is an independent protocol. It uses the fixed `gpt-6-luna` / `medium`
+configuration for R01, R06 and R11 across A/B/C, with a maximum of nine
+sequential trials and a 900-second per-trial timeout. It does not change the
+strict 72-trial protocol above, including its hard cumulative token requirement.
+
+The exploratory protocol treats the operator's approximate $10 prepaid credit
+as an observed opening balance, not as a hard aggregate cap. A client-side
+balance-aware ledger records a current operator balance, a configurable reserve,
+and a non-binding operator estimate for one trial. After each session it requires
+reported spend, usage, independent correctness review and a fresh balance
+snapshot; missing or unreconciled values stop progress. Every next trial needs
+separate explicit authorization, and no multi-trial automatic launch exists.
+Delayed accounting may still cause spending to exceed the last observed balance;
+the ledger is not provider enforcement.
+
+This is preparation only. Model access for the operator account, effective
+runtime tool inventory, hidden-oracle exclusion, candidate isolation, and a
+real execution adapter remain unverified. Thus no paid trial is launchable from
+this repository until those security and interface checks are implemented and
+reviewed. Public model documentation verifies API capability, not account
+access. See the [GPT-6 Luna documentation](https://developers.openai.com/api/docs/models/gpt-6-luna)
+and the [organization Costs API reference](https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/usage/methods/costs);
+cost buckets do not provide a live prepaid balance.
