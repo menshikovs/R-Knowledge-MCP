@@ -98,6 +98,13 @@ only in-memory synthetic data and creates no benchmark records. The tests mock
 Codex discovery and metadata commands; no local Codex installation or API
 credentials are required.
 
+The single-trial readiness harness and its exact execution blockers are
+documented in [ADAPTER.md](ADAPTER.md). It can prepare public task workspaces
+and validate a one-row authorization record, but **does not launch Codex**;
+`run-one` remains fail-closed until a separately audited isolation, credential,
+egress and gateway backend is available. Its local process probe is synthetic
+and is not an agent or model trial.
+
 ## Official interface references
 
 - [GPT-6 Luna model](https://developers.openai.com/api/docs/models/gpt-6-luna)
