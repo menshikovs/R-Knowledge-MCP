@@ -425,6 +425,129 @@ This recovery scope is one-use. It does not revive attempt-2 authorization or
 clear any marker. If eligibility fails, stop and review state; do not edit or
 reset it to force eligibility.
 
+## One final continuation after the observed HTTP 201 response-validation failure
+
+The fourth identity, `R01-A/final-continuation`, is the last permitted
+launch. It is not an automatic retry. It uses a distinct authorization file,
+result file, consumed-trial marker, and authorization-consumption marker.
+There is no supported fifth identity.
+
+The validator requires the three preserved audits and three preserved
+authorizations. It verifies that the third audit records `create_session`
+HTTP 201, `response_schema_validation`, one session-creation response, zero
+task submissions and zero inference, and that Docker/container and restricted
+network cleanup are locally verified. The older audit's remote deletion field
+is not treated as proof. The server-side state of that session remains
+`unknown` until checked independently. An absent entry in Agents Logs is not
+evidence that the session was deleted or never became active.
+
+Before authorizing, the operator must independently obtain a fresh complete
+read-only inventory from the official [List agent sessions API]
+(https://developers.openai.com/api/reference/resources/beta/subresources/agents/subresources/sessions/methods/list)
+and review it. The inventory evidence file must be no more than five minutes
+old, include every page and cursor, identify the official endpoint, attest that
+it was not based on Agents Logs, and show only `failed` session statuses. The
+official status enum also includes `idle`, `in_progress`, and `requires_action`;
+the validator treats all three as active, blocks unknown statuses, and blocks
+an incomplete page chain or stale evidence. The current tool does not call this API or
+cryptographically authenticate an operator-supplied capture; the operator must
+ensure the file faithfully represents the complete response. The gate examines
+every listed session, not just a guessed session ID, because the legacy audit
+does not reliably preserve a session ID.
+
+The evidence JSON shape is:
+
+```json
+{
+  "record_type": "managed_agents_session_quiescence_evidence",
+  "source_url": "https://api.openai.com/v1/agents/sessions",
+  "checked_at": "<actual UTC timestamp>",
+  "operator_confirmation": "CONFIRM NO ACTIVE MANAGED AGENTS SESSIONS R01-A",
+  "not_based_on_agents_logs": true,
+  "all_pages_checked": true,
+  "pages": [
+    {
+      "after": "<cursor used for this page, omit on first page>",
+      "data": [
+        {"id": "<actual session id>", "status": "<actual status>"}
+      ],
+      "has_more": false,
+      "last_id": "<last returned id when another page follows>"
+    }
+  ]
+}
+```
+
+This is a normalized operator evidence record; placeholders must be replaced
+with observed values. Never treat this example as a live inventory. Preserve
+the original three audits, authorizations and markers byte-for-byte. The new
+authorization binds the SHA-256 of every prior audit, every prior
+authorization, and this inventory evidence. Authorization creation and
+`run-one` both revalidate those hashes, marker state, current local cleanup,
+and evidence freshness. Run still requires the existing one-use cross-process
+lease, fixed 900-second deadline, zero-MCP Condition A configuration, budget
+checkpoint, and cleanup path.
+
+The commands below are instructions for a future operator. They were not run
+while implementing this change. Before running them, save and review the
+independent session inventory as `$STATE/managed-agents-session-inventory.json`,
+refresh the prepaid balance, and obtain a separate explicit decision to spend
+on this one final attempt. Do not issue an authorization if any prior session
+is active or the evidence cannot be reconciled.
+
+```bash
+FIRST_RESULT="$STATE/r01a-result.json"
+FIRST_AUTH="$STATE/authorization.json"
+SECOND_RESULT="$STATE/r01a-result-attempt-2.json"
+SECOND_AUTH="$STATE/authorization-attempt-2.json"
+THIRD_RESULT="$STATE/r01a-result-recovery-after-attempt-2.json"
+THIRD_AUTH="$STATE/authorization-recovery-after-attempt-2.json"
+SESSION_EVIDENCE="$STATE/managed-agents-session-inventory.json"
+FINAL_ID='R01-A/final-continuation'
+FINAL_AUTH="$STATE/authorization-final-continuation.json"
+FINAL_RESULT="$STATE/r01a-result-final-continuation.json"
+
+read -r -p 'Current available balance (cents): ' BALANCE_CENTS
+read -r -p 'Conservative reserve (cents): ' RESERVE_CENTS
+read -r -p 'Estimated spend (cents): ' ESTIMATE_CENTS
+BALANCE_CHECKED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+python "$ADAPTER" authorize-one --trial R01-A --attempt-id "$FINAL_ID" \
+  --workspace "$WORKSPACE" --image "$IMAGE" \
+  --first-attempt-result "$FIRST_RESULT" \
+  --first-attempt-authorization "$FIRST_AUTH" \
+  --attempt-two-result "$SECOND_RESULT" \
+  --attempt-two-authorization "$SECOND_AUTH" \
+  --previous-attempt-result "$THIRD_RESULT" \
+  --previous-attempt-authorization "$THIRD_AUTH" \
+  --session-quiescence-evidence "$SESSION_EVIDENCE" \
+  --available-balance-cents "$BALANCE_CENTS" \
+  --reserve-cents "$RESERVE_CENTS" \
+  --estimated-spend-cents "$ESTIMATE_CENTS" \
+  --balance-source operator_dashboard \
+  --balance-checked-at "$BALANCE_CHECKED_AT" \
+  --confirm "AUTHORIZE ONE PAID TRIAL $FINAL_ID" \
+  --confirm-restricted-key-scope 'CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A' \
+  --authorization-output "$FINAL_AUTH"
+
+python "$ADAPTER" run-one --trial R01-A --attempt-id "$FINAL_ID" \
+  --workspace "$WORKSPACE" --image "$IMAGE" \
+  --first-attempt-result "$FIRST_RESULT" \
+  --first-attempt-authorization "$FIRST_AUTH" \
+  --attempt-two-result "$SECOND_RESULT" \
+  --attempt-two-authorization "$SECOND_AUTH" \
+  --previous-attempt-result "$THIRD_RESULT" \
+  --previous-attempt-authorization "$THIRD_AUTH" \
+  --session-quiescence-evidence "$SESSION_EVIDENCE" \
+  --authorization "$FINAL_AUTH" --result "$FINAL_RESULT"
+
+python "$ADAPTER" inspect-result --result "$FINAL_RESULT"
+python "$ADAPTER" verify-cleanup --result "$FINAL_RESULT"
+```
+
+If authorization, evidence, or cleanup validation fails, stop. Do not edit
+historical files, reuse a previous authorization, or attempt another launch.
+
 ## Exact blockers before a real R01-A turn
 
 - A path-aware endpoint broker and separately verified outbound WSS relay are
