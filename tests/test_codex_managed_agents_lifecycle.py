@@ -423,15 +423,57 @@ def test_live_mode_rejects_synthetic_client_before_authorization(tmp_path):
 
 
 def test_live_mode_stays_blocked_without_verified_gates(tmp_path):
-    controller, client, *_ = make_controller(tmp_path)
+    controller, client, runtime, topology, ledger, leases = make_controller(tmp_path)
     client.synthetic = False
     controller.synthetic_mode = False
-    with pytest.raises(lifecycle.LifecycleError, match="verification gates"):
+
+    gate_reads = []
+    attempted_side_effects = []
+    controller.current_live_gates = lambda: gate_reads.append(True) or {}
+
+    def forbidden(name):
+        def attempt(*_args, **_kwargs):
+            attempted_side_effects.append(name)
+            raise RuntimeError(f"unexpected pre-gate side effect: {name}")
+
+        return attempt
+
+    controller.authorize = forbidden("authorize")
+    controller.consume_authorization = forbidden("consume_authorization")
+    controller.lease_factory = forbidden("lease_acquisition")
+    ledger.authorize_one = forbidden("ledger_authorize")
+    topology.start = forbidden("topology_start")
+    topology.cleanup = forbidden("topology_cleanup")
+    client.create_session = forbidden("session_creation")
+    client.send_and_stream = forbidden("task_stream_and_submission")
+    client.cancel_turn = forbidden("session_cancellation")
+    client.delete_session = forbidden("session_deletion")
+    runtime.start_managed_executor = forbidden("executor_start")
+    runtime.stop_managed_executor = forbidden("executor_termination")
+
+    with pytest.raises(lifecycle.LifecycleError) as caught:
         controller.run_one(
             context={"trial_id": "R01-A", "expected_tools": [], "workspace": str(tmp_path)},
             authorization={},
             state_directory=tmp_path / "state",
         )
+
+    assert str(caught.value) == "Cleanup or executor termination/evidence requires review"
+    assert isinstance(caught.value.__cause__, lifecycle.LifecycleError)
+    assert str(caught.value.__cause__) == "Live verification gates are incomplete"
+    assert gate_reads == [True]
+    assert attempted_side_effects == []
+    assert leases == []
+    assert client.submitted is False and client.deleted is False and client.cancelled is False
+    assert runtime.stopped is False
+    assert topology.started is False and topology.cleaned is False
+    assert ledger.active_trial_id is None
+    report = caught.value.audit_record
+    assert report["cleanup_verified"] is False
+    assert report["failure"]["operation"] == "preparation"
+    assert report["failure"]["category"] == "preparation_failed"
+    audit_path = controller.safety.journal.path.with_suffix(".audit.json")
+    assert audit_path.is_file()
 
 
 def test_unverified_container_termination_blocks_export_and_retains_lease(tmp_path):

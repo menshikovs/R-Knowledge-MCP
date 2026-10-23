@@ -498,7 +498,7 @@ def test_f10_sanitizes_keys_values_audit_stdout_and_inspection(tmp_path, capsys,
     raw = {
         APP_KEY: "top-level",
         "nested": [{ENV_KEY: f"value {APP_KEY} {SIGNED_URL}"}],
-        SIGNED_URL: "signed-url-key-value",
+        "signed_url_case": {SIGNED_URL: "signed-url-key-value"},
         "type": "agent.session.turn.completed",
     }
     for sanitizer in (
@@ -516,7 +516,10 @@ def test_f10_sanitizes_keys_values_audit_stdout_and_inspection(tmp_path, capsys,
     }
 
     target = tmp_path / "private-audit.json"
-    record["synthetic_probe"] = {APP_KEY: "configured app key", ENV_KEY: "configured executor key"}
+    record["synthetic_probe"] = {
+        "application_key_case": {APP_KEY: "configured app key"},
+        "executor_key_case": {ENV_KEY: "configured executor key"},
+    }
     adapter._private_json_write(target, record)
     journal_path = tmp_path / "synthetic-state/lifecycle-journals/R01-A-attempt-1.jsonl"
     assert journal_path.is_file()
