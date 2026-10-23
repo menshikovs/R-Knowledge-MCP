@@ -143,7 +143,7 @@ def make_controller(workspace, *, fail=False, delay=0):
         topology=topology,
         ledger=ledger,
         authorize=lambda *_: None,
-        consume_authorization=lambda *_: None,
+        consume_authorization=lambda *_args, **_kwargs: None,
         lease_factory=lease_factory,
         score=lambda task, artifacts, image: {
             "status": "candidate_error",
@@ -192,6 +192,7 @@ def test_synthetic_controller_runs_one_ordered_lifecycle_and_checkpoints(tmp_pat
     names = [item["state"] for item in report["states"]]
     assert names == [
         "prepare",
+        "consume_authorization",
         "authorize",
         "create_session",
         "stream_events",
@@ -276,6 +277,34 @@ def test_create_session_diagnostic_is_preserved_in_safe_lifecycle_audit(tmp_path
     assert "must-not-appear" not in str(report)
     assert runtime.stopped is False
     assert topology.cleaned and ledger.active_trial_id is None and leases[0].released
+
+
+def test_pre_session_local_failure_records_safe_operation(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    prepare_workspace(workspace)
+    controller, client, runtime, topology, _ledger, leases = make_controller(workspace)
+
+    def reject_consumption(*_args, **_kwargs):
+        raise ValueError("Bearer sk-sensitive-secret")
+
+    controller.consume_authorization = reject_consumption
+    context = {"trial_id": "R01-A", "expected_tools": [], "workspace": str(workspace)}
+    report = controller.run_one(
+        context=context,
+        authorization={"synthetic": True},
+        state_directory=tmp_path / "state",
+    )
+
+    assert report["failure"]["operation"] == "consume_authorization"
+    assert report["failure"]["category"] == "local_validation"
+    assert report["failure"]["reason"] == "consume_authorization failed before session creation"
+    assert "sensitive" not in repr(report["failure"])
+    assert report["session_creation_attempted"] is False
+    assert report["sessions_created_count"] == 0
+    assert report["task_submissions_attempted_count"] == 0
+    assert client.submitted is False
+    assert runtime.stopped is False and topology.cleaned and leases[0].released
 
 
 def test_deadline_watchdog_terminates_executor_and_requires_checkpoint(tmp_path):

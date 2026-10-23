@@ -3,7 +3,9 @@
 import hashlib
 import importlib.util
 import json
-from datetime import UTC, datetime
+import subprocess
+import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -141,6 +143,141 @@ def test_active_trial_lease_is_exclusive_and_retained_without_cleanup_proof(tmp_
     with adapter.SingleTrialLease(outside_repo, "R01-A") as lease:
         lease.mark_cleanup_verified()
     assert not (outside_repo / "active-trial.lock").exists()
+
+
+def test_active_trial_lease_rejects_a_competing_process(tmp_path):
+    state = tmp_path / "state"
+    with adapter.SingleTrialLease(state, "R01-A"):
+        code = (
+            "import importlib.util, pathlib, sys; "
+            "s=importlib.util.spec_from_file_location('adapter', sys.argv[1]); "
+            "m=importlib.util.module_from_spec(s); s.loader.exec_module(m); "
+            "m.SingleTrialLease(pathlib.Path(sys.argv[2]), 'R01-A').__enter__()"
+        )
+        competing = subprocess.run(
+            [sys.executable, "-c", code, str(adapter.__file__), str(state)],
+            capture_output=True,
+            text=True,
+            timeout=10,
+            check=False,
+        )
+        assert competing.returncode != 0
+        assert "Another trial is active" in competing.stderr
+
+
+def test_attempt_two_consumption_accepts_only_its_own_verified_lease(tmp_path, monkeypatch):
+    workspace = tmp_path / "public-R01"
+    adapter.prepare_workspace("R01", workspace)
+    state = tmp_path / "state"
+    markers = state / "consumed-trials"
+    markers.mkdir(parents=True)
+    first_marker = markers / "R01-A.json"
+    first_marker.write_text('{"trial_id":"R01-A","authorization_id":"first"}\n')
+    first_marker_bytes = first_marker.read_bytes()
+    first_result = tmp_path / "r01a-result.json"
+    first_audit = {
+        "record_type": "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
+        "trial_id": "R01-A",
+        "failure_category": "ManagedAgentsError",
+        "session_creation_attempted": True,
+        "session_created": False,
+        "sessions_created_count": 0,
+        "inference_submitted": False,
+        "task_submissions_attempted_count": 0,
+        "cleanup_verified": True,
+        "container_termination_verified": True,
+        "session_deleted_verified": True,
+        "topology_cleanup_verified": True,
+    }
+    first_result.write_text(json.dumps(first_audit))
+    monkeypatch.setattr(adapter.shutil, "which", lambda _name: "docker")
+    monkeypatch.setattr(
+        adapter.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+    state_directory = state
+    context = adapter.build_trial_context(
+        pilot.make_plan(),
+        "R01-A",
+        workspace,
+        candidate_image_digest="sha256:" + "b" * 64,
+        state_directory=state_directory,
+        attempt_id="R01-A/attempt-2",
+        previous_attempt_result=first_result,
+    )
+    now = datetime.now(UTC)
+    authorization = adapter.create_authorization(
+        context,
+        typed_confirmation="AUTHORIZE ONE PAID TRIAL R01-A/attempt-2",
+        available_balance_cents=1000,
+        reserve_cents=200,
+        estimated_spend_cents=100,
+        balance_source="synthetic fixture",
+        balance_checked_at=now.isoformat(),
+        restricted_key_scope_confirmation="CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A",
+        attempt_id="R01-A/attempt-2",
+        previous_attempt_result=first_result,
+    )
+
+    lease = adapter.SingleTrialLease(state, "R01-A")
+    with lease:
+        report = adapter.verify_cleanup(state, first_result, lease=lease)
+        assert report["active_trial_lock_present"] is True
+        assert report["active_trial_lock_owned_by_caller"] is True
+        assert report["local_cleanup_verified"] is True
+        original_audit_bytes = first_result.read_bytes()
+        first_result.write_bytes(original_audit_bytes + b" ")
+        with pytest.raises(adapter.AdapterError, match="audit or cleanup verification changed"):
+            adapter.consume_authorization(authorization, context, state, lease=lease)
+        assert not (markers / "R01-A-attempt-2.json").exists()
+        first_result.write_bytes(original_audit_bytes)
+        adapter.consume_authorization(authorization, context, state, lease=lease)
+        lease.mark_cleanup_verified()
+    assert (markers / "R01-A-attempt-2.json").is_file()
+    assert first_marker.read_bytes() == first_marker_bytes
+    assert not (state / "active-trial.lock").exists()
+
+
+def test_cleanup_verification_rejects_foreign_or_stale_lock(tmp_path, monkeypatch):
+    state = tmp_path / "state"
+    state.mkdir()
+    audit_path = tmp_path / "audit.json"
+    audit_path.write_text(
+        json.dumps(
+            {
+                "record_type": "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
+                "synthetic": False,
+                "cleanup_verified": True,
+                "session_deleted_verified": True,
+                "container_termination_verified": True,
+                "topology_cleanup_verified": True,
+            }
+        )
+    )
+    monkeypatch.setattr(adapter.shutil, "which", lambda _name: "docker")
+    monkeypatch.setattr(
+        adapter.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+    lock_path = state / "active-trial.lock"
+    lock_path.write_text('{"trial_id":"R01-A","pid":1,"lease_id":"foreign"}\n')
+    foreign = adapter.SingleTrialLease(state, "R01-A")
+    report = adapter.verify_cleanup(state, audit_path, lease=foreign)
+    assert report["active_trial_lock_present"] is True
+    assert report["active_trial_lock_owned_by_caller"] is False
+    assert report["local_cleanup_verified"] is False
+    with pytest.raises(adapter.AdapterError, match="cleanup is not verified"):
+        adapter._verify_first_attempt_for_retry(state, audit_path, lease=foreign)
+
+    lock_path.unlink()
+    own_lease = adapter.SingleTrialLease(state, "R01-A")
+    with own_lease:
+        lock_path.unlink()
+        lock_path.write_text('{"trial_id":"R06-A","pid":2,"lease_id":"replacement"}\n')
+        own_lease.mark_cleanup_verified()
+    assert lock_path.is_file(), "lease exit must not remove a replaced foreign lock"
 
 
 def test_offline_timeout_probe_terminates_its_synthetic_process_tree():
@@ -462,7 +599,7 @@ def test_attempt_two_requires_immutable_clean_attempt_one_and_has_separate_marke
 
     with pytest.raises(adapter.AdapterError, match="trial already has a consumed authorization"):
         adapter.consume_authorization(auth, context, state)
-    with pytest.raises(adapter.AdapterError, match="bounded first or second"):
+    with pytest.raises(adapter.AdapterError, match="one separately authorized recovery"):
         adapter.build_trial_context(pilot.make_plan(), "R01-A", attempt_id="R01-A/attempt-3")
 
 
@@ -573,6 +710,140 @@ def test_attempt_two_rejects_missing_first_attempt_consumed_marker(tmp_path, mon
             attempt_id="R01-A/attempt-2",
             previous_attempt_result=previous,
         )
+
+
+def test_recovery_is_append_only_bound_to_expired_attempt_two_provenance(tmp_path, monkeypatch):
+    workspace = tmp_path / "public-R01"
+    adapter.prepare_workspace("R01", workspace)
+    state = tmp_path / "state"
+    markers = state / "consumed-trials"
+    markers.mkdir(parents=True)
+    first_marker = markers / "R01-A.json"
+    first_marker.write_text('{"trial_id":"R01-A","authorization_id":"first"}\n')
+    first_marker_before = first_marker.read_bytes()
+    first_result = state / "r01a-result.json"
+    first_audit = {
+        "record_type": "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
+        "trial_id": "R01-A",
+        "failure_category": "ManagedAgentsError",
+        "session_creation_attempted": True,
+        "session_created": False,
+        "sessions_created_count": 0,
+        "inference_submitted": False,
+        "task_submissions_attempted_count": 0,
+        "cleanup_verified": True,
+        "container_termination_verified": True,
+        "session_deleted_verified": True,
+        "topology_cleanup_verified": True,
+    }
+    first_result.write_text(json.dumps(first_audit))
+    prior_two_result = state / "r01a-result-attempt-2.json"
+    prior_two_audit = {
+        "record_type": "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
+        "synthetic": False,
+        "trial_id": "R01-A",
+        "attempt_id": "R01-A/attempt-2",
+        "failure_category": "AdapterError",
+        "states": [
+            {"state": name, "at": "2026-10-23T00:00:00+00:00"}
+            for name in ("prepare", "terminate_container", "cleanup")
+        ],
+        "session_creation_attempted": False,
+        "session_created": False,
+        "sessions_created_count": 0,
+        "session_creation_uncertain": False,
+        "task_submission_attempted": False,
+        "task_submission_uncertain": False,
+        "task_submissions_attempted_count": 0,
+        "inference_submitted": False,
+        "restricted_egress": None,
+        "checkpoint": None,
+        "cleanup_verified": True,
+        "container_termination_verified": True,
+        "session_deleted_verified": True,
+        "topology_cleanup_verified": True,
+    }
+    prior_two_result.write_text(json.dumps(prior_two_audit))
+    auth_id = "a" * 32
+    prior_issued = datetime.now(UTC).replace(microsecond=0) - timedelta(minutes=20)
+    prior_authorization = {
+        "schema_version": 1,
+        "authorization_id": auth_id,
+        "authorized": True,
+        "issued_at": prior_issued.isoformat(),
+        "expires_at": (prior_issued + timedelta(seconds=60)).isoformat(),
+        "scope": {
+            "trial_id": "R01-A",
+            "attempt_id": "R01-A/attempt-2",
+            "previous_attempt_result": str(first_result.resolve()),
+            "previous_attempt_audit_sha256": hashlib.sha256(first_result.read_bytes()).hexdigest(),
+            "state_directory": str(state.resolve()),
+        },
+        "typed_confirmation": "AUTHORIZE ONE PAID TRIAL R01-A/attempt-2",
+        "attempt_id": "R01-A/attempt-2",
+        "restricted_key_scope_operator_attested": True,
+        "consumed": False,
+        "balance_snapshot": {},
+    }
+    prior_auth_path = state / "authorization-attempt-2.json"
+    prior_auth_path.write_text(json.dumps(prior_authorization))
+    prior_auth_bytes = prior_auth_path.read_bytes()
+    monkeypatch.setattr(adapter.shutil, "which", lambda _name: "docker")
+    monkeypatch.setattr(
+        adapter.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(returncode=0, stdout="", stderr=""),
+    )
+
+    recovery_id = adapter.RECOVERY_ATTEMPT_ID
+    context = adapter.build_trial_context(
+        pilot.make_plan(),
+        "R01-A",
+        workspace,
+        candidate_image_digest="sha256:" + "b" * 64,
+        state_directory=state,
+        attempt_id=recovery_id,
+        previous_attempt_result=prior_two_result,
+        first_attempt_result=first_result,
+        previous_attempt_authorization=prior_auth_path,
+    )
+    recovery_auth = adapter.create_authorization(
+        context,
+        typed_confirmation=f"AUTHORIZE ONE PAID TRIAL {recovery_id}",
+        available_balance_cents=1000,
+        reserve_cents=200,
+        estimated_spend_cents=100,
+        balance_source="synthetic test fixture; no live authorization",
+        balance_checked_at=datetime.now(UTC).isoformat(),
+        restricted_key_scope_confirmation="CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A",
+        attempt_id=recovery_id,
+        previous_attempt_result=prior_two_result,
+        first_attempt_result=first_result,
+        previous_attempt_authorization=prior_auth_path,
+    )
+    assert recovery_auth["attempt_id"] == recovery_id
+    assert (
+        recovery_auth["scope"]["previous_attempt_audit_sha256"]
+        == hashlib.sha256(prior_two_result.read_bytes()).hexdigest()
+    )
+    assert (
+        recovery_auth["scope"]["recovery_first_attempt_audit_sha256"]
+        == hashlib.sha256(first_result.read_bytes()).hexdigest()
+    )
+    assert (
+        recovery_auth["scope"]["previous_attempt_authorization_sha256"]
+        == hashlib.sha256(prior_auth_bytes).hexdigest()
+    )
+    assert recovery_auth["authorization_id"] != auth_id
+    assert adapter.validate_authorization(recovery_auth, context) is recovery_auth
+    assert first_marker.read_bytes() == first_marker_before
+    assert prior_auth_path.read_bytes() == prior_auth_bytes
+    assert not (markers / "R01-A-attempt-2.json").exists()
+    assert not (markers / "R01-A-recovery-after-attempt-2.json").exists()
+
+    prior_two_result.write_bytes(prior_two_result.read_bytes() + b" ")
+    with pytest.raises(adapter.AdapterError, match="provenance changed"):
+        adapter.validate_authorization(recovery_auth, context)
 
 
 def test_attempt_two_is_blocked_without_verified_cleanup_or_prior_consumption(
