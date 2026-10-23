@@ -145,6 +145,7 @@ def execution_configuration_fingerprint() -> str:
         ROOT / "exploratory" / "egress_proxy.py",
         ROOT / "exploratory" / "managed_agents.py",
         ROOT / "exploratory" / "executor_contract.py",
+        ROOT / "exploratory" / "lifecycle_safety.py",
         ROOT / "exploratory" / "lifecycle.py",
         Path(__file__).resolve(),
     ):
@@ -862,6 +863,10 @@ class SingleTrialLease(AbstractContextManager):
                 os.fsync(lock.fileno())
                 info = os.fstat(lock.fileno())
                 self._file_identity = (info.st_dev, info.st_ino)
+                durability = _load_module(
+                    ROOT / "exploratory" / "lifecycle_safety.py", "r01_lease_fsync"
+                )
+                durability.sync_directory(root)
         except FileExistsError as exc:
             raise AdapterError(
                 "Another trial is active or a stale lock needs operator review"
@@ -896,6 +901,10 @@ class SingleTrialLease(AbstractContextManager):
     def __exit__(self, exc_type, exc, tb):
         if self.acquired and self.cleanup_verified and self.owns_lock():
             self.lock_path.unlink(missing_ok=True)
+            durability = _load_module(
+                ROOT / "exploratory" / "lifecycle_safety.py", "r01_lease_release_fsync"
+            )
+            durability.sync_directory(self.state_directory)
         return False
 
 
@@ -911,10 +920,13 @@ def consume_authorization(
     root = Path(state_directory).resolve()
     if root.is_relative_to(REPO.resolve()):
         raise AdapterError("Authorization state must be outside the evaluator repository")
+    durability = _load_module(
+        ROOT / "exploratory" / "lifecycle_safety.py", "r01_marker_directory_fsync"
+    )
     consumed = root / "consumed-authorizations"
-    consumed.mkdir(parents=True, exist_ok=True)
+    durability.ensure_directory(consumed)
     consumed_trials = root / "consumed-trials"
-    consumed_trials.mkdir(parents=True, exist_ok=True)
+    durability.ensure_directory(consumed_trials)
     attempt_id = context.get("attempt_id", "R01-A/attempt-1")
     if attempt_id not in {
         "R01-A/attempt-1",
@@ -973,31 +985,32 @@ def consume_authorization(
         )
         if verified != context.get("final_continuation_provenance"):
             raise AdapterError("Final continuation provenance changed after authorization")
-    try:
-        with trial_marker.open("x", encoding="utf-8") as output:
-            json.dump(
+    safety = getattr(lease, "safety", None) if lease is not None else None
+
+    def write_marker(path, operation):
+        def write():
+            _private_json_write(
+                path,
                 {
                     "trial_id": context["trial_id"],
                     "authorization_id": authorization["authorization_id"],
                     "consumed_at": datetime.now(UTC).isoformat(),
                 },
-                output,
+                redact_content=False,
             )
-            output.write("\n")
+
+        if safety is not None:
+            safety.effect(operation, write)
+        else:
+            write()
+
+    try:
+        write_marker(trial_marker, "trial_marker_create")
     except FileExistsError as exc:
         raise AdapterError("This pilot trial already has a consumed authorization") from exc
     marker = consumed / f"{authorization['authorization_id']}.json"
     try:
-        with marker.open("x", encoding="utf-8") as output:
-            json.dump(
-                {
-                    "authorization_id": authorization["authorization_id"],
-                    "trial_id": context["trial_id"],
-                    "consumed_at": datetime.now(UTC).isoformat(),
-                },
-                output,
-            )
-            output.write("\n")
+        write_marker(marker, "authorization_marker_create")
     except FileExistsError as exc:
         raise AdapterError("Authorization was already consumed") from exc
     return marker
@@ -1016,22 +1029,10 @@ def _private_json_write(
     path: Path, value: dict, *, exclusive: bool = True, redact_content: bool = True
 ) -> None:
     """Write bounded local authorization or result records with owner-only mode."""
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    flags = os.O_WRONLY | os.O_CREAT | (os.O_EXCL if exclusive else os.O_TRUNC)
-    descriptor = os.open(path, flags, 0o600)
-    try:
-        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as output:
-            json.dump(
-                redact(value) if redact_content else value, output, indent=2, ensure_ascii=False
-            )
-            output.write("\n")
-    except BaseException:
-        try:
-            path.unlink(missing_ok=True)
-        except OSError:
-            pass
-        raise
+    safety = _load_module(ROOT / "exploratory" / "lifecycle_safety.py", "r01_private_evidence")
+    safety.private_write(
+        Path(path), redact(value) if redact_content else value, exclusive=exclusive
+    )
 
 
 def create_authorization_file(
@@ -1121,16 +1122,7 @@ def _make_live_controller(context: dict, authorization: dict, state_directory: P
         raise AdapterError("Condition A must have zero MCP tools")
     image_digest = context.get("candidate_image_digest")
     runtime = docker_runtime.CodexCandidateRuntime(image_digest)
-    candidate_report = runtime.verify_candidate_image()
-    if candidate_report["image_id"] != image_digest:
-        raise AdapterError("Verified Codex image differs from the authorized digest")
     r_runtime = docker_runtime.DockerCandidateRuntime(docker_runtime.FROZEN_R_IMAGE_ID)
-    r_image_report = r_runtime.verify_engine_and_image()
-    if r_image_report["image_id"] != docker_runtime.FROZEN_R_IMAGE_ID:
-        raise AdapterError("Frozen R scorer image is not verified")
-    workspace_report = runtime._validate_workspace(Path(context["workspace"]))
-    if workspace_report["files"] != ["TASK.md", "data/records.csv", "renv.lock"]:
-        raise AdapterError("Public R01 workspace differs from the authorized file set")
 
     snapshot = authorization["balance_snapshot"]
     ledger = pilot.BalanceAwareLedger(
@@ -1143,6 +1135,16 @@ def _make_live_controller(context: dict, authorization: dict, state_directory: P
     client = managed_agents.ManagedAgentsClient(application_key)
 
     def live_gates():
+        r_runtime.safety = runtime.safety
+        candidate_report = runtime.verify_candidate_image()
+        if candidate_report["image_id"] != image_digest:
+            raise AdapterError("Verified Codex image differs from the authorized digest")
+        r_image_report = r_runtime.verify_engine_and_image()
+        if r_image_report["image_id"] != docker_runtime.FROZEN_R_IMAGE_ID:
+            raise AdapterError("Frozen R scorer image is not verified")
+        workspace_report = runtime._validate_workspace(Path(context["workspace"]))
+        if workspace_report["files"] != ["TASK.md", "data/records.csv", "renv.lock"]:
+            raise AdapterError("Public R01 workspace differs from the authorized file set")
         return {
             "docker_candidate_image": candidate_report["image_id"] == image_digest,
             "frozen_r_scorer_image": r_image_report["image_id"] == docker_runtime.FROZEN_R_IMAGE_ID,
@@ -1201,6 +1203,7 @@ def _make_live_controller(context: dict, authorization: dict, state_directory: P
         checkpoint_review=checkpoint_review,
         current_live_gates=live_gates,
         trial_timeout_seconds=900,
+        audit_writer=_private_json_write,
     )
 
 
@@ -1265,23 +1268,40 @@ def run_one(
     session_quiescence_evidence: Path | None = None,
 ):
     """Run exactly one fully authorized R01-A lifecycle; never retries or batches."""
-    context = build_trial_context(
-        plan,
-        trial_id,
-        Path(workspace),
-        candidate_image_digest=candidate_image_digest,
-        state_directory=Path(state_directory),
-        attempt_id=attempt_id,
-        previous_attempt_result=previous_attempt_result,
-        first_attempt_result=first_attempt_result,
-        previous_attempt_authorization=previous_attempt_authorization,
-        first_attempt_authorization=first_attempt_authorization,
-        attempt_two_result=attempt_two_result,
-        attempt_two_authorization=attempt_two_authorization,
-        session_quiescence_evidence=session_quiescence_evidence,
+    safety_lib = _load_module(
+        ROOT / "exploratory" / "lifecycle_safety.py", "r01_preparation_budget"
     )
-    validate_authorization(authorization, context)
-    controller = _make_live_controller(context, authorization, Path(state_directory))
+    preparation = safety_lib.LifecycleSafety(None)
+
+    def prepare():
+        context = build_trial_context(
+            plan,
+            trial_id,
+            Path(workspace),
+            candidate_image_digest=candidate_image_digest,
+            state_directory=Path(state_directory),
+            attempt_id=attempt_id,
+            previous_attempt_result=previous_attempt_result,
+            first_attempt_result=first_attempt_result,
+            previous_attempt_authorization=previous_attempt_authorization,
+            first_attempt_authorization=first_attempt_authorization,
+            attempt_two_result=attempt_two_result,
+            attempt_two_authorization=attempt_two_authorization,
+            session_quiescence_evidence=session_quiescence_evidence,
+        )
+        validate_authorization(authorization, context)
+        controller = _make_live_controller(context, authorization, Path(state_directory))
+        return context, controller
+
+    context, controller = preparation.call(prepare)
+
+    def attach_journal(root, prepared_context, synthetic):
+        preparation.journal = safety_lib.Journal(
+            root, prepared_context.get("attempt_id", "R01-A/attempt-1"), synthetic=synthetic
+        )
+        return preparation
+
+    controller.safety_factory = attach_journal
     return controller.run_one(
         context=context, authorization=authorization, state_directory=state_directory
     )
@@ -1341,6 +1361,33 @@ def verify_cleanup(
         audit = json.loads(result_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise AdapterError("Lifecycle cleanup audit is unavailable or invalid") from exc
+    journal_verified = None
+    if isinstance(audit, dict) and audit.get("journal_reference") is not None:
+        reference = audit["journal_reference"]
+        allowed = {
+            "R01-A-attempt-1.jsonl",
+            "R01-A-attempt-2.jsonl",
+            "R01-A-recovery-after-attempt-2.jsonl",
+            "R01-A-final-continuation.jsonl",
+        }
+        journal_verified = False
+        if isinstance(reference, str) and reference in allowed:
+            safety_lib = _load_module(
+                ROOT / "exploratory" / "lifecycle_safety.py", "r01_cleanup_evidence"
+            )
+            try:
+                inspection = safety_lib.inspect_journal(
+                    state_directory / "lifecycle-journals" / reference
+                )
+                journal_verified = bool(
+                    inspection["final_audit_outcome_recorded"]
+                    and inspection["lease_release_outcome_recorded"]
+                    and not inspection["invalid_record"]
+                    and not inspection["incomplete_tail"]
+                    and not inspection["pending_operations"]
+                )
+            except (RuntimeError, OSError):
+                pass
     live_audit_clean = (
         isinstance(audit, dict)
         and audit.get("record_type") == "managed_agents_r01a_lifecycle_audit_not_benchmark_result"
@@ -1349,6 +1396,7 @@ def verify_cleanup(
         and audit.get("session_deleted_verified") is True
         and audit.get("container_termination_verified") is True
         and audit.get("topology_cleanup_verified") is True
+        and journal_verified is not False
     )
     return {
         "record_type": "r01a_cleanup_verification_not_trial",
@@ -1358,6 +1406,7 @@ def verify_cleanup(
         "remaining_rkmcp_containers": names,
         "remaining_r01a_networks": networks,
         "live_lifecycle_cleanup_verified": live_audit_clean,
+        "durable_journal_verified": journal_verified,
         "local_cleanup_verified": (
             (not lock_exists if lease is None else lock_owned) and not names and not networks
         ),
@@ -2274,6 +2323,8 @@ def main(argv=None) -> int:
     sub.add_parser("cancel-one")
     cleanup_parser = sub.add_parser("verify-cleanup")
     cleanup_parser.add_argument("--result", type=Path, required=True)
+    journal_parser = sub.add_parser("inspect-journal")
+    journal_parser.add_argument("--journal", type=Path, required=True)
     result_parser = sub.add_parser("inspect-result")
     result_parser.add_argument("--result", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -2330,6 +2381,12 @@ def main(argv=None) -> int:
         elif args.command == "verify-cleanup":
             result = verify_cleanup(default_state_directory(), args.result)
             code = 0 if result["cleanup_verified"] else 2
+        elif args.command == "inspect-journal":
+            safety = _load_module(
+                ROOT / "exploratory" / "lifecycle_safety.py", "r01_recovery_reader"
+            )
+            result = safety.inspect_journal(args.journal)
+            code = 0
         elif args.command == "inspect-result":
             result = inspect_result(args.result)
             code = 0

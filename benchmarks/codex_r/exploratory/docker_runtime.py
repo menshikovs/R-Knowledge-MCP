@@ -14,6 +14,7 @@ import os
 import re
 import shutil
 import subprocess
+import threading
 import time
 import uuid
 from datetime import UTC, datetime
@@ -261,11 +262,32 @@ class DockerCandidateRuntime:
             raise DockerRuntimeError("Docker CLI was not found")
         self.image_id = image_id
         self._command_runner = command_runner or _bounded_run
+        self._termination_lock = threading.Lock()
+        self._verified_removed = set()
 
     def _run_command(self, argv, *, timeout=20, env=None):
         """Inject only subprocess execution; validation and startup stay production code."""
         try:
-            result = self._command_runner(argv, timeout=timeout, env=env)
+            safety = getattr(self, "safety", None)
+            if safety is not None:
+                timeout = safety.timeout(timeout)
+            effects = {
+                "create": "executor_create",
+                "start": "executor_start",
+                "rm": "executor_terminate",
+                "run": "image_version_probe",
+            }
+            operation = effects.get(argv[1])
+
+            def command():
+                def invoke():
+                    return self._command_runner(argv, timeout=timeout, env=env)
+
+                return safety.io(invoke, cap=timeout) if safety is not None else invoke()
+
+            result = (
+                safety.effect(operation, command) if safety is not None and operation else command()
+            )
         except subprocess.TimeoutExpired as exc:
             raise DockerCommandTimeout(
                 "Docker command exceeded its local deadline",
@@ -331,13 +353,22 @@ class DockerCandidateRuntime:
                     "Docker returned an invalid container identifier", code="invalid_container_id"
                 )
             return container_id
-        except DockerRuntimeError as primary:
-            try:
+        except Exception as primary:
+
+            def cleanup():
                 self._run_command([self.docker, "rm", "--force", name], timeout=20)
                 self._assert_name_absent(name)
-            except DockerRuntimeError:
+
+            try:
+                safety = getattr(self, "safety", None)
+                if safety is not None:
+                    safety.cleanup("executor_terminate", cleanup, cap=20)
+                else:
+                    cleanup()
+            except Exception:
                 primary.cleanup_unverified = True
-                primary.diagnostics["secondary_cleanup_failure"] = "cleanup_unverified"
+                if isinstance(getattr(primary, "diagnostics", None), dict):
+                    primary.diagnostics["secondary_cleanup_failure"] = "cleanup_unverified"
             raise
 
     def verify_engine_and_image(self) -> dict:
@@ -747,23 +778,43 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
         candidate_layers = json.loads(rootfs)
         if candidate_layers[: len(base_layers)] != base_layers:
             raise DockerRuntimeError("Candidate image does not preserve the frozen R image layers")
-        version = (
-            self._docker(
-                "run",
-                "--rm",
-                "--network",
-                "none",
-                "--read-only",
-                "--tmpfs",
-                "/tmp:rw,noexec,nosuid,nodev,size=64m,mode=1777",
-                "--user",
-                "65534:65534",
-                self.image_id,
-                "--version",
+        version_name = f"rkmcp-version-R01-A-{uuid.uuid4().hex[:16]}"
+        try:
+            version = (
+                self._docker(
+                    "run",
+                    "--rm",
+                    "--name",
+                    version_name,
+                    "--network",
+                    "none",
+                    "--read-only",
+                    "--tmpfs",
+                    "/tmp:rw,noexec,nosuid,nodev,size=64m,mode=1777",
+                    "--user",
+                    "65534:65534",
+                    self.image_id,
+                    "--version",
+                )
+                .stdout.decode("utf-8", "replace")
+                .strip()
             )
-            .stdout.decode("utf-8", "replace")
-            .strip()
-        )
+        except BaseException:
+
+            def remove_version_probe():
+                self._run_command([self.docker, "rm", "--force", version_name], timeout=20)
+                self._assert_name_absent(version_name)
+
+            safety = getattr(self, "safety", None)
+            try:
+                if safety:
+                    safety.cleanup("executor_terminate", remove_version_probe, cap=20)
+                else:
+                    remove_version_probe()
+            except Exception:
+                if safety:
+                    safety.evidence_failed = True
+            raise
         if version != f"codex-cli {CODEX_VERSION}":
             raise DockerRuntimeError("Codex version differs from the pinned release")
         return {
@@ -1016,11 +1067,14 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
                 "Codex executor process did not remain running", code="executor_not_running"
             )
         except BaseException as exc:
-            if isinstance(exc, DockerRuntimeError):
+            if (
+                isinstance(exc, DockerRuntimeError)
+                or getattr(exc, "diagnostics", {}).get("category") == "deadline_expired"
+            ):
                 failure = exc
                 if (
                     phase.startswith("inspect_")
-                    and failure.diagnostics["reason_code"] == "runtime_policy_rejected"
+                    and failure.diagnostics.get("reason_code") == "runtime_policy_rejected"
                 ):
                     failure.diagnostics["reason_code"] = "invalid_inspection"
             else:
@@ -1034,7 +1088,15 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
             failure.diagnostics["sub_operation"] = phase
             if container_id:
                 try:
-                    removed = self.stop_managed_executor(container_id)
+                    safety = getattr(self, "safety", None)
+                    if safety is not None:
+                        removed = safety.cleanup(
+                            "executor_terminate",
+                            lambda: self.stop_managed_executor(container_id),
+                            cap=20,
+                        )
+                    else:
+                        removed = self.stop_managed_executor(container_id)
                 except Exception:
                     removed = False
                 if not removed:
@@ -1046,6 +1108,21 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
             raise failure from exc
 
     def stop_managed_executor(self, container_id: str) -> bool:
+        safety = getattr(self, "safety", None)
+        wait_seconds = safety.timeout(20) if safety else 20
+        if not self._termination_lock.acquire(timeout=wait_seconds):
+            return False
+        try:
+            if container_id in self._verified_removed:
+                return True
+            removed = self._stop_managed_executor(container_id)
+            if removed:
+                self._verified_removed.add(container_id)
+            return removed
+        finally:
+            self._termination_lock.release()
+
+    def _stop_managed_executor(self, container_id: str) -> bool:
         """Force-stop every process in the executor cgroup and verify removal."""
         if not re.fullmatch(r"[a-f0-9]{64}", container_id):
             raise DockerRuntimeError("Executor container identity is invalid")
@@ -1086,7 +1163,10 @@ class RestrictedEgressNetwork:
         self._created_container = False
 
     def _run(self, *args: str, timeout: int = 20) -> subprocess.CompletedProcess:
-        result = _bounded_run([self.docker, *args], timeout=timeout)
+        safety = getattr(self, "safety", None)
+        result = _bounded_run(
+            [self.docker, *args], timeout=safety.timeout(timeout) if safety else timeout
+        )
         if result.returncode != 0:
             raise DockerRuntimeError("Docker rejected the restricted egress topology")
         return result
@@ -1120,7 +1200,7 @@ class RestrictedEgressNetwork:
                 str(ROOT / "runtime" / "egress.Dockerfile"),
                 str(REPO),
             ],
-            timeout=120,
+            timeout=self.safety.timeout(120) if getattr(self, "safety", None) else 120,
         )
         if build.returncode != 0:
             raise DockerRuntimeError("Could not build the restricted egress proxy image")
@@ -1302,12 +1382,18 @@ class RestrictedEgressNetwork:
         """Remove the sidecar and both networks; false means the lease must remain held."""
         success = True
         if self._created_container:
-            stopped = _bounded_run([self.docker, "rm", "--force", self.proxy_container], timeout=20)
+            stopped = _bounded_run(
+                [self.docker, "rm", "--force", self.proxy_container],
+                timeout=self.safety.timeout(20) if getattr(self, "safety", None) else 20,
+            )
             success = stopped.returncode == 0 and success
             if stopped.returncode == 0:
                 self._created_container = False
         for name in reversed(self._created_networks):
-            removed = _bounded_run([self.docker, "network", "rm", name], timeout=20)
+            removed = _bounded_run(
+                [self.docker, "network", "rm", name],
+                timeout=self.safety.timeout(20) if getattr(self, "safety", None) else 20,
+            )
             success = removed.returncode == 0 and success
             if removed.returncode == 0:
                 self._created_networks.remove(name)

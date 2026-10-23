@@ -9,9 +9,9 @@ from __future__ import annotations
 
 import importlib.util
 import os
+import re
 import stat
 import tempfile
-import threading
 from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
@@ -31,6 +31,7 @@ def _load(path: Path, name: str):
 
 
 contract = _load(Path(__file__).with_name("executor_contract.py"), "r01_lifecycle_contract")
+safety_lib = _load(Path(__file__).with_name("lifecycle_safety.py"), "r01_lifecycle_safety")
 
 
 def validate_artifact_workspace(workspace: Path, *, max_bytes: int) -> dict[str, Path]:
@@ -118,6 +119,8 @@ class R01ALifecycleController:
         max_artifact_bytes: int = 8 << 20,
         synthetic_mode: bool = False,
         trial_timeout_seconds: float = 900,
+        safety_factory=None,
+        audit_writer=None,
     ):
         self.client = client
         self.runtime = runtime
@@ -137,27 +140,154 @@ class R01ALifecycleController:
         if not 0 < trial_timeout_seconds <= 900:
             raise LifecycleError("Trial deadline must be at most 900 seconds")
         self.trial_timeout_seconds = trial_timeout_seconds
+        self.safety_factory = safety_factory
+        self.audit_writer = audit_writer or safety_lib.private_write
+        self._lease = None
+        self._record = None
 
     def run_one(self, *, context: dict, authorization: dict, state_directory: Path) -> dict:
+        if context.get("trial_id") != "R01-A" or context.get("expected_tools") != []:
+            raise LifecycleError("Only the fixed R01-A baseline is supported")
+        if self.synthetic_mode is not bool(getattr(self.client, "synthetic", False)):
+            raise LifecycleError("Synthetic mode must match the controller client")
+        if self.safety_factory:
+            self.safety = self.safety_factory(state_directory, context, self.synthetic_mode)
+        else:
+            try:
+                journal = safety_lib.Journal(
+                    state_directory,
+                    context.get("attempt_id", "R01-A/attempt-1"),
+                    synthetic=self.synthetic_mode,
+                )
+            except safety_lib.EvidenceError as exc:
+                raise LifecycleError(
+                    "Lifecycle verification gates require durable private evidence"
+                ) from exc
+            self.safety = safety_lib.LifecycleSafety(
+                journal, task_seconds=self.trial_timeout_seconds
+            )
+        for component in (self.client, self.runtime, self.topology):
+            component.safety = self.safety
+        failure = None
+        record = None
+        try:
+            record = self._run_one(
+                context=context, authorization=authorization, state_directory=state_directory
+            )
+        except BaseException as exc:
+            failure = exc
+            record = (
+                getattr(exc, "audit_record", None)
+                or self._record
+                or {
+                    "record_type": "synthetic_r01a_lifecycle_audit_not_benchmark_result"
+                    if self.synthetic_mode
+                    else "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
+                    "synthetic": self.synthetic_mode,
+                    "trial_id": "R01-A",
+                    "attempt_id": context.get("attempt_id", "R01-A/attempt-1"),
+                    "cleanup_verified": False,
+                    "failure_category": "preparation_failed",
+                    "failure": {
+                        "operation": "preparation",
+                        "category": "preparation_failed",
+                        "reason_code": "deadline_expired"
+                        if getattr(exc, "phase", None)
+                        else "operation_failed",
+                    },
+                }
+            )
+            if not getattr(exc, "audit_record", None):
+                record["cleanup_verified"] = False
+                record["controller_secondary_failure"] = "local_controller_failure"
+            record.setdefault("primary_failure_classification", record.get("failure_category"))
+        record["deadline_transitions"] = list(self.safety.transitions)
+        record["expired_phases"] = list(self.safety.timeouts)
+        record["unfinished_operations_uncertain"] = self.safety.abandoned
+        record["journal_directory_fsync_supported"] = self.safety.journal.directory_sync
+        record["journal_reference"] = self.safety.journal.path.name
+        record["automatic_next_trial_authorized"] = False
+        record["evidence_commit_requires_journal"] = True
+        try:
+            inspection = safety_lib.inspect_journal(self.safety.journal.path)
+            incomplete_evidence = bool(
+                inspection["pending_operations"]
+                or inspection["invalid_record"]
+                or inspection["incomplete_tail"]
+            )
+        except (OSError, safety_lib.EvidenceError):
+            incomplete_evidence = True
+            self.safety.evidence_failed = True
+        if incomplete_evidence:
+            record["cleanup_verified"] = False
+        if self.safety.abandoned or self.safety.evidence_failed:
+            record["cleanup_verified"] = False
+        try:
+            sealed_record = contract.sanitize_reference_data(
+                record, secrets=(self.environment_key, getattr(self.client, "_key", ""))
+            )
+            final_path = self.safety.journal.path.with_suffix(".audit.json")
+            evidence_flow = safety_lib.Flow("postprocess", 60, self.safety.clock)
+            self.safety.call(
+                lambda: self.safety.effect(
+                    "audit_persist", lambda: self.audit_writer(final_path, sealed_record)
+                ),
+                flow=evidence_flow,
+            )
+        except BaseException:
+            record["cleanup_verified"] = False
+            record["evidence_failure"] = "final_audit_not_durable"
+            failure = failure or LifecycleError("Final audit could not be made durable")
+        if self._lease is not None and record.get("cleanup_verified"):
+
+            def release_lease():
+                self._lease.mark_cleanup_verified()
+                self._lease.__exit__(None, None, None)
+
+            try:
+                self.safety.call(
+                    lambda: self.safety.effect("lease_release", release_lease),
+                    flow=evidence_flow,
+                )
+            except BaseException:
+                record["cleanup_verified"] = False
+                record.setdefault("cleanup_failures", []).append("lease_release_unverified")
+                failure = failure or LifecycleError("Lease release could not be made durable")
+        record["unfinished_operations_uncertain"] = self.safety.abandoned
+        record["expired_phases"] = list(self.safety.timeouts)
+        if not self.safety.abandoned:
+            self.safety.journal.close()
+        if failure is not None or not record.get("cleanup_verified"):
+            error = LifecycleError("Cleanup or executor termination/evidence requires review")
+            error.audit_record = record
+            raise error from failure
+        return record
+
+    def _run_one(self, *, context: dict, authorization: dict, state_directory: Path) -> dict:
         if context.get("trial_id") != "R01-A" or context.get("expected_tools") != []:
             raise LifecycleError("This controller accepts only the fixed R01-A baseline")
         if self.synthetic_mode is not bool(getattr(self.client, "synthetic", False)):
             raise LifecycleError("Synthetic mode must match the injected controller client")
-        gates = self.current_live_gates()
-        if not self.synthetic_mode and (
-            not isinstance(gates, dict)
-            or not gates
-            or any(value is not True for value in gates.values())
-        ):
-            raise LifecycleError("Live verification gates are incomplete")
-        self.authorize(authorization, context)
-        if not self.environment_key:
-            raise LifecycleError("Restricted executor environment key is unavailable")
-        workspace = Path(context["workspace"]).resolve(strict=True)
-        task_path = workspace / "TASK.md"
-        task_text = task_path.read_text(encoding="utf-8")
-        if len(task_text.encode("utf-8")) > (1 << 20):
-            raise LifecycleError("Public task input exceeds the size limit")
+
+        def prepare():
+            gates = self.current_live_gates()
+            if not self.synthetic_mode and (
+                not isinstance(gates, dict)
+                or not gates
+                or any(value is not True for value in gates.values())
+            ):
+                raise LifecycleError("Live verification gates are incomplete")
+            self.authorize(authorization, context)
+            if not self.environment_key:
+                raise LifecycleError("Restricted executor environment key is unavailable")
+            workspace = Path(context["workspace"]).resolve(strict=True)
+            task_path = workspace / "TASK.md"
+            task_text = task_path.read_text(encoding="utf-8")
+            if len(task_text.encode("utf-8")) > (1 << 20):
+                raise LifecycleError("Public task input exceeds the size limit")
+            return gates, workspace, task_text
+
+        gates, workspace, task_text = self.safety.call(prepare)
 
         record = {
             "record_type": (
@@ -208,17 +338,18 @@ class R01ALifecycleController:
             "task_submission_outcome": "not_attempted",
             "cleanup_failures": [],
         }
+        self._record = record
         session_id = container_id = None
         lease = self.lease_factory("R01-A")
+        self._lease = lease
+        lease.safety = self.safety
+        lease_acquired = False
         session_deleted = False
         container_removed = False
         stream_connected = False
         turn_completed = False
         primary_error = None
         current_operation = "prepare"
-        deadline_timer = None
-        deadline_expired = threading.Event()
-        deadline_termination_verified = []
         executor_cleanup_unverified = False
 
         def refresh_client_state():
@@ -275,11 +406,19 @@ class R01ALifecycleController:
             record["states"].append({"state": name, "at": datetime.now(UTC).isoformat()})
 
         try:
-            lease.__enter__()
+            self.safety.call(lease.__enter__)
+            lease_acquired = True
             state("prepare")
             current_operation = "consume_authorization"
             state("consume_authorization")
-            self.consume_authorization(authorization, context, state_directory, lease=lease)
+            self.safety.call(
+                lambda: self.safety.effect(
+                    "authorization_consumption",
+                    lambda: self.consume_authorization(
+                        authorization, context, state_directory, lease=lease
+                    ),
+                )
+            )
             current_operation = "authorize"
             self.ledger.authorize_one(
                 "R01-A",
@@ -288,7 +427,9 @@ class R01ALifecycleController:
             )
             state("authorize")
             current_operation = "start_restricted_egress"
-            gateway = self.topology.start()
+            gateway = self.safety.call(
+                lambda: self.safety.effect("topology_start", self.topology.start)
+            )
             if not getattr(self.topology, "started", False):
                 raise LifecycleError("Restricted egress topology did not verify as active")
             record["restricted_egress"] = {
@@ -303,7 +444,12 @@ class R01ALifecycleController:
             record["session_creation_attempted"] = True
             record["session_creation_uncertain"] = True
             record["session_creation_outcome"] = "attempted"
-            session = self.client.create_session(context)
+            self.safety.transition("session_creation")
+            session = self.safety.call(
+                lambda: self.safety.effect(
+                    "session_create", lambda: self.client.create_session(context)
+                )
+            )
             session_id = session["session_id"]
             record["resolved_session"] = session.get("resolved_agent")
             record["session_created"] = True
@@ -314,6 +460,7 @@ class R01ALifecycleController:
 
             def start_executor():
                 nonlocal container_id, executor_cleanup_unverified, current_operation
+                self.safety.check()
                 state("start_executor")
                 record["executor_startup_attempted"] = True
                 try:
@@ -333,32 +480,20 @@ class R01ALifecycleController:
                 container_id = started["container_id"]
                 record["executor_process_started"] = True
                 current_operation = "await_executor_connection"
+                self.safety.transition("connection")
 
             def connected():
-                nonlocal stream_connected, deadline_timer
+                nonlocal stream_connected
+                self.safety.check()
+                self.safety.transition("task")
                 stream_connected = True
                 record["executor_connection_observed"] = True
                 state("establish_connection")
                 state("submit_task")
-                # The HTTP client marks the attempt immediately before POST.
-                # A connected event alone is not a task-submission attempt.
-
-                def terminate_at_deadline():
-                    deadline_expired.set()
-                    record["deadline_expired"] = True
-                    try:
-                        deadline_termination_verified.append(
-                            bool(container_id and self.runtime.stop_managed_executor(container_id))
-                        )
-                    except Exception:
-                        deadline_termination_verified.append(False)
-
-                deadline_timer = threading.Timer(self.trial_timeout_seconds, terminate_at_deadline)
-                deadline_timer.daemon = True
-                deadline_timer.start()
 
             def task_submitted():
                 nonlocal current_operation
+                self.safety.check()
                 if record["inference_submitted"]:
                     raise LifecycleError("Only one task submission is permitted for R01-A")
                 record["inference_submitted"] = True
@@ -369,14 +504,20 @@ class R01ALifecycleController:
                 current_operation = "stream_events"
 
             state("stream_events")
-            for event in self.client.send_and_stream(
+            self.safety.transition("startup")
+            events = self.client.send_and_stream(
                 session_id,
                 task_text,
                 deadline_seconds=self.trial_timeout_seconds,
                 on_stream_ready=start_executor,
                 on_environment_connected=connected,
                 on_task_submitted=task_submitted,
-            ):
+            )
+            while True:
+                try:
+                    event = self.safety.call(lambda: next(events))
+                except StopIteration:
+                    break
                 record["events"].append(
                     contract.sanitize_reference_data(event, secrets=(self.environment_key,))
                 )
@@ -393,14 +534,16 @@ class R01ALifecycleController:
                     break
             if not stream_connected:
                 raise LifecycleError("Executor connection was not observed")
-            if deadline_expired.is_set():
-                raise LifecycleError("Trial reached its hard execution deadline")
+            self.safety.check()
             if not turn_completed:
                 raise LifecycleError("Agent turn did not complete successfully")
             state("finish")
         except BaseException as exc:
             primary_error = exc
             refresh_client_state()
+            if getattr(exc, "diagnostics", {}).get("category") == "deadline_expired":
+                record["expired_phase"] = exc.phase
+                record["deadline_expired"] = exc.phase == "task"
             diagnostics = getattr(exc, "diagnostics", None)
             if isinstance(diagnostics, dict) and diagnostics.get("category") == "docker_runtime":
                 record["failure"] = contract.project_runtime_diagnostics(diagnostics)
@@ -447,22 +590,34 @@ class R01ALifecycleController:
             record["primary_failure_classification"] = record["failure_category"]
         finally:
             refresh_client_state()
-            if deadline_timer is not None:
-                deadline_timer.cancel()
-                if deadline_timer.is_alive():
-                    deadline_timer.join(timeout=25)
-            if deadline_expired.is_set():
-                record["deadline_termination_verified"] = bool(
-                    deadline_termination_verified and deadline_termination_verified[-1]
-                )
-            if session_id and record["session_created"] and primary_error is not None:
+            if (
+                session_id is None
+                and getattr(primary_error, "diagnostics", {}).get("category") == "deadline_expired"
+            ):
+                reported_id = getattr(self.client, "session_id_for_cleanup", None)
+                if isinstance(reported_id, str) and re.fullmatch(
+                    r"[A-Za-z0-9_-]{1,128}", reported_id
+                ):
+                    session_id = reported_id
+            if (
+                session_id
+                and record["session_created"]
+                and primary_error is not None
+                and getattr(self.client, "session_deletion_verified", None) is not True
+            ):
                 try:
-                    self.client.cancel_turn(session_id)
+                    self.safety.cleanup(
+                        "cancellation", lambda: self.client.cancel_turn(session_id), cap=10
+                    )
                 except Exception:
-                    pass
+                    record["cleanup_failures"].append("cancellation_unverified")
             if container_id:
                 try:
-                    container_removed = self.runtime.stop_managed_executor(container_id)
+                    container_removed = self.safety.cleanup(
+                        "executor_terminate",
+                        lambda: self.runtime.stop_managed_executor(container_id),
+                        cap=20,
+                    )
                 except Exception:
                     container_removed = False
             else:
@@ -470,6 +625,8 @@ class R01ALifecycleController:
             if not container_removed:
                 record["cleanup_failures"].append("container_removal_unverified")
             record["container_termination_verified"] = container_removed
+            if record["deadline_expired"]:
+                record["deadline_termination_verified"] = container_removed
             record["session_state"] = getattr(
                 self.client,
                 "session_state",
@@ -484,7 +641,9 @@ class R01ALifecycleController:
                 session_deleted = client_deletion_status is True
             elif session_id:
                 try:
-                    self.client.delete_session(session_id)
+                    self.safety.cleanup(
+                        "session_delete", lambda: self.client.delete_session(session_id), cap=15
+                    )
                     session_deleted = True
                 except Exception:
                     session_deleted = False
@@ -495,11 +654,13 @@ class R01ALifecycleController:
             client_close = getattr(self.client, "close", None)
             if callable(client_close):
                 try:
-                    client_close()
+                    self.safety.cleanup("session_delete", client_close, cap=5)
                 except Exception:
                     session_deleted = False
             try:
-                topology_removed = self.topology.cleanup()
+                topology_removed = self.safety.cleanup(
+                    "topology_cleanup", self.topology.cleanup, cap=15
+                )
             except Exception:
                 topology_removed = False
             if session_deleted is False:
@@ -507,10 +668,13 @@ class R01ALifecycleController:
             if not topology_removed:
                 record["cleanup_failures"].append("topology_cleanup_unverified")
             cleanup_ok = (
-                container_removed
+                lease_acquired
+                and container_removed
                 and session_deleted is True
                 and topology_removed
                 and not record["session_creation_uncertain"]
+                and not self.safety.abandoned
+                and not self.safety.evidence_failed
             )
             record["cleanup_verified"] = cleanup_ok
             record["session_deleted_verified"] = session_deleted
@@ -524,7 +688,7 @@ class R01ALifecycleController:
             if self.ledger.active_trial_id == "R01-A":
                 state("checkpoint")
                 try:
-                    review = self.checkpoint_review(record)
+                    review = self.safety.review(lambda: self.checkpoint_review(record))
                 except (Exception, KeyboardInterrupt):
                     review = None
                 if isinstance(review, dict):
@@ -548,19 +712,31 @@ class R01ALifecycleController:
         state("terminate_container")
         if primary_error is None:
             try:
-                manifest = _load(
-                    Path(__file__).parents[1] / "runner" / "bench.py", "r01_lifecycle_bench"
+                self.safety.primary = safety_lib.Flow(
+                    "postprocess", self.safety.budgets["postprocess"], self.safety.clock
                 )
-                task = manifest.task_for("R01")
-                validate_artifact_workspace(workspace, max_bytes=self.max_artifact_bytes)
-                state("export_artifacts")
-                with tempfile.TemporaryDirectory(prefix="r01a-sealed-") as directory:
-                    sealed = Path(directory) / "sealed"
-                    record["artifact_hashes"] = manifest.seal_artifacts("R01", workspace, sealed)
-                    if set(record["artifact_hashes"]) != set(task["artifacts"]):
-                        raise LifecycleError("Sealed artifact set differs from the task manifest")
-                    state("score")
-                    record["scoring"] = self.score("R01", sealed, self.frozen_r_image_id)
+
+                def postprocess():
+                    manifest = _load(
+                        Path(__file__).parents[1] / "runner" / "bench.py", "r01_lifecycle_bench"
+                    )
+                    task = manifest.task_for("R01")
+                    validate_artifact_workspace(workspace, max_bytes=self.max_artifact_bytes)
+                    state("export_artifacts")
+                    with tempfile.TemporaryDirectory(prefix="r01a-sealed-") as directory:
+                        sealed = Path(directory) / "sealed"
+                        record["artifact_hashes"] = manifest.seal_artifacts(
+                            "R01", workspace, sealed
+                        )
+                        if set(record["artifact_hashes"]) != set(task["artifacts"]):
+                            raise LifecycleError(
+                                "Sealed artifact set differs from the task manifest"
+                            )
+                        self.safety.check()
+                        state("score")
+                        record["scoring"] = self.score("R01", sealed, self.frozen_r_image_id)
+
+                self.safety.call(postprocess)
             except Exception as exc:
                 primary_error = exc
                 record["failure_category"] = type(exc).__name__
@@ -577,7 +753,7 @@ class R01ALifecycleController:
         if self.ledger.active_trial_id == "R01-A":
             state("checkpoint")
             try:
-                review = self.checkpoint_review(record)
+                review = self.safety.review(lambda: self.checkpoint_review(record))
             except (Exception, KeyboardInterrupt):
                 review = None
             if isinstance(review, dict):
@@ -602,6 +778,4 @@ class R01ALifecycleController:
                 else "completed_one_trial_checkpoint_required_for_next"
             )
         record["automatic_next_trial_authorized"] = False
-        lease.mark_cleanup_verified()
-        lease.__exit__(type(primary_error) if primary_error else None, primary_error, None)
         return record

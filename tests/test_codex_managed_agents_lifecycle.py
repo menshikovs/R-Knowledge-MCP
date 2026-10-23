@@ -393,11 +393,17 @@ def test_deadline_watchdog_terminates_executor_and_requires_checkpoint(tmp_path)
     controller, client, runtime, topology, _ledger, _leases = make_controller(workspace, delay=0.05)
     controller.trial_timeout_seconds = 0.01
     context = {"trial_id": "R01-A", "expected_tools": [], "workspace": str(workspace)}
-    report = controller.run_one(
-        context=context,
-        authorization={"synthetic": True},
-        state_directory=tmp_path / "state",
-    )
+    with pytest.raises(lifecycle.LifecycleError) as caught:
+        controller.run_one(
+            context=context,
+            authorization={"synthetic": True},
+            state_directory=tmp_path / "state",
+        )
+    report = caught.value.audit_record
+    # The deliberately uncooperative fake stream can still be running after
+    # candidate termination; that uncertainty must retain the lease.
+    assert report["unfinished_operations_uncertain"] is True
+    assert report["cleanup_verified"] is False
     assert report["deadline_expired"] is True
     assert report["deadline_termination_verified"] is True
     assert report["checkpoint"] is not None

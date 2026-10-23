@@ -157,7 +157,36 @@ class ManagedAgentsClient:
         self._submitted_sessions: set[str] = set()
         self._last_response_status: int | None = None
 
-    def _request_json(
+    def _request_json(self, method, path, *, body=None, headers=None, operation=None):
+        safety = getattr(self, "safety", None)
+        effects = {"create_session": "session_create", "submit_task": "task_submit"}
+        significant = effects.get(operation)
+        if method == "DELETE":
+            significant = "session_delete"
+        elif method == "POST" and isinstance(body, dict):
+            events = body.get("events", [])
+            if events and events[0].get("type") == "agent.session.input.cancel":
+                significant = "cancellation"
+
+        def raw_request():
+            return self._request_json_impl(
+                method, path, body=body, headers=headers, operation=operation
+            )
+
+        def request():
+            if safety is not None:
+                return safety.io(
+                    raw_request,
+                    cap=15,
+                    phase="task_submission" if significant == "task_submit" else None,
+                )
+            return raw_request()
+
+        if safety is not None and significant:
+            return safety.effect(significant, request)
+        return request()
+
+    def _request_json_impl(
         self,
         method: str,
         path: str,
@@ -170,8 +199,17 @@ class ManagedAgentsClient:
             raise ManagedAgentsError("Refused a non-protocol API route")
         self._last_response_status = None
         try:
-            with self._client.stream(method, path, json=body, headers=headers) as response:
+            safety = getattr(self, "safety", None)
+            timeout = safety.timeout(15) if safety is not None else self._client.timeout
+            with self._client.stream(
+                method, path, json=body, headers=headers, timeout=timeout
+            ) as response:
                 self._last_response_status = response.status_code
+                if operation == "create_session" and response.is_success:
+                    # Stable creation evidence must not be overwritten by a
+                    # concurrent teardown request after a controller deadline.
+                    self.session_creation_response_received = True
+                    self.session_creation_http_status = response.status_code
                 if response.is_redirect:
                     raise ManagedAgentsError(
                         "Managed Agents API redirects are not accepted",
@@ -188,6 +226,8 @@ class ManagedAgentsClient:
                     )
                 content = bytearray()
                 for chunk in response.iter_bytes():
+                    if safety is not None:
+                        safety.check()
                     if len(content) + len(chunk) > MAX_API_RESPONSE_BYTES:
                         raise ManagedAgentsError(
                             "Managed Agents API response exceeded the size limit",
@@ -243,15 +283,17 @@ class ManagedAgentsClient:
             record = self._request_json(
                 "POST", "/v1/agents/sessions", body=config, operation="create_session"
             )
-        except ManagedAgentsError:
-            status = self._last_response_status
+        except Exception:
+            status = self.session_creation_http_status or self._last_response_status
             if status is not None and 200 <= status < 300:
                 self.session_creation_response_received = True
                 self.session_creation_http_status = status
             self.session_state = "unknown" if self.session_creation_uncertain else "not_created"
             raise
         self.session_creation_response_received = True
-        self.session_creation_http_status = self._last_response_status
+        self.session_creation_http_status = (
+            self.session_creation_http_status or self._last_response_status
+        )
         self.session_state = "created_unvalidated"
         session_id = record.get("id") if isinstance(record, dict) else None
         if isinstance(session_id, str) and SESSION_ID.fullmatch(session_id):
@@ -273,7 +315,7 @@ class ManagedAgentsClient:
         except ManagedAgentsError as exc:
             exc.diagnostics.update(
                 operation="create_session",
-                http_status=exc.diagnostics.get("http_status") or self._last_response_status,
+                http_status=exc.diagnostics.get("http_status") or self.session_creation_http_status,
                 category=(
                     exc.diagnostics.get("category")
                     if exc.diagnostics.get("category") != "managed_agents_error"
@@ -286,7 +328,7 @@ class ManagedAgentsClient:
             if isinstance(session_id, str) and SESSION_ID.fullmatch(session_id):
                 try:
                     self.delete_session(session_id)
-                except ManagedAgentsError as cleanup_error:
+                except Exception as cleanup_error:
                     self.session_deletion_verified = False
                     self.session_state = "unknown"
                     exc.diagnostics.update(
@@ -333,6 +375,8 @@ class ManagedAgentsClient:
         key = idempotency_key or uuid.uuid4().hex
         if not re.fullmatch(r"[A-Za-z0-9_-]{16,128}", key):
             raise ManagedAgentsError("Idempotency key is invalid")
+        if getattr(self, "safety", None) is not None:
+            self.safety.check()
         self._submitted_sessions.add(session_id)
         self.task_submission_attempted = True
         self.task_submission_uncertain = True
@@ -381,6 +425,10 @@ class ManagedAgentsClient:
             raise ManagedAgentsError("Idempotency key is invalid")
         path = f"/v1/agents/sessions/{session_id}/events"
         deadline = time.monotonic() + deadline_seconds
+        safety = getattr(self, "safety", None)
+        stream_timeout = (
+            safety.timeout(deadline_seconds) if safety is not None else deadline_seconds
+        )
         seen = 0
         logged_bytes = 0
         pending: list[str] = []
@@ -393,10 +441,13 @@ class ManagedAgentsClient:
                 params={"stream": "true"},
                 headers={"Accept": "text/event-stream"},
                 timeout=httpx.Timeout(
-                    connect=15,
-                    read=deadline_seconds,
-                    write=15,
-                    pool=15,
+                    connect=min(15, stream_timeout),
+                    # The controller watchdog enforces the current absolute
+                    # phase even with no lines. Do not freeze startup's short
+                    # read timeout into the later, separately budgeted task.
+                    read=deadline_seconds if safety is not None else stream_timeout,
+                    write=min(15, stream_timeout),
+                    pool=min(15, stream_timeout),
                 ),
             ) as stream:
                 if stream.is_redirect:
@@ -407,11 +458,15 @@ class ManagedAgentsClient:
                     )
                 if "text/event-stream" not in stream.headers.get("content-type", "").lower():
                     raise ManagedAgentsError("Managed Agents returned a non-SSE event stream")
+                if safety is not None:
+                    safety.check()
                 if on_stream_ready is not None:
                     on_stream_ready()
                 submitted = False
                 for line in stream.iter_lines():
-                    if time.monotonic() > deadline:
+                    if safety is not None:
+                        safety.check()
+                    if safety is None and time.monotonic() > deadline:
                         raise ManagedAgentsError("Managed Agents turn exceeded its deadline")
                     if line.startswith("data:"):
                         data = line[5:].lstrip()

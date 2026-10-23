@@ -1384,6 +1384,7 @@ def test_live_controller_factory_uses_existing_components_and_keeps_keys_control
     monkeypatch.setenv("OPENAI_API_KEY", "synthetic-controller-key")
     monkeypatch.setenv("OPENAI_EXECUTOR_API_KEY", "synthetic-restricted-key")
     instances = {}
+    verified = []
 
     class FakeRuntime:
         docker = "docker"
@@ -1392,6 +1393,7 @@ def test_live_controller_factory_uses_existing_components_and_keeps_keys_control
             assert image_id == image
 
         def verify_candidate_image(self):
+            verified.append("candidate")
             return {"image_id": image}
 
         def _validate_workspace(self, path):
@@ -1403,6 +1405,7 @@ def test_live_controller_factory_uses_existing_components_and_keeps_keys_control
             assert image_id == "sha256:" + "c" * 64
 
         def verify_engine_and_image(self):
+            verified.append("scorer")
             return {"image_id": "sha256:" + "c" * 64}
 
     class FakeTopology:
@@ -1442,6 +1445,8 @@ def test_live_controller_factory_uses_existing_components_and_keeps_keys_control
     monkeypatch.setattr(adapter, "_load_module", load_module)
     controller = adapter._make_live_controller(context, authorization, state)
     assert isinstance(controller, FakeLifecycle)
+    assert verified == []  # Verification belongs to the bounded preparation phase.
+    instances["runtime"].safety = object()  # Normally attached by the real controller.
     assert instances["current_live_gates"]() == {
         "docker_candidate_image": True,
         "frozen_r_scorer_image": True,
@@ -1451,6 +1456,7 @@ def test_live_controller_factory_uses_existing_components_and_keeps_keys_control
         "restricted_environment_key_scope_operator_attested": True,
         "condition_a_zero_tools": True,
     }
+    assert verified == ["candidate", "scorer"]
     assert instances["environment_key"] == "synthetic-restricted-key"
     assert instances["client"].synthetic is False
     assert instances["trial_timeout_seconds"] == 900
