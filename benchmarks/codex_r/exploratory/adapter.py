@@ -33,6 +33,19 @@ if _PILOT_SPEC is None or _PILOT_SPEC.loader is None:
     raise RuntimeError("Exploratory pilot module could not be loaded")
 pilot = importlib.util.module_from_spec(_PILOT_SPEC)
 _PILOT_SPEC.loader.exec_module(pilot)
+
+
+def _load_controller():
+    spec = importlib.util.spec_from_file_location(
+        "codex_r_single_trial_controller", ROOT / "runner" / "controller.py"
+    )
+    if spec is None or spec.loader is None:
+        raise AdapterError("Benchmark controller could not be loaded")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 CONTROLLER_VERSION = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
 MAX_EVENT_LINE_BYTES = 1 << 20
 MAX_EVENT_STREAM_BYTES = 32 << 20
@@ -134,9 +147,9 @@ def build_trial_context(plan: dict, trial_id: str, workspace: Path | None = None
     }
     if workspace is not None:
         try:
-            from controller import validate_public_workspace
-
-            workspace_report = validate_public_workspace(workspace, selected["task"])
+            workspace_report = _load_controller().validate_public_workspace(
+                workspace, selected["task"]
+            )
         except (OSError, ValueError) as exc:
             raise AdapterError("Candidate workspace failed public-input validation") from exc
         if workspace_report["boundary_verified"] is not False:
@@ -636,6 +649,13 @@ def main(argv=None) -> int:
     prepare_parser.add_argument("--workspace", type=Path, required=True)
     dry_parser = sub.add_parser("dry-run")
     dry_parser.add_argument("--timeout-seconds", type=float, default=0.25)
+    docker_parser = sub.add_parser("docker-isolation")
+    docker_parser.add_argument("--trial", required=True, choices=["R01-A"])
+    docker_parser.add_argument("--image", required=True)
+    docker_parser.add_argument("--workspace", type=Path, required=True)
+    docker_timeout_parser = sub.add_parser("docker-timeout-probe")
+    docker_timeout_parser.add_argument("--image", required=True)
+    docker_timeout_parser.add_argument("--timeout-seconds", type=float, default=1.0)
     run_parser = sub.add_parser("run-one")
     run_parser.add_argument("--trial", required=True)
     run_parser.add_argument("--authorization", type=Path, required=True)
@@ -652,6 +672,19 @@ def main(argv=None) -> int:
         elif args.command == "dry-run":
             result = run_local_timeout_probe(args.timeout_seconds)
             code = 0 if result["timed_out"] and result["process_exited"] else 2
+        elif args.command in {"docker-isolation", "docker-timeout-probe"}:
+            from docker_runtime import DockerCandidateRuntime
+
+            runtime = DockerCandidateRuntime(args.image)
+            if args.command == "docker-isolation":
+                result = runtime.run_boundary_probe(args.workspace, trial_id=args.trial)
+            else:
+                result = runtime.run_timeout_probe(timeout_seconds=args.timeout_seconds)
+            code = (
+                0
+                if result.get("container_cleanup_verified", result.get("container_removed"))
+                else 2
+            )
         else:
             authorization = json.loads(args.authorization.read_text(encoding="utf-8"))
             run_one(
@@ -661,7 +694,14 @@ def main(argv=None) -> int:
                 state_directory=args.state_directory,
             )
             raise AdapterError("Unexpected return from blocked run-one gate")
-    except (AdapterError, pilot.PilotError, OSError, json.JSONDecodeError, KeyError) as exc:
+    except (
+        AdapterError,
+        pilot.PilotError,
+        OSError,
+        RuntimeError,
+        json.JSONDecodeError,
+        KeyError,
+    ) as exc:
         result = {"record_type": "single_trial_preflight_error", "error": redact(str(exc))}
         code = 2
     payload = json.dumps(redact(result), indent=2, ensure_ascii=False) + "\n"

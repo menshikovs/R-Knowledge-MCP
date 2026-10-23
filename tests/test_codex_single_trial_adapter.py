@@ -46,6 +46,22 @@ def test_trial_context_binds_fixed_model_condition_tools_and_inputs():
         adapter.build_trial_context(plan, "R99-A")
 
 
+def test_prepare_workspace_exports_only_public_r01_inputs(tmp_path):
+    workspace = tmp_path / "public-R01"
+    report = adapter.prepare_workspace("R01", workspace)
+    assert report["record_type"] == "public_candidate_workspace_prepared_not_isolation_proof"
+    assert report["boundary_verified"] is False
+    assert report["files"] == ["TASK.md", "data/records.csv", "renv.lock"]
+    assert (
+        sorted(
+            path.relative_to(workspace).as_posix()
+            for path in workspace.rglob("*")
+            if path.is_file()
+        )
+        == report["files"]
+    )
+
+
 def test_preflight_is_honest_and_never_ready_without_isolation_and_access():
     row = pilot.make_plan()["trials"][0]
     context = adapter.build_trial_context(pilot.make_plan(), row["trial_id"])
