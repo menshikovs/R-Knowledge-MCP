@@ -35,7 +35,11 @@ def context(**overrides):
 def session_record(remote_url="https://api.openai.com/v1/agents/api"):
     return {
         "id": "sess_test123",
-        "agent": {"model": "gpt-6-luna", "reasoning": {"effort": "medium"}},
+        "agent": {
+            "model": "gpt-6-luna",
+            "reasoning": {"effort": "medium"},
+            "tools": [],
+        },
         "environment": {
             "id": "env_test123",
             "type": "self_hosted",
@@ -123,13 +127,17 @@ def test_managed_agents_mock_uses_fixed_routes_and_keeps_app_key_controller_side
         "http://api.openai.com/v1/agents/api",
         "https://evil.example/v1/agents/api",
         "https://api.openai.com.attacker.example/v1/agents/api",
-        "https://api.openai.com/v1/agents/api?redirect=https://evil.example",
         "https://user:pass@api.openai.com/v1/agents/api",
     ],
 )
 def test_executor_remote_url_cannot_select_an_arbitrary_host(remote_url):
     with pytest.raises(ManagedAgentsError):
         validate_environment_record(session_record(remote_url))
+
+
+def test_executor_remote_url_is_passed_through_without_rewriting():
+    signed = "https://api.openai.com/v1/agents/api?route=opaque-server-token"
+    assert validate_environment_record(session_record(signed))["remote_url"] == signed
 
 
 def test_managed_agents_reject_redirects_and_oversized_responses():
@@ -153,8 +161,15 @@ def test_managed_agents_reject_redirects_and_oversized_responses():
 def test_sse_subscription_precedes_submission_and_redacts_credentials():
     requests = []
     payload = {
+        "type": "agent.session.environment.connected",
+        "remote_url": "https://api.openai.com/v1/agents/api?secret=signed-value",
+    }
+    completed = {
         "type": "agent.session.turn.completed",
-        "turn": {"subagent_id": None},
+        "turn": {
+            "subagent_id": None,
+            "usage": {"input_tokens": 12, "output_tokens": 4},
+        },
         "access_token": "synthetic-app-secret",
         "output_text": "redact synthetic-app-secret from this fixture",
     }
@@ -165,7 +180,9 @@ def test_sse_subscription_precedes_submission_and_redacts_credentials():
             return httpx.Response(
                 200,
                 headers={"content-type": "text/event-stream"},
-                content=("data: " + json.dumps(payload) + "\n\n").encode(),
+                content=(
+                    "data: " + json.dumps(payload) + "\n\ndata: " + json.dumps(completed) + "\n\n"
+                ).encode(),
             )
         assert request.method == "POST"
         assert request.headers["idempotency-key"] == "trial-message-key-0001"
@@ -185,6 +202,9 @@ def test_sse_subscription_precedes_submission_and_redacts_credentials():
         client.close()
     assert [request.method for request in requests] == ["GET", "POST"]
     assert dict(requests[0].url.params) == {"stream": "true"}
-    assert events[0]["type"] == "agent.session.turn.completed"
-    assert events[0]["access_token"] == "[REDACTED]"
+    assert events[0]["type"] == "agent.session.environment.connected"
+    assert events[0]["remote_url"] == "[REDACTED]"
+    assert events[1]["type"] == "agent.session.turn.completed"
+    assert events[1]["access_token"] == "[REDACTED]"
     assert "synthetic-app-secret" not in json.dumps(events)
+    assert "signed-value" not in json.dumps(events)

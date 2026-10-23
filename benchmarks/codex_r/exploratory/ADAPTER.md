@@ -35,14 +35,22 @@ has the same effective filesystem or tools.
 
 The self-hosted Agents API needs outbound environment registration through
 `api.openai.com` and a registered WebSocket relay on
-`codex-cloud-environments.chatgpt.com`. The current candidate uses
-`network=none`, so it cannot register or connect. A plain hostname CONNECT
-allowlist does not enforce the required API paths, and the relay URL is signed
-and returned dynamically. This branch does not implement a TLS-terminating,
-path-aware trusted proxy or a tested relay broker. Enabling a broad outbound
-route would not meet the protocol's egress requirement. No environment key is
-mounted, no application key is passed to Docker, and no API session was
-created.
+`codex-cloud-environments.chatgpt.com`. A real Codex 0.163.0 `exec-server`
+was run in an internal Docker network against a local fake proxy: it issued
+`CONNECT api.openai.com:443`, received a synthetic 403, and made no upstream
+connection. A Docker candidate probe also confirmed that direct public IP,
+metadata IP, arbitrary-domain, and non-443 proxy access are denied. These
+checks verify transport selection and denial behavior only; they do not verify
+TLS, WSS, registration, or account/model access.
+
+`egress_proxy.py` accepts CONNECT only for the exact documented hosts
+`api.openai.com:443` and `codex-cloud-environments.chatgpt.com:443`. It
+resolves names on the proxy side, rejects private/non-global DNS answers, and
+does not intercept TLS or rewrite `remote_url`. The candidate has no DNS route
+and joins only Docker's internal isolated-gateway network. The proxy alone
+joins that network and a normal outbound bridge. This enforces host and port,
+not encrypted HTTP paths; dynamic signed relay target validation and live WSS
+compatibility remain unverified.
 
 `managed_agents.py` contains the fixed R01-A/GPT-6 Luna/medium session request,
 controller-side HTTPX calls for session creation, event submission/streaming,
@@ -52,9 +60,9 @@ redaction. The SSE client subscribes using the documented
 `/v1/agents/sessions/{id}/events?stream=true` route before submitting input.
 Tests use `httpx.MockTransport` and synthetic values only. They do not establish
 API-account model access. Session creation and turn execution were never
-called. Existing adapter `run-one` stays fail-closed; the full session
-lifecycle is not connected to artifact sealing, scoring, the balance
-checkpoint, or an egress broker.
+called. Existing adapter `run-one` stays fail-closed; session lifecycle,
+artifact sealing, scoring and balance checkpoint are not wired into an
+end-to-end runner.
 
 Authorization records now require and bind the immutable candidate image ID
 and a fingerprint of the Codex Docker recipe/runtime policy, in addition to the
@@ -79,9 +87,10 @@ Consequently this change does not invent a proxy setting, terminate TLS, or
 allow unrestricted CONNECT. A TCP/TLS pass-through can constrain destination
 hosts but cannot inspect encrypted HTTP paths. TLS termination would require
 the candidate to trust an interception certificate and would violate the
-normal certificate-validation boundary. The candidate stays on Docker
-`network=none`; no HTTPS/WSS route is enabled. The local Docker probe remains
-the verified negative evidence for direct egress denial, not a relay test.
+normal certificate-validation boundary. The candidate is confined to the
+internal isolated-gateway network; the only outbound path is the fixed-host
+CONNECT proxy. Local Docker probes verify negative controls and a synthetic
+CONNECT, not a live relay test.
 
 The managed-session API methods are still only tested against synthetic
 HTTPX responses. No session has been created, so the actual `remote_url`,
@@ -89,13 +98,12 @@ registered executor handshake, API key scope/revocation, model/account access,
 or resolved session settings are not observed. The code does not claim that a
 mock event stream proves executor protocol compatibility.
 
-The currently implemented pieces are not wired into a full trial lifecycle:
-exclusive lease/authorization consumption, live executor connection, task
-submission and cancellation, verified agent termination, allowlisted artifact
-handoff, scorer execution, real usage/spending reconciliation, and the operator
-checkpoint are not joined in an end-to-end runner. No command is presented as
-an offline end-to-end trial because doing so with a fake relay/session/scorer
-would misrepresent the requested evidence. The original scorer and strict
+The implemented pieces are not wired into a full trial lifecycle: exclusive
+lease/authorization consumption, executor connection, task submission and
+cancellation, verified agent termination, allowlisted artifact handoff,
+scorer execution, real usage/spending reconciliation, and the operator
+checkpoint are not joined in an end-to-end runner. Offline probes are labeled
+as tests and never produce trial records. The original scorer and strict
 benchmark files remain untouched.
 
 Condition A's generated Agents API configuration has zero MCP tools. Runtime
@@ -142,10 +150,10 @@ The original strict benchmark, score importer and oracle were not modified.
 
 ## Exact blockers before a real R01-A turn
 
-- A trusted, path-aware endpoint broker and separately verified outbound WSS
-  relay are not implemented. Official OpenAI docs do not specify the required
-  path-aware proxy interface or signed-target validation contract. The
-  candidate currently has no network.
+- A path-aware endpoint broker and separately verified outbound WSS relay are
+  not implemented. The CONNECT proxy enforces exact hosts and port 443 only;
+  it cannot inspect TLS-encrypted API paths or dynamic signed relay targets.
+  Live WSS through this proxy remains unverified.
 - No documented restricted executor environment key was supplied to the
   container, and no Managed Agents session/environment was created.
 - Account-level access to `gpt-6-luna` and the resolved live `medium` setting

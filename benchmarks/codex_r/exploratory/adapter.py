@@ -710,6 +710,12 @@ def main(argv=None) -> int:
     docker_parser.add_argument("--trial", required=True, choices=["R01-A"])
     docker_parser.add_argument("--image", required=True)
     docker_parser.add_argument("--workspace", type=Path, required=True)
+    egress_parser = sub.add_parser("docker-egress-probe")
+    egress_parser.add_argument("--image", required=True)
+    egress_parser.add_argument("--workspace", type=Path, required=True)
+    proxy_probe_parser = sub.add_parser("docker-proxy-probe")
+    proxy_probe_parser.add_argument("--image", required=True)
+    proxy_probe_parser.add_argument("--workspace", type=Path, required=True)
     codex_probe_parser = sub.add_parser("codex-runtime-probe")
     codex_probe_parser.add_argument("--image", required=True)
     codex_probe_parser.add_argument("--workspace", type=Path, required=True)
@@ -735,27 +741,53 @@ def main(argv=None) -> int:
             code = 0 if result["timed_out"] and result["process_exited"] else 2
         elif args.command in {
             "docker-isolation",
+            "docker-egress-probe",
+            "docker-proxy-probe",
             "docker-timeout-probe",
             "codex-runtime-probe",
         }:
-            from docker_runtime import CodexCandidateRuntime, DockerCandidateRuntime
+            from docker_runtime import (
+                CodexCandidateRuntime,
+                DockerCandidateRuntime,
+                run_codex_proxy_transport_probe,
+                run_restricted_egress_probe,
+            )
 
             if args.command == "codex-runtime-probe":
                 runtime = CodexCandidateRuntime(args.image)
                 result = runtime.run_offline_executor_probe(
                     args.workspace, timeout_seconds=args.timeout_seconds
                 )
+            elif args.command == "docker-egress-probe":
+                result = run_restricted_egress_probe(args.image, args.workspace)
+            elif args.command == "docker-proxy-probe":
+                result = run_codex_proxy_transport_probe(args.image, args.workspace)
             else:
                 runtime = DockerCandidateRuntime(args.image)
             if args.command == "docker-isolation":
                 result = runtime.run_boundary_probe(args.workspace, trial_id=args.trial)
             elif args.command == "docker-timeout-probe":
                 result = runtime.run_timeout_probe(timeout_seconds=args.timeout_seconds)
-            code = (
-                0
-                if result.get("container_cleanup_verified", result.get("container_removed"))
-                else 2
-            )
+            if args.command in {"docker-egress-probe", "docker-proxy-probe"}:
+                code = (
+                    0
+                    if result.get("candidate_container_removed")
+                    and (
+                        result.get("egress_proxy_and_networks_removed")
+                        or result.get("local_proxy_container_removed")
+                    )
+                    and (
+                        result.get("isolated_network_removed")
+                        or result.get("egress_proxy_and_networks_removed")
+                    )
+                    else 2
+                )
+            else:
+                code = (
+                    0
+                    if result.get("container_cleanup_verified", result.get("container_removed"))
+                    else 2
+                )
         else:
             authorization = json.loads(args.authorization.read_text(encoding="utf-8"))
             run_one(
