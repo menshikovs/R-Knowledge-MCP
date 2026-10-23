@@ -1,120 +1,137 @@
-# Single-trial execution adapter status
+# Single-trial Codex runtime integration
 
-## Status: offline Docker boundary verified; agent execution blocked
+## Status: Codex executor is containerized and starts offline; paid execution remains blocked
 
-`adapter.py` and `docker_runtime.py` prepare a readiness report and run fixed
-security probes against the frozen R image. The Docker probe has been executed
-against Docker Desktop's Linux engine and verifies the actual container
-configuration and negative paths. It does not install or start Codex,
-authenticate, request a model, or write benchmark results. It records isolation
-only for the fixed probe, never for an agent. `run-one` always fails closed.
+The primary interface selected for a future real turn is the documented
+OpenAI Managed Agents API with a self-hosted Docker executor. GPT-6 Luna
+supports Responses tool use and `medium` reasoning. The Agents API session
+configuration supports a self-hosted environment, reasoning settings, and MCP
+tool allowlists. The executor environment key is distinct from the application
+API key; official guidance states that the restricted environment key is
+readable inside its environment, so the application key must stay on the
+controller.
 
-The host Codex CLI is not a safe substitute: it uses the operator's host
-authentication context and does not prove that agent filesystem operations
-stay inside the candidate workspace. The tested candidate container has no
-network, no Codex binary, no model proxy, and no MCP gateway. Consequently the
-probe can prove that arbitrary internet and model-proxy access are denied, but
-it cannot establish model connectivity or actual Codex tool discovery. The
-R01-A execution gate remains blocked. Account access to `gpt-6-luna` is also
-unverified; checking it with a real turn would be a paid request and is not part
-of this task.
+The local R01-A Codex candidate image is built from the unchanged frozen R
+image, pinned at
+`sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5`.
+It adds the official Codex CLI 0.163.0 Linux x86_64 package from the OpenAI
+Codex release and verifies the release archive SHA-256 before extraction. The
+observed local candidate image ID is
+`sha256:ea7eaa089df6671c5eb7dc913fb752909dff5344aafe5f8c4974aa97e2365074`.
+The Docker probe verifies that the frozen R image's root filesystem layers are
+an unchanged prefix of the candidate image layers. The original image and the
+strict 72-trial benchmark remain unchanged.
 
-The frozen image is pinned by local image ID at probe time. It carries the
-reviewed `renv.lock` byte-for-byte and starts as UID 65534. The disposable
-container uses only the exact public R01 workspace bind mount, an internal
-`none` network, a read-only root, dropped capabilities, no-new-privileges,
-fixed CPU/memory/PID limits, and bounded tmpfs mounts. The fixed probe checks
-that expected oracle/repository/home/socket/other-trial paths and credential
-environment variables are absent, direct internet is unreachable, and the
-R01-A model-proxy route is unavailable. It removes its container and verifies
-that Docker no longer lists it. A separate timeout probe starts a child process
-inside a no-network container and force-removes the whole container after the
-short test deadline.
+The real `codex exec-server` 0.163.0 process was observed running inside that
+candidate image in a Linux Docker Desktop container. The fixed probe mounted
+only the public R01 workspace, used UID 65534, read-only root, no-new-privileges,
+all capabilities dropped, 2 CPU / 2 GiB / 256 PID limits, `/tmp` and `/work`
+tmpfs, and Docker `network=none`. It verified the expected oracle, repository,
+host-home credential, Docker socket, and other-trial paths were absent, the
+application API key was absent, arbitrary internet was unreachable, MCP count
+was zero, and the container was removed. This establishes the boundary for
+this fixed offline executor probe; it does not prove a registered agent session
+has the same effective filesystem or tools.
 
-These checks are not agent isolation evidence: the existing frozen image does
-not include Codex. These are blockers, not fields that can be set to `true`.
-Before enabling an actual model run, a follow-up implementation must provide:
+The self-hosted Agents API needs outbound environment registration through
+`api.openai.com` and a registered WebSocket relay on
+`codex-cloud-environments.chatgpt.com`. The current candidate uses
+`network=none`, so it cannot register or connect. A plain hostname CONNECT
+allowlist does not enforce the required API paths, and the relay URL is signed
+and returned dynamically. This branch does not implement a TLS-terminating,
+path-aware trusted proxy or a tested relay broker. Enabling a broad outbound
+route would not meet the protocol's egress requirement. No environment key is
+mounted, no application key is passed to Docker, and no API session was
+created.
 
-- Disposable agent/container isolation and enforced denial of evaluator/oracle
-  paths, including a negative access probe.
-- A trusted Responses-API reverse proxy on a separate uplink network, with the
-  real API key available only to that proxy. The candidate network must be an
-  internal Docker bridge with no default route; the proxy must accept only the
-  selected model/API path and must never operate as a general HTTP or CONNECT
-  proxy. The candidate must receive no upstream key. Official Codex docs
-  describe this trusted-proxy pattern for self-hosted sandboxes and warn that
-  credentials injected into the agent environment are readable by generated
-  code.
-- A Codex-enabled candidate image and configuration bound to
-  `gpt-6-luna`/`medium`, with the proxy URL but no credentials. Its effective
-  MCP tool list must be read from a real agent session before timing.
-- The actual agent's effective tool inventory (A=0, B=15, C=20), gateway
-  allowlist/audit, frozen R image identity, and verified account/model access.
-  For B/C, a trusted gateway container must join the internal candidate network
-  while the production MCP service remains on a separate upstream network; the
-  candidate must have no route to that service.
-- Process-tree termination, workspace export and cleanup evidence, with a
-  fail-closed recovery path that retains the exclusive lease if cleanup is
-  uncertain.
-- An explicit fresh authorization bound to one trial row and a checkpoint
-  before any next row. Existing balance checkpoints remain best-effort; delayed
-  accounting can exceed displayed prepaid credits.
+`managed_agents.py` contains the fixed R01-A/GPT-6 Luna/medium session request,
+controller-side HTTPX calls for session creation, event submission/streaming,
+cancellation and deletion, response/event byte limits, redirect rejection,
+fixed official URL checks, idempotent task submission and event secret
+redaction. Tests use `httpx.MockTransport` and synthetic values only. They do
+not establish API-account model access. Session creation and turn execution
+were never called. Existing adapter `run-one` stays fail-closed; the full
+session lifecycle is not connected to artifact sealing, scoring, the balance
+checkpoint, or the required egress broker.
 
-## Offline use
+Condition A's generated Agents API configuration has zero MCP tools. Runtime
+tool discovery is still unverified because it would require a real session.
+Conditions B/C are intentionally rejected by the config builder: the existing
+recording gateway is stdio-only and has no authenticated candidate-facing HTTP
+route. Do not claim the 15/20 effective tool inventories have been verified.
 
-From the repository root, with Docker Desktop's WSL2 integration enabled for
-Ubuntu and the existing frozen image available locally:
+## Rebuild and offline checks
 
-```sh
-python benchmarks/codex_r/exploratory/adapter.py preflight --trial R01-A
-python benchmarks/codex_r/exploratory/adapter.py prepare --task R01 \
-  --workspace /absolute/path/outside/repository/candidate-R01
-python benchmarks/codex_r/exploratory/adapter.py dry-run
+The frozen R image is a local benchmark artifact, not a public registry image.
+Docker BuildKit tried to pull its digest from Docker Hub, so use Docker
+Desktop's legacy builder while this local-only base is in use:
+
+```powershell
+$env:DOCKER_BUILDKIT = "0"
+docker build --no-cache `
+  -f benchmarks/codex_r/runtime/candidate.Dockerfile `
+  -t rkmcp-codex-runtime:codex-0.163.0 .
+docker image inspect rkmcp-codex-runtime:codex-0.163.0 --format '{{.Id}}'
 ```
 
-Create an exact public R01 workspace outside the evaluator repository, then use
-the image's immutable local ID (not its mutable tag) for the real Docker probes:
+Prepare a fresh public R01 workspace outside the evaluator repository, then
+run the actual binary startup/security check with the immutable local candidate
+image ID:
 
-```sh
-IMAGE_ID=$(docker image inspect codex-r-benchmark:pilot --format '{{.Id}}')
-python benchmarks/codex_r/exploratory/adapter.py prepare --task R01 \
-  --workspace /absolute/outside/repository/candidate-R01-A
-python benchmarks/codex_r/exploratory/adapter.py docker-isolation --trial R01-A \
-  --image "$IMAGE_ID" --workspace /absolute/outside/repository/candidate-R01-A
-python benchmarks/codex_r/exploratory/adapter.py docker-timeout-probe \
-  --image "$IMAGE_ID" --timeout-seconds 1
+```powershell
+python benchmarks/codex_r/exploratory/adapter.py prepare `
+  --task R01 --workspace C:\tmp\public-R01-A
+python benchmarks/codex_r/exploratory/adapter.py codex-runtime-probe `
+  --image sha256:LOCAL_CODEX_CANDIDATE_IMAGE_ID `
+  --workspace C:\tmp\public-R01-A --timeout-seconds 5
 ```
 
-Real container-only tests are marked `docker`; set
-`R_KNOWLEDGE_BENCH_IMAGE_ID` to the immutable image ID and run
-`pytest -m docker`. They make no model requests. Ordinary tests can run without
-Docker and skip only those integration checks.
+The probe is explicitly an offline binary-startup record, not a trial. It does
+not create an Agents session, use `CODEX_API_KEY`, access model endpoints or
+claim effective tool discovery. `docker-runtime-probe` tests against the frozen
+R image and the pinned Codex image are marked `docker` and require
+`R_KNOWLEDGE_BENCH_IMAGE_ID` and `R_KNOWLEDGE_CODEX_IMAGE_ID` respectively.
+No real API key is read by CI tests.
 
-The trial ID must be one of the nine rows in `pilot.py`. `preflight` writes a
-machine-readable report and exits with status 2 while gates are blocked.
-`prepare` exports only reviewed public task material and explicitly reports
-`boundary_verified: false`; it is not container isolation. `dry-run` launches
-only a fixed local sleep probe to test timeout cleanup, never Codex. A Windows
-sandbox that denies child-process creation can verify root-process timeout but
-cannot verify descendant cleanup; the report records that limitation and the
-focused test skips only its descendant assertion.
+The task workspace created for the local test was removed after verification.
+The original strict benchmark, score importer and oracle were not modified.
 
-Authorization record helpers and the balance-aware ledger still test exact-row
-scope, expiry, replay protection, and post-trial checkpoints. Creating an
-authorization record does not grant this adapter execution capability. Do not
-treat it as permission to bypass the blocked preflight. There is no usable
-command to launch even one real trial at this stage.
+## Exact blockers before a real R01-A turn
 
-The original strict 72-trial benchmark, its manifests, schemas, score path, and
-security requirements are unchanged. Exploratory pilot data remains separate.
+- A trusted, path-aware endpoint broker and separately verified outbound WSS
+  relay are not implemented. The candidate currently has no network.
+- No documented restricted executor environment key was supplied to the
+  container, and no Managed Agents session/environment was created.
+- Account-level access to `gpt-6-luna` and the resolved live `medium` setting
+  remain unverified; do not verify by creating a session during ordinary CI.
+- The executor process is tested only as a local loopback service. Its remote
+  registration and WebSocket lifecycle, 900-second agent cancellation, API
+  session deletion and cleanup combination are not verified.
+- Artifact export after termination, sealed scoring handoff, and the final
+  balance/usage/correctness checkpoint are not wired to an agent turn.
+- A's zero-MCP configuration is deterministic but has not been observed in an
+  actual Codex agent session. B/C candidate gateway networking and effective
+  15/20 tool inventories remain future work.
 
-## Reviewed Codex credential documentation
+The operator's prepaid balance and disabled automatic top-ups do not create a
+hard spend cap. Before a future paid trial, require a current operator-confirmed
+balance, reserve, one-row authorization, and review after that trial. Never
+automatically start the next row. The existing strict 72-trial benchmark
+remains separate and unchanged.
 
-- [OpenAI sandbox security](https://developers.openai.com/api/docs/guides/agents-api/environments/security)
-  says agent-generated code can read its environment credentials and recommends
-  keeping the application key outside a self-hosted environment behind a trusted
-  proxy/server.
-- [Codex authentication](https://learn.chatgpt.com/docs/auth) and
-  [advanced configuration](https://learn.chatgpt.com/docs/config-file/config-advanced)
-  document custom model providers and compatible Responses API gateways. This
-  branch does not yet implement that gateway or configure a live model route.
+## Reviewed official documentation
+
+- [GPT-6 Luna model](https://developers.openai.com/api/docs/models/gpt-6-luna)
+  documents Responses tools, MCP, and `reasoning.effort: medium` support.
+- [Self-hosted sandboxes](https://developers.openai.com/api/docs/guides/agents-api/environments/self-hosted)
+  documents `codex exec-server`, the registration and WebSocket hosts, and the
+  restricted environment-key arrangement.
+- [Sandbox security](https://developers.openai.com/api/docs/guides/agents-api/environments/security)
+  says agent-generated code can read environment credentials and that the
+  application API key must stay outside the environment.
+- [MCP connections](https://developers.openai.com/api/docs/guides/agents-api/tools/mcp)
+  documents environment-origin MCP connections and `allowed_tools`.
+- [Session events](https://developers.openai.com/api/docs/guides/agents-api/sessions/events)
+  documents input, cancellation and event-stream behavior.
+- [Codex 0.163.0 release](https://github.com/openai/codex/releases/tag/rust-v0.163.0)
+  supplies the SHA-256-pinned Linux package used by the candidate Dockerfile.

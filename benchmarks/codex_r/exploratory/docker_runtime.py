@@ -29,6 +29,9 @@ _PILOT_SPEC.loader.exec_module(pilot)
 MAX_OUTPUT_BYTES = 1 << 20
 CONTAINER_NAME = re.compile(r"^rkmcp-probe-R01-A-[a-f0-9]{16}$")
 IMAGE_ID = re.compile(r"^sha256:[a-f0-9]{64}$")
+AGENT_IMAGE_ID = re.compile(r"^sha256:[a-f0-9]{64}$")
+CODEX_VERSION = "0.163.0"
+FROZEN_R_IMAGE_ID = "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
 PROBE_SCRIPT = r"""set -eu
 fail() { echo "probe failed: $1" >&2; exit 20; }
 [ "$(id -u)" = 65534 ] || fail unprivileged_uid
@@ -70,6 +73,38 @@ fi
 printf '%s\n' 'docker boundary probe passed'
 """
 SLEEP_SCRIPT = 'sleep 60 & child=$!; echo child_started; wait "$child"'
+CODEX_STARTUP_SCRIPT = r"""set -eu
+[ "$(id -u)" = 65534 ]
+[ -r /candidate/TASK.md ]
+[ -r /candidate/renv.lock ]
+[ -r /candidate/data/records.csv ]
+[ -w /candidate ]
+for p in /oracle/R01.R /repo/benchmarks/codex_r/oracle/R01.R \
+  /mnt/c/programming_pj/cran-mcp /root/.codex/auth.json \
+  /mnt/c/Users/User001/.codex/auth.json /tmp/.codex/auth.json \
+  /var/run/docker.sock \
+  /other-trial/private-marker /host-test-secret/private-marker; do
+  [ ! -e "$p" ] || { echo "unexpected path: $p" >&2; exit 21; }
+done
+if env | cut -d= -f1 | grep -E \
+  '^(OPENAI_API_KEY|CODEX_API_KEY|AZURE_OPENAI_API_KEY)$' >/dev/null; then
+  echo 'application credential reached candidate' >&2
+  exit 22
+fi
+if curl --noproxy '*' --connect-timeout 1 --max-time 2 -fsS \
+  https://example.com/ >/dev/null 2>&1; then
+  echo 'unapproved internet reachable' >&2
+  exit 23
+fi
+for url in http://model-proxy:8080/v1/responses http://cran-knowledge-mcp:8000/mcp; do
+  if curl --noproxy '*' --connect-timeout 1 --max-time 2 -fsS \
+    "$url" >/dev/null 2>&1; then
+    echo "unexpected network route reachable: $url" >&2
+    exit 24
+  fi
+done
+exec /opt/codex/bin/codex exec-server --listen ws://127.0.0.1:3788
+"""
 
 
 class DockerRuntimeError(RuntimeError):
@@ -497,3 +532,180 @@ def prepared_r01_workspace(destination: Path) -> dict:
     controller = _load_controller()
     report = controller.validate_public_workspace(destination, "R01")
     return {"path": str(destination.resolve()), "files": report["files"]}
+
+
+class CodexCandidateRuntime(DockerCandidateRuntime):
+    """Run the pinned Codex self-hosted executor in an offline R01-A boundary.
+
+    This proves actual binary startup and container isolation only. It does not
+    register a Managed Agents environment or create a model session.
+    """
+
+    def __init__(self, image_id: str, docker: str | None = None):
+        if not AGENT_IMAGE_ID.fullmatch(image_id):
+            raise DockerRuntimeError("Use the immutable Codex candidate image ID")
+        super().__init__(image_id, docker)
+
+    def verify_candidate_image(self) -> dict:
+        inspected = (
+            self._docker(
+                "image",
+                "inspect",
+                "--format",
+                "{{.Id}}|{{.Config.User}}|{{.Config.WorkingDir}}|"
+                "{{json .Config.Entrypoint}}|{{json .RootFS.Layers}}",
+                self.image_id,
+            )
+            .stdout.decode("utf-8", "replace")
+            .strip()
+        )
+        image_id, user, workdir, entrypoint, rootfs = inspected.split("|", 4)
+        if image_id != self.image_id or user != "65534:65534" or workdir != "/candidate":
+            raise DockerRuntimeError("Codex candidate image identity or defaults are invalid")
+        if json.loads(entrypoint) != ["/opt/codex/bin/codex"]:
+            raise DockerRuntimeError("Codex candidate entrypoint differs from the pinned binary")
+        base_layers = json.loads(
+            self._docker(
+                "image",
+                "inspect",
+                "--format",
+                "{{json .RootFS.Layers}}",
+                FROZEN_R_IMAGE_ID,
+            ).stdout
+        )
+        candidate_layers = json.loads(rootfs)
+        if candidate_layers[: len(base_layers)] != base_layers:
+            raise DockerRuntimeError("Candidate image does not preserve the frozen R image layers")
+        version = (
+            self._docker(
+                "run",
+                "--rm",
+                "--network",
+                "none",
+                "--read-only",
+                "--tmpfs",
+                "/tmp:rw,noexec,nosuid,nodev,size=64m,mode=1777",
+                "--user",
+                "65534:65534",
+                self.image_id,
+                "--version",
+            )
+            .stdout.decode("utf-8", "replace")
+            .strip()
+        )
+        if version != f"codex-cli {CODEX_VERSION}":
+            raise DockerRuntimeError("Codex version differs from the pinned release")
+        return {
+            "image_id": image_id,
+            "base_frozen_r_image_id": FROZEN_R_IMAGE_ID,
+            "codex_version": CODEX_VERSION,
+            "user": user,
+            "workdir": workdir,
+            "rootfs_layers_preserve_base": True,
+            "version_command": version,
+        }
+
+    def run_offline_executor_probe(self, workspace: Path, *, timeout_seconds: float = 5) -> dict:
+        """Start the real Codex exec-server, test boundary, then kill and verify cleanup."""
+        if not 0 < timeout_seconds <= 15:
+            raise DockerRuntimeError("Offline Codex startup probe must be at most 15 seconds")
+        workspace_info = self._validate_workspace(Path(workspace))
+        image = self.verify_candidate_image()
+        name = f"rkmcp-probe-R01-A-{uuid.uuid4().hex[:16]}"
+        workspace_path = Path(workspace_info["path"])
+        create = self._create_args(name, workspace_path, ["-c", CODEX_STARTUP_SCRIPT])
+        image_index = create.index(self.image_id)
+        create[image_index:image_index] = ["--interactive", "--entrypoint", "/bin/sh"]
+        container_id = self._create_container(name, create)
+        policy = None
+        process_observed = False
+        negative_checks_passed = False
+        cleanup_verified = False
+        failure = None
+        try:
+            policy = self._inspect_policy(container_id, workspace_path)
+            self._docker("start", container_id)
+            deadline = time.monotonic() + timeout_seconds
+            while time.monotonic() < deadline:
+                top = _bounded_run([self.docker, "top", container_id], timeout=5)
+                if top.returncode != 0:
+                    failure = "Codex executor exited before process inspection"
+                    log_result = _bounded_run([self.docker, "logs", container_id], timeout=5)
+                    details = log_result.stdout + log_result.stderr
+                    state_result = self._docker(
+                        "inspect",
+                        "--format",
+                        "{{.State.Status}}|{{.State.ExitCode}}|{{.State.Error}}",
+                        container_id,
+                    )
+                    failure += ": " + details.decode("utf-8", "replace")[-1000:]
+                    failure += " [" + state_result.stdout.decode("utf-8", "replace").strip() + "]"
+                    break
+                processes = top.stdout.decode("utf-8", "replace")
+                if "codex" in processes and "exec-server" in processes:
+                    process_observed = True
+                    break
+                state = (
+                    self._docker("inspect", "--format", "{{.State.Status}}", container_id)
+                    .stdout.decode("ascii", "replace")
+                    .strip()
+                )
+                if state != "running":
+                    failure = "Codex executor exited before process inspection"
+                    log_result = _bounded_run([self.docker, "logs", container_id], timeout=5)
+                    details = log_result.stdout + log_result.stderr
+                    failure += ": " + details.decode("utf-8", "replace")[-1000:]
+                    break
+                time.sleep(0.1)
+            if not process_observed and failure is None:
+                failure = "Codex exec-server did not remain running inside the candidate container"
+            if process_observed:
+                logs = self._logs(container_id)
+                if "application credential reached candidate" in logs:
+                    failure = "Application credential reached candidate container"
+                elif any(
+                    marker in logs
+                    for marker in (
+                        "unexpected path:",
+                        "unapproved internet reachable",
+                        "unexpected network route reachable:",
+                    )
+                ):
+                    failure = "Codex candidate boundary negative check failed"
+                else:
+                    negative_checks_passed = True
+        finally:
+            removed = _bounded_run([self.docker, "rm", "--force", container_id], timeout=20)
+            if removed.returncode == 0:
+                self._assert_removed(container_id)
+                cleanup_verified = True
+        if not cleanup_verified:
+            raise DockerRuntimeError("Codex candidate container cleanup could not be verified")
+        if failure:
+            raise DockerRuntimeError(failure)
+        return {
+            "schema_version": 1,
+            "record_type": "codex_exec_server_offline_startup_probe_not_trial",
+            "checked_at": datetime.now(UTC).isoformat(),
+            "trial_id": "R01-A",
+            "model": pilot.MODEL,
+            "reasoning_effort": pilot.REASONING_EFFORT,
+            "sessions_created": 0,
+            "inference_requests": 0,
+            "image": image,
+            "workspace": workspace_info,
+            "policy": policy,
+            "codex_exec_server_process_observed": process_observed,
+            "candidate_secrets_exposed": [],
+            "application_key_in_container": False,
+            "restricted_environment_key_present": False,
+            "negative_checks_passed": negative_checks_passed,
+            "network_mode": "none",
+            "mcp_tools_exposed": 0,
+            "effective_agent_tools_verified": False,
+            "container_cleanup_verified": cleanup_verified,
+            "agent_isolation_verified": False,
+            "model_connectivity_ready": False,
+            "launch_permitted": False,
+            "status": "real_codex_binary_started_offline_agent_execution_blocked",
+        }

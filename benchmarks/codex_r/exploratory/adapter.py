@@ -653,6 +653,10 @@ def main(argv=None) -> int:
     docker_parser.add_argument("--trial", required=True, choices=["R01-A"])
     docker_parser.add_argument("--image", required=True)
     docker_parser.add_argument("--workspace", type=Path, required=True)
+    codex_probe_parser = sub.add_parser("codex-runtime-probe")
+    codex_probe_parser.add_argument("--image", required=True)
+    codex_probe_parser.add_argument("--workspace", type=Path, required=True)
+    codex_probe_parser.add_argument("--timeout-seconds", type=float, default=5)
     docker_timeout_parser = sub.add_parser("docker-timeout-probe")
     docker_timeout_parser.add_argument("--image", required=True)
     docker_timeout_parser.add_argument("--timeout-seconds", type=float, default=1.0)
@@ -672,13 +676,23 @@ def main(argv=None) -> int:
         elif args.command == "dry-run":
             result = run_local_timeout_probe(args.timeout_seconds)
             code = 0 if result["timed_out"] and result["process_exited"] else 2
-        elif args.command in {"docker-isolation", "docker-timeout-probe"}:
-            from docker_runtime import DockerCandidateRuntime
+        elif args.command in {
+            "docker-isolation",
+            "docker-timeout-probe",
+            "codex-runtime-probe",
+        }:
+            from docker_runtime import CodexCandidateRuntime, DockerCandidateRuntime
 
-            runtime = DockerCandidateRuntime(args.image)
+            if args.command == "codex-runtime-probe":
+                runtime = CodexCandidateRuntime(args.image)
+                result = runtime.run_offline_executor_probe(
+                    args.workspace, timeout_seconds=args.timeout_seconds
+                )
+            else:
+                runtime = DockerCandidateRuntime(args.image)
             if args.command == "docker-isolation":
                 result = runtime.run_boundary_probe(args.workspace, trial_id=args.trial)
-            else:
+            elif args.command == "docker-timeout-probe":
                 result = runtime.run_timeout_probe(timeout_seconds=args.timeout_seconds)
             code = (
                 0
