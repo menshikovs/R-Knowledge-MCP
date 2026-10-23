@@ -1,15 +1,23 @@
+import importlib.util
 import json
+from pathlib import Path
 
 import httpx
 import pytest
 
-from benchmarks.codex_r.exploratory.managed_agents import (
-    MAX_API_RESPONSE_BYTES,
-    ManagedAgentsClient,
-    ManagedAgentsError,
-    build_agent_config,
-    validate_environment_record,
+ROOT = Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location(
+    "codex_managed_agents", ROOT / "benchmarks/codex_r/exploratory/managed_agents.py"
 )
+assert SPEC is not None and SPEC.loader is not None
+managed_agents = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(managed_agents)
+
+MAX_API_RESPONSE_BYTES = managed_agents.MAX_API_RESPONSE_BYTES
+ManagedAgentsClient = managed_agents.ManagedAgentsClient
+ManagedAgentsError = managed_agents.ManagedAgentsError
+build_agent_config = managed_agents.build_agent_config
+validate_environment_record = managed_agents.validate_environment_record
 
 
 def context(**overrides):
