@@ -292,9 +292,13 @@ marker are immutable. The second attempt keeps scientific `trial_id` equal to
 `consumed-trials/R01-A-attempt-2.json` marker. There is no third attempt or
 automatic retry. Do not remove state files or markers.
 
-Authorization requires the preserved first-attempt audit to show an HTTP
-4xx rejection specifically at `create_session`, zero sessions/tasks/inference,
-and verified container/session/network cleanup. It independently checks that
+Authorization accepts either a structured HTTP 4xx rejection at `create_session`
+or the known legacy audit shape (`failure_category: ManagedAgentsError`, one
+session-creation attempt, and no structured `failure` object). The legacy case
+is labeled `legacy_create_session_failure_unclassified` with provider status
+`unknown`; it does not imply a confirmed HTTP rejection. Both paths require zero
+created sessions, zero task submissions/inference, and verified
+container/session/network cleanup. It independently checks that
 Docker has no active trial lock, candidate container, or R01-A network, then
 binds the prior audit's SHA-256 into the new authorization. This permits the
 known API-rejection case even if the prior controller conservatively marked

@@ -175,12 +175,16 @@ def build_trial_context(
     if attempt_id not in {"R01-A/attempt-1", "R01-A/attempt-2"}:
         raise AdapterError("Only the explicitly bounded first or second attempt is supported")
     previous_audit_sha256 = None
+    previous_failure_classification = None
+    previous_provider_status = None
     if attempt_id == "R01-A/attempt-2":
         if previous_attempt_result is None:
             raise AdapterError("Attempt 2 requires the preserved first-attempt cleanup audit")
-        _verify_first_attempt_for_retry(
+        prior_failure = _verify_first_attempt_for_retry(
             state_directory or default_state_directory(), previous_attempt_result
         )
+        previous_failure_classification = prior_failure["classification"]
+        previous_provider_status = prior_failure["provider_status"]
         previous_audit_sha256 = hashlib.sha256(
             Path(previous_attempt_result).read_bytes()
         ).hexdigest()
@@ -188,6 +192,8 @@ def build_trial_context(
         "trial_id": selected["trial_id"],
         "attempt_id": attempt_id,
         "previous_attempt_audit_sha256": previous_audit_sha256,
+        "previous_attempt_failure_classification": previous_failure_classification,
+        "previous_attempt_provider_status": previous_provider_status,
         "previous_attempt_result": (
             str(Path(previous_attempt_result).resolve())
             if previous_attempt_result is not None
@@ -455,6 +461,8 @@ def create_authorization(
                 "trial_id",
                 "attempt_id",
                 "previous_attempt_audit_sha256",
+                "previous_attempt_failure_classification",
+                "previous_attempt_provider_status",
                 "previous_attempt_result",
                 "task",
                 "condition",
@@ -527,6 +535,8 @@ def validate_authorization(
             "trial_id",
             "attempt_id",
             "previous_attempt_audit_sha256",
+            "previous_attempt_failure_classification",
+            "previous_attempt_provider_status",
             "previous_attempt_result",
             "task",
             "condition",
@@ -1031,33 +1041,59 @@ def verify_cleanup(state_directory: Path, result_path: Path, docker: str | None 
     }
 
 
-def _verify_first_attempt_for_retry(state_directory: Path, result_path: Path) -> bool:
+def _verify_first_attempt_for_retry(state_directory: Path, result_path: Path) -> dict[str, object]:
     """Require the immutable, clean audit for the already-consumed first try."""
     cleanup = verify_cleanup(state_directory, result_path)
     if not cleanup["local_cleanup_verified"]:
         raise AdapterError("Attempt 1 cleanup is not verified; attempt 2 remains blocked")
     audit = json.loads(Path(result_path).read_text(encoding="utf-8"))
-    failure = audit.get("failure", {})
+    if not isinstance(audit, dict):
+        raise AdapterError("First-attempt audit is not an object")
+    common_valid = (
+        audit.get("record_type") == "managed_agents_r01a_lifecycle_audit_not_benchmark_result"
+        and audit.get("trial_id") == "R01-A"
+        and audit.get("attempt_id", "R01-A/attempt-1") == "R01-A/attempt-1"
+        and audit.get("session_created") is False
+        and type(audit.get("sessions_created_count")) is int
+        and audit.get("sessions_created_count") == 0
+        and audit.get("inference_submitted") is False
+        and audit.get("task_submission_attempted") is not True
+        and type(audit.get("task_submissions_attempted_count")) is int
+        and audit.get("task_submissions_attempted_count") == 0
+        and audit.get("container_termination_verified") is True
+        and audit.get("session_deleted_verified") is True
+        and audit.get("topology_cleanup_verified") is True
+        and audit.get("cleanup_verified") is True
+    )
+    if not common_valid:
+        raise AdapterError("First-attempt audit reports work or cleanup that is not verified")
+
+    failure = audit.get("failure")
     status = failure.get("http_status") if isinstance(failure, dict) else None
     if (
-        audit.get("record_type") != "managed_agents_r01a_lifecycle_audit_not_benchmark_result"
-        or audit.get("trial_id") != "R01-A"
-        or audit.get("attempt_id", "R01-A/attempt-1") != "R01-A/attempt-1"
-        or audit.get("session_created") is not False
-        or audit.get("sessions_created_count") != 0
-        or audit.get("inference_submitted") is not False
-        or audit.get("task_submissions_attempted_count") != 0
-        or audit.get("container_termination_verified") is not True
-        or audit.get("session_deleted_verified") is not True
-        or audit.get("topology_cleanup_verified") is not True
-        or not isinstance(failure, dict)
-        or failure.get("operation") != "create_session"
-        or failure.get("category") != "http_rejection"
-        or type(status) is not int
-        or not 400 <= status < 500
+        isinstance(failure, dict)
+        and failure.get("operation") == "create_session"
+        and failure.get("category") == "http_rejection"
+        and type(status) is int
+        and 400 <= status < 500
     ):
-        raise AdapterError("First-attempt audit lacks verified cleanup or confirmed HTTP rejection")
-    return True
+        if audit.get("session_creation_attempted") is not True:
+            raise AdapterError("First-attempt audit does not confirm one session-creation attempt")
+        return {"classification": "http_rejection", "provider_status": status}
+
+    # Older audit schema from before structured diagnostics. Do not infer or
+    # synthesize an HTTP status; unknown status remains explicit uncertainty.
+    legacy_valid = (
+        "failure" not in audit
+        and audit.get("failure_category") == "ManagedAgentsError"
+        and audit.get("session_creation_attempted") is True
+    )
+    if legacy_valid:
+        return {
+            "classification": "legacy_create_session_failure_unclassified",
+            "provider_status": "unknown",
+        }
+    raise AdapterError("First-attempt failure is not an eligible session-creation rejection")
 
 
 def cancel_running_trial(state_directory: Path) -> dict:

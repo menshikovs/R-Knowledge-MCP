@@ -1,5 +1,6 @@
 """Offline safeguards for the single-trial Codex adapter."""
 
+import hashlib
 import importlib.util
 import json
 from datetime import UTC, datetime
@@ -398,21 +399,17 @@ def test_attempt_two_requires_immutable_clean_attempt_one_and_has_separate_marke
     first_audit = {
         "record_type": "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
         "trial_id": "R01-A",
-        "attempt_id": "R01-A/attempt-1",
+        "failure_category": "ManagedAgentsError",
+        "session_creation_attempted": True,
         "session_created": False,
         "sessions_created_count": 0,
         "inference_submitted": False,
         "task_submissions_attempted_count": 0,
         "session_creation_uncertain": True,
+        "cleanup_verified": True,
         "container_termination_verified": True,
         "session_deleted_verified": True,
         "topology_cleanup_verified": True,
-        "failure": {
-            "operation": "create_session",
-            "category": "http_rejection",
-            "http_status": 403,
-            "reason": "Managed Agents API rejected the request with HTTP 403",
-        },
     }
     first_result.write_text(json.dumps(first_audit))
     monkeypatch.setattr(
@@ -445,8 +442,20 @@ def test_attempt_two_requires_immutable_clean_attempt_one_and_has_separate_marke
     )
     assert auth["attempt_id"] == "R01-A/attempt-2"
     assert auth["scope"]["trial_id"] == "R01-A"
-    assert auth["scope"]["previous_attempt_audit_sha256"]
+    assert (
+        auth["scope"]["previous_attempt_audit_sha256"]
+        == hashlib.sha256(first_result.read_bytes()).hexdigest()
+    )
+    assert (
+        auth["scope"]["previous_attempt_failure_classification"]
+        == "legacy_create_session_failure_unclassified"
+    )
+    assert auth["scope"]["previous_attempt_provider_status"] == "unknown"
     assert adapter.validate_authorization(auth, context) is auth
+    first_result.write_bytes(first_result.read_bytes() + b" ")
+    with pytest.raises(adapter.AdapterError, match="audit or cleanup verification changed"):
+        adapter.validate_authorization(auth, context)
+    first_result.write_text(json.dumps(first_audit))
     adapter.consume_authorization(auth, context, state)
     assert (marker_dir / "R01-A-attempt-2.json").exists()
     assert first_marker.read_bytes() == first_marker_before
@@ -455,6 +464,115 @@ def test_attempt_two_requires_immutable_clean_attempt_one_and_has_separate_marke
         adapter.consume_authorization(auth, context, state)
     with pytest.raises(adapter.AdapterError, match="bounded first or second"):
         adapter.build_trial_context(pilot.make_plan(), "R01-A", attempt_id="R01-A/attempt-3")
+
+
+@pytest.mark.parametrize(
+    "audit_change",
+    [
+        {"task_submission_attempted": True},
+        {"task_submissions_attempted_count": 1},
+        {"inference_submitted": True},
+        {"sessions_created_count": 1},
+        {"cleanup_verified": False},
+        {"container_termination_verified": False},
+        {"session_deleted_verified": False},
+        {"topology_cleanup_verified": False},
+    ],
+)
+def test_legacy_attempt_two_audit_rejects_reported_work_or_uncertain_cleanup(
+    tmp_path, monkeypatch, audit_change
+):
+    workspace = tmp_path / "public-R01"
+    adapter.prepare_workspace("R01", workspace)
+    state = tmp_path / "state"
+    markers = state / "consumed-trials"
+    markers.mkdir(parents=True)
+    (markers / "R01-A.json").write_text('{"trial_id":"R01-A"}\n')
+    audit = {
+        "record_type": "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
+        "trial_id": "R01-A",
+        "failure_category": "ManagedAgentsError",
+        "session_creation_attempted": True,
+        "session_created": False,
+        "sessions_created_count": 0,
+        "task_submission_attempted": False,
+        "task_submissions_attempted_count": 0,
+        "inference_submitted": False,
+        "cleanup_verified": True,
+        "container_termination_verified": True,
+        "session_deleted_verified": True,
+        "topology_cleanup_verified": True,
+    }
+    audit.update(audit_change)
+    previous = tmp_path / "attempt-1.json"
+    previous.write_text(json.dumps(audit))
+    monkeypatch.setattr(
+        adapter,
+        "verify_cleanup",
+        lambda *_args, **_kwargs: {"cleanup_verified": False, "local_cleanup_verified": True},
+    )
+
+    with pytest.raises(adapter.AdapterError, match="work or cleanup that is not verified"):
+        adapter.build_trial_context(
+            pilot.make_plan(),
+            "R01-A",
+            workspace,
+            state_directory=state,
+            attempt_id="R01-A/attempt-2",
+            previous_attempt_result=previous,
+        )
+
+
+def test_attempt_two_rejects_missing_first_attempt_consumed_marker(tmp_path, monkeypatch):
+    workspace = tmp_path / "public-R01"
+    adapter.prepare_workspace("R01", workspace)
+    state = tmp_path / "state"
+    previous = tmp_path / "attempt-1.json"
+    previous.write_text(
+        json.dumps(
+            {
+                "record_type": "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
+                "trial_id": "R01-A",
+                "failure_category": "ManagedAgentsError",
+                "session_creation_attempted": True,
+                "session_created": False,
+                "sessions_created_count": 0,
+                "task_submissions_attempted_count": 0,
+                "inference_submitted": False,
+                "cleanup_verified": True,
+                "container_termination_verified": True,
+                "session_deleted_verified": True,
+                "topology_cleanup_verified": True,
+            }
+        )
+    )
+    monkeypatch.setattr(
+        adapter,
+        "verify_cleanup",
+        lambda *_args, **_kwargs: {"cleanup_verified": False, "local_cleanup_verified": True},
+    )
+    context = adapter.build_trial_context(
+        pilot.make_plan(),
+        "R01-A",
+        workspace,
+        candidate_image_digest="sha256:" + "b" * 64,
+        state_directory=state,
+        attempt_id="R01-A/attempt-2",
+        previous_attempt_result=previous,
+    )
+    with pytest.raises(adapter.AdapterError, match="Attempt 1 authorization marker is missing"):
+        adapter.create_authorization(
+            context,
+            typed_confirmation="AUTHORIZE ONE PAID TRIAL R01-A/attempt-2",
+            available_balance_cents=1000,
+            reserve_cents=200,
+            estimated_spend_cents=100,
+            balance_source="synthetic fixture",
+            balance_checked_at=datetime.now(UTC).isoformat(),
+            restricted_key_scope_confirmation="CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A",
+            attempt_id="R01-A/attempt-2",
+            previous_attempt_result=previous,
+        )
 
 
 def test_attempt_two_is_blocked_without_verified_cleanup_or_prior_consumption(
