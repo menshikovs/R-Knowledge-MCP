@@ -205,6 +205,28 @@ def _bounded_run(
     return result
 
 
+def _executor_child_environment(
+    host_environment: dict[str, str], environment_key: str
+) -> dict[str, str]:
+    """Forward only non-secret host settings plus the documented scoped executor key."""
+    if not isinstance(environment_key, str) or not environment_key:
+        raise DockerRuntimeError("Restricted executor environment key is unavailable")
+    safe = {
+        key: value
+        for key, value in host_environment.items()
+        if key.upper()
+        not in {
+            "OPENAI_API_KEY",
+            "OPENAI_EXECUTOR_API_KEY",
+            "AZURE_OPENAI_API_KEY",
+            "CODEX_API_KEY",
+        }
+        and not re.search(r"(?i)(TOKEN|SECRET|PASSWORD|CREDENTIAL)", key)
+    }
+    safe["CODEX_API_KEY"] = environment_key
+    return safe
+
+
 class DockerCandidateRuntime:
     """Create and audit one disposable networkless R01-A candidate container."""
 
@@ -858,13 +880,7 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
             deny_dns=True,
             environment_key=True,
         )
-        safe_env = {
-            key: value
-            for key, value in os.environ.items()
-            if key.upper() not in {"OPENAI_API_KEY", "AZURE_OPENAI_API_KEY", "CODEX_API_KEY"}
-            and not re.search(r"(?i)(TOKEN|SECRET|PASSWORD|CREDENTIAL)", key)
-        }
-        safe_env["CODEX_API_KEY"] = environment_key
+        safe_env = _executor_child_environment(os.environ, environment_key)
         container_id = self._create_container(name, argv, env=safe_env)
         try:
             self._inspect_policy(
@@ -884,7 +900,11 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
                 set(networks) != {topology.internal_network}
                 or f"HTTPS_PROXY={proxy_url}" not in env
                 or f"CODEX_API_KEY={environment_key}" not in env
-                or any(value.startswith("OPENAI_API_KEY=") for value in env)
+                or any(
+                    value.split("=", 1)[0]
+                    in {"OPENAI_API_KEY", "OPENAI_EXECUTOR_API_KEY", "AZURE_OPENAI_API_KEY"}
+                    for value in env
+                )
             ):
                 raise DockerRuntimeError("Executor credential or network policy did not verify")
             self._docker("start", container_id)
@@ -1490,13 +1510,7 @@ def run_codex_proxy_transport_probe(
             deny_dns=True,
             environment_key=True,
         )
-        safe_env = {
-            key: value
-            for key, value in os.environ.items()
-            if key.upper() not in {"OPENAI_API_KEY", "AZURE_OPENAI_API_KEY", "CODEX_API_KEY"}
-            and not re.search(r"(?i)(TOKEN|SECRET|PASSWORD|CREDENTIAL)", key)
-        }
-        safe_env["CODEX_API_KEY"] = "synthetic_environment_key_never_logged"
+        safe_env = _executor_child_environment(os.environ, "synthetic_environment_key_never_logged")
         candidate_id = runtime._create_container(candidate_name, argv, env=safe_env)
         runtime._docker("start", candidate_id)
         deadline = time.monotonic() + 10

@@ -64,6 +64,11 @@ class AdapterError(ValueError):
     """Invalid single-trial input or a blocked execution request."""
 
 
+def default_state_directory() -> Path:
+    """Use one fixed per-user WSL state root so a new path cannot replay R01-A."""
+    return Path.home() / ".local" / "state" / "r-knowledge-mcp" / "r01a"
+
+
 def redact(value):
     """Return JSON-safe evidence with common credential-shaped values removed."""
     if isinstance(value, str):
@@ -132,6 +137,10 @@ def execution_configuration_fingerprint() -> str:
     for path in (
         ROOT / "runtime" / "candidate.Dockerfile",
         ROOT / "exploratory" / "docker_runtime.py",
+        ROOT / "exploratory" / "egress_proxy.py",
+        ROOT / "exploratory" / "managed_agents.py",
+        ROOT / "exploratory" / "lifecycle.py",
+        Path(__file__).resolve(),
     ):
         resolved = path.resolve(strict=True)
         if not resolved.is_relative_to(ROOT.resolve()):
@@ -149,6 +158,7 @@ def build_trial_context(
     workspace: Path | None = None,
     *,
     candidate_image_digest: str | None = None,
+    state_directory: Path | None = None,
 ) -> dict:
     """Resolve one exploratory assignment and bind its exact control values."""
     pilot.validate_plan(plan)
@@ -173,6 +183,9 @@ def build_trial_context(
         "candidate_image_digest": candidate_image_digest,
         "controller_version": CONTROLLER_VERSION,
         "workspace": str(workspace.resolve()) if workspace is not None else None,
+        "state_directory": (
+            str(Path(state_directory).resolve()) if state_directory is not None else None
+        ),
     }
     if workspace is not None:
         try:
@@ -334,6 +347,12 @@ def create_authorization(
     typed_confirmation: str,
     now: datetime | None = None,
     ttl_seconds: int = 300,
+    available_balance_cents: int,
+    reserve_cents: int,
+    estimated_spend_cents: int,
+    balance_source: str,
+    balance_checked_at: str,
+    restricted_key_scope_confirmation: str,
 ) -> dict:
     """Create a narrowly scoped, short-lived consent record (never starts Codex)."""
     if (
@@ -351,6 +370,11 @@ def create_authorization(
         raise AdapterError("Authorization requires the reviewed immutable candidate image digest")
     if not re.fullmatch(r"[a-f0-9]{64}", str(context.get("execution_config_digest", ""))):
         raise AdapterError("Authorization requires the reviewed execution configuration digest")
+    state_directory = context.get("state_directory")
+    if not isinstance(state_directory, str) or not state_directory:
+        raise AdapterError("Authorization requires the fixed external state directory")
+    if Path(state_directory).resolve().is_relative_to(REPO.resolve()):
+        raise AdapterError("Authorization state must be outside the evaluator repository")
     workspace = context.get("workspace")
     if not isinstance(workspace, str) or not workspace:
         raise AdapterError("Authorization requires the prepared public R01 workspace")
@@ -363,11 +387,25 @@ def create_authorization(
     expected_confirmation = f"AUTHORIZE ONE PAID TRIAL {context['trial_id']}"
     if typed_confirmation != expected_confirmation:
         raise AdapterError("Typed confirmation must name exactly the selected paid trial")
+    if restricted_key_scope_confirmation != "CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A":
+        raise AdapterError("The separate environment-key scope confirmation is required")
     if ttl_seconds < 1 or ttl_seconds > MAX_AUTHORIZATION_TTL_SECONDS:
         raise AdapterError("Authorization lifetime must be between 1 and 300 seconds")
     now = now or datetime.now(UTC)
     if now.tzinfo is None or now.utcoffset() != timedelta(0):
         raise AdapterError("Authorization timestamp must be UTC-aware")
+    try:
+        ledger = pilot.BalanceAwareLedger(
+            available_balance_cents,
+            reserve_cents=reserve_cents,
+            balance_source=balance_source,
+            checked_at=balance_checked_at,
+        )
+        ledger.authorize_one(
+            "R01-A", operator_authorized=True, estimated_spend_cents=estimated_spend_cents
+        )
+    except pilot.PilotError as exc:
+        raise AdapterError(f"Balance-aware authorization was rejected: {exc}") from exc
     return {
         "schema_version": 1,
         "authorization_id": uuid.uuid4().hex,
@@ -386,11 +424,22 @@ def create_authorization(
                 "candidate_image_digest",
                 "execution_config_digest",
                 "workspace",
+                "state_directory",
                 "controller_version",
             )
         },
         "typed_confirmation": expected_confirmation,
+        "restricted_key_scope_operator_attested": True,
         "consumed": False,
+        "balance_snapshot": {
+            "available_balance_cents": available_balance_cents,
+            "reserve_cents": reserve_cents,
+            "estimated_spend_cents": estimated_spend_cents,
+            "balance_source": balance_source,
+            "checked_at": balance_checked_at,
+            "estimate_is_binding": False,
+            "ledger_is_hard_limit": False,
+        },
     }
 
 
@@ -406,12 +455,16 @@ def validate_authorization(
         "expires_at",
         "scope",
         "typed_confirmation",
+        "restricted_key_scope_operator_attested",
         "consumed",
+        "balance_snapshot",
     }
     if not isinstance(authorization, dict) or set(authorization) != required:
         raise AdapterError("Authorization fields do not match the single-trial schema")
     if authorization["schema_version"] != 1 or authorization["authorized"] is not True:
         raise AdapterError("Explicit paid-trial authorization is missing")
+    if authorization["restricted_key_scope_operator_attested"] is not True:
+        raise AdapterError("Separate executor-key scope attestation is missing")
     if authorization["consumed"] is not False:
         raise AdapterError("Authorization has already been consumed")
     if not re.fullmatch(r"[a-f0-9]{32}", str(authorization["authorization_id"])):
@@ -431,6 +484,7 @@ def validate_authorization(
             "candidate_image_digest",
             "execution_config_digest",
             "workspace",
+            "state_directory",
             "controller_version",
         )
     }
@@ -448,6 +502,48 @@ def validate_authorization(
         raise AdapterError("Authorization lifetime exceeds the permitted window")
     if now < issued or now >= expires:
         raise AdapterError("Authorization is not currently valid")
+    snapshot = authorization["balance_snapshot"]
+    if not isinstance(snapshot, dict) or set(snapshot) != {
+        "available_balance_cents",
+        "reserve_cents",
+        "estimated_spend_cents",
+        "balance_source",
+        "checked_at",
+        "estimate_is_binding",
+        "ledger_is_hard_limit",
+    }:
+        raise AdapterError("Authorization balance snapshot is invalid")
+    if (
+        snapshot["estimate_is_binding"] is not False
+        or snapshot["ledger_is_hard_limit"] is not False
+        or not isinstance(snapshot["balance_source"], str)
+        or not snapshot["balance_source"].strip()
+    ):
+        raise AdapterError("Authorization balance metadata is invalid")
+    try:
+        balance_checked_at = datetime.fromisoformat(snapshot["checked_at"].replace("Z", "+00:00"))
+    except (AttributeError, ValueError) as exc:
+        raise AdapterError("Authorization balance timestamp is invalid") from exc
+    if (
+        balance_checked_at.utcoffset() != timedelta(0)
+        or balance_checked_at > now
+        or now - balance_checked_at > timedelta(seconds=MAX_AUTHORIZATION_TTL_SECONDS)
+    ):
+        raise AdapterError("Authorization requires a fresh UTC balance snapshot")
+    try:
+        ledger = pilot.BalanceAwareLedger(
+            snapshot["available_balance_cents"],
+            reserve_cents=snapshot["reserve_cents"],
+            balance_source=snapshot["balance_source"],
+            checked_at=snapshot["checked_at"],
+        )
+        ledger.authorize_one(
+            "R01-A",
+            operator_authorized=True,
+            estimated_spend_cents=snapshot["estimated_spend_cents"],
+        )
+    except (pilot.PilotError, TypeError) as exc:
+        raise AdapterError("Authorization balance snapshot failed validation") from exc
     return authorization
 
 
@@ -502,6 +598,22 @@ def consume_authorization(authorization: dict, context: dict, state_directory: P
         raise AdapterError("Authorization state must be outside the evaluator repository")
     consumed = root / "consumed-authorizations"
     consumed.mkdir(parents=True, exist_ok=True)
+    consumed_trials = root / "consumed-trials"
+    consumed_trials.mkdir(parents=True, exist_ok=True)
+    trial_marker = consumed_trials / f"{context['trial_id']}.json"
+    try:
+        with trial_marker.open("x", encoding="utf-8") as output:
+            json.dump(
+                {
+                    "trial_id": context["trial_id"],
+                    "authorization_id": authorization["authorization_id"],
+                    "consumed_at": datetime.now(UTC).isoformat(),
+                },
+                output,
+            )
+            output.write("\n")
+    except FileExistsError as exc:
+        raise AdapterError("This pilot trial already has a consumed authorization") from exc
     marker = consumed / f"{authorization['authorization_id']}.json"
     try:
         with marker.open("x", encoding="utf-8") as output:
@@ -519,17 +631,366 @@ def consume_authorization(authorization: dict, context: dict, state_directory: P
     return marker
 
 
-def run_one(*, plan: dict, trial_id: str, authorization: dict, state_directory: Path):
-    """Phase B entry point; deliberately refuses while no secure backend is verified."""
-    context = build_trial_context(plan, trial_id)
-    report = build_preflight(context)
-    if report["blocking_conditions"]:
-        raise AdapterError(
-            "Single-trial execution is blocked: " + ", ".join(report["blocking_conditions"])
-        )
-    # No runtime implementation may be selected by user-supplied configuration.
+def _load_module(path: Path, name: str):
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise AdapterError("A required R01-A runtime module could not be loaded")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _private_json_write(
+    path: Path, value: dict, *, exclusive: bool = True, redact_content: bool = True
+) -> None:
+    """Write bounded local authorization or result records with owner-only mode."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    flags = os.O_WRONLY | os.O_CREAT | (os.O_EXCL if exclusive else os.O_TRUNC)
+    descriptor = os.open(path, flags, 0o600)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as output:
+            json.dump(
+                redact(value) if redact_content else value, output, indent=2, ensure_ascii=False
+            )
+            output.write("\n")
+    except BaseException:
+        try:
+            path.unlink(missing_ok=True)
+        except OSError:
+            pass
+        raise
+
+
+def create_authorization_file(
+    *,
+    plan: dict,
+    trial_id: str,
+    workspace: Path,
+    candidate_image_digest: str,
+    state_directory: Path,
+    typed_confirmation: str,
+    available_balance_cents: int,
+    reserve_cents: int,
+    estimated_spend_cents: int,
+    balance_source: str,
+    balance_checked_at: str,
+    restricted_key_scope_confirmation: str,
+    output: Path,
+) -> dict:
+    """Create a one-use authorization without contacting Docker or OpenAI."""
+    if Path(output).resolve().is_relative_to(REPO.resolve()):
+        raise AdapterError("Authorization files must be stored outside the evaluator repository")
+    context = build_trial_context(
+        plan,
+        trial_id,
+        Path(workspace),
+        candidate_image_digest=candidate_image_digest,
+        state_directory=state_directory,
+    )
+    authorization = create_authorization(
+        context,
+        typed_confirmation=typed_confirmation,
+        available_balance_cents=available_balance_cents,
+        reserve_cents=reserve_cents,
+        estimated_spend_cents=estimated_spend_cents,
+        balance_source=balance_source,
+        balance_checked_at=balance_checked_at,
+        restricted_key_scope_confirmation=restricted_key_scope_confirmation,
+    )
     validate_authorization(authorization, context)
-    raise AdapterError("No secure Codex execution backend is installed")
+    # This file is owner-only and must retain the opaque nonce used to reject replay.
+    _private_json_write(output, authorization, redact_content=False)
+    return {
+        "status": "authorized_one_trial",
+        "trial_id": trial_id,
+        "authorization_file": str(output),
+    }
+
+
+def _make_live_controller(context: dict, authorization: dict, state_directory: Path):
+    """Build only the reviewed production components for the fixed R01-A row."""
+    docker_runtime = _load_module(ROOT / "exploratory" / "docker_runtime.py", "r01a_docker_runtime")
+    lifecycle = _load_module(ROOT / "exploratory" / "lifecycle.py", "r01a_lifecycle")
+    managed_agents = _load_module(ROOT / "exploratory" / "managed_agents.py", "r01a_managed_agents")
+    application_key = os.environ.get("OPENAI_API_KEY", "")
+    environment_key = os.environ.get("OPENAI_EXECUTOR_API_KEY", "")
+    if not application_key:
+        raise AdapterError("Controller-side OPENAI_API_KEY is unavailable")
+    if not environment_key:
+        raise AdapterError("Restricted OPENAI_EXECUTOR_API_KEY is unavailable")
+    if application_key == environment_key:
+        raise AdapterError("Application and restricted executor keys must be distinct")
+    if context.get("condition") != "A" or context.get("expected_tools") != []:
+        raise AdapterError("Condition A must have zero MCP tools")
+    image_digest = context.get("candidate_image_digest")
+    runtime = docker_runtime.CodexCandidateRuntime(image_digest)
+    candidate_report = runtime.verify_candidate_image()
+    if candidate_report["image_id"] != image_digest:
+        raise AdapterError("Verified Codex image differs from the authorized digest")
+    r_runtime = docker_runtime.DockerCandidateRuntime(docker_runtime.FROZEN_R_IMAGE_ID)
+    r_image_report = r_runtime.verify_engine_and_image()
+    if r_image_report["image_id"] != docker_runtime.FROZEN_R_IMAGE_ID:
+        raise AdapterError("Frozen R scorer image is not verified")
+    workspace_report = runtime._validate_workspace(Path(context["workspace"]))
+    if workspace_report["files"] != ["TASK.md", "data/records.csv", "renv.lock"]:
+        raise AdapterError("Public R01 workspace differs from the authorized file set")
+
+    snapshot = authorization["balance_snapshot"]
+    ledger = pilot.BalanceAwareLedger(
+        snapshot["available_balance_cents"],
+        reserve_cents=snapshot["reserve_cents"],
+        balance_source=snapshot["balance_source"],
+        checked_at=snapshot["checked_at"],
+    )
+    topology = docker_runtime.RestrictedEgressNetwork(runtime.docker)
+    client = managed_agents.ManagedAgentsClient(application_key)
+
+    def live_gates():
+        return {
+            "docker_candidate_image": candidate_report["image_id"] == image_digest,
+            "frozen_r_scorer_image": r_image_report["image_id"] == docker_runtime.FROZEN_R_IMAGE_ID,
+            "public_workspace": workspace_report["files"]
+            == ["TASK.md", "data/records.csv", "renv.lock"],
+            "controller_application_credential": bool(application_key),
+            "restricted_environment_key_present_and_separate": bool(environment_key)
+            and environment_key != application_key,
+            "restricted_environment_key_scope_operator_attested": authorization.get(
+                "restricted_key_scope_operator_attested"
+            )
+            is True,
+            "condition_a_zero_tools": context["condition"] == "A"
+            and context["expected_tools"] == [],
+        }
+
+    bench = _load_module(ROOT / "runner" / "bench.py", "r01a_scorer")
+
+    def checkpoint_review(record: dict) -> dict:
+        usage = _usage_from_lifecycle_events(record.get("events", []))
+        print("\nR01-A lifecycle ended. Review this real score and usage before checkpoint:")
+        print(json.dumps({"scoring": record.get("scoring"), "usage": usage}, indent=2))
+        spend = _prompt_nonnegative_int(
+            "Provider-reported session spend in cents (blank = unavailable): "
+        )
+        remaining = _prompt_nonnegative_int(
+            "Fresh available balance in cents (blank = unavailable): "
+        )
+        correctness = input(
+            "Correctness review note after inspecting the independent score: "
+        ).strip()
+        source = input("Source of the fresh balance (for example platform dashboard): ").strip()
+        confirmed = input("Do spend and balance reconcile? type yes/no: ").strip().lower() == "yes"
+        return {
+            "reported_spend_cents": spend,
+            "usage": usage,
+            "correctness_review": correctness or None,
+            "remaining_balance_cents": remaining,
+            "reconciled": confirmed,
+            "balance_source": source or None,
+            "checked_at": datetime.now(UTC).isoformat(),
+        }
+
+    return lifecycle.R01ALifecycleController(
+        client=client,
+        runtime=runtime,
+        topology=topology,
+        ledger=ledger,
+        authorize=validate_authorization,
+        consume_authorization=consume_authorization,
+        lease_factory=lambda trial: SingleTrialLease(state_directory, trial),
+        score=lambda task, artifacts, image: bench.score(task, artifacts, image),
+        frozen_r_image_id=docker_runtime.FROZEN_R_IMAGE_ID,
+        environment_key=environment_key,
+        estimated_spend_cents=snapshot["estimated_spend_cents"],
+        checkpoint_review=checkpoint_review,
+        current_live_gates=live_gates,
+        trial_timeout_seconds=900,
+    )
+
+
+def _prompt_nonnegative_int(prompt: str) -> int | None:
+    raw = input(prompt).strip()
+    if not raw:
+        return None
+    try:
+        result = int(raw)
+    except ValueError:
+        return None
+    return result if result >= 0 else None
+
+
+def _usage_from_lifecycle_events(events: list[dict]) -> dict | None:
+    """Extract only explicit usage attached to completed Managed Agents turns."""
+    inputs = outputs = reasoning = 0
+    found = False
+    for event in events:
+        if event.get("type") not in {"agent.session.turn.completed", "turn.completed"}:
+            continue
+        turn = event.get("turn")
+        usage = turn.get("usage") if isinstance(turn, dict) else event.get("usage")
+        if not isinstance(usage, dict):
+            continue
+        input_tokens = usage.get("input_tokens")
+        output_tokens = usage.get("output_tokens")
+        reasoning_tokens = usage.get("reasoning_tokens", 0)
+        if any(type(value) is not int or value < 0 for value in (input_tokens, output_tokens)):
+            return None
+        if type(reasoning_tokens) is not int or reasoning_tokens < 0:
+            return None
+        inputs += input_tokens
+        outputs += output_tokens
+        reasoning += reasoning_tokens
+        found = True
+    if not found:
+        return None
+    return {
+        "input_tokens": inputs,
+        "output_tokens": outputs,
+        "reasoning_tokens": reasoning,
+        "total_tokens": inputs + outputs,
+    }
+
+
+def run_one(
+    *,
+    plan: dict,
+    trial_id: str,
+    authorization: dict,
+    state_directory: Path,
+    workspace: Path,
+    candidate_image_digest: str,
+):
+    """Run exactly one fully authorized R01-A lifecycle; never retries or batches."""
+    context = build_trial_context(
+        plan,
+        trial_id,
+        Path(workspace),
+        candidate_image_digest=candidate_image_digest,
+        state_directory=Path(state_directory),
+    )
+    validate_authorization(authorization, context)
+    controller = _make_live_controller(context, authorization, Path(state_directory))
+    return controller.run_one(
+        context=context, authorization=authorization, state_directory=state_directory
+    )
+
+
+def verify_cleanup(state_directory: Path, result_path: Path, docker: str | None = None) -> dict:
+    """Verify the saved live audit plus local lock, containers, and egress networks."""
+    state_directory = Path(state_directory).resolve()
+    if state_directory.is_relative_to(REPO.resolve()):
+        raise AdapterError("Execution state must be outside the evaluator repository")
+    lock_exists = (state_directory / "active-trial.lock").exists()
+    docker = docker or shutil.which("docker")
+    if not docker:
+        raise AdapterError("Docker CLI is unavailable for cleanup verification")
+    result = subprocess.run(
+        [docker, "ps", "--all", "--format", "{{.Names}}"],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise AdapterError("Docker cleanup state could not be verified")
+    names = [line for line in result.stdout.splitlines() if line.startswith("rkmcp-")]
+    network_result = subprocess.run(
+        [docker, "network", "ls", "--format", "{{.Name}}"],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    if network_result.returncode != 0:
+        raise AdapterError("Docker network cleanup state could not be verified")
+    networks = [
+        line
+        for line in network_result.stdout.splitlines()
+        if line.startswith(("rkmcp-candidate-R01-A-", "rkmcp-egress-R01-A-"))
+    ]
+    result_path = Path(result_path)
+    if (
+        result_path.is_symlink()
+        or not result_path.is_file()
+        or result_path.stat().st_size > (8 << 20)
+    ):
+        raise AdapterError("Lifecycle audit is missing, linked, or oversized")
+    try:
+        audit = json.loads(result_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise AdapterError("Lifecycle cleanup audit is unavailable or invalid") from exc
+    live_audit_clean = (
+        isinstance(audit, dict)
+        and audit.get("record_type") == "managed_agents_r01a_lifecycle_audit_not_benchmark_result"
+        and audit.get("synthetic") is False
+        and audit.get("cleanup_verified") is True
+        and audit.get("session_deleted_verified") is True
+        and audit.get("container_termination_verified") is True
+        and audit.get("topology_cleanup_verified") is True
+    )
+    return {
+        "record_type": "r01a_cleanup_verification_not_trial",
+        "checked_at": datetime.now(UTC).isoformat(),
+        "active_trial_lock_present": lock_exists,
+        "remaining_rkmcp_containers": names,
+        "remaining_r01a_networks": networks,
+        "live_lifecycle_cleanup_verified": live_audit_clean,
+        "local_cleanup_verified": not lock_exists and not names and not networks,
+        "cleanup_verified": live_audit_clean and not lock_exists and not names and not networks,
+    }
+
+
+def cancel_running_trial(state_directory: Path) -> dict:
+    """Send SIGINT only to the adapter process named by the active-trial lock."""
+    if os.name == "nt" or not Path("/proc").is_dir():
+        raise AdapterError("Use Ctrl+C in the WSL2 run-one terminal to cancel this trial")
+    state_directory = Path(state_directory).resolve()
+    if state_directory.is_relative_to(REPO.resolve()):
+        raise AdapterError("Execution state must be outside the evaluator repository")
+    lock_path = state_directory / "active-trial.lock"
+    if lock_path.is_symlink():
+        raise AdapterError("Active-trial lock must not be a symbolic link")
+    try:
+        lock = json.loads(lock_path.read_text(encoding="utf-8"))
+        pid = lock["pid"]
+        command = Path(f"/proc/{pid}/cmdline").read_bytes().replace(b"\0", b" ")
+    except (OSError, KeyError, TypeError, json.JSONDecodeError) as exc:
+        raise AdapterError("An active-trial process could not be verified") from exc
+    if type(pid) is not int or b"adapter.py" not in command or b"run-one" not in command:
+        raise AdapterError("Active-trial PID does not identify the R01-A run-one process")
+    os.kill(pid, signal.SIGINT)
+    return {"status": "sigint_sent_to_verified_run_one", "pid": pid, "trial_id": "R01-A"}
+
+
+def inspect_result(path: Path) -> dict:
+    """Read one bounded lifecycle audit without converting it to benchmark data."""
+    path = Path(path)
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > (8 << 20):
+        raise AdapterError("Result must be a regular file no larger than 8 MiB")
+    try:
+        record = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise AdapterError("Result JSON is unavailable or invalid") from exc
+    allowed = {
+        "managed_agents_r01a_lifecycle_audit_not_benchmark_result",
+        "synthetic_r01a_lifecycle_audit_not_benchmark_result",
+    }
+    if not isinstance(record, dict) or record.get("record_type") not in allowed:
+        raise AdapterError("File is not a recognized R01-A lifecycle audit")
+    return {
+        "record_type": record["record_type"],
+        "synthetic": record.get("synthetic"),
+        "trial_id": record.get("trial_id"),
+        "status": record.get("status"),
+        "scoring": record.get("scoring"),
+        "usage": _usage_from_lifecycle_events(record.get("events", [])),
+        "checkpoint": record.get("checkpoint"),
+        "cleanup_verified": record.get("cleanup_verified"),
+        "session_deleted_verified": record.get("session_deleted_verified"),
+        "container_termination_verified": record.get("container_termination_verified"),
+        "topology_cleanup_verified": record.get("topology_cleanup_verified"),
+        "benchmark_importable": False,
+    }
 
 
 def _internal_sleep_probe() -> int:
@@ -723,10 +1184,29 @@ def main(argv=None) -> int:
     docker_timeout_parser = sub.add_parser("docker-timeout-probe")
     docker_timeout_parser.add_argument("--image", required=True)
     docker_timeout_parser.add_argument("--timeout-seconds", type=float, default=1.0)
+    auth_parser = sub.add_parser("authorize-one")
+    auth_parser.add_argument("--trial", required=True, choices=["R01-A"])
+    auth_parser.add_argument("--workspace", type=Path, required=True)
+    auth_parser.add_argument("--image", required=True)
+    auth_parser.add_argument("--available-balance-cents", type=int, required=True)
+    auth_parser.add_argument("--reserve-cents", type=int, required=True)
+    auth_parser.add_argument("--estimated-spend-cents", type=int, required=True)
+    auth_parser.add_argument("--balance-source", required=True)
+    auth_parser.add_argument("--balance-checked-at", required=True)
+    auth_parser.add_argument("--confirm", required=True)
+    auth_parser.add_argument("--confirm-restricted-key-scope", required=True)
+    auth_parser.add_argument("--authorization-output", type=Path, required=True)
     run_parser = sub.add_parser("run-one")
-    run_parser.add_argument("--trial", required=True)
+    run_parser.add_argument("--trial", required=True, choices=["R01-A"])
+    run_parser.add_argument("--workspace", type=Path, required=True)
+    run_parser.add_argument("--image", required=True)
     run_parser.add_argument("--authorization", type=Path, required=True)
-    run_parser.add_argument("--state-directory", type=Path, required=True)
+    run_parser.add_argument("--result", type=Path, required=True)
+    sub.add_parser("cancel-one")
+    cleanup_parser = sub.add_parser("verify-cleanup")
+    cleanup_parser.add_argument("--result", type=Path, required=True)
+    result_parser = sub.add_parser("inspect-result")
+    result_parser.add_argument("--result", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
         if args.command == "preflight":
@@ -739,6 +1219,43 @@ def main(argv=None) -> int:
         elif args.command == "dry-run":
             result = run_local_timeout_probe(args.timeout_seconds)
             code = 0 if result["timed_out"] and result["process_exited"] else 2
+        elif args.command == "authorize-one":
+            state_directory = default_state_directory()
+            if state_directory.resolve().is_relative_to(REPO.resolve()):
+                raise AdapterError("Execution state must be outside the evaluator repository")
+            try:
+                balance_checked_at = datetime.fromisoformat(
+                    args.balance_checked_at.replace("Z", "+00:00")
+                )
+            except ValueError as exc:
+                raise AdapterError("Balance check time must be an ISO-8601 UTC timestamp") from exc
+            if balance_checked_at.utcoffset() != timedelta(0):
+                raise AdapterError("Balance check time must be UTC")
+            result = create_authorization_file(
+                plan=pilot.make_plan(),
+                trial_id=args.trial,
+                workspace=args.workspace,
+                candidate_image_digest=args.image,
+                state_directory=state_directory,
+                typed_confirmation=args.confirm,
+                available_balance_cents=args.available_balance_cents,
+                reserve_cents=args.reserve_cents,
+                estimated_spend_cents=args.estimated_spend_cents,
+                balance_source=args.balance_source,
+                balance_checked_at=balance_checked_at.isoformat(),
+                restricted_key_scope_confirmation=args.confirm_restricted_key_scope,
+                output=args.authorization_output,
+            )
+            code = 0
+        elif args.command == "cancel-one":
+            result = cancel_running_trial(default_state_directory())
+            code = 0
+        elif args.command == "verify-cleanup":
+            result = verify_cleanup(default_state_directory(), args.result)
+            code = 0 if result["cleanup_verified"] else 2
+        elif args.command == "inspect-result":
+            result = inspect_result(args.result)
+            code = 0
         elif args.command in {
             "docker-isolation",
             "docker-egress-probe",
@@ -788,15 +1305,26 @@ def main(argv=None) -> int:
                     if result.get("container_cleanup_verified", result.get("container_removed"))
                     else 2
                 )
-        else:
+        elif args.command == "run-one":
+            if args.authorization.is_symlink() or args.authorization.stat().st_size > (64 << 10):
+                raise AdapterError("Authorization must be a regular bounded file")
+            if args.result.is_symlink() or args.result.exists():
+                raise AdapterError("Choose a new result path before authorizing the trial")
+            if args.result.resolve().is_relative_to(REPO.resolve()):
+                raise AdapterError(
+                    "Lifecycle results must be stored outside the evaluator repository"
+                )
             authorization = json.loads(args.authorization.read_text(encoding="utf-8"))
-            run_one(
+            result = run_one(
                 plan=pilot.make_plan(),
                 trial_id=args.trial,
                 authorization=authorization,
-                state_directory=args.state_directory,
+                state_directory=default_state_directory(),
+                workspace=args.workspace,
+                candidate_image_digest=args.image,
             )
-            raise AdapterError("Unexpected return from blocked run-one gate")
+            _private_json_write(args.result, result)
+            code = 0 if result.get("cleanup_verified") else 2
     except (
         AdapterError,
         pilot.PilotError,
@@ -805,7 +1333,18 @@ def main(argv=None) -> int:
         json.JSONDecodeError,
         KeyError,
     ) as exc:
-        result = {"record_type": "single_trial_preflight_error", "error": redact(str(exc))}
+        audit = getattr(exc, "audit_record", None)
+        if getattr(args, "command", None) == "run-one" and isinstance(audit, dict):
+            try:
+                _private_json_write(args.result, audit)
+                result = audit
+            except OSError:
+                result = {
+                    "record_type": "single_trial_preflight_error",
+                    "error": "Lifecycle failed and its audit record could not be persisted",
+                }
+        else:
+            result = {"record_type": "single_trial_preflight_error", "error": redact(str(exc))}
         code = 2
     payload = json.dumps(redact(result), indent=2, ensure_ascii=False) + "\n"
     if getattr(args, "output", None):

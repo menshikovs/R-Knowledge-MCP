@@ -168,8 +168,13 @@ class R01ALifecycleController:
             "states": [],
             "events": [],
             "session_created": False,
+            "session_creation_attempted": False,
+            "sessions_created_count": 0,
             "inference_submitted": False,
+            "task_submissions_attempted_count": 0,
             "container_termination_verified": False,
+            "session_deleted_verified": False,
+            "topology_cleanup_verified": False,
             "artifact_hashes": {},
             "scoring": None,
             "checkpoint": None,
@@ -177,6 +182,11 @@ class R01ALifecycleController:
             "launch_permitted": not self.synthetic_mode,
             "deadline_expired": False,
             "deadline_termination_verified": None,
+            "pre_session_gates": gates,
+            "restricted_egress": None,
+            "session_creation_uncertain": False,
+            "task_submission_attempted": False,
+            "task_submission_uncertain": False,
         }
         session_id = container_id = None
         lease = self.lease_factory("R01-A")
@@ -205,9 +215,21 @@ class R01ALifecycleController:
             )
             state("authorize")
             gateway = self.topology.start()
+            if not getattr(self.topology, "started", False):
+                raise LifecycleError("Restricted egress topology did not verify as active")
+            record["restricted_egress"] = {
+                "status": gateway.get("status"),
+                "allowed_destinations": gateway.get("allowed_destinations"),
+                "tls_interception": gateway.get("tls_interception"),
+                "remote_url_rewritten": gateway.get("remote_url_rewritten"),
+                "network_isolation": gateway.get("network_isolation"),
+                "topology_started_and_verified": True,
+            }
             session = self.client.create_session(context)
             session_id = session["session_id"]
+            record["resolved_session"] = session.get("resolved_agent")
             record["session_created"] = True
+            record["sessions_created_count"] = 1
             state("create_session")
 
             def start_executor():
@@ -248,7 +270,11 @@ class R01ALifecycleController:
                 deadline_timer.start()
 
             def task_submitted():
+                if record["task_submissions_attempted_count"] != 0:
+                    raise LifecycleError("Only one task submission is permitted for R01-A")
                 record["inference_submitted"] = True
+                record["task_submission_attempted"] = True
+                record["task_submissions_attempted_count"] = 1
 
             state("stream_events")
             for event in self.client.send_and_stream(
@@ -302,6 +328,20 @@ class R01ALifecycleController:
             else:
                 container_removed = True
             record["container_termination_verified"] = container_removed
+            record["session_creation_uncertain"] = bool(
+                getattr(self.client, "session_creation_uncertain", False)
+            )
+            record["session_creation_attempted"] = bool(
+                getattr(self.client, "session_creation_attempted", record["session_created"])
+            )
+            record["task_submission_attempted"] = record["task_submission_attempted"] or bool(
+                getattr(self.client, "task_submission_attempted", False)
+            )
+            if record["task_submission_attempted"]:
+                record["task_submissions_attempted_count"] = 1
+            record["task_submission_uncertain"] = bool(
+                getattr(self.client, "task_submission_uncertain", False)
+            )
             if session_id:
                 try:
                     self.client.delete_session(session_id)
@@ -320,15 +360,22 @@ class R01ALifecycleController:
                 topology_removed = self.topology.cleanup()
             except Exception:
                 topology_removed = False
-            cleanup_ok = container_removed and session_deleted and topology_removed
+            cleanup_ok = (
+                container_removed
+                and session_deleted
+                and topology_removed
+                and not record["session_creation_uncertain"]
+            )
             record["cleanup_verified"] = cleanup_ok
+            record["session_deleted_verified"] = session_deleted
+            record["topology_cleanup_verified"] = topology_removed
 
         if not record["cleanup_verified"] or not container_removed:
             if self.ledger.active_trial_id == "R01-A":
                 state("checkpoint")
                 try:
                     review = self.checkpoint_review(record)
-                except Exception:
+                except (Exception, KeyboardInterrupt):
                     review = None
                 if isinstance(review, dict):
                     record["checkpoint"] = self.ledger.checkpoint("R01-A", **review)
@@ -344,7 +391,9 @@ class R01ALifecycleController:
                         checked_at=None,
                     )
             lease.__exit__(type(primary_error) if primary_error else None, primary_error, None)
-            raise LifecycleError("Cleanup or executor termination could not be verified")
+            failure = LifecycleError("Cleanup or executor termination could not be verified")
+            failure.audit_record = record
+            raise failure
 
         state("terminate_container")
         if primary_error is None:
@@ -374,7 +423,7 @@ class R01ALifecycleController:
             state("checkpoint")
             try:
                 review = self.checkpoint_review(record)
-            except Exception:
+            except (Exception, KeyboardInterrupt):
                 review = None
             if isinstance(review, dict):
                 record["checkpoint"] = self.ledger.checkpoint("R01-A", **review)

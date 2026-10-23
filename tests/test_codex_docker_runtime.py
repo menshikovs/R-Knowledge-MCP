@@ -21,6 +21,24 @@ def test_docker_runtime_requires_an_immutable_image_id():
         docker_runtime.DockerCandidateRuntime("codex-r-benchmark:pilot")
 
 
+def test_executor_environment_strips_both_application_and_host_scoped_keys():
+    environment = docker_runtime._executor_child_environment(
+        {
+            "OPENAI_API_KEY": "synthetic-app-secret",
+            "OPENAI_EXECUTOR_API_KEY": "synthetic-host-restricted-secret",
+            "CODEX_API_KEY": "stale-key",
+            "PATH": "/usr/bin",
+            "LANG": "C.UTF-8",
+        },
+        "synthetic-container-restricted-key",
+    )
+    assert environment == {
+        "PATH": "/usr/bin",
+        "LANG": "C.UTF-8",
+        "CODEX_API_KEY": "synthetic-container-restricted-key",
+    }
+
+
 def test_fixed_r01_probe_configuration_has_no_host_capability_mounts(tmp_path):
     runtime = docker_runtime.DockerCandidateRuntime("sha256:" + "a" * 64, docker="docker")
     args = runtime._create_args(

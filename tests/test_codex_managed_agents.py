@@ -104,6 +104,12 @@ def test_managed_agents_mock_uses_fixed_routes_and_keeps_app_key_controller_side
             "session_id": "sess_test123",
             "environment_id": "env_test123",
             "remote_url": "https://api.openai.com/v1/agents/api",
+            "resolved_agent": {
+                "model": "gpt-6-luna",
+                "reasoning_effort": "medium",
+                "tools": [],
+                "verified_from_session_response": True,
+            },
         }
         assert client.submit_task("sess_test123", "offline synthetic fixture task") == {
             "accepted": True
@@ -119,6 +125,73 @@ def test_managed_agents_mock_uses_fixed_routes_and_keeps_app_key_controller_side
         "/v1/agents/sessions/sess_test123",
     ]
     assert all(request.url.host == "api.openai.com" for request in requests)
+
+
+def test_client_is_limited_to_one_session_and_one_task_submission():
+    requests = []
+
+    def handler(request):
+        requests.append(request)
+        if request.method == "POST" and request.url.path == "/v1/agents/sessions":
+            return httpx.Response(201, json=session_record())
+        if request.method == "POST" and request.url.path.endswith("/events"):
+            return httpx.Response(202, json={"accepted": True})
+        raise AssertionError(f"unexpected request {request.method} {request.url.path}")
+
+    client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
+    try:
+        client.create_session(context())
+        with pytest.raises(ManagedAgentsError, match="one session creation attempt"):
+            client.create_session(context())
+        client.submit_task("sess_test123", "synthetic task", idempotency_key="one-task-key-12345")
+        with pytest.raises(ManagedAgentsError, match="already attempted"):
+            client.submit_task(
+                "sess_test123", "must not be retried", idempotency_key="second-task-key-1234"
+            )
+    finally:
+        client.close()
+    assert [request.method for request in requests] == ["POST", "POST"]
+
+
+def test_invalid_created_session_is_deleted_before_any_task_can_be_submitted():
+    requests = []
+
+    def handler(request):
+        requests.append((request.method, request.url.path))
+        if request.method == "POST" and request.url.path == "/v1/agents/sessions":
+            record = session_record()
+            record["agent"]["model"] = "other-model"
+            return httpx.Response(201, json=record)
+        if request.method == "DELETE":
+            return httpx.Response(200, json={"id": "sess_test123", "deleted": True})
+        raise AssertionError("unexpected task or API request")
+
+    client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
+    try:
+        with pytest.raises(ManagedAgentsError, match="Resolved session model"):
+            client.create_session(context())
+        assert client.session_creation_uncertain is False
+        assert requests == [
+            ("POST", "/v1/agents/sessions"),
+            ("DELETE", "/v1/agents/sessions/sess_test123"),
+        ]
+    finally:
+        client.close()
+
+
+def test_ambiguous_session_creation_failure_is_marked_uncertain_without_retry():
+    client = ManagedAgentsClient(
+        "synthetic-app-secret",
+        transport=httpx.MockTransport(lambda _request: httpx.Response(502)),
+    )
+    try:
+        with pytest.raises(ManagedAgentsError):
+            client.create_session(context())
+        assert client.session_creation_uncertain is True
+        with pytest.raises(ManagedAgentsError, match="one session creation attempt"):
+            client.create_session(context())
+    finally:
+        client.close()
 
 
 @pytest.mark.parametrize(
