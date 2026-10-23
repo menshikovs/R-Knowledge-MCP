@@ -13,7 +13,7 @@ import ssl
 import time
 import uuid
 from collections.abc import Callable
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, unquote, urlsplit
 
 import httpx
 
@@ -22,8 +22,7 @@ MAX_EVENT_BYTES = 1 << 20
 MAX_EVENT_COUNT = 10000
 MAX_EVENT_LOG_BYTES = 32 << 20
 API_ORIGIN = "https://api.openai.com"
-REGISTERED_EXECUTOR_URL = "https://api.openai.com/v1/agents/api"
-OFFICIAL_EXECUTOR_HOSTS = {"api.openai.com", "codex-cloud-environments.chatgpt.com"}
+OFFICIAL_EXECUTOR_HOSTS = {"api.openai.com"}
 SESSION_ID = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
 
 
@@ -75,27 +74,95 @@ def build_agent_config(context: dict, *, gateway_url: str | None = None) -> dict
     }
 
 
+def _schema_error(reason_code: str, field: str) -> ManagedAgentsError:
+    """Build safe schema diagnostics; never include upstream values."""
+    error = ManagedAgentsError(
+        "Managed Agents session response failed validation",
+        category="response_schema_validation",
+        operation="create_session",
+    )
+    error.diagnostics.update(reason_code=reason_code, field=field)
+    return error
+
+
 def validate_environment_record(record: dict) -> dict:
-    """Accept only the official Managed Agents executor environment endpoint."""
+    """Validate the documented self-hosted response without rewriting its URL."""
     if not isinstance(record, dict) or not SESSION_ID.fullmatch(str(record.get("id", ""))):
-        raise ManagedAgentsError("Session or environment identity is invalid")
+        raise _schema_error("session_id_invalid", "id")
     environment = record.get("environment")
     if not isinstance(environment, dict) or environment.get("type") != "self_hosted":
-        raise ManagedAgentsError("Managed Agents did not return a self-hosted environment")
-    env_id = str(environment.get("id", ""))
+        raise _schema_error("environment_type_invalid", "environment.type")
+    env_id = environment.get("id")
+    if not isinstance(env_id, str) or not SESSION_ID.fullmatch(env_id):
+        raise _schema_error("environment_id_invalid", "environment.id")
     remote_url = environment.get("remote_url")
-    parsed = urlsplit(remote_url or "")
-    if (
-        not SESSION_ID.fullmatch(env_id)
-        or parsed.scheme != "https"
-        or parsed.hostname != "api.openai.com"
-        or parsed.path != "/v1/agents/api"
-        or parsed.port not in (None, 443)
-        or parsed.username
-        or parsed.password
-        or parsed.fragment
-    ):
-        raise ManagedAgentsError("Executor remote URL is not the documented fixed API endpoint")
+    reason_code = None
+    field = "environment.remote_url"
+    if not isinstance(remote_url, str) or not remote_url:
+        reason_code = "remote_url_missing"
+    elif any(ord(char) < 0x20 or ord(char) == 0x7F for char in remote_url):
+        reason_code = "remote_url_invalid_characters"
+    elif "#" in remote_url:
+        reason_code = "remote_url_fragment_forbidden"
+    else:
+        try:
+            parsed = urlsplit(remote_url)
+            port = parsed.port
+        except ValueError:
+            parsed = None
+            port = None
+            reason_code = "remote_url_port_invalid"
+        if parsed is not None and reason_code is None:
+            if parsed.scheme.lower() != "https":
+                reason_code = "remote_url_scheme_not_https"
+            elif parsed.hostname not in OFFICIAL_EXECUTOR_HOSTS:
+                reason_code = "remote_url_hostname_not_allowlisted"
+            elif port not in (None, 443):
+                reason_code = "remote_url_port_not_permitted"
+            elif parsed.username is not None or parsed.password is not None:
+                reason_code = "remote_url_credentials_forbidden"
+            elif any(
+                key.casefold()
+                in {
+                    "api_key",
+                    "apikey",
+                    "access_token",
+                    "auth",
+                    "authorization",
+                    "bearer",
+                    "credential",
+                    "password",
+                    "secret",
+                    "sig",
+                    "signature",
+                    "token",
+                }
+                for key, _value in parse_qsl(parsed.query, keep_blank_values=True)
+            ):
+                reason_code = "remote_url_credentials_forbidden"
+            elif parsed.fragment:
+                reason_code = "remote_url_fragment_forbidden"
+            elif parsed.netloc.endswith(":"):
+                reason_code = "remote_url_port_invalid"
+            else:
+                # The API reference models remote_url as an opaque string and
+                # instructs clients to pass it unchanged. Keep it on the
+                # documented API endpoint namespace while accepting trailing
+                # slash/subpath variants that the fixed-path check rejected.
+                path = parsed.path
+                decoded_path = unquote(path)
+                path_parts = decoded_path.split("/")
+                if (
+                    not path.startswith("/v1/agents/api")
+                    or not (path == "/v1/agents/api" or path.startswith("/v1/agents/api/"))
+                    or any(part in {".", ".."} for part in path_parts)
+                    or "\\" in decoded_path
+                    or re.search(r"%(?![0-9A-Fa-f]{2})", path)
+                    or any(char.isspace() for char in path)
+                ):
+                    reason_code = "remote_url_path_not_permitted"
+    if reason_code:
+        raise _schema_error(reason_code, field)
     return {
         "session_id": record["id"],
         "environment_id": env_id,
@@ -135,6 +202,11 @@ class ManagedAgentsClient:
         self._session_creation_attempted = False
         self.session_creation_attempted = False
         self.session_creation_uncertain = False
+        self.session_creation_response_received = False
+        self.session_creation_http_status: int | None = None
+        self.session_id_for_cleanup: str | None = None
+        self.session_deletion_verified: bool | None = None
+        self.session_state = "not_created"
         self.task_submission_attempted = False
         self.task_submission_uncertain = False
         self._submitted_sessions: set[str] = set()
@@ -222,10 +294,23 @@ class ManagedAgentsClient:
         self.session_creation_attempted = True
         self.session_creation_uncertain = True
         # No initial input: the session executor must be connected before a turn starts.
-        record = self._request_json(
-            "POST", "/v1/agents/sessions", body=config, operation="create_session"
-        )
+        try:
+            record = self._request_json(
+                "POST", "/v1/agents/sessions", body=config, operation="create_session"
+            )
+        except ManagedAgentsError:
+            status = self._last_response_status
+            if status is not None and 200 <= status < 300:
+                self.session_creation_response_received = True
+                self.session_creation_http_status = status
+            self.session_state = "unknown" if self.session_creation_uncertain else "not_created"
+            raise
+        self.session_creation_response_received = True
+        self.session_creation_http_status = self._last_response_status
+        self.session_state = "created_unvalidated"
         session_id = record.get("id") if isinstance(record, dict) else None
+        if isinstance(session_id, str) and SESSION_ID.fullmatch(session_id):
+            self.session_id_for_cleanup = session_id
         try:
             checked = validate_environment_record(record)
             agent = record.get("agent")
@@ -250,16 +335,39 @@ class ManagedAgentsClient:
                     else "response_schema_validation"
                 ),
             )
+            exc.diagnostics.setdefault(
+                "session_state", "created_unaddressable" if session_id is None else "created"
+            )
             if isinstance(session_id, str) and SESSION_ID.fullmatch(session_id):
                 try:
                     self.delete_session(session_id)
                 except ManagedAgentsError as cleanup_error:
-                    raise ManagedAgentsError(
-                        "Created session failed validation and deletion was not confirmed"
-                    ) from cleanup_error
+                    self.session_deletion_verified = False
+                    self.session_state = "unknown"
+                    exc.diagnostics.update(
+                        session_deleted_verified=False,
+                        session_state="unknown",
+                        cleanup_reason_code="session_delete_not_confirmed",
+                    )
+                    raise exc from cleanup_error
+                self.session_deletion_verified = True
                 self.session_creation_uncertain = False
+                self.session_state = "deleted"
+                exc.diagnostics.update(
+                    session_deleted_verified=True,
+                    session_state="deleted_after_validation_failure",
+                )
+            else:
+                self.session_deletion_verified = None
+                self.session_state = "unknown"
+                exc.diagnostics.update(
+                    session_deleted_verified=None,
+                    session_state="unknown",
+                    cleanup_reason_code="session_id_unavailable",
+                )
             raise exc
         self.session_creation_uncertain = False
+        self.session_state = "created"
         checked["resolved_agent"] = {
             "model": agent["model"],
             "reasoning_effort": reasoning["effort"],

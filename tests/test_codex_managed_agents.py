@@ -169,13 +169,85 @@ def test_invalid_created_session_is_deleted_before_any_task_can_be_submitted():
 
     client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
     try:
-        with pytest.raises(ManagedAgentsError, match="Resolved session model"):
+        with pytest.raises(ManagedAgentsError, match="Resolved session model") as raised:
             client.create_session(context())
         assert client.session_creation_uncertain is False
+        assert client.session_creation_response_received is True
+        assert client.session_deletion_verified is True
+        assert client.session_state == "deleted"
+        assert raised.value.diagnostics["session_deleted_verified"] is True
         assert requests == [
             ("POST", "/v1/agents/sessions"),
             ("DELETE", "/v1/agents/sessions/sess_test123"),
         ]
+    finally:
+        client.close()
+
+
+def test_created_session_with_invalid_url_is_deleted_and_failure_is_redacted():
+    requests = []
+
+    def handler(request):
+        requests.append(request.method)
+        if request.method == "POST":
+            return httpx.Response(
+                201,
+                json=session_record("https://attacker.invalid/route?signature=must-not-log"),
+            )
+        return httpx.Response(200, json={"id": "sess_test123", "deleted": True})
+
+    client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
+    try:
+        with pytest.raises(ManagedAgentsError) as raised:
+            client.create_session(context())
+        assert requests == ["POST", "DELETE"]
+        assert client.session_creation_http_status == 201
+        assert client.session_deletion_verified is True
+        assert client.session_state == "deleted"
+        assert raised.value.diagnostics["http_status"] == 201
+        assert raised.value.diagnostics["reason_code"] == "remote_url_hostname_not_allowlisted"
+        assert raised.value.diagnostics["session_deleted_verified"] is True
+        assert "attacker.invalid" not in str(raised.value.diagnostics)
+        assert "must-not-log" not in str(raised.value.diagnostics)
+    finally:
+        client.close()
+
+
+def test_created_session_with_invalid_url_and_unconfirmed_delete_is_unknown():
+    def handler(request):
+        if request.method == "POST":
+            return httpx.Response(201, json=session_record("https://evil.invalid/route"))
+        return httpx.Response(503, json={"error": "private body"})
+
+    client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
+    try:
+        with pytest.raises(ManagedAgentsError) as raised:
+            client.create_session(context())
+        assert client.session_deletion_verified is False
+        assert client.session_creation_uncertain is True
+        assert client.session_state == "unknown"
+        assert raised.value.diagnostics["session_deleted_verified"] is False
+        assert raised.value.diagnostics["session_state"] == "unknown"
+        assert "private body" not in str(raised.value.diagnostics)
+    finally:
+        client.close()
+
+
+def test_created_session_without_usable_id_keeps_deletion_state_unknown():
+    response = session_record()
+    response["id"] = "invalid session id"
+    client = ManagedAgentsClient(
+        "synthetic-app-secret",
+        transport=httpx.MockTransport(lambda _request: httpx.Response(201, json=response)),
+    )
+    try:
+        with pytest.raises(ManagedAgentsError) as raised:
+            client.create_session(context())
+        assert client.session_creation_response_received is True
+        assert client.session_state == "unknown"
+        assert client.session_deletion_verified is None
+        assert raised.value.diagnostics["session_deleted_verified"] is None
+        assert raised.value.diagnostics["cleanup_reason_code"] == "session_id_unavailable"
     finally:
         client.close()
 
@@ -282,22 +354,81 @@ def test_session_creation_payload_failures_have_safe_diagnostics(response, categ
 
 
 @pytest.mark.parametrize(
-    "remote_url",
+    ("remote_url", "reason_code"),
     [
-        "http://api.openai.com/v1/agents/api",
-        "https://evil.example/v1/agents/api",
-        "https://api.openai.com.attacker.example/v1/agents/api",
-        "https://user:pass@api.openai.com/v1/agents/api",
+        ("http://api.openai.com/v1/agents/api", "remote_url_scheme_not_https"),
+        ("https://evil.example/v1/agents/api", "remote_url_hostname_not_allowlisted"),
+        (
+            "https://api.openai.com.attacker.example/v1/agents/api",
+            "remote_url_hostname_not_allowlisted",
+        ),
+        (
+            "https://user:pass@api.openai.com/v1/agents/api",
+            "remote_url_credentials_forbidden",
+        ),
+        (
+            "https://api.openai.com/v1/agents/api?access_token=secret",
+            "remote_url_credentials_forbidden",
+        ),
+        ("https://api.openai.com:444/v1/agents/api", "remote_url_port_not_permitted"),
+        ("https://api.openai.com/v1/other", "remote_url_path_not_permitted"),
+        ("https://api.openai.com/v1/agents/api#", "remote_url_fragment_forbidden"),
+        (
+            "https://api.openai.com/v1/agents/api/%2e%2e/private",
+            "remote_url_path_not_permitted",
+        ),
     ],
 )
-def test_executor_remote_url_cannot_select_an_arbitrary_host(remote_url):
-    with pytest.raises(ManagedAgentsError):
+def test_executor_remote_url_rejections_have_safe_component_diagnostics(remote_url, reason_code):
+    with pytest.raises(ManagedAgentsError) as raised:
         validate_environment_record(session_record(remote_url))
+    assert raised.value.diagnostics["reason_code"] == reason_code
+    assert raised.value.diagnostics["field"] == "environment.remote_url"
+    assert remote_url not in str(raised.value.diagnostics)
 
 
-def test_executor_remote_url_is_passed_through_without_rewriting():
-    signed = "https://api.openai.com/v1/agents/api?route=opaque-server-token"
-    assert validate_environment_record(session_record(signed))["remote_url"] == signed
+@pytest.mark.parametrize(
+    "remote_url",
+    [
+        "https://api.openai.com/v1/agents/api",
+        "https://api.openai.com:443/v1/agents/api/",
+        "https://api.openai.com/v1/agents/api/connect/session",
+        "https://api.openai.com/v1/agents/api?route=opaque-server-token",
+    ],
+)
+def test_documented_executor_url_variants_are_passed_through_exactly(remote_url):
+    assert validate_environment_record(session_record(remote_url))["remote_url"] == remote_url
+
+
+@pytest.mark.parametrize(
+    ("record_change", "reason_code", "field"),
+    [
+        ({"id": "invalid session"}, "session_id_invalid", "id"),
+        (
+            {"environment": {"id": "env_test123", "type": "openai_hosted"}},
+            "environment_type_invalid",
+            "environment.type",
+        ),
+        (
+            {
+                "environment": {
+                    "id": "invalid env",
+                    "type": "self_hosted",
+                    "remote_url": "https://api.openai.com/v1/agents/api",
+                }
+            },
+            "environment_id_invalid",
+            "environment.id",
+        ),
+    ],
+)
+def test_session_and_environment_identity_validation_is_specific(record_change, reason_code, field):
+    record = session_record()
+    record.update(record_change)
+    with pytest.raises(ManagedAgentsError) as raised:
+        validate_environment_record(record)
+    assert raised.value.diagnostics["reason_code"] == reason_code
+    assert raised.value.diagnostics["field"] == field
 
 
 def test_managed_agents_reject_redirects_and_oversized_responses():

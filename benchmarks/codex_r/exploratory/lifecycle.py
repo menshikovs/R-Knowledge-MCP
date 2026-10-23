@@ -178,10 +178,12 @@ class R01ALifecycleController:
             "session_created": False,
             "session_creation_attempted": False,
             "sessions_created_count": 0,
+            "session_state": "not_started",
+            "session_creation_http_status": None,
             "inference_submitted": False,
             "task_submissions_attempted_count": 0,
             "container_termination_verified": False,
-            "session_deleted_verified": False,
+            "session_deleted_verified": None,
             "topology_cleanup_verified": False,
             "artifact_hashes": {},
             "scoring": None,
@@ -328,7 +330,17 @@ class R01ALifecycleController:
                 # serialize exception text, headers, body bytes, or remote URLs.
                 record["failure"] = {
                     key: diagnostics.get(key)
-                    for key in ("operation", "category", "http_status", "reason")
+                    for key in (
+                        "operation",
+                        "category",
+                        "http_status",
+                        "reason",
+                        "reason_code",
+                        "field",
+                        "session_state",
+                        "session_deleted_verified",
+                        "cleanup_reason_code",
+                    )
                     if diagnostics.get(key) is None or isinstance(diagnostics.get(key), (str, int))
                 }
             else:
@@ -350,7 +362,7 @@ class R01ALifecycleController:
                 record["deadline_termination_verified"] = bool(
                     deadline_termination_verified and deadline_termination_verified[-1]
                 )
-            if session_id and primary_error is not None:
+            if session_id and record["session_created"] and primary_error is not None:
                 try:
                     self.client.cancel_turn(session_id)
                 except Exception:
@@ -363,6 +375,20 @@ class R01ALifecycleController:
             else:
                 container_removed = True
             record["container_termination_verified"] = container_removed
+            response_received = bool(
+                getattr(self.client, "session_creation_response_received", False)
+            )
+            if response_received:
+                record["session_created"] = True
+                record["sessions_created_count"] = 1
+            record["session_state"] = getattr(
+                self.client,
+                "session_state",
+                "unknown" if record["session_creation_attempted"] else "not_started",
+            )
+            record["session_creation_http_status"] = getattr(
+                self.client, "session_creation_http_status", None
+            )
             record["session_creation_uncertain"] = bool(
                 getattr(self.client, "session_creation_uncertain", False)
             )
@@ -377,14 +403,19 @@ class R01ALifecycleController:
             record["task_submission_uncertain"] = bool(
                 getattr(self.client, "task_submission_uncertain", False)
             )
-            if session_id:
+            client_deletion_status = getattr(self.client, "session_deletion_verified", None)
+            if client_deletion_status is not None:
+                session_deleted = client_deletion_status is True
+            elif session_id:
                 try:
                     self.client.delete_session(session_id)
                     session_deleted = True
                 except Exception:
                     session_deleted = False
             else:
-                session_deleted = True
+                # A failed/ambiguous create with no usable session ID cannot
+                # prove that no server-side session exists or was deleted.
+                session_deleted = None if record["session_creation_uncertain"] else True
             client_close = getattr(self.client, "close", None)
             if callable(client_close):
                 try:
@@ -397,12 +428,14 @@ class R01ALifecycleController:
                 topology_removed = False
             cleanup_ok = (
                 container_removed
-                and session_deleted
+                and session_deleted is True
                 and topology_removed
                 and not record["session_creation_uncertain"]
             )
             record["cleanup_verified"] = cleanup_ok
             record["session_deleted_verified"] = session_deleted
+            if session_deleted is None:
+                record["session_state"] = "unknown"
             record["topology_cleanup_verified"] = topology_removed
 
         if not record["cleanup_verified"] or not container_removed:

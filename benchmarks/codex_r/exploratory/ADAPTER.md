@@ -118,6 +118,28 @@ mock event stream proves executor protocol compatibility. The manually
 authorized `run-one` path verifies the returned settings and executor
 connection before its sole task submission.
 
+### Session response validation
+
+The current API reference describes `environment.remote_url` as a string and
+instructs clients to pass it unchanged to `codex exec-server --remote`; the
+self-hosted guide's example is `https://api.openai.com/v1/agents/api`. It does
+not declare that example to be the only valid path. Validation therefore
+allows HTTPS on `api.openai.com`, default or explicit port 443, and the
+`/v1/agents/api` path with an optional trailing slash or child path. An opaque
+server-supplied routing query is retained verbatim unless it uses a
+credential-like parameter name (such as `token`, `signature`, or
+`access_token`). Other schemes, hosts, ports, URL credentials, fragments,
+traversal paths, and paths outside that endpoint namespace fail closed. The
+URL is never normalized or rewritten before it is passed to Codex. Diagnostics
+expose only a reason code and response field, never the URL or query.
+
+If a successful session response fails validation, the client attempts to
+delete the session when its ID is valid. Audits separately record the HTTP
+status, session state, and whether deletion was confirmed. If the response
+does not provide a usable ID or deletion cannot be confirmed, session state is
+recorded as unknown and cleanup remains unverified; the controller does not
+pretend that no session exists.
+
 `lifecycle.py` now joins the existing authorization validator/consumer,
 cross-process `SingleTrialLease`, balance ledger, Managed Agents client,
 restricted Docker topology, executor, artifact sealer, and isolated R scorer
@@ -457,6 +479,9 @@ remains separate and unchanged.
 - [Self-hosted sandboxes](https://developers.openai.com/api/docs/guides/agents-api/environments/self-hosted)
   documents the two outbound hosts, the unchanged `remote_url`,
   `codex exec-server --remote`, and the restricted environment-key arrangement.
+- [Create an agent session](https://developers.openai.com/api/reference/resources/beta/subresources/agents/subresources/sessions/methods/create)
+  defines the self-hosted response's `remote_url` as a string and says to pass
+  it unchanged to the executor.
 - [Sandbox security](https://developers.openai.com/api/docs/guides/agents-api/environments/security)
   says agent-generated code can read environment credentials and that the
   application API key must stay outside the environment.

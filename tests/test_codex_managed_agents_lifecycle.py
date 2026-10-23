@@ -269,6 +269,11 @@ def test_create_session_diagnostic_is_preserved_in_safe_lifecycle_audit(tmp_path
         "category": "http_rejection",
         "http_status": 403,
         "reason": "Managed Agents API rejected the request with HTTP 403",
+        "reason_code": None,
+        "field": None,
+        "session_state": None,
+        "session_deleted_verified": None,
+        "cleanup_reason_code": None,
     }
     assert report["failure_category"] == "http_rejection"
     assert report["inference_submitted"] is False
@@ -277,6 +282,72 @@ def test_create_session_diagnostic_is_preserved_in_safe_lifecycle_audit(tmp_path
     assert "must-not-appear" not in str(report)
     assert runtime.stopped is False
     assert topology.cleaned and ledger.active_trial_id is None and leases[0].released
+
+
+@pytest.mark.parametrize(
+    ("deletion_status", "session_state", "cleanup_verified"),
+    [
+        (True, "deleted", True),
+        (None, "unknown", False),
+    ],
+)
+def test_http_201_validation_failure_audit_reports_session_deletion_state(
+    tmp_path, deletion_status, session_state, cleanup_verified
+):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    prepare_workspace(workspace)
+    controller, _client, runtime, topology, _ledger, leases = make_controller(workspace)
+
+    class CreatedButInvalidClient(FakeClient):
+        def __init__(self, candidate_workspace):
+            super().__init__(candidate_workspace)
+            self.session_creation_attempted = True
+            self.session_creation_response_received = True
+            self.session_creation_http_status = 201
+            self.session_creation_uncertain = deletion_status is None
+            self.session_id_for_cleanup = "synthetic_session"
+            self.session_deletion_verified = deletion_status
+            self.session_state = session_state
+
+        def create_session(self, _context):
+            error = RuntimeError("Managed Agents session response failed validation")
+            error.diagnostics = {
+                "operation": "create_session",
+                "category": "response_schema_validation",
+                "http_status": 201,
+                "reason": "Managed Agents session response failed validation",
+                "reason_code": "remote_url_path_not_permitted",
+                "field": "environment.remote_url",
+                "session_state": session_state,
+                "session_deleted_verified": deletion_status,
+                "cleanup_reason_code": (
+                    None if deletion_status is True else "session_delete_not_confirmed"
+                ),
+            }
+            raise error
+
+    controller.client = CreatedButInvalidClient(workspace)
+    context = {"trial_id": "R01-A", "expected_tools": [], "workspace": str(workspace)}
+    try:
+        report = controller.run_one(
+            context=context,
+            authorization={"synthetic": True},
+            state_directory=tmp_path / "state",
+        )
+    except lifecycle.LifecycleError as exc:
+        report = exc.audit_record
+
+    assert report["session_created"] is True
+    assert report["sessions_created_count"] == 1
+    assert report["session_creation_http_status"] == 201
+    assert report["session_state"] == session_state
+    assert report["session_deleted_verified"] is deletion_status
+    assert report["cleanup_verified"] is cleanup_verified
+    assert report["task_submissions_attempted_count"] == 0
+    assert report["failure"]["reason_code"] == "remote_url_path_not_permitted"
+    assert runtime.stopped is False and topology.cleaned
+    assert leases[0].released is cleanup_verified
 
 
 def test_pre_session_local_failure_records_safe_operation(tmp_path):
