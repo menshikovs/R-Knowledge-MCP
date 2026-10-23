@@ -26,6 +26,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = ROOT.parents[1]
+_SANITIZER_SPEC = importlib.util.spec_from_file_location(
+    "r01_adapter_executor_contract", ROOT / "exploratory" / "executor_contract.py"
+)
+if _SANITIZER_SPEC is None or _SANITIZER_SPEC.loader is None:
+    raise RuntimeError("Reference-data sanitizer is unavailable")
+_SANITIZER = importlib.util.module_from_spec(_SANITIZER_SPEC)
+_SANITIZER_SPEC.loader.exec_module(_SANITIZER)
 _PILOT_SPEC = importlib.util.spec_from_file_location(
     "codex_r_exploratory_pilot", ROOT / "exploratory" / "pilot.py"
 )
@@ -57,12 +64,17 @@ SESSION_QUIESCENCE_SOURCE = "https://api.openai.com/v1/agents/sessions"
 SESSION_QUIESCENCE_CONFIRMATION = "CONFIRM NO ACTIVE MANAGED AGENTS SESSIONS R01-A"
 SESSION_QUIESCENCE_MAX_AGE_SECONDS = 300
 INTERNAL_PROBE_FLAG = "--internal-local-timeout-probe"
-SECRET_PATTERNS = (
-    re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]+=*"),
-    re.compile(r"\bsk-[A-Za-z0-9_-]{12,}\b"),
-    re.compile(r"(?i)(api[_-]?key|access[_-]?token|refresh[_-]?token)\s*[:=]\s*[^\s,;]+"),
-)
-SECRET_KEY = re.compile(r"(?i)(api[_-]?key|access[_-]?token|refresh[_-]?token|authorization)")
+
+
+def _configured_secrets() -> tuple[str, ...]:
+    return tuple(
+        value
+        for value in (
+            os.environ.get("OPENAI_API_KEY", ""),
+            os.environ.get("OPENAI_EXECUTOR_API_KEY", ""),
+        )
+        if value
+    )
 
 
 class AdapterError(ValueError):
@@ -74,20 +86,11 @@ def default_state_directory() -> Path:
     return Path.home() / ".local" / "state" / "r-knowledge-mcp" / "r01a"
 
 
-def redact(value):
-    """Return JSON-safe evidence with common credential-shaped values removed."""
-    if isinstance(value, str):
-        for pattern in SECRET_PATTERNS:
-            value = pattern.sub("[REDACTED]", value)
-        return value
-    if isinstance(value, list):
-        return [redact(item) for item in value]
-    if isinstance(value, dict):
-        return {
-            key: "[REDACTED]" if SECRET_KEY.search(str(key)) else redact(item)
-            for key, item in value.items()
-        }
-    return value
+def redact(value, *, secrets=()):
+    """Return bounded, collision-free JSON-safe evidence with keys scrubbed too."""
+    return _SANITIZER.sanitize_reference_data(
+        value, secrets=(*_configured_secrets(), *secrets), redact_urls=False
+    )
 
 
 def parse_jsonl_events(data: bytes) -> list[dict]:

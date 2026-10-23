@@ -264,7 +264,14 @@ def run_synthetic(
                 "type": "agent.session.environment.connected"
                 if task_transport_failure
                 else "agent.session.environment.failed",
-                "details": {"nested": [SECRET_TEXT, {"ordinary": SECRET_TEXT}]},
+                APP_KEY: "top-level key secret",
+                "details": {
+                    ENV_KEY: "nested key secret",
+                    "nested": [
+                        SECRET_TEXT,
+                        {SIGNED_URL: "signed URL key secret", "ordinary": SECRET_TEXT},
+                    ],
+                },
             }
             return httpx.Response(
                 200,
@@ -469,3 +476,104 @@ def test_unreviewed_diagnostic_values_and_exception_context_are_never_persisted(
     assert record["failure"]["docker_cli_exit_code"] is None
     assert record["failure"]["container_exit_code"] is None
     assert record["failure"]["sub_operation"] is None
+
+
+def test_f10_sanitizes_keys_values_audit_stdout_and_inspection(tmp_path, capsys, monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", APP_KEY)
+    monkeypatch.setenv("OPENAI_EXECUTOR_API_KEY", ENV_KEY)
+    workspace = tmp_path / "workspace"
+    (workspace / "data").mkdir(parents=True)
+    (workspace / "TASK.md").write_text("synthetic only\n")
+    (workspace / "renv.lock").write_text("{}\n")
+    (workspace / "data/records.csv").write_text("x\n1\n")
+    record, _, _ = run_synthetic(workspace)
+    serialized_record = json.dumps(record, ensure_ascii=False)
+    for secret in (APP_KEY, ENV_KEY, SIGNED_URL, "unconventional.SIGNED.material"):
+        assert secret not in serialized_record
+    assert record["events"][0]["type"] == "agent.session.environment.failed"
+    assert record["events"][0]["details"]["nested"][0] == "[REDACTED] [REDACTED] [REDACTED]"
+
+    client = managed.ManagedAgentsClient(APP_KEY, transport=httpx.MockTransport(lambda _req: None))
+    client._additional_sanitization_secrets = (ENV_KEY,)
+    raw = {
+        APP_KEY: "top-level",
+        "nested": [{ENV_KEY: f"value {APP_KEY} {SIGNED_URL}"}],
+        SIGNED_URL: "signed-url-key-value",
+        "type": "agent.session.turn.completed",
+    }
+    for sanitizer in (
+        lambda value: client._sanitize_event(value),
+        lambda value: managed.contract.sanitize_reference_data(value, secrets=(APP_KEY, ENV_KEY)),
+        lambda value: adapter.redact(value, secrets=(APP_KEY, ENV_KEY)),
+    ):
+        clean = sanitizer(raw)
+        clean_text = json.dumps(clean, ensure_ascii=False)
+        for secret in (APP_KEY, ENV_KEY, SIGNED_URL, "unconventional.SIGNED.material"):
+            assert secret not in clean_text
+        assert clean["type"] == "agent.session.turn.completed"
+    assert adapter.redact({"source_url": "https://example.test/docs"}) == {
+        "source_url": "https://example.test/docs"
+    }
+
+    target = tmp_path / "private-audit.json"
+    record["synthetic_probe"] = {APP_KEY: "configured app key", ENV_KEY: "configured executor key"}
+    adapter._private_json_write(target, record)
+    journal_path = tmp_path / "synthetic-state/lifecycle-journals/R01-A-attempt-1.jsonl"
+    assert journal_path.is_file()
+    lifecycle_audit = journal_path.with_suffix(".audit.json")
+    assert lifecycle_audit.is_file()
+    for secret in (APP_KEY, ENV_KEY, SIGNED_URL, "unconventional.SIGNED.material"):
+        assert secret not in lifecycle_audit.read_text()
+    capsys.readouterr()
+    assert adapter.main(["inspect-journal", "--journal", str(journal_path)]) == 0
+    captured = capsys.readouterr()
+    combined = target.read_text() + lifecycle_audit.read_text() + captured.out + captured.err
+    for secret in (APP_KEY, ENV_KEY, SIGNED_URL, "unconventional.SIGNED.material"):
+        assert secret not in combined
+
+
+def test_f10_preserves_protocol_type_and_terminal_event_handling():
+    observed = []
+
+    def handler(request):
+        if request.method == "GET":
+            events = [
+                {"type": "agent.session.environment.connected", APP_KEY: "synthetic"},
+                {
+                    "type": "agent.session.turn.completed",
+                    "nested": [{ENV_KEY: SIGNED_URL}],
+                },
+            ]
+            payload = "".join(f"data: {json.dumps(event)}\n\n" for event in events)
+            return httpx.Response(
+                200,
+                headers={"content-type": "text/event-stream"},
+                content=payload.encode(),
+            )
+        return httpx.Response(200, json={})
+
+    client = managed.ManagedAgentsClient(APP_KEY, transport=httpx.MockTransport(handler))
+    client._additional_sanitization_secrets = (ENV_KEY,)
+    events = list(
+        client.send_and_stream(
+            "synthetic_session",
+            "synthetic task",
+            on_stream_ready=lambda: None,
+            on_environment_connected=lambda: observed.append("connected"),
+            on_task_submitted=lambda: observed.append("submitted"),
+        )
+    )
+    assert [event["type"] for event in events] == [
+        "agent.session.environment.connected",
+        "agent.session.turn.completed",
+    ]
+    assert observed == ["connected", "submitted"]
+    assert SIGNED_URL not in json.dumps(events)
+
+
+def test_f10_sanitization_key_collision_fails_closed():
+    client = managed.ManagedAgentsClient(APP_KEY, transport=httpx.MockTransport(lambda _req: None))
+    with pytest.raises(ValueError, match="duplicate object key"):
+        client._sanitize_event({APP_KEY: "secret", "[REDACTED]": "ordinary"})
+    with pytest.raises(ValueError, match="duplicate object key"):
+        adapter.redact({SIGNED_URL: "secret", "[REDACTED]": "ordinary"}, secrets=(SIGNED_URL,))

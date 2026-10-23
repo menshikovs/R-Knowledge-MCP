@@ -8,10 +8,26 @@ from urllib.parse import parse_qsl, unquote, urlsplit
 
 OFFICIAL_EXECUTOR_HOSTS = frozenset({"api.openai.com"})
 SENSITIVE_KEY = re.compile(
-    r"(?i)(api.?key|access.?token|refresh.?token|authorization|token|secret|password|"
-    r"remote.?url|signed.?url|websocket.?url)"
+    r"(?i)(api.?key|access.?token|refresh.?token|authorization|bearer|token|secret|password|"
+    r"signature|sig|credential|remote.?url|signed.?url|websocket.?url)"
 )
 URL_TEXT = re.compile(r"(?i)(?:https?|wss?)://[^\s\"'<>]+")
+BEARER_TEXT = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]+=*")
+TOKEN_TEXT = re.compile(r"\bsk-[A-Za-z0-9_-]{8,}\b")
+ASSIGNED_SECRET = re.compile(
+    r"(?i)(\b(?:api[_-]?key|access[_-]?token|refresh[_-]?token|authorization|"
+    r"bearer|secret|password|signature|sig|token|credential|x-amz-security-token)\b"
+    r"\s*[:=]\s*)[^\s,;]+"
+)
+URL_USERINFO = re.compile(r"(?i)https?://[^/@\s]+:[^/@\s]+@")
+MAX_SANITIZE_DEPTH = 64
+MAX_SANITIZE_NODES = 250_000
+MAX_SANITIZE_TEXT = 2 << 20
+MAX_SANITIZE_OUTPUT = 64 << 20
+
+
+class SanitizationError(ValueError):
+    """Reference data cannot be represented safely after sanitization."""
 
 
 class ExecutorURLValidationError(ValueError):
@@ -89,24 +105,95 @@ def validate_executor_remote_url(value: str) -> str:
     return value
 
 
-def sanitize_reference_data(value, *, secrets=()):
-    """Scrub known exact secrets and URLs even inside ordinary nested output text."""
-    if isinstance(value, dict):
-        return {
-            str(key): "[REDACTED]"
-            if SENSITIVE_KEY.search(str(key))
-            else sanitize_reference_data(item, secrets=secrets)
-            for key, item in value.items()
-        }
-    if isinstance(value, list):
-        return [sanitize_reference_data(item, secrets=secrets) for item in value]
-    if isinstance(value, str):
-        for secret in sorted(
-            (s for s in secrets if isinstance(s, str) and s), key=len, reverse=True
-        ):
-            value = value.replace(secret, "[REDACTED]")
-        return URL_TEXT.sub("[REDACTED]", value)
+def _sanitize_text(value, secrets, *, redact_urls):
+    if len(value) > MAX_SANITIZE_TEXT:
+        raise SanitizationError("Reference text exceeds the sanitizer limit")
+    original_length = len(value)
+    for secret in secrets:
+        value = value.replace(secret, "[REDACTED]")
+    if redact_urls:
+        value = URL_TEXT.sub("[REDACTED]", value)
+    else:
+        value = URL_USERINFO.sub("[REDACTED]@", value)
+    value = BEARER_TEXT.sub("Bearer [REDACTED]", value)
+    value = TOKEN_TEXT.sub("[REDACTED]", value)
+    value = ASSIGNED_SECRET.sub(lambda match: match.group(1) + "[REDACTED]", value)
+    if len(value) > min(MAX_SANITIZE_TEXT, max(32, original_length * 2)):
+        raise SanitizationError("Sanitized reference text exceeds the expansion limit")
     return value
+
+
+def sanitize_reference_data(value, *, secrets=(), redact_urls=True):
+    """Boundedly scrub keys and values; reject unsafe types and key collisions."""
+    if not isinstance(secrets, (tuple, list, set, frozenset)):
+        raise SanitizationError("Configured secrets must be a bounded sequence")
+    secret_set = set()
+    try:
+        for item in secrets:
+            if item is None:
+                continue
+            if not isinstance(item, str) or len(item) > MAX_SANITIZE_TEXT:
+                raise SanitizationError("Configured secret exceeds sanitizer limits")
+            if item:
+                secret_set.add(item)
+                if len(secret_set) > 16:
+                    raise SanitizationError("Too many configured secrets for sanitization")
+    except TypeError as exc:
+        raise SanitizationError("Configured secrets are not safely iterable") from exc
+    secret_values = tuple(sorted(secret_set, key=len, reverse=True))
+    seen_nodes = 0
+    active = set()
+    output_size = 0
+
+    def visit(item, depth):
+        nonlocal seen_nodes, output_size
+        seen_nodes += 1
+        if seen_nodes > MAX_SANITIZE_NODES or depth > MAX_SANITIZE_DEPTH:
+            raise SanitizationError("Reference structure exceeds sanitizer limits")
+        if isinstance(item, str):
+            result = _sanitize_text(item, secret_values, redact_urls=redact_urls)
+            output_size += len(result.encode("utf-8"))
+            if output_size > MAX_SANITIZE_OUTPUT:
+                raise SanitizationError("Sanitized reference output exceeds its limit")
+            return result
+        if isinstance(item, dict):
+            identity = id(item)
+            if identity in active:
+                raise SanitizationError("Cyclic reference structures are forbidden")
+            active.add(identity)
+            result = {}
+            try:
+                for key, child in item.items():
+                    if not isinstance(key, str):
+                        raise SanitizationError("Reference object keys must be strings")
+                    safe_key = _sanitize_text(key, secret_values, redact_urls=redact_urls)
+                    output_size += len(safe_key.encode("utf-8"))
+                    if output_size > MAX_SANITIZE_OUTPUT:
+                        raise SanitizationError("Sanitized reference output exceeds its limit")
+                    if safe_key in result:
+                        raise SanitizationError("Sanitization produced a duplicate object key")
+                    if SENSITIVE_KEY.search(key):
+                        safe_value = "[REDACTED]"
+                    else:
+                        safe_value = visit(child, depth + 1)
+                    result[safe_key] = safe_value
+            finally:
+                active.remove(identity)
+            return result
+        if isinstance(item, list):
+            identity = id(item)
+            if identity in active:
+                raise SanitizationError("Cyclic reference structures are forbidden")
+            active.add(identity)
+            try:
+                return [visit(child, depth + 1) for child in item]
+            finally:
+                active.remove(identity)
+        if item is None or type(item) in {bool, int, float}:
+            return item
+        raise SanitizationError("Reference value type is not safely representable")
+
+    return visit(value, 0)
 
 
 RUNTIME_CODES = frozenset(

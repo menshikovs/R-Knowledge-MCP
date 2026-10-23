@@ -539,31 +539,9 @@ class ManagedAgentsClient:
             raise ManagedAgentsError("Executor did not connect before the task deadline")
 
     def _sanitize_event(self, event: dict) -> dict:
-        def visit(value, key=""):
-            normalized = re.sub(r"[^a-z]", "", key.lower())
-            if any(
-                marker in normalized
-                for marker in (
-                    "apikey",
-                    "authorization",
-                    "token",
-                    "secret",
-                    "password",
-                    "remoteurl",
-                    "websocketurl",
-                    "signedurl",
-                )
-            ):
-                return "[REDACTED]"
-            if isinstance(value, dict):
-                return {str(k): visit(v, str(k)) for k, v in value.items()}
-            if isinstance(value, list):
-                return [visit(item, key) for item in value]
-            if isinstance(value, str):
-                return value.replace(self._key, "[REDACTED]")
-            return value
-
-        return visit(event)
+        """Sanitize every nested key and value before event handling or retention."""
+        extra = getattr(self, "_additional_sanitization_secrets", ())
+        return contract.sanitize_reference_data(event, secrets=(self._key, *extra))
 
     def cancel_turn(self, session_id: str) -> dict:
         if not SESSION_ID.fullmatch(session_id):

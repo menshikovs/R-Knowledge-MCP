@@ -505,6 +505,9 @@ class R01ALifecycleController:
 
             state("stream_events")
             self.safety.transition("startup")
+            # Pass the executor credential to the production event sanitizer
+            # without changing the public client streaming call contract.
+            self.client._additional_sanitization_secrets = (self.environment_key,)
             events = self.client.send_and_stream(
                 session_id,
                 task_text,

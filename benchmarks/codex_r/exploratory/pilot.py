@@ -18,6 +18,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = ROOT.parents[1]
+_SANITIZER_SPEC = importlib.util.spec_from_file_location(
+    "r01_pilot_executor_contract", ROOT / "exploratory" / "executor_contract.py"
+)
+if _SANITIZER_SPEC is None or _SANITIZER_SPEC.loader is None:
+    raise RuntimeError("Reference-data sanitizer is unavailable")
+_SANITIZER = importlib.util.module_from_spec(_SANITIZER_SPEC)
+_SANITIZER_SPEC.loader.exec_module(_SANITIZER)
 PLAN_PATH = ROOT / "reports" / "exploratory-pilot-plan.json"
 MODEL = "gpt-6-luna"
 REASONING_EFFORT = "medium"
@@ -518,25 +525,8 @@ class FakeProcess:
 
 
 def redact(value):
-    """Scrub common credential strings from synthetic event output."""
-    if isinstance(value, str):
-        for pattern in (
-            re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]+=*"),
-            re.compile(r"\bsk-[A-Za-z0-9_-]{12,}\b"),
-            re.compile(r"(?i)(api[_-]?key|access[_-]?token|refresh[_-]?token)\s*[:=]\s*[^\s,;]+"),
-        ):
-            value = pattern.sub("[REDACTED]", value)
-        return value
-    if isinstance(value, list):
-        return [redact(item) for item in value]
-    if isinstance(value, dict):
-        return {
-            key: "[REDACTED]"
-            if re.search(r"(?i)(api[_-]?key|access[_-]?token|authorization)", key)
-            else redact(item)
-            for key, item in value.items()
-        }
-    return value
+    """Scrub synthetic event keys and values through the shared bounded policy."""
+    return _SANITIZER.sanitize_reference_data(value, redact_urls=False)
 
 
 def validate_dry_run_result(result: dict) -> dict:
