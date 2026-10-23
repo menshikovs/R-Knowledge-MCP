@@ -16,9 +16,11 @@ import stat
 import threading
 import time
 import uuid
+from collections.abc import Mapping
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
+from types import MappingProxyType
 from typing import Protocol
 
 import httpx
@@ -130,6 +132,134 @@ class SpendControlApproval:
 
 
 SPEND_APPROVAL_REFERENCE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
+STAGING_AUTHORIZATION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
+SOURCE_COMMIT_SHA = re.compile(r"^[a-f0-9]{40}$")
+STAGING_AUTHORIZATION_FIELDS = frozenset(
+    {
+        "schema_version",
+        "authorization_id",
+        "issuer_id",
+        "project_name",
+        "project_id",
+        "source_commit",
+        "session_count",
+        "task_count",
+        "task_submission_allowed",
+        "responses_inference_allowed",
+        "spend_control_limit_cents",
+        "expires_at",
+        "billing_owner_id",
+        "billing_owner_approval_reference",
+    }
+)
+
+
+def parse_unverified_staging_authorization_claims(
+    claims: object,
+    *,
+    expected_project_id: str,
+    expected_source_commit: str,
+    now_utc: datetime,
+) -> Mapping[str, object]:
+    """Validate bounded authorization claims without granting authority.
+
+    There is no configured trusted issuer or signature verifier. The result is
+    useful only for offline validation; callers must not use it to permit work.
+    """
+    if (
+        type(claims) is not dict
+        or len(claims) != len(STAGING_AUTHORIZATION_FIELDS)
+        or set(claims) != STAGING_AUTHORIZATION_FIELDS
+        or type(expected_project_id) is not str
+        or not PROJECT_ID.fullmatch(expected_project_id)
+        or type(expected_source_commit) is not str
+        or not SOURCE_COMMIT_SHA.fullmatch(expected_source_commit)
+        or not isinstance(now_utc, datetime)
+        or now_utc.tzinfo is None
+        or now_utc.utcoffset() is None
+    ):
+        raise ConnectivityError("staging_authorization_claims_invalid")
+
+    strings = (
+        claims["authorization_id"],
+        claims["issuer_id"],
+        claims["project_name"],
+        claims["project_id"],
+        claims["source_commit"],
+        claims["expires_at"],
+        claims["billing_owner_id"],
+        claims["billing_owner_approval_reference"],
+    )
+    if any(type(value) is not str or len(value) > 256 for value in strings):
+        raise ConnectivityError("staging_authorization_claims_invalid")
+
+    if (
+        type(claims["schema_version"]) is not int
+        or claims["schema_version"] != 1
+        or not STAGING_AUTHORIZATION_ID.fullmatch(claims["authorization_id"])
+        or not STAGING_AUTHORIZATION_ID.fullmatch(claims["issuer_id"])
+        or claims["project_name"] != "rkmcp-staging"
+        or claims["project_id"] != expected_project_id
+        or not PROJECT_ID.fullmatch(claims["project_id"])
+        or claims["source_commit"] != expected_source_commit
+        or not SOURCE_COMMIT_SHA.fullmatch(claims["source_commit"])
+        or type(claims["session_count"]) is not int
+        or claims["session_count"] != 1
+        or type(claims["task_count"]) is not int
+        or claims["task_count"] != 0
+        or claims["task_submission_allowed"] is not False
+        or claims["responses_inference_allowed"] is not False
+        or type(claims["spend_control_limit_cents"]) is not int
+        or claims["spend_control_limit_cents"] != 200
+        or not STAGING_AUTHORIZATION_ID.fullmatch(claims["billing_owner_id"])
+        or not SPEND_APPROVAL_REFERENCE.fullmatch(
+            claims["billing_owner_approval_reference"]
+        )
+        or not claims["expires_at"].endswith("Z")
+    ):
+        raise ConnectivityError("staging_authorization_claims_invalid")
+
+    try:
+        expiration = datetime.fromisoformat(claims["expires_at"][:-1] + "+00:00")
+        current_time = now_utc.astimezone(UTC)
+    except (OverflowError, ValueError):
+        raise ConnectivityError("staging_authorization_claims_invalid") from None
+    if expiration <= current_time:
+        raise ConnectivityError("staging_authorization_claims_invalid")
+
+    return MappingProxyType(
+        {
+            "authorization_id": claims["authorization_id"],
+            "issuer_id": claims["issuer_id"],
+            "project_id": claims["project_id"],
+            "source_commit": claims["source_commit"],
+            "session_count": claims["session_count"],
+            "task_count": claims["task_count"],
+            "spend_control_limit_cents": claims["spend_control_limit_cents"],
+            "expires_at": expiration,
+            "billing_owner_id": claims["billing_owner_id"],
+            "billing_owner_approval_reference": claims[
+                "billing_owner_approval_reference"
+            ],
+        }
+    )
+
+
+def require_trusted_staging_authorization(
+    claims: object,
+    *,
+    expected_project_id: str,
+    expected_source_commit: str,
+    now_utc: datetime,
+) -> None:
+    """Fail closed until a separately reviewed trusted issuer is configured."""
+    parse_unverified_staging_authorization_claims(
+        claims,
+        expected_project_id=expected_project_id,
+        expected_source_commit=expected_source_commit,
+        now_utc=now_utc,
+    )
+    raise ConnectivityError("staging_authorization_issuer_unavailable")
 
 
 def _validated_spend_control(approval: SpendControlApproval | None) -> dict:

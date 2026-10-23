@@ -10,6 +10,8 @@ import subprocess
 import sys
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
+from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
@@ -43,6 +45,29 @@ SYNTHETIC_SPEND_APPROVAL = SpendControlApproval(
     approval_reference="synthetic-only-approval",
     billing_owner_acknowledged=True,
 )
+AUTHORIZATION_TEST_NOW = datetime(2026, 10, 23, 12, 0, tzinfo=UTC)
+AUTHORIZATION_TEST_COMMIT = "a" * 40
+
+
+def _unverified_staging_claims(**overrides):
+    claims = {
+        "schema_version": 1,
+        "authorization_id": "synthetic-auth-001",
+        "issuer_id": "synthetic-staging-approver",
+        "project_name": "rkmcp-staging",
+        "project_id": "synthetic-staging-project-id",
+        "source_commit": AUTHORIZATION_TEST_COMMIT,
+        "session_count": 1,
+        "task_count": 0,
+        "task_submission_allowed": False,
+        "responses_inference_allowed": False,
+        "spend_control_limit_cents": 200,
+        "expires_at": "2026-10-23T12:05:00Z",
+        "billing_owner_id": "synthetic-billing-owner",
+        "billing_owner_approval_reference": "synthetic-billing-approval",
+    }
+    claims.update(overrides)
+    return claims
 
 
 def _event(kind, environment_id=ENVIRONMENT_ID):
@@ -1104,6 +1129,197 @@ def test_live_project_missing_or_mismatched(monkeypatch):
         monkeypatch.setenv(harness_module.PROJECT_CONFIRMATION_ENV, project)
         with pytest.raises(ValueError):
             StagingAgentsClient(APP_KEY, project_id="staging-project")
+
+
+def test_self_declared_spend_approval_cannot_unlock_live_client(monkeypatch):
+    monkeypatch.setenv(harness_module.PROJECT_CONFIRMATION_ENV, "staging-project")
+    client_constructions = []
+
+    def unexpected_http_client(*args, **kwargs):
+        client_constructions.append((args, kwargs))
+        raise AssertionError("live HTTP client construction must remain blocked")
+
+    monkeypatch.setattr(harness_module.httpx, "Client", unexpected_http_client)
+    approval = SpendControlApproval(
+        limit=200,
+        approval_reference="operator-entered-reference",
+        billing_owner_acknowledged=True,
+    )
+
+    for _attempt in range(2):
+        with pytest.raises(
+            ValueError, match="Verified staging project and credential scope unavailable"
+        ):
+            StagingAgentsClient(
+                APP_KEY,
+                project_id="staging-project",
+                spend_control_approval=approval,
+            )
+
+    assert client_constructions == []
+
+
+def test_staging_authorization_claims_are_not_provider_verified_authority():
+    claims = _unverified_staging_claims()
+    parsed = harness_module.parse_unverified_staging_authorization_claims(
+        claims,
+        expected_project_id="synthetic-staging-project-id",
+        expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+        now_utc=AUTHORIZATION_TEST_NOW,
+    )
+
+    assert parsed["project_id"] == "synthetic-staging-project-id"
+    assert parsed["source_commit"] == AUTHORIZATION_TEST_COMMIT
+    assert parsed["session_count"] == 1
+    assert parsed["task_count"] == 0
+    assert parsed["spend_control_limit_cents"] == 200
+    with pytest.raises(ConnectivityError) as raised:
+        harness_module.require_trusted_staging_authorization(
+            claims,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW,
+        )
+    assert raised.value.code == "staging_authorization_issuer_unavailable"
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        pytest.param({"schema_version": True}, id="boolean-schema-version"),
+        pytest.param({"project_name": "other-project"}, id="project-name"),
+        pytest.param({"project_id": "other-project-id"}, id="project-id"),
+        pytest.param({"source_commit": "b" * 40}, id="source-commit"),
+        pytest.param({"session_count": True}, id="boolean-session-count"),
+        pytest.param({"session_count": 2}, id="multiple-sessions"),
+        pytest.param({"task_count": False}, id="boolean-task-count"),
+        pytest.param({"task_count": 1}, id="task-count"),
+        pytest.param({"task_submission_allowed": True}, id="task-submission"),
+        pytest.param({"responses_inference_allowed": True}, id="responses-inference"),
+        pytest.param({"spend_control_limit_cents": True}, id="boolean-limit"),
+        pytest.param({"spend_control_limit_cents": 200.0}, id="fractional-limit"),
+        pytest.param({"spend_control_limit_cents": 201}, id="over-limit"),
+        pytest.param({"expires_at": "2026-10-23T11:59:59Z"}, id="expired"),
+        pytest.param({"expires_at": "not-an-iso-time"}, id="malformed-expiration"),
+        pytest.param({"issuer_id": ""}, id="missing-issuer"),
+        pytest.param({"billing_owner_id": ""}, id="missing-billing-owner"),
+        pytest.param({"billing_owner_approval_reference": ""}, id="billing-approval"),
+        pytest.param({"approved": True}, id="self-declared-approved-field"),
+    ],
+)
+def test_unverified_staging_claims_reject_mismatch_and_unsafe_scope(changes):
+    claims = _unverified_staging_claims(**changes)
+    with pytest.raises(ConnectivityError) as raised:
+        harness_module.parse_unverified_staging_authorization_claims(
+            claims,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW,
+        )
+    assert raised.value.code == "staging_authorization_claims_invalid"
+
+
+def test_unverified_staging_claims_require_expiration_and_exact_source_pin():
+    claims = _unverified_staging_claims()
+    claims.pop("expires_at")
+    with pytest.raises(ConnectivityError) as raised:
+        harness_module.parse_unverified_staging_authorization_claims(
+            claims,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW,
+        )
+    assert raised.value.code == "staging_authorization_claims_invalid"
+
+    claims = _unverified_staging_claims()
+    with pytest.raises(ConnectivityError) as raised:
+        harness_module.parse_unverified_staging_authorization_claims(
+            claims,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit="2ae58b0",
+            now_utc=AUTHORIZATION_TEST_NOW,
+        )
+    assert raised.value.code == "staging_authorization_claims_invalid"
+
+
+def test_unverified_staging_authorization_rejected_on_replay_and_after_restart():
+    claims = _unverified_staging_claims()
+    verify = harness_module.require_trusted_staging_authorization
+    for _attempt in range(2):
+        with pytest.raises(ConnectivityError) as raised:
+            verify(
+                claims,
+                expected_project_id="synthetic-staging-project-id",
+                expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+                now_utc=AUTHORIZATION_TEST_NOW,
+            )
+        assert raised.value.code == "staging_authorization_issuer_unavailable"
+
+    # A fresh verifier in a new interpreter still rejects the same unsigned claims.
+    child_code = r"""
+import importlib.util
+import json
+import sys
+from datetime import UTC, datetime
+
+spec = importlib.util.spec_from_file_location("staging_auth_review", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+claims = json.loads(sys.stdin.read())
+try:
+    module.require_trusted_staging_authorization(
+        claims,
+        expected_project_id="synthetic-staging-project-id",
+        expected_source_commit="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        now_utc=datetime(2026, 10, 23, 12, 0, tzinfo=UTC),
+    )
+except module.ConnectivityError as error:
+    if error.code != "staging_authorization_issuer_unavailable":
+        raise SystemExit(3)
+else:
+    raise SystemExit(2)
+print("rejected")
+"""
+    child_environment = {"PATH": os.defpath}
+    if os.name == "nt" and os.environ.get("SystemRoot"):
+        child_environment["SystemRoot"] = os.environ["SystemRoot"]
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            child_code,
+            str(Path(harness_module.__file__).resolve()),
+        ],
+        input=json.dumps(claims),
+        text=True,
+        capture_output=True,
+        timeout=5,
+        env=child_environment,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "rejected"
+
+
+def test_concurrent_unverified_staging_authorizations_all_fail_closed():
+    claims = _unverified_staging_claims()
+
+    def attempt(_index):
+        try:
+            harness_module.require_trusted_staging_authorization(
+                claims,
+                expected_project_id="synthetic-staging-project-id",
+                expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+                now_utc=AUTHORIZATION_TEST_NOW,
+            )
+        except ConnectivityError as error:
+            return error.code
+        return "unexpectedly_authorized"
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        results = list(executor.map(attempt, range(16)))
+
+    assert results == ["staging_authorization_issuer_unavailable"] * 16
 
 
 def test_worker_result_after_timeout_is_disposed_exactly_once():
