@@ -36,8 +36,27 @@ def test_fixed_r01_probe_configuration_has_no_host_capability_mounts(tmp_path):
     assert args.count("--mount") == 1
     assert args[args.index("--mount") + 1].endswith("target=/candidate")
     assert "docker.sock" not in args[args.index("--mount") + 1]
-    assert not any("CODEX_HOME" in argument for argument in args)
+    assert "CODEX_HOME=/tmp" in args
     assert args[args.index("--env") + 1] == "HOME=/tmp"
+
+
+def test_restricted_executor_uses_private_proxy_and_fail_closed_dns(tmp_path):
+    runtime = docker_runtime.CodexCandidateRuntime("sha256:" + "a" * 64, docker="docker")
+    proxy_url = "http://172.20.0.2:3128"
+    args = runtime._create_args(
+        "rkmcp-probe-R01-A-0123456789abcdef",
+        tmp_path,
+        ["/bin/sh", "-c", docker_runtime.EGRESS_PROBE_SCRIPT],
+        network_mode="rkmcp-candidate-R01-A-0123456789ab",
+        proxy_enabled=True,
+        proxy_url=proxy_url,
+        deny_dns=True,
+    )
+    assert args[args.index("--network") + 1] == "rkmcp-candidate-R01-A-0123456789ab"
+    assert args[args.index("--dns") + 1] == "127.0.0.1"
+    assert args.count("--mount") == 1
+    assert f"HTTPS_PROXY={proxy_url}" in args
+    assert "CODEX_API_KEY" not in args
 
 
 def _docker_runtime():
@@ -159,3 +178,53 @@ def test_real_codex_exec_server_starts_in_offline_isolated_candidate(tmp_path_fa
     assert report["effective_agent_tools_verified"] is False
     assert report["container_cleanup_verified"] is True
     assert report["launch_permitted"] is False
+
+
+@pytest.mark.docker
+def test_real_docker_restricted_egress_denies_bypass_without_upstream_requests(
+    tmp_path_factory,
+):
+    image_id = os.environ.get("R_KNOWLEDGE_CODEX_IMAGE_ID")
+    if not image_id:
+        pytest.skip("Set R_KNOWLEDGE_CODEX_IMAGE_ID to test the restricted executor boundary")
+    workspace = tmp_path_factory.getbasetemp() / "public-egress-candidate-R01-A"
+    docker_runtime.prepared_r01_workspace(workspace)
+    report = docker_runtime.run_restricted_egress_probe(image_id, workspace)
+    assert report["record_type"] == "offline_restricted_egress_test_not_real_trial"
+    assert report["status"] == "offline_policy_checks_passed_upstream_not_contacted"
+    assert report["negative_checks"] == {
+        "direct_public_ip_denied": True,
+        "cloud_metadata_ip_denied": True,
+        "arbitrary_domain_denied_by_proxy": True,
+        "IP_literal_proxy_target_denied": True,
+        "non_443_proxy_target_denied": True,
+        "unrestricted_dns_denied": True,
+        "host_docker_service_denied": True,
+        "docker_socket_unavailable": True,
+        "candidate_has_only_internal_network": True,
+    }
+    assert report["candidate_container_removed"] is True
+    assert report["egress_proxy_and_networks_removed"] is True
+    assert report["sessions_created"] == report["inference_requests"] == 0
+    assert report["launch_permitted"] is False
+
+
+@pytest.mark.docker
+def test_real_codex_exec_server_uses_proxy_without_contacting_upstream(tmp_path_factory):
+    image_id = os.environ.get("R_KNOWLEDGE_CODEX_IMAGE_ID")
+    if not image_id:
+        pytest.skip("Set R_KNOWLEDGE_CODEX_IMAGE_ID to test Codex proxy transport")
+    workspace = tmp_path_factory.getbasetemp() / "public-proxy-candidate-R01-A"
+    docker_runtime.prepared_r01_workspace(workspace)
+    report = docker_runtime.run_codex_proxy_transport_probe(image_id, workspace)
+    assert report["record_type"] == "offline_codex_proxy_transport_test_not_real_registration"
+    assert report["codex_https_proxy_connect_observed"] is True
+    assert report["observed_target"] == "api.openai.com:443"
+    assert report["upstream_hosts_contacted"] == []
+    assert report["tls_handshake_performed"] is False
+    assert report["websocket_registration_verified"] is False
+    assert report["sessions_created"] == report["inference_requests"] == 0
+    assert report["launch_permitted"] is False
+    assert report["candidate_container_removed"] is True
+    assert report["local_proxy_container_removed"] is True
+    assert report["isolated_network_removed"] is True

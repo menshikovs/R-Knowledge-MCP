@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import ipaddress
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -16,6 +18,7 @@ import time
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = ROOT.parents[1]
@@ -106,6 +109,61 @@ done
 exec /opt/codex/bin/codex exec-server --listen ws://127.0.0.1:3788
 """
 
+EGRESS_PROBE_SCRIPT = r"""set -eu
+fail() { echo "egress probe failed: $1" >&2; exit 31; }
+[ "$(id -u)" = 65534 ] || fail wrong_uid
+[ -r /candidate/TASK.md ] || fail public_workspace_missing
+[ ! -e /var/run/docker.sock ] || fail docker_socket_visible
+if env | grep -E '^(OPENAI_API_KEY|AZURE_OPENAI_API_KEY)=' >/dev/null; then
+  fail application_key_visible
+fi
+[ -n "$EGRESS_PROXY_URL" ] && [ "$HTTPS_PROXY" = "$EGRESS_PROXY_URL" ] \
+  || fail proxy_not_configured
+command -v getent >/dev/null 2>&1 || fail dns_probe_unavailable
+if getent hosts example.com >/dev/null 2>&1; then
+  fail unrestricted_dns_resolved
+fi
+for url in https://example.com/ https://93.184.216.34/ https://169.254.169.254/; do
+  if env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy \
+    curl --noproxy '*' --connect-timeout 1 --max-time 2 -fsS "$url" >/dev/null 2>&1; then
+    fail "direct_egress_reachable:$url"
+  fi
+done
+for url in https://example.com/ https://93.184.216.34/ https://api.openai.com:444/; do
+  if curl --connect-timeout 2 --max-time 3 -fsS "$url" >/dev/null 2>&1; then
+    fail "proxy_allowed_unapproved_request:$url"
+  fi
+done
+if env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy \
+  timeout 2 bash -c '</dev/tcp/host.docker.internal/2375' 2>/dev/null; then
+  fail host_docker_api_reachable
+fi
+printf '%s\n' 'restricted egress denial checks passed'
+"""
+
+FAKE_CONNECT_SINK = r"""import socketserver
+
+class Handler(socketserver.StreamRequestHandler):
+    def handle(self):
+        line = self.rfile.readline(2049)
+        if len(line) > 2048:
+            return
+        request_line = line.decode("ascii", "replace").strip()
+        if request_line.startswith("CONNECT "):
+            print(request_line, flush=True)
+        total = len(line)
+        while line not in (b"\r\n", b"\n", b"") and total < 16384:
+            line = self.rfile.readline(2049)
+            total += len(line)
+        self.wfile.write(b"HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n")
+
+class Server(socketserver.ThreadingTCPServer):
+    allow_reuse_address = True
+    daemon_threads = True
+
+Server(("0.0.0.0", 3128), Handler).serve_forever()
+"""
+
 
 class DockerRuntimeError(RuntimeError):
     """Docker daemon, image, workspace, or policy verification failed."""
@@ -126,7 +184,9 @@ def _load_controller():
     return module
 
 
-def _bounded_run(argv: list[str], *, timeout: int = 20) -> subprocess.CompletedProcess:
+def _bounded_run(
+    argv: list[str], *, timeout: int = 20, env: dict[str, str] | None = None
+) -> subprocess.CompletedProcess:
     try:
         result = subprocess.run(
             argv,
@@ -134,6 +194,7 @@ def _bounded_run(argv: list[str], *, timeout: int = 20) -> subprocess.CompletedP
             capture_output=True,
             timeout=timeout,
             check=False,
+            env=env,
         )
     except subprocess.TimeoutExpired as exc:
         raise DockerCommandTimeout("Docker command exceeded its local deadline") from exc
@@ -155,8 +216,13 @@ class DockerCandidateRuntime:
             raise DockerRuntimeError("Docker CLI was not found")
         self.image_id = image_id
 
-    def _docker(self, *args: str, timeout: int = 20) -> subprocess.CompletedProcess:
-        result = _bounded_run([self.docker, *args], timeout=timeout)
+    def _docker(
+        self,
+        *args: str,
+        timeout: int = 20,
+        env: dict[str, str] | None = None,
+    ) -> subprocess.CompletedProcess:
+        result = _bounded_run([self.docker, *args], timeout=timeout, env=env)
         if result.returncode != 0:
             raise DockerRuntimeError("Docker daemon rejected a required operation")
         return result
@@ -173,9 +239,11 @@ class DockerCandidateRuntime:
         if result.stdout.strip():
             raise DockerRuntimeError("Disposable container still exists after cleanup")
 
-    def _create_container(self, name: str, argv: list[str]) -> str:
+    def _create_container(
+        self, name: str, argv: list[str], *, env: dict[str, str] | None = None
+    ) -> str:
         try:
-            result = _bounded_run(argv)
+            result = _bounded_run(argv, env=env)
         except DockerRuntimeError:
             try:
                 _bounded_run([self.docker, "rm", "--force", name], timeout=20)
@@ -273,16 +341,27 @@ class DockerCandidateRuntime:
             raise DockerRuntimeError("Workspace path cannot be represented safely in a bind mount")
         return {"path": str(resolved), "files": report["files"]}
 
-    def _create_args(self, name: str, workspace: Path, command: list[str]) -> list[str]:
+    def _create_args(
+        self,
+        name: str,
+        workspace: Path,
+        command: list[str],
+        *,
+        network_mode: str = "none",
+        proxy_enabled: bool = False,
+        proxy_url: str | None = None,
+        deny_dns: bool = False,
+        environment_key: bool = False,
+    ) -> list[str]:
         protocol = pilot.bench.manifest()["protocol"]
-        return [
+        args = [
             self.docker,
             "create",
             "--name",
             name,
             "--init",
             "--network",
-            "none",
+            network_mode,
             "--read-only",
             "--cap-drop",
             "ALL",
@@ -307,28 +386,43 @@ class DockerCandidateRuntime:
             "--env",
             "HOME=/tmp",
             "--env",
+            "CODEX_HOME=/tmp",
+            "--env",
             "TZ=UTC",
             "--env",
             "LC_ALL=C.UTF-8",
-            "--env",
-            "HTTP_PROXY=",
-            "--env",
-            "HTTPS_PROXY=",
-            "--env",
-            "ALL_PROXY=",
-            "--env",
-            "http_proxy=",
-            "--env",
-            "https_proxy=",
-            "--env",
-            "all_proxy=",
             "--mount",
             f"type=bind,source={workspace},target=/candidate",
-            self.image_id,
-            *command,
         ]
+        if deny_dns:
+            args.extend(["--dns", "127.0.0.1"])
+        if proxy_enabled and (
+            not isinstance(proxy_url, str)
+            or not re.fullmatch(r"http://(?:\d{1,3}\.){3}\d{1,3}:3128", proxy_url)
+        ):
+            raise DockerRuntimeError("Restricted proxy URL must use its private Docker IP")
+        proxy_url = proxy_url if proxy_enabled else ""
+        for name in (
+            "HTTP_PROXY",
+            "HTTPS_PROXY",
+            "ALL_PROXY",
+            "http_proxy",
+            "https_proxy",
+            "all_proxy",
+        ):
+            args.extend(["--env", f"{name}={proxy_url}"])
+        if proxy_enabled:
+            args.extend(["--env", f"EGRESS_PROXY_URL={proxy_url}"])
+        if environment_key:
+            # Docker reads the key from the controller's environment. It never
+            # appears in this process's command line or in a generated log.
+            args.extend(["--env", "CODEX_API_KEY"])
+        args.extend([self.image_id, *command])
+        return args
 
-    def _inspect_policy(self, container_id: str, workspace: Path) -> dict:
+    def _inspect_policy(
+        self, container_id: str, workspace: Path, *, expected_network: str = "none"
+    ) -> dict:
         template = "{{json .HostConfig}}|{{json .Config.User}}|{{json .Mounts}}|{{.State.Status}}"
         raw = (
             self._docker("inspect", "--format", template, container_id)
@@ -360,7 +454,7 @@ class DockerCandidateRuntime:
         tmpfs = host.get("Tmpfs", {})
         limits = pilot.bench.manifest()["protocol"]
         if (
-            host.get("NetworkMode") != "none"
+            host.get("NetworkMode") != expected_network
             or host.get("ReadonlyRootfs") is not True
             or "ALL" not in cap_drop
             or "no-new-privileges:true" not in security_opt
@@ -709,3 +803,779 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
             "launch_permitted": False,
             "status": "real_codex_binary_started_offline_agent_execution_blocked",
         }
+
+    def start_managed_executor(
+        self,
+        workspace: Path,
+        *,
+        environment_id: str,
+        remote_url: str,
+        environment_key: str,
+        topology: RestrictedEgressNetwork,
+        proxy_ip: str,
+    ) -> dict:
+        """Start one remote executor with only the restricted environment key.
+
+        The caller must already have created an authorized session and must
+        keep the application API key outside Docker. This method does not
+        create sessions, submit work, or infer connection success from process
+        startup.
+        """
+        if not topology.started or topology.internal_network == "none":
+            raise DockerRuntimeError("A verified restricted egress topology is required")
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", environment_id):
+            raise DockerRuntimeError("Managed Agents environment identity is invalid")
+        if not environment_key or not isinstance(environment_key, str):
+            raise DockerRuntimeError("A documented restricted environment key is required")
+        parsed = urlsplit(remote_url)
+        if (
+            parsed.scheme != "https"
+            or parsed.hostname != "api.openai.com"
+            or parsed.path != "/v1/agents/api"
+            or parsed.port not in (None, 443)
+            or parsed.username
+            or parsed.password
+            or parsed.fragment
+        ):
+            raise DockerRuntimeError("Executor remote URL is outside the documented endpoint")
+        workspace_info = self._validate_workspace(Path(workspace))
+        image = self.verify_candidate_image()
+        proxy_url = f"http://{ipaddress.ip_address(proxy_ip)}:3128"
+        name = f"rkmcp-probe-R01-A-{uuid.uuid4().hex[:16]}"
+        argv = self._create_args(
+            name,
+            Path(workspace_info["path"]),
+            [
+                "exec-server",
+                "--remote",
+                remote_url,
+                "--environment-id",
+                environment_id,
+            ],
+            network_mode=topology.internal_network,
+            proxy_enabled=True,
+            proxy_url=proxy_url,
+            deny_dns=True,
+            environment_key=True,
+        )
+        safe_env = {
+            key: value
+            for key, value in os.environ.items()
+            if key.upper() not in {"OPENAI_API_KEY", "AZURE_OPENAI_API_KEY", "CODEX_API_KEY"}
+            and not re.search(r"(?i)(TOKEN|SECRET|PASSWORD|CREDENTIAL)", key)
+        }
+        safe_env["CODEX_API_KEY"] = environment_key
+        container_id = self._create_container(name, argv, env=safe_env)
+        try:
+            self._inspect_policy(
+                container_id,
+                Path(workspace_info["path"]),
+                expected_network=topology.internal_network,
+            )
+            networks = json.loads(
+                self._docker(
+                    "inspect", "--format", "{{json .NetworkSettings.Networks}}", container_id
+                ).stdout
+            )
+            env = json.loads(
+                self._docker("inspect", "--format", "{{json .Config.Env}}", container_id).stdout
+            )
+            if (
+                set(networks) != {topology.internal_network}
+                or f"HTTPS_PROXY={proxy_url}" not in env
+                or f"CODEX_API_KEY={environment_key}" not in env
+                or any(value.startswith("OPENAI_API_KEY=") for value in env)
+            ):
+                raise DockerRuntimeError("Executor credential or network policy did not verify")
+            self._docker("start", container_id)
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                top = self._docker("top", container_id, timeout=5)
+                if "exec-server" in top.stdout.decode("utf-8", "replace"):
+                    return {
+                        "record_type": "managed_executor_process_started_not_connection_verified",
+                        "container_id": container_id,
+                        "candidate_image_id": image["image_id"],
+                        "environment_id": environment_id,
+                        "remote_url_redacted": True,
+                        "application_key_absent": True,
+                        "restricted_environment_key_in_candidate": True,
+                        "environment_key_is_readable_to_agent_code": True,
+                        "network_mode": topology.internal_network,
+                        "egress_proxy_ip": proxy_ip,
+                        "mcp_tools_requested": 0,
+                        "executor_registered": False,
+                        "status": "process_running_live_connection_unverified",
+                    }
+                state = (
+                    self._docker("inspect", "--format", "{{.State.Status}}", container_id)
+                    .stdout.decode("ascii", "replace")
+                    .strip()
+                )
+                if state != "running":
+                    raise DockerRuntimeError("Codex executor exited before process verification")
+                time.sleep(0.1)
+            raise DockerRuntimeError("Codex executor process did not remain running")
+        except BaseException:
+            self.stop_managed_executor(container_id)
+            raise
+
+    def stop_managed_executor(self, container_id: str) -> bool:
+        """Force-stop every process in the executor cgroup and verify removal."""
+        if not re.fullmatch(r"[a-f0-9]{64}", container_id):
+            raise DockerRuntimeError("Executor container identity is invalid")
+        removed = _bounded_run([self.docker, "rm", "--force", container_id], timeout=20)
+        if removed.returncode != 0:
+            return False
+        self._assert_removed(container_id)
+        return True
+
+
+class RestrictedEgressNetwork:
+    """A two-network Docker topology with a fixed-host CONNECT-only gateway.
+
+    The candidate joins only an internal isolated-gateway network. The gateway
+    also joins a separate outbound bridge and permits TLS tunnels only to the
+    documented Agents API and executor relay destinations.
+    """
+
+    NAME = re.compile(r"^rkmcp-(?:candidate|egress)-R01-A-[a-f0-9]{12}$")
+    PYTHON_BASE_ID = "sha256:cce12316475d7d56d605f76e1d811d0dc4e7227f2d4afd29951521264f504ff8"
+
+    def __init__(self, docker: str | None = None):
+        self.docker = docker or shutil.which("docker")
+        if not self.docker:
+            raise DockerRuntimeError("Docker CLI was not found")
+        suffix = uuid.uuid4().hex[:12]
+        self.internal_network = f"rkmcp-candidate-R01-A-{suffix}"
+        self.egress_network = f"rkmcp-egress-R01-A-{suffix}"
+        self.proxy_container = f"rkmcp-egress-R01-A-{suffix}"
+        self.proxy_image = f"rkmcp-egress-proxy:{suffix}"
+        self.proxy_image_id: str | None = None
+        self.started = False
+        self._created_networks: list[str] = []
+        self._created_container = False
+
+    def _run(self, *args: str, timeout: int = 20) -> subprocess.CompletedProcess:
+        result = _bounded_run([self.docker, *args], timeout=timeout)
+        if result.returncode != 0:
+            raise DockerRuntimeError("Docker rejected the restricted egress topology")
+        return result
+
+    def start(self) -> dict:
+        """Build and start the reviewed proxy; fail closed on any policy mismatch."""
+        if self.started:
+            raise DockerRuntimeError("Restricted egress topology is already active")
+        try:
+            return self._start_topology()
+        except BaseException:
+            self.cleanup()
+            raise
+
+    def _start_topology(self) -> dict:
+        base = (
+            self._run("image", "inspect", "--format", "{{.Id}}", self.PYTHON_BASE_ID)
+            .stdout.decode("ascii", "replace")
+            .strip()
+        )
+        if base != self.PYTHON_BASE_ID:
+            raise DockerRuntimeError("Pinned egress proxy Python image is unavailable")
+        build = _bounded_run(
+            [
+                self.docker,
+                "build",
+                "--pull=false",
+                "--tag",
+                self.proxy_image,
+                "--file",
+                str(ROOT / "runtime" / "egress.Dockerfile"),
+                str(REPO),
+            ],
+            timeout=120,
+        )
+        if build.returncode != 0:
+            raise DockerRuntimeError("Could not build the restricted egress proxy image")
+        self.proxy_image_id = (
+            self._run("image", "inspect", "--format", "{{.Id}}", self.proxy_image)
+            .stdout.decode("ascii", "replace")
+            .strip()
+        )
+        if not re.fullmatch(r"sha256:[a-f0-9]{64}", self.proxy_image_id):
+            raise DockerRuntimeError("Egress proxy image did not resolve to an immutable digest")
+        self._create_network(self.egress_network, internal=False)
+        self._create_network(self.internal_network, internal=True)
+        proxy_id = (
+            self._run(
+                "create",
+                "--name",
+                self.proxy_container,
+                "--network",
+                self.egress_network,
+                "--read-only",
+                "--cap-drop",
+                "ALL",
+                "--security-opt",
+                "no-new-privileges:true",
+                "--cpus",
+                "0.5",
+                "--memory",
+                "128m",
+                "--memory-swap",
+                "128m",
+                "--pids-limit",
+                "16",
+                "--user",
+                "65534:65534",
+                "--tmpfs",
+                "/tmp:rw,noexec,nosuid,nodev,size=16m,mode=1777",
+                self.proxy_image_id,
+            )
+            .stdout.decode("ascii", "replace")
+            .strip()
+        )
+        if not re.fullmatch(r"[a-f0-9]{64}", proxy_id):
+            raise DockerRuntimeError("Docker returned an invalid egress proxy container ID")
+        self._created_container = True
+        self._run(
+            "network",
+            "connect",
+            "--alias",
+            "rkmcp-egress",
+            self.internal_network,
+            proxy_id,
+        )
+        self._run("start", proxy_id)
+        self._wait_proxy()
+        self._verify_proxy_topology()
+        proxy_ip = (
+            self._run(
+                "inspect",
+                "--format",
+                '{{(index .NetworkSettings.Networks "' + self.internal_network + '").IPAddress}}',
+                self.proxy_container,
+            )
+            .stdout.decode("ascii", "replace")
+            .strip()
+        )
+        try:
+            parsed_ip = ipaddress.ip_address(proxy_ip)
+        except ValueError as exc:
+            raise DockerRuntimeError("Restricted proxy has no valid internal IPv4 address") from exc
+        if not parsed_ip.is_private or parsed_ip.is_loopback or parsed_ip.is_link_local:
+            raise DockerRuntimeError(
+                "Restricted proxy address is outside its private Docker subnet"
+            )
+        self.started = True
+        return {
+            "internal_network": self.internal_network,
+            "outbound_network": self.egress_network,
+            "proxy_container_id": proxy_id,
+            "proxy_image_id": self.proxy_image_id,
+            "proxy_internal_ip": proxy_ip,
+            "allowed_destinations": [
+                "api.openai.com:443",
+                "codex-cloud-environments.chatgpt.com:443",
+            ],
+            "tls_interception": False,
+            "remote_url_rewritten": False,
+            "network_isolation": "docker_internal_isolated_gateway",
+            "status": "restricted_gateway_started_not_upstream_connection_verified",
+        }
+
+    def _create_network(self, name: str, *, internal: bool) -> None:
+        if not self.NAME.fullmatch(name):
+            raise DockerRuntimeError("Generated Docker network name is invalid")
+        args = [self.docker, "network", "create", "--driver", "bridge"]
+        if internal:
+            args.extend(
+                [
+                    "--internal",
+                    "--opt",
+                    "com.docker.network.bridge.gateway_mode_ipv4=isolated",
+                ]
+            )
+        args.append(name)
+        result = _bounded_run(args)
+        if result.returncode != 0:
+            raise DockerRuntimeError("Docker could not create the isolated egress networks")
+        self._created_networks.append(name)
+        inspect = (
+            self._run(
+                "network",
+                "inspect",
+                "--format",
+                "{{.Internal}}|{{json .Options}}",
+                name,
+            )
+            .stdout.decode("utf-8", "replace")
+            .strip()
+        )
+        internal_flag, _, raw_options = inspect.partition("|")
+        options = json.loads(raw_options)
+        if internal:
+            if (
+                internal_flag != "true"
+                or options.get("com.docker.network.bridge.gateway_mode_ipv4") != "isolated"
+            ):
+                raise DockerRuntimeError("Candidate network is not an isolated internal bridge")
+        elif internal_flag != "false":
+            raise DockerRuntimeError("Egress proxy network must have outbound bridge access")
+
+    def _wait_proxy(self) -> None:
+        deadline = time.monotonic() + 5
+        last_error = None
+        while time.monotonic() < deadline:
+            try:
+                self._run(
+                    "exec",
+                    self.proxy_container,
+                    "python",
+                    "-c",
+                    "import socket; s=socket.create_connection(('127.0.0.1',3128),1); s.close()",
+                    timeout=3,
+                )
+                return
+            except DockerRuntimeError as exc:
+                last_error = exc
+                time.sleep(0.1)
+        raise DockerRuntimeError("Restricted egress proxy did not become ready") from last_error
+
+    def _verify_proxy_topology(self) -> None:
+        raw = (
+            self._run(
+                "inspect",
+                "--format",
+                "{{json .HostConfig}}|{{json .Mounts}}|{{json .NetworkSettings.Networks}}"
+                "|{{.Config.Image}}",
+                self.proxy_container,
+            )
+            .stdout.decode("utf-8", "replace")
+            .strip()
+        )
+        parts = raw.split("|", 3)
+        if len(parts) != 4:
+            raise DockerRuntimeError("Docker returned incomplete egress proxy policy evidence")
+        host, mounts, networks = json.loads(parts[0]), json.loads(parts[1]), json.loads(parts[2])
+        if (
+            set(networks) != {self.egress_network, self.internal_network}
+            or mounts
+            or host.get("Privileged") is not False
+            or host.get("ReadonlyRootfs") is not True
+            or {str(cap).upper() for cap in host.get("CapDrop", [])} != {"ALL"}
+            or "no-new-privileges:true"
+            not in {str(option).lower() for option in host.get("SecurityOpt", [])}
+            or host.get("PidsLimit") != 16
+            or host.get("Memory") != 128 * 1024 * 1024
+        ):
+            raise DockerRuntimeError("Egress proxy container settings violate the fixed policy")
+
+    def cleanup(self) -> bool:
+        """Remove the sidecar and both networks; false means the lease must remain held."""
+        success = True
+        if self._created_container:
+            stopped = _bounded_run([self.docker, "rm", "--force", self.proxy_container], timeout=20)
+            success = stopped.returncode == 0 and success
+            if stopped.returncode == 0:
+                self._created_container = False
+        for name in reversed(self._created_networks):
+            removed = _bounded_run([self.docker, "network", "rm", name], timeout=20)
+            success = removed.returncode == 0 and success
+            if removed.returncode == 0:
+                self._created_networks.remove(name)
+        if self._created_container or self._created_networks:
+            success = False
+        self.started = False
+        return success
+
+
+def run_restricted_egress_probe(image_id: str, workspace: Path, docker: str | None = None) -> dict:
+    """Exercise the real Docker topology without contacting an upstream service."""
+    runtime = CodexCandidateRuntime(image_id, docker)
+    workspace_info = runtime._validate_workspace(Path(workspace))
+    image = runtime.verify_candidate_image()
+    topology = RestrictedEgressNetwork(runtime.docker)
+    candidate_name = f"rkmcp-probe-R01-A-{uuid.uuid4().hex[:16]}"
+    if not CONTAINER_NAME.fullmatch(candidate_name):
+        raise DockerRuntimeError("Generated candidate probe name is invalid")
+    candidate_id = None
+    candidate_removed = False
+    gateway_removed = False
+    container_policy = None
+    proxy_policy_evidence = None
+    try:
+        gateway = topology.start()
+        proxy_url = f"http://{gateway['proxy_internal_ip']}:3128"
+        argv = runtime._create_args(
+            candidate_name,
+            Path(workspace_info["path"]),
+            ["-c", EGRESS_PROBE_SCRIPT],
+            network_mode=topology.internal_network,
+            proxy_enabled=True,
+            proxy_url=proxy_url,
+            deny_dns=True,
+        )
+        image_index = argv.index(runtime.image_id)
+        argv[image_index:image_index] = ["--entrypoint", "/bin/sh"]
+        candidate_id = runtime._create_container(candidate_name, argv)
+        container_policy = runtime._inspect_policy(
+            candidate_id,
+            Path(workspace_info["path"]),
+            expected_network=topology.internal_network,
+        )
+        attached = json.loads(
+            runtime._docker(
+                "inspect", "--format", "{{json .NetworkSettings.Networks}}", candidate_id
+            ).stdout
+        )
+        if set(attached) != {topology.internal_network}:
+            raise DockerRuntimeError("Candidate joined an unexpected Docker network")
+        env = json.loads(
+            runtime._docker("inspect", "--format", "{{json .Config.Env}}", candidate_id).stdout
+        )
+        if (
+            not all(
+                f"{name}={proxy_url}" in env for name in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY")
+            )
+            or f"EGRESS_PROXY_URL={proxy_url}" not in env
+            or "CODEX_API_KEY" in env
+            or any(value.startswith("OPENAI_API_KEY=") for value in env)
+        ):
+            raise DockerRuntimeError(
+                "Candidate proxy or credential environment differs from policy"
+            )
+        dns = json.loads(
+            runtime._docker("inspect", "--format", "{{json .HostConfig.Dns}}", candidate_id).stdout
+        )
+        if dns != ["127.0.0.1"]:
+            raise DockerRuntimeError("Candidate DNS is not fail-closed")
+        runtime._docker("start", candidate_id)
+        wait = _bounded_run([runtime.docker, "wait", candidate_id], timeout=25)
+        if wait.returncode != 0 or wait.stdout.strip() != b"0":
+            log_result = _bounded_run([runtime.docker, "logs", candidate_id], timeout=5)
+            logs = (log_result.stdout + log_result.stderr).decode("utf-8", "replace")
+            state = _bounded_run(
+                [
+                    runtime.docker,
+                    "inspect",
+                    "--format",
+                    "{{.State.Status}}|{{.State.ExitCode}}|{{.State.Error}}",
+                    candidate_id,
+                ],
+                timeout=5,
+            )
+            raise DockerRuntimeError(
+                "Restricted egress probe failed inside the candidate: "
+                + state.stdout.decode("utf-8", "replace").strip()
+                + " logs="
+                + logs[-1000:]
+            )
+        logs = runtime._logs(candidate_id)
+        if "restricted egress denial checks passed" not in logs:
+            raise DockerRuntimeError("Candidate egress denial checks did not pass")
+        proxy_logs = _bounded_run([runtime.docker, "logs", topology.proxy_container], timeout=5)
+        if proxy_logs.returncode != 0:
+            raise DockerRuntimeError("Could not inspect restricted egress proxy test evidence")
+        proxy_text = (proxy_logs.stdout + proxy_logs.stderr).decode("utf-8", "replace")
+        expected_denials = ("host_denied", "ip_literal_denied", "port_denied")
+        if not all(reason in proxy_text for reason in expected_denials):
+            raise DockerRuntimeError("Proxy did not record every unapproved destination denial")
+        proxy_policy_evidence = {
+            "host_denied_observed": True,
+            "ip_literal_denied_observed": True,
+            "non_https_port_denied_observed": True,
+            "tls_interception": False,
+            "upstream_http_requests": 0,
+        }
+    finally:
+        if candidate_id is not None:
+            removed = _bounded_run([runtime.docker, "rm", "--force", candidate_id], timeout=20)
+            if removed.returncode == 0:
+                runtime._assert_removed(candidate_id)
+                candidate_removed = True
+        gateway_removed = topology.cleanup()
+    if not candidate_removed or not gateway_removed:
+        raise DockerRuntimeError("Candidate or restricted egress resources were not fully cleaned")
+    return {
+        "schema_version": 1,
+        "record_type": "offline_restricted_egress_test_not_real_trial",
+        "checked_at": datetime.now(UTC).isoformat(),
+        "trial_id": "R01-A",
+        "condition": "A",
+        "image": image,
+        "workspace": workspace_info,
+        "network_policy": {
+            "candidate_network": "Docker internal isolated gateway",
+            "candidate_dns": "127.0.0.1; external resolution denied",
+            "proxy": "CONNECT only; exact official host allowlist; TCP TLS passthrough",
+            "allowed_hosts": ["api.openai.com", "codex-cloud-environments.chatgpt.com"],
+            "remote_url_rewritten": False,
+            "application_key_in_candidate": False,
+            "candidate_environment_key_present": False,
+        },
+        "candidate_policy": container_policy,
+        "proxy_policy_evidence": proxy_policy_evidence,
+        "negative_checks": {
+            "direct_public_ip_denied": True,
+            "cloud_metadata_ip_denied": True,
+            "arbitrary_domain_denied_by_proxy": True,
+            "IP_literal_proxy_target_denied": True,
+            "non_443_proxy_target_denied": True,
+            "unrestricted_dns_denied": True,
+            "host_docker_service_denied": True,
+            "docker_socket_unavailable": True,
+            "candidate_has_only_internal_network": True,
+        },
+        "candidate_container_removed": candidate_removed,
+        "egress_proxy_and_networks_removed": gateway_removed,
+        "sessions_created": 0,
+        "inference_requests": 0,
+        "paid_calls_made": 0,
+        "launch_permitted": False,
+        "upstream_connectivity_verified": False,
+        "status": "offline_policy_checks_passed_upstream_not_contacted",
+    }
+
+
+def run_codex_proxy_transport_probe(
+    image_id: str, workspace: Path, docker: str | None = None
+) -> dict:
+    """Prove Codex exec-server uses HTTPS_PROXY without any upstream route."""
+    runtime = CodexCandidateRuntime(image_id, docker)
+    workspace_info = runtime._validate_workspace(Path(workspace))
+    image = runtime.verify_candidate_image()
+    suffix = uuid.uuid4().hex[:12]
+    network = f"rkmcp-candidate-R01-A-{suffix}"
+    server_name = f"rkmcp-proxy-sink-R01-A-{suffix}"
+    candidate_name = f"rkmcp-probe-R01-A-{uuid.uuid4().hex[:16]}"
+    if not RestrictedEgressNetwork.NAME.fullmatch(network) or not CONTAINER_NAME.fullmatch(
+        candidate_name
+    ):
+        raise DockerRuntimeError("Generated proxy probe resources have invalid names")
+    created_network = False
+    server_id = None
+    candidate_id = None
+    server_removed = candidate_removed = False
+    try:
+        network_result = _bounded_run(
+            [
+                runtime.docker,
+                "network",
+                "create",
+                "--driver",
+                "bridge",
+                "--internal",
+                "--opt",
+                "com.docker.network.bridge.gateway_mode_ipv4=isolated",
+                network,
+            ]
+        )
+        if network_result.returncode != 0:
+            raise DockerRuntimeError("Could not create the isolated proxy-transport test network")
+        created_network = True
+        network_info = (
+            runtime._docker(
+                "network", "inspect", "--format", "{{.Internal}}|{{json .Options}}", network
+            )
+            .stdout.decode("utf-8", "replace")
+            .strip()
+        )
+        internal, _, options_json = network_info.partition("|")
+        if (
+            internal != "true"
+            or json.loads(options_json).get("com.docker.network.bridge.gateway_mode_ipv4")
+            != "isolated"
+        ):
+            raise DockerRuntimeError("Proxy test network is not isolated from host and internet")
+        base_id = (
+            runtime._docker(
+                "image", "inspect", "--format", "{{.Id}}", RestrictedEgressNetwork.PYTHON_BASE_ID
+            )
+            .stdout.decode("ascii", "replace")
+            .strip()
+        )
+        if base_id != RestrictedEgressNetwork.PYTHON_BASE_ID:
+            raise DockerRuntimeError("Pinned local Python image for proxy sink is unavailable")
+        server_id = (
+            runtime._docker(
+                "create",
+                "--name",
+                server_name,
+                "--network",
+                network,
+                "--read-only",
+                "--cap-drop",
+                "ALL",
+                "--security-opt",
+                "no-new-privileges:true",
+                "--memory",
+                "64m",
+                "--pids-limit",
+                "16",
+                "--user",
+                "65534:65534",
+                "--entrypoint",
+                "python",
+                RestrictedEgressNetwork.PYTHON_BASE_ID,
+                "-u",
+                "-c",
+                FAKE_CONNECT_SINK,
+            )
+            .stdout.decode("ascii", "replace")
+            .strip()
+        )
+        if not re.fullmatch(r"[a-f0-9]{64}", server_id):
+            raise DockerRuntimeError("Docker returned an invalid local proxy sink ID")
+        runtime._docker("start", server_id)
+        deadline = time.monotonic() + 5
+        server_ip = ""
+        while time.monotonic() < deadline:
+            server_ip = (
+                runtime._docker(
+                    "inspect",
+                    "--format",
+                    '{{(index .NetworkSettings.Networks "' + network + '").IPAddress}}',
+                    server_id,
+                )
+                .stdout.decode("ascii", "replace")
+                .strip()
+            )
+            if server_ip:
+                break
+            time.sleep(0.1)
+        if not ipaddress.ip_address(server_ip).is_private:
+            raise DockerRuntimeError("Local proxy sink lacks a private address")
+        sink_ready = False
+        deadline = time.monotonic() + 5
+        while time.monotonic() < deadline:
+            ready = _bounded_run(
+                [
+                    runtime.docker,
+                    "exec",
+                    server_id,
+                    "python",
+                    "-c",
+                    "import socket; s=socket.create_connection(('127.0.0.1',3128),1); s.close()",
+                ],
+                timeout=3,
+            )
+            if ready.returncode == 0:
+                sink_ready = True
+                break
+            time.sleep(0.1)
+        if not sink_ready:
+            raise DockerRuntimeError("Local fake proxy sink did not become ready")
+        proxy_url = f"http://{server_ip}:3128"
+        argv = runtime._create_args(
+            candidate_name,
+            Path(workspace_info["path"]),
+            [
+                "exec-server",
+                "--remote",
+                "https://api.openai.com/v1/agents/api",
+                "--environment-id",
+                "synthetic_env_for_proxy_probe",
+            ],
+            network_mode=network,
+            proxy_enabled=True,
+            proxy_url=proxy_url,
+            deny_dns=True,
+            environment_key=True,
+        )
+        safe_env = {
+            key: value
+            for key, value in os.environ.items()
+            if key.upper() not in {"OPENAI_API_KEY", "AZURE_OPENAI_API_KEY", "CODEX_API_KEY"}
+            and not re.search(r"(?i)(TOKEN|SECRET|PASSWORD|CREDENTIAL)", key)
+        }
+        safe_env["CODEX_API_KEY"] = "synthetic_environment_key_never_logged"
+        candidate_id = runtime._create_container(candidate_name, argv, env=safe_env)
+        runtime._docker("start", candidate_id)
+        deadline = time.monotonic() + 10
+        sink_logs = ""
+        while time.monotonic() < deadline:
+            sink_logs = runtime._logs(server_id)
+            if "CONNECT api.openai.com:443" in sink_logs:
+                break
+            state = (
+                runtime._docker("inspect", "--format", "{{.State.Status}}", candidate_id)
+                .stdout.decode("ascii", "replace")
+                .strip()
+            )
+            if state != "running":
+                break
+            time.sleep(0.1)
+        if "CONNECT api.openai.com:443" not in sink_logs:
+            candidate_logs = (
+                _bounded_run([runtime.docker, "logs", candidate_id], timeout=5)
+                if candidate_id
+                else None
+            )
+            candidate_state = (
+                _bounded_run(
+                    [
+                        runtime.docker,
+                        "inspect",
+                        "--format",
+                        "{{.State.Status}}|{{.State.ExitCode}}",
+                        candidate_id,
+                    ],
+                    timeout=5,
+                )
+                if candidate_id
+                else None
+            )
+            candidate_state_text = (
+                candidate_state.stdout.decode("utf-8", "replace").strip()
+                if candidate_state
+                else "none"
+            )
+            candidate_log_text = (
+                (candidate_logs.stdout + candidate_logs.stderr).decode("utf-8", "replace")[-500:]
+                if candidate_logs
+                else ""
+            )
+            raise DockerRuntimeError(
+                "Codex exec-server did not use HTTPS_PROXY for the fake registration endpoint; "
+                f"sink={sink_logs[-500:]}; "
+                f"candidate_state={candidate_state_text}; "
+                f"candidate_logs={candidate_log_text}"
+            )
+    finally:
+        if candidate_id is not None:
+            removed = _bounded_run([runtime.docker, "rm", "--force", candidate_id], timeout=20)
+            if removed.returncode == 0:
+                runtime._assert_removed(candidate_id)
+                candidate_removed = True
+        if server_id is not None:
+            removed = _bounded_run([runtime.docker, "rm", "--force", server_id], timeout=20)
+            server_removed = removed.returncode == 0
+            if server_removed:
+                runtime._assert_removed(server_id)
+        network_removed = not created_network
+        if created_network:
+            removed = _bounded_run([runtime.docker, "network", "rm", network], timeout=20)
+            network_removed = removed.returncode == 0
+    if not candidate_removed or not server_removed or not network_removed:
+        raise DockerRuntimeError("Proxy transport probe resources were not fully cleaned")
+    return {
+        "record_type": "offline_codex_proxy_transport_test_not_real_registration",
+        "checked_at": datetime.now(UTC).isoformat(),
+        "candidate_image": image,
+        "workspace": workspace_info,
+        "codex_https_proxy_connect_observed": True,
+        "observed_target": "api.openai.com:443",
+        "test_proxy_response": "synthetic_http_403",
+        "upstream_hosts_contacted": [],
+        "application_key_absent": True,
+        "synthetic_environment_key_used": True,
+        "tls_handshake_performed": False,
+        "websocket_registration_verified": False,
+        "candidate_container_removed": candidate_removed,
+        "local_proxy_container_removed": server_removed,
+        "isolated_network_removed": network_removed,
+        "sessions_created": 0,
+        "inference_requests": 0,
+        "paid_calls_made": 0,
+        "launch_permitted": False,
+        "status": "https_proxy_transport_confirmed_wss_and_registration_unverified",
+    }

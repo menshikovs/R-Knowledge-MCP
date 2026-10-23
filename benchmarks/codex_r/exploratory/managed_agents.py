@@ -11,6 +11,7 @@ import json
 import re
 import time
 import uuid
+from collections.abc import Callable
 from urllib.parse import urlsplit
 
 import httpx
@@ -75,14 +76,15 @@ def validate_environment_record(record: dict) -> dict:
         or parsed.port not in (None, 443)
         or parsed.username
         or parsed.password
-        or parsed.query
         or parsed.fragment
     ):
         raise ManagedAgentsError("Executor remote URL is not the documented fixed API endpoint")
     return {
         "session_id": record["id"],
         "environment_id": env_id,
-        "remote_url": REGISTERED_EXECUTOR_URL,
+        # The returned URL may carry server-issued routing material. Validate
+        # its origin/path, then pass the exact string to exec-server unchanged.
+        "remote_url": remote_url,
     }
 
 
@@ -158,6 +160,8 @@ class ManagedAgentsClient:
             raise ManagedAgentsError("Resolved session model differs from the fixed pilot model")
         if record.get("agent", {}).get("reasoning", {}).get("effort") != "medium":
             raise ManagedAgentsError("Resolved session reasoning differs from the fixed effort")
+        if record.get("agent", {}).get("tools") != []:
+            raise ManagedAgentsError("Effective session tools are not verified as empty for R01-A")
         return checked
 
     def submit_task(
@@ -196,6 +200,7 @@ class ManagedAgentsClient:
         *,
         deadline_seconds: float = 900,
         idempotency_key: str | None = None,
+        on_stream_ready: Callable[[], None] | None = None,
     ):
         """Subscribe before task submission and yield bounded, sanitized SSE events."""
         if not SESSION_ID.fullmatch(session_id) or not isinstance(task, str) or not task.strip():
@@ -220,6 +225,12 @@ class ManagedAgentsClient:
                 path,
                 params={"stream": "true"},
                 headers={"Accept": "text/event-stream"},
+                timeout=httpx.Timeout(
+                    connect=15,
+                    read=deadline_seconds,
+                    write=15,
+                    pool=15,
+                ),
             ) as stream:
                 if stream.is_redirect:
                     raise ManagedAgentsError("Managed Agents event stream redirected")
@@ -229,7 +240,9 @@ class ManagedAgentsClient:
                     )
                 if "text/event-stream" not in stream.headers.get("content-type", "").lower():
                     raise ManagedAgentsError("Managed Agents returned a non-SSE event stream")
-                self.submit_task(session_id, task, idempotency_key=key)
+                if on_stream_ready is not None:
+                    on_stream_ready()
+                submitted = False
                 for line in stream.iter_lines():
                     if time.monotonic() > deadline:
                         raise ManagedAgentsError("Managed Agents turn exceeded its deadline")
@@ -264,6 +277,22 @@ class ManagedAgentsClient:
                             )
                         event = self._sanitize_event(event)
                         yield event
+                        if event["type"] == "agent.session.environment.connected" and not submitted:
+                            self.submit_task(session_id, task, idempotency_key=key)
+                            submitted = True
+                        if (
+                            event["type"]
+                            in {
+                                "agent.session.environment.failed",
+                                "agent.session.failed",
+                                "error",
+                            }
+                            and not submitted
+                        ):
+                            terminal = True
+                            raise ManagedAgentsError(
+                                "Managed Agents environment failed before executor readiness"
+                            )
                         if event["type"] in {
                             "agent.session.turn.completed",
                             "agent.session.turn.failed",
@@ -280,13 +309,24 @@ class ManagedAgentsClient:
             raise ManagedAgentsError("Managed Agents event stream failed") from exc
         if not terminal:
             raise ManagedAgentsError("Managed Agents stream closed before a terminal event")
+        if not submitted:
+            raise ManagedAgentsError("Executor did not connect before the task deadline")
 
     def _sanitize_event(self, event: dict) -> dict:
         def visit(value, key=""):
             normalized = re.sub(r"[^a-z]", "", key.lower())
             if any(
                 marker in normalized
-                for marker in ("apikey", "authorization", "token", "secret", "password")
+                for marker in (
+                    "apikey",
+                    "authorization",
+                    "token",
+                    "secret",
+                    "password",
+                    "remoteurl",
+                    "websocketurl",
+                    "signedurl",
+                )
             ):
                 return "[REDACTED]"
             if isinstance(value, dict):
