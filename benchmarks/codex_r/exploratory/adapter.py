@@ -51,6 +51,7 @@ MAX_EVENT_LINE_BYTES = 1 << 20
 MAX_EVENT_STREAM_BYTES = 32 << 20
 MAX_EVENT_COUNT = 100_000
 MAX_AUTHORIZATION_TTL_SECONDS = 300
+RECOVERY_ATTEMPT_ID = "R01-A/recovery-after-attempt-2"
 INTERNAL_PROBE_FLAG = "--internal-local-timeout-probe"
 SECRET_PATTERNS = (
     re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]+=*"),
@@ -161,6 +162,8 @@ def build_trial_context(
     state_directory: Path | None = None,
     attempt_id: str = "R01-A/attempt-1",
     previous_attempt_result: Path | None = None,
+    first_attempt_result: Path | None = None,
+    previous_attempt_authorization: Path | None = None,
 ) -> dict:
     """Resolve one exploratory assignment and bind its exact control values."""
     pilot.validate_plan(plan)
@@ -172,11 +175,15 @@ def build_trial_context(
     ):
         raise AdapterError("Candidate image must be identified by an immutable sha256 digest")
     expected_tools = set(pilot.bench.manifest()["conditions"][selected["condition"]]["tools"])
-    if attempt_id not in {"R01-A/attempt-1", "R01-A/attempt-2"}:
-        raise AdapterError("Only the explicitly bounded first or second attempt is supported")
+    if attempt_id not in {"R01-A/attempt-1", "R01-A/attempt-2", RECOVERY_ATTEMPT_ID}:
+        raise AdapterError(
+            "Only the first two attempts or one separately authorized recovery are supported"
+        )
     previous_audit_sha256 = None
     previous_failure_classification = None
     previous_provider_status = None
+    recovery_first_audit_sha256 = None
+    previous_authorization_sha256 = None
     if attempt_id == "R01-A/attempt-2":
         if previous_attempt_result is None:
             raise AdapterError("Attempt 2 requires the preserved first-attempt cleanup audit")
@@ -188,15 +195,45 @@ def build_trial_context(
         previous_audit_sha256 = hashlib.sha256(
             Path(previous_attempt_result).read_bytes()
         ).hexdigest()
+    elif attempt_id == RECOVERY_ATTEMPT_ID:
+        if (
+            not first_attempt_result
+            or not previous_attempt_result
+            or not previous_attempt_authorization
+        ):
+            raise AdapterError(
+                "Recovery requires both preserved audits and the expired attempt-2 authorization"
+            )
+        recovery = _verify_attempt_two_for_recovery(
+            state_directory or default_state_directory(),
+            Path(first_attempt_result),
+            Path(previous_attempt_result),
+            Path(previous_attempt_authorization),
+        )
+        previous_audit_sha256 = recovery["attempt_two_audit_sha256"]
+        recovery_first_audit_sha256 = recovery["first_audit_sha256"]
+        previous_authorization_sha256 = recovery["authorization_sha256"]
+        previous_failure_classification = "attempt_two_pre_session_local_failure"
+        previous_provider_status = "not_contacted"
     context = {
         "trial_id": selected["trial_id"],
         "attempt_id": attempt_id,
         "previous_attempt_audit_sha256": previous_audit_sha256,
         "previous_attempt_failure_classification": previous_failure_classification,
         "previous_attempt_provider_status": previous_provider_status,
+        "recovery_first_attempt_audit_sha256": recovery_first_audit_sha256,
+        "previous_attempt_authorization_sha256": previous_authorization_sha256,
         "previous_attempt_result": (
             str(Path(previous_attempt_result).resolve())
             if previous_attempt_result is not None
+            else None
+        ),
+        "first_attempt_result": (
+            str(Path(first_attempt_result).resolve()) if first_attempt_result is not None else None
+        ),
+        "previous_attempt_authorization": (
+            str(Path(previous_attempt_authorization).resolve())
+            if previous_attempt_authorization is not None
             else None
         ),
         "task": selected["task"],
@@ -382,6 +419,8 @@ def create_authorization(
     restricted_key_scope_confirmation: str,
     attempt_id: str = "R01-A/attempt-1",
     previous_attempt_result: Path | None = None,
+    first_attempt_result: Path | None = None,
+    previous_attempt_authorization: Path | None = None,
 ) -> dict:
     """Create a narrowly scoped, short-lived consent record (never starts Codex)."""
     if (
@@ -416,14 +455,38 @@ def create_authorization(
     if context.get("attempt_id") != attempt_id or attempt_id not in {
         "R01-A/attempt-1",
         "R01-A/attempt-2",
+        RECOVERY_ATTEMPT_ID,
     }:
-        raise AdapterError("Authorization attempt identity is invalid")
+        raise AdapterError("Authorization attempt or recovery identity is invalid")
     if attempt_id == "R01-A/attempt-2":
         if previous_attempt_result is None:
             raise AdapterError("Attempt 2 requires the preserved first-attempt audit")
         if not (Path(state_directory) / "consumed-trials" / "R01-A.json").is_file():
             raise AdapterError("Attempt 1 authorization marker is missing")
         _verify_first_attempt_for_retry(Path(state_directory), previous_attempt_result)
+    elif attempt_id == RECOVERY_ATTEMPT_ID:
+        if (
+            not first_attempt_result
+            or not previous_attempt_result
+            or not previous_attempt_authorization
+        ):
+            raise AdapterError(
+                "Recovery requires both audits and the expired attempt-2 authorization"
+            )
+        if not (Path(state_directory) / "consumed-trials" / "R01-A.json").is_file():
+            raise AdapterError("Attempt 1 authorization marker is missing")
+        recovery = _verify_attempt_two_for_recovery(
+            Path(state_directory),
+            Path(first_attempt_result),
+            Path(previous_attempt_result),
+            Path(previous_attempt_authorization),
+        )
+        if (
+            recovery["first_audit_sha256"] != context["recovery_first_attempt_audit_sha256"]
+            or recovery["attempt_two_audit_sha256"] != context["previous_attempt_audit_sha256"]
+            or recovery["authorization_sha256"] != context["previous_attempt_authorization_sha256"]
+        ):
+            raise AdapterError("Recovery provenance changed after preparation")
     elif (Path(state_directory) / "consumed-trials" / "R01-A.json").exists():
         raise AdapterError("Attempt 1 has already been consumed; it cannot be replayed")
     confirmation_scope = context["trial_id"] if attempt_id == "R01-A/attempt-1" else attempt_id
@@ -463,7 +526,11 @@ def create_authorization(
                 "previous_attempt_audit_sha256",
                 "previous_attempt_failure_classification",
                 "previous_attempt_provider_status",
+                "recovery_first_attempt_audit_sha256",
+                "previous_attempt_authorization_sha256",
                 "previous_attempt_result",
+                "first_attempt_result",
+                "previous_attempt_authorization",
                 "task",
                 "condition",
                 "model",
@@ -493,7 +560,11 @@ def create_authorization(
 
 
 def validate_authorization(
-    authorization: dict, context: dict, *, now: datetime | None = None
+    authorization: dict,
+    context: dict,
+    *,
+    now: datetime | None = None,
+    lease: SingleTrialLease | None = None,
 ) -> dict:
     """Reject expired, reused, malformed, or differently scoped consent records."""
     required = {
@@ -537,7 +608,11 @@ def validate_authorization(
             "previous_attempt_audit_sha256",
             "previous_attempt_failure_classification",
             "previous_attempt_provider_status",
+            "recovery_first_attempt_audit_sha256",
+            "previous_attempt_authorization_sha256",
             "previous_attempt_result",
+            "first_attempt_result",
+            "previous_attempt_authorization",
             "task",
             "condition",
             "model",
@@ -557,12 +632,31 @@ def validate_authorization(
         if (
             not previous_path
             or not _verify_first_attempt_for_retry(
-                Path(context["state_directory"]), Path(previous_path)
+                Path(context["state_directory"]), Path(previous_path), lease=lease
             )
             or hashlib.sha256(Path(previous_path).read_bytes()).hexdigest()
             != context.get("previous_attempt_audit_sha256")
         ):
             raise AdapterError("Attempt 1 audit or cleanup verification changed")
+    elif context.get("attempt_id") == RECOVERY_ATTEMPT_ID:
+        first_path = context.get("first_attempt_result")
+        second_path = context.get("previous_attempt_result")
+        previous_auth_path = context.get("previous_attempt_authorization")
+        if not first_path or not second_path or not previous_auth_path:
+            raise AdapterError("Recovery provenance files are missing")
+        recovery = _verify_attempt_two_for_recovery(
+            Path(context["state_directory"]),
+            Path(first_path),
+            Path(second_path),
+            Path(previous_auth_path),
+            lease=lease,
+        )
+        if (
+            recovery["first_audit_sha256"] != context["recovery_first_attempt_audit_sha256"]
+            or recovery["attempt_two_audit_sha256"] != context["previous_attempt_audit_sha256"]
+            or recovery["authorization_sha256"] != context["previous_attempt_authorization_sha256"]
+        ):
+            raise AdapterError("Recovery audit or authorization provenance changed")
     try:
         issued = datetime.fromisoformat(authorization["issued_at"].replace("Z", "+00:00"))
         expires = datetime.fromisoformat(authorization["expires_at"].replace("Z", "+00:00"))
@@ -629,6 +723,8 @@ class SingleTrialLease(AbstractContextManager):
         self.lock_path = self.state_directory / "active-trial.lock"
         self.acquired = False
         self.cleanup_verified = False
+        self.lease_id = uuid.uuid4().hex
+        self._file_identity: tuple[int, int] | None = None
 
     def __enter__(self):
         root = self.state_directory.resolve()
@@ -642,11 +738,16 @@ class SingleTrialLease(AbstractContextManager):
                         {
                             "trial_id": self.trial_id,
                             "pid": os.getpid(),
+                            "lease_id": self.lease_id,
                             "created_at": datetime.now(UTC).isoformat(),
                         }
                     )
                     + "\n"
                 )
+                lock.flush()
+                os.fsync(lock.fileno())
+                info = os.fstat(lock.fileno())
+                self._file_identity = (info.st_dev, info.st_ino)
         except FileExistsError as exc:
             raise AdapterError(
                 "Another trial is active or a stale lock needs operator review"
@@ -654,18 +755,45 @@ class SingleTrialLease(AbstractContextManager):
         self.acquired = True
         return self
 
+    def owns_lock(self) -> bool:
+        """Prove the on-disk lease is this process's exact lock instance."""
+        if not self.acquired or self._file_identity is None:
+            return False
+        try:
+            if self.lock_path.is_symlink():
+                return False
+            with self.lock_path.open("r", encoding="utf-8") as lock:
+                info = os.fstat(lock.fileno())
+                if (info.st_dev, info.st_ino) != self._file_identity:
+                    return False
+                payload = json.load(lock)
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            return False
+        return (
+            isinstance(payload, dict)
+            and payload.get("trial_id") == self.trial_id
+            and payload.get("pid") == os.getpid()
+            and payload.get("lease_id") == self.lease_id
+        )
+
     def mark_cleanup_verified(self):
         self.cleanup_verified = True
 
     def __exit__(self, exc_type, exc, tb):
-        if self.acquired and self.cleanup_verified:
+        if self.acquired and self.cleanup_verified and self.owns_lock():
             self.lock_path.unlink(missing_ok=True)
         return False
 
 
-def consume_authorization(authorization: dict, context: dict, state_directory: Path) -> Path:
+def consume_authorization(
+    authorization: dict,
+    context: dict,
+    state_directory: Path,
+    *,
+    lease: SingleTrialLease | None = None,
+) -> Path:
     """Atomically mark a valid authorization as used; markers are never auto-removed."""
-    validate_authorization(authorization, context)
+    validate_authorization(authorization, context, lease=lease)
     root = Path(state_directory).resolve()
     if root.is_relative_to(REPO.resolve()):
         raise AdapterError("Authorization state must be outside the evaluator repository")
@@ -674,24 +802,43 @@ def consume_authorization(authorization: dict, context: dict, state_directory: P
     consumed_trials = root / "consumed-trials"
     consumed_trials.mkdir(parents=True, exist_ok=True)
     attempt_id = context.get("attempt_id", "R01-A/attempt-1")
-    if attempt_id not in {"R01-A/attempt-1", "R01-A/attempt-2"}:
-        raise AdapterError("No authorization beyond attempt 2 is permitted")
-    marker_name = (
-        f"{context['trial_id']}.json"
-        if attempt_id == "R01-A/attempt-1"
-        else f"{context['trial_id']}-attempt-2.json"
-    )
+    if attempt_id not in {"R01-A/attempt-1", "R01-A/attempt-2", RECOVERY_ATTEMPT_ID}:
+        raise AdapterError("No authorization beyond the one bounded recovery is permitted")
+    marker_name = {
+        "R01-A/attempt-1": f"{context['trial_id']}.json",
+        "R01-A/attempt-2": f"{context['trial_id']}-attempt-2.json",
+        RECOVERY_ATTEMPT_ID: f"{context['trial_id']}-recovery-after-attempt-2.json",
+    }[attempt_id]
     trial_marker = consumed_trials / marker_name
     if attempt_id == "R01-A/attempt-2":
         first_marker = consumed_trials / "R01-A.json"
         previous_path = context.get("previous_attempt_result")
         if not first_marker.is_file() or not previous_path:
             raise AdapterError("The consumed first attempt and its audit must be preserved")
-        _verify_first_attempt_for_retry(root, Path(previous_path))
+        _verify_first_attempt_for_retry(root, Path(previous_path), lease=lease)
         if hashlib.sha256(Path(previous_path).read_bytes()).hexdigest() != context.get(
             "previous_attempt_audit_sha256"
         ):
             raise AdapterError("Attempt 1 audit changed after authorization")
+    elif attempt_id == RECOVERY_ATTEMPT_ID:
+        first_path = context.get("first_attempt_result")
+        previous_path = context.get("previous_attempt_result")
+        previous_auth_path = context.get("previous_attempt_authorization")
+        if not first_path or not previous_path or not previous_auth_path:
+            raise AdapterError("Recovery provenance files are missing")
+        recovery = _verify_attempt_two_for_recovery(
+            root,
+            Path(first_path),
+            Path(previous_path),
+            Path(previous_auth_path),
+            lease=lease,
+        )
+        if (
+            recovery["first_audit_sha256"] != context["recovery_first_attempt_audit_sha256"]
+            or recovery["attempt_two_audit_sha256"] != context["previous_attempt_audit_sha256"]
+            or recovery["authorization_sha256"] != context["previous_attempt_authorization_sha256"]
+        ):
+            raise AdapterError("Recovery audit or authorization changed after authorization")
     try:
         with trial_marker.open("x", encoding="utf-8") as output:
             json.dump(
@@ -770,6 +917,8 @@ def create_authorization_file(
     output: Path,
     attempt_id: str = "R01-A/attempt-1",
     previous_attempt_result: Path | None = None,
+    first_attempt_result: Path | None = None,
+    previous_attempt_authorization: Path | None = None,
 ) -> dict:
     """Create a one-use authorization without contacting Docker or OpenAI."""
     if Path(output).resolve().is_relative_to(REPO.resolve()):
@@ -782,6 +931,8 @@ def create_authorization_file(
         state_directory=state_directory,
         attempt_id=attempt_id,
         previous_attempt_result=previous_attempt_result,
+        first_attempt_result=first_attempt_result,
+        previous_attempt_authorization=previous_attempt_authorization,
     )
     authorization = create_authorization(
         context,
@@ -794,6 +945,8 @@ def create_authorization_file(
         restricted_key_scope_confirmation=restricted_key_scope_confirmation,
         attempt_id=attempt_id,
         previous_attempt_result=previous_attempt_result,
+        first_attempt_result=first_attempt_result,
+        previous_attempt_authorization=previous_attempt_authorization,
     )
     validate_authorization(authorization, context)
     # This file is owner-only and must retain the opaque nonce used to reject replay.
@@ -958,6 +1111,8 @@ def run_one(
     candidate_image_digest: str,
     attempt_id: str = "R01-A/attempt-1",
     previous_attempt_result: Path | None = None,
+    first_attempt_result: Path | None = None,
+    previous_attempt_authorization: Path | None = None,
 ):
     """Run exactly one fully authorized R01-A lifecycle; never retries or batches."""
     context = build_trial_context(
@@ -968,6 +1123,8 @@ def run_one(
         state_directory=Path(state_directory),
         attempt_id=attempt_id,
         previous_attempt_result=previous_attempt_result,
+        first_attempt_result=first_attempt_result,
+        previous_attempt_authorization=previous_attempt_authorization,
     )
     validate_authorization(authorization, context)
     controller = _make_live_controller(context, authorization, Path(state_directory))
@@ -976,12 +1133,22 @@ def run_one(
     )
 
 
-def verify_cleanup(state_directory: Path, result_path: Path, docker: str | None = None) -> dict:
+def verify_cleanup(
+    state_directory: Path,
+    result_path: Path,
+    docker: str | None = None,
+    *,
+    lease: SingleTrialLease | None = None,
+) -> dict:
     """Verify the saved live audit plus local lock, containers, and egress networks."""
     state_directory = Path(state_directory).resolve()
     if state_directory.is_relative_to(REPO.resolve()):
         raise AdapterError("Execution state must be outside the evaluator repository")
-    lock_exists = (state_directory / "active-trial.lock").exists()
+    lock_path = state_directory / "active-trial.lock"
+    lock_exists = lock_path.exists() or lock_path.is_symlink()
+    lock_owned = bool(
+        lease and lease.state_directory.resolve() == state_directory and lease.owns_lock()
+    )
     docker = docker or shutil.which("docker")
     if not docker:
         raise AdapterError("Docker CLI is unavailable for cleanup verification")
@@ -1033,17 +1200,27 @@ def verify_cleanup(state_directory: Path, result_path: Path, docker: str | None 
         "record_type": "r01a_cleanup_verification_not_trial",
         "checked_at": datetime.now(UTC).isoformat(),
         "active_trial_lock_present": lock_exists,
+        "active_trial_lock_owned_by_caller": lock_owned,
         "remaining_rkmcp_containers": names,
         "remaining_r01a_networks": networks,
         "live_lifecycle_cleanup_verified": live_audit_clean,
-        "local_cleanup_verified": not lock_exists and not names and not networks,
-        "cleanup_verified": live_audit_clean and not lock_exists and not names and not networks,
+        "local_cleanup_verified": (
+            (not lock_exists if lease is None else lock_owned) and not names and not networks
+        ),
+        "cleanup_verified": (
+            live_audit_clean
+            and (not lock_exists if lease is None else lock_owned)
+            and not names
+            and not networks
+        ),
     }
 
 
-def _verify_first_attempt_for_retry(state_directory: Path, result_path: Path) -> dict[str, object]:
+def _verify_first_attempt_for_retry(
+    state_directory: Path, result_path: Path, *, lease: SingleTrialLease | None = None
+) -> dict[str, object]:
     """Require the immutable, clean audit for the already-consumed first try."""
-    cleanup = verify_cleanup(state_directory, result_path)
+    cleanup = verify_cleanup(state_directory, result_path, lease=lease)
     if not cleanup["local_cleanup_verified"]:
         raise AdapterError("Attempt 1 cleanup is not verified; attempt 2 remains blocked")
     audit = json.loads(Path(result_path).read_text(encoding="utf-8"))
@@ -1094,6 +1271,153 @@ def _verify_first_attempt_for_retry(state_directory: Path, result_path: Path) ->
             "provider_status": "unknown",
         }
     raise AdapterError("First-attempt failure is not an eligible session-creation rejection")
+
+
+def _verify_attempt_two_for_recovery(
+    state_directory: Path,
+    first_result_path: Path,
+    attempt_two_result_path: Path,
+    attempt_two_authorization_path: Path,
+    *,
+    lease: SingleTrialLease | None = None,
+) -> dict[str, str]:
+    """Verify an expired, pre-session attempt-2 failure for one new consent scope."""
+    root = Path(state_directory).resolve()
+    first_path = Path(first_result_path)
+    second_path = Path(attempt_two_result_path)
+    auth_path = Path(attempt_two_authorization_path)
+    if any(
+        not path.resolve().is_relative_to(root) for path in (first_path, second_path, auth_path)
+    ):
+        raise AdapterError("Recovery provenance must remain inside the external state directory")
+    _verify_first_attempt_for_retry(root, first_path, lease=lease)
+    cleanup = verify_cleanup(root, second_path, lease=lease)
+    if not cleanup["local_cleanup_verified"] or not cleanup["live_lifecycle_cleanup_verified"]:
+        raise AdapterError("Attempt 2 cleanup is not independently verified")
+
+    def read_json(path: Path, limit: int) -> tuple[bytes, dict]:
+        if path.is_symlink() or not path.is_file() or path.stat().st_size > limit:
+            raise AdapterError("Recovery provenance file is linked, missing, or oversized")
+        try:
+            raw = path.read_bytes()
+            value = json.loads(raw)
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise AdapterError("Recovery provenance file is unavailable or invalid") from exc
+        if not isinstance(value, dict):
+            raise AdapterError("Recovery provenance must be a JSON object")
+        return raw, value
+
+    first_raw, _first_audit = read_json(first_path, 8 << 20)
+    second_raw, audit = read_json(second_path, 8 << 20)
+    auth_raw, prior_auth = read_json(auth_path, 64 << 10)
+    state_names = (
+        [item.get("state") if isinstance(item, dict) else item for item in audit.get("states", [])]
+        if isinstance(audit.get("states"), list)
+        else []
+    )
+    allowed_state_sequences = {
+        ("prepare", "terminate_container", "cleanup"),
+        ("prepare", "consume_authorization", "terminate_container", "cleanup"),
+    }
+    failure = audit.get("failure")
+    failure_matches = failure is None or (
+        isinstance(failure, dict)
+        and failure.get("operation") == "consume_authorization"
+        and failure.get("category") in {"local_validation", "local_error"}
+    )
+    audit_matches = (
+        audit.get("record_type") == "managed_agents_r01a_lifecycle_audit_not_benchmark_result"
+        and audit.get("synthetic") is False
+        and audit.get("trial_id") == "R01-A"
+        and audit.get("attempt_id") == "R01-A/attempt-2"
+        and (
+            audit.get("authorization_id") is None
+            or audit.get("authorization_id") == prior_auth.get("authorization_id")
+        )
+        and audit.get("failure_category") == "AdapterError"
+        and tuple(state_names) in allowed_state_sequences
+        and audit.get("restricted_egress") is None
+        and audit.get("checkpoint") is None
+        and failure_matches
+        and audit.get("session_creation_attempted") is False
+        and audit.get("session_created") is False
+        and type(audit.get("sessions_created_count")) is int
+        and audit.get("sessions_created_count") == 0
+        and audit.get("session_creation_uncertain") is not True
+        and audit.get("task_submission_attempted") is not True
+        and audit.get("task_submission_uncertain") is not True
+        and type(audit.get("task_submissions_attempted_count")) is int
+        and audit.get("task_submissions_attempted_count") == 0
+        and audit.get("inference_submitted") is False
+        and audit.get("cleanup_verified") is True
+        and audit.get("container_termination_verified") is True
+        and audit.get("session_deleted_verified") is True
+        and audit.get("topology_cleanup_verified") is True
+    )
+    if not audit_matches:
+        raise AdapterError(
+            "Attempt 2 audit does not prove a pre-session local failure and clean shutdown"
+        )
+
+    markers = root / "consumed-trials"
+    first_marker = markers / "R01-A.json"
+    attempt_two_marker = markers / "R01-A-attempt-2.json"
+    recovery_marker = markers / "R01-A-recovery-after-attempt-2.json"
+    if first_marker.is_symlink() or not first_marker.is_file():
+        raise AdapterError("The consumed first-attempt marker is missing")
+    try:
+        marker_data = json.loads(first_marker.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise AdapterError("The consumed first-attempt marker is invalid") from exc
+    if not isinstance(marker_data, dict) or marker_data.get("trial_id") != "R01-A":
+        raise AdapterError("The consumed first-attempt marker has the wrong identity")
+    if (
+        attempt_two_marker.exists()
+        or attempt_two_marker.is_symlink()
+        or recovery_marker.exists()
+        or recovery_marker.is_symlink()
+    ):
+        raise AdapterError("A prior attempt-2 or recovery marker already exists")
+
+    prior_auth_id = prior_auth.get("authorization_id")
+    if (
+        prior_auth.get("attempt_id") != "R01-A/attempt-2"
+        or prior_auth.get("authorized") is not True
+        or prior_auth.get("consumed") is not False
+        or prior_auth.get("typed_confirmation") != "AUTHORIZE ONE PAID TRIAL R01-A/attempt-2"
+        or not re.fullmatch(r"[a-f0-9]{32}", str(prior_auth_id))
+        or not isinstance(prior_auth.get("scope"), dict)
+        or prior_auth["scope"].get("attempt_id") != "R01-A/attempt-2"
+        or prior_auth["scope"].get("trial_id") != "R01-A"
+        or prior_auth["scope"].get("previous_attempt_result") != str(first_path.resolve())
+        or prior_auth["scope"].get("previous_attempt_audit_sha256")
+        != hashlib.sha256(first_raw).hexdigest()
+    ):
+        raise AdapterError("Prior attempt-2 authorization does not match the preserved first audit")
+    try:
+        prior_issued = datetime.fromisoformat(prior_auth["issued_at"].replace("Z", "+00:00"))
+        prior_expires = datetime.fromisoformat(prior_auth["expires_at"].replace("Z", "+00:00"))
+    except (KeyError, AttributeError, ValueError) as exc:
+        raise AdapterError("Prior attempt-2 authorization timestamps are invalid") from exc
+    if (
+        prior_issued.utcoffset() != timedelta(0)
+        or prior_expires.utcoffset() != timedelta(0)
+        or prior_expires <= prior_issued
+        or prior_expires - prior_issued > timedelta(seconds=MAX_AUTHORIZATION_TTL_SECONDS)
+        or prior_expires > datetime.now(UTC)
+    ):
+        raise AdapterError("Prior attempt-2 authorization is not confirmed expired")
+    if prior_auth["scope"].get("state_directory") != str(root):
+        raise AdapterError("Prior attempt-2 authorization belongs to another state directory")
+    consumed_auth_marker = root / "consumed-authorizations" / f"{prior_auth_id}.json"
+    if consumed_auth_marker.exists() or consumed_auth_marker.is_symlink():
+        raise AdapterError("Attempt-2 authorization already has a consumed marker")
+
+    return {
+        "first_audit_sha256": hashlib.sha256(first_raw).hexdigest(),
+        "attempt_two_audit_sha256": hashlib.sha256(second_raw).hexdigest(),
+        "authorization_sha256": hashlib.sha256(auth_raw).hexdigest(),
+    }
 
 
 def cancel_running_trial(state_directory: Path) -> dict:
@@ -1343,7 +1667,9 @@ def main(argv=None) -> int:
     auth_parser = sub.add_parser("authorize-one")
     auth_parser.add_argument("--trial", required=True, choices=["R01-A"])
     auth_parser.add_argument(
-        "--attempt-id", required=True, choices=["R01-A/attempt-1", "R01-A/attempt-2"]
+        "--attempt-id",
+        required=True,
+        choices=["R01-A/attempt-1", "R01-A/attempt-2", RECOVERY_ATTEMPT_ID],
     )
     auth_parser.add_argument("--workspace", type=Path, required=True)
     auth_parser.add_argument("--image", required=True)
@@ -1356,16 +1682,22 @@ def main(argv=None) -> int:
     auth_parser.add_argument("--confirm-restricted-key-scope", required=True)
     auth_parser.add_argument("--authorization-output", type=Path, required=True)
     auth_parser.add_argument("--previous-attempt-result", type=Path)
+    auth_parser.add_argument("--first-attempt-result", type=Path)
+    auth_parser.add_argument("--previous-attempt-authorization", type=Path)
     run_parser = sub.add_parser("run-one")
     run_parser.add_argument("--trial", required=True, choices=["R01-A"])
     run_parser.add_argument(
-        "--attempt-id", required=True, choices=["R01-A/attempt-1", "R01-A/attempt-2"]
+        "--attempt-id",
+        required=True,
+        choices=["R01-A/attempt-1", "R01-A/attempt-2", RECOVERY_ATTEMPT_ID],
     )
     run_parser.add_argument("--workspace", type=Path, required=True)
     run_parser.add_argument("--image", required=True)
     run_parser.add_argument("--authorization", type=Path, required=True)
     run_parser.add_argument("--result", type=Path, required=True)
     run_parser.add_argument("--previous-attempt-result", type=Path)
+    run_parser.add_argument("--first-attempt-result", type=Path)
+    run_parser.add_argument("--previous-attempt-authorization", type=Path)
     sub.add_parser("cancel-one")
     cleanup_parser = sub.add_parser("verify-cleanup")
     cleanup_parser.add_argument("--result", type=Path, required=True)
@@ -1411,6 +1743,8 @@ def main(argv=None) -> int:
                 output=args.authorization_output,
                 attempt_id=args.attempt_id,
                 previous_attempt_result=args.previous_attempt_result,
+                first_attempt_result=args.first_attempt_result,
+                previous_attempt_authorization=args.previous_attempt_authorization,
             )
             code = 0
         elif args.command == "cancel-one":
@@ -1490,6 +1824,8 @@ def main(argv=None) -> int:
                 candidate_image_digest=args.image,
                 attempt_id=args.attempt_id,
                 previous_attempt_result=args.previous_attempt_result,
+                first_attempt_result=args.first_attempt_result,
+                previous_attempt_authorization=args.previous_attempt_authorization,
             )
             _private_json_write(args.result, result)
             code = 0 if result.get("cleanup_verified") else 2

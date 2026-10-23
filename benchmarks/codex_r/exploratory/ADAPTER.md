@@ -289,8 +289,9 @@ The original R01-A authorization, result, and `consumed-trials/R01-A.json`
 marker are immutable. The second attempt keeps scientific `trial_id` equal to
 `R01-A`, and records `attempt_id` as `R01-A/attempt-2`. It uses new files
 `authorization-attempt-2.json` and `r01a-result-attempt-2.json`, plus its own
-`consumed-trials/R01-A-attempt-2.json` marker. There is no third attempt or
-automatic retry. Do not remove state files or markers.
+`consumed-trials/R01-A-attempt-2.json` marker. There is no automatic retry;
+the separately gated recovery identity below is available only for the observed
+pre-session local failure. Do not remove state files or markers.
 
 Authorization accepts either a structured HTTP 4xx rejection at `create_session`
 or the known legacy audit shape (`failure_category: ManagedAgentsError`, one
@@ -337,6 +338,70 @@ python "$ADAPTER" run-one --trial R01-A --attempt-id R01-A/attempt-2 \
 python "$ADAPTER" verify-cleanup --result "$SECOND_RESULT"
 python "$ADAPTER" inspect-result --result "$SECOND_RESULT"
 ```
+
+## Append-only recovery after the observed attempt-2 pre-session failure
+
+The observed attempt-2 launch reached `consume_authorization` and failed before
+creating its consumed-trial marker. Its original authorization is expired and
+must never be reused. The implementation accepts one separate recovery identity,
+`R01-A/recovery-after-attempt-2`, only when both prior live audits prove zero
+session/task/inference activity and verified cleanup; the first consumed marker
+is present; the attempt-2 consumed marker and consumed-authorization marker are
+absent; and the old attempt-2 authorization is expired, correctly scoped and
+unchanged. The fresh authorization binds SHA-256 hashes of both audits and the
+expired authorization. It writes a distinct result path and a distinct
+single-use consumed marker. Any existing recovery marker, changed provenance,
+foreign/stale lock, Docker container/network, unclear task state, or cleanup
+uncertainty blocks recovery. The two original audits, authorizations, and first
+marker are read-only inputs and are never replaced or removed.
+
+Recovery is a new potentially billable launch and requires a new explicit
+operator decision. Do not issue the authorization as part of maintenance or CI.
+After independently reviewing all three preserved input files and checking the
+current prepaid balance, the operator may run the following in WSL2. The
+interactive values below must come from the current provider dashboard; the
+commands are instructions only and were not run during implementation.
+
+```bash
+FIRST_RESULT="$STATE/r01a-result.json"
+SECOND_RESULT="$STATE/r01a-result-attempt-2.json"
+SECOND_AUTH="$STATE/authorization-attempt-2.json"
+RECOVERY_ID='R01-A/recovery-after-attempt-2'
+RECOVERY_AUTH="$STATE/authorization-recovery-after-attempt-2.json"
+RECOVERY_RESULT="$STATE/r01a-result-recovery-after-attempt-2.json"
+read -r -p 'Current available balance (cents): ' BALANCE_CENTS
+read -r -p 'Conservative reserve (cents): ' RESERVE_CENTS
+read -r -p 'Estimated spend (cents): ' ESTIMATE_CENTS
+BALANCE_CHECKED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+python "$ADAPTER" authorize-one --trial R01-A --attempt-id "$RECOVERY_ID" \
+  --workspace "$WORKSPACE" --image "$IMAGE" \
+  --first-attempt-result "$FIRST_RESULT" \
+  --previous-attempt-result "$SECOND_RESULT" \
+  --previous-attempt-authorization "$SECOND_AUTH" \
+  --available-balance-cents "$BALANCE_CENTS" \
+  --reserve-cents "$RESERVE_CENTS" \
+  --estimated-spend-cents "$ESTIMATE_CENTS" \
+  --balance-source operator_dashboard \
+  --balance-checked-at "$BALANCE_CHECKED_AT" \
+  --confirm "AUTHORIZE ONE PAID TRIAL $RECOVERY_ID" \
+  --confirm-restricted-key-scope 'CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A' \
+  --authorization-output "$RECOVERY_AUTH"
+
+python "$ADAPTER" run-one --trial R01-A --attempt-id "$RECOVERY_ID" \
+  --workspace "$WORKSPACE" --image "$IMAGE" \
+  --first-attempt-result "$FIRST_RESULT" \
+  --previous-attempt-result "$SECOND_RESULT" \
+  --previous-attempt-authorization "$SECOND_AUTH" \
+  --authorization "$RECOVERY_AUTH" --result "$RECOVERY_RESULT"
+
+python "$ADAPTER" verify-cleanup --result "$RECOVERY_RESULT"
+python "$ADAPTER" inspect-result --result "$RECOVERY_RESULT"
+```
+
+This recovery scope is one-use. It does not revive attempt-2 authorization or
+clear any marker. If eligibility fails, stop and review state; do not edit or
+reset it to force eligibility.
 
 ## Exact blockers before a real R01-A turn
 

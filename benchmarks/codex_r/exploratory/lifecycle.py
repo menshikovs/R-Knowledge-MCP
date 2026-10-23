@@ -81,6 +81,7 @@ class R01ALifecycleController:
 
     STATES = (
         "prepare",
+        "consume_authorization",
         "authorize",
         "create_session",
         "start_executor",
@@ -164,6 +165,12 @@ class R01ALifecycleController:
             "synthetic": self.synthetic_mode,
             "trial_id": "R01-A",
             "attempt_id": context.get("attempt_id", "R01-A/attempt-1"),
+            "authorization_id": (
+                authorization.get("authorization_id")
+                if isinstance(authorization, dict)
+                and isinstance(authorization.get("authorization_id"), str)
+                else None
+            ),
             "model": "gpt-6-luna",
             "reasoning_effort": "medium",
             "states": [],
@@ -196,25 +203,32 @@ class R01ALifecycleController:
         stream_connected = False
         turn_completed = False
         primary_error = None
+        current_operation = "prepare"
         deadline_timer = None
         deadline_expired = threading.Event()
         deadline_termination_verified = []
 
         def state(name: str):
+            nonlocal current_operation
             if name not in self.STATES:
                 raise LifecycleError("Unknown lifecycle state")
+            current_operation = name
             record["states"].append({"state": name, "at": datetime.now(UTC).isoformat()})
 
         try:
             lease.__enter__()
             state("prepare")
-            self.consume_authorization(authorization, context, state_directory)
+            current_operation = "consume_authorization"
+            state("consume_authorization")
+            self.consume_authorization(authorization, context, state_directory, lease=lease)
+            current_operation = "authorize"
             self.ledger.authorize_one(
                 "R01-A",
                 operator_authorized=True,
                 estimated_spend_cents=self.estimated_spend_cents,
             )
             state("authorize")
+            current_operation = "start_restricted_egress"
             gateway = self.topology.start()
             if not getattr(self.topology, "started", False):
                 raise LifecycleError("Restricted egress topology did not verify as active")
@@ -226,6 +240,7 @@ class R01ALifecycleController:
                 "network_isolation": gateway.get("network_isolation"),
                 "topology_started_and_verified": True,
             }
+            current_operation = "create_session"
             session = self.client.create_session(context)
             session_id = session["session_id"]
             record["resolved_session"] = session.get("resolved_agent")
@@ -315,6 +330,16 @@ class R01ALifecycleController:
                     key: diagnostics.get(key)
                     for key in ("operation", "category", "http_status", "reason")
                     if diagnostics.get(key) is None or isinstance(diagnostics.get(key), (str, int))
+                }
+            else:
+                record["failure"] = {
+                    "operation": current_operation,
+                    "category": "local_validation"
+                    if isinstance(exc, ValueError)
+                    else "local_error",
+                    "reason": f"{current_operation} failed before session creation"
+                    if not record["session_creation_attempted"]
+                    else "Lifecycle operation failed; details omitted",
                 }
         finally:
             if deadline_timer is not None:
