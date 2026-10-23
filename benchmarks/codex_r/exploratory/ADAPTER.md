@@ -187,7 +187,9 @@ The original strict benchmark, score importer and oracle were not modified.
 ## One manually authorized WSL2 launch
 
 These commands describe exactly one R01-A attempt. Run them from the Linux
-distribution integrated with the existing Docker Desktop. Do not run the
+distribution integrated with the existing Docker Desktop. The checkout path
+below is the WSL mount of this workspace; adjust only if you keep a separate
+Linux-side checkout. Do not run the
 authorization or launch command unless you intend to incur possible charges.
 The displayed prepaid balance may be stale and delayed accounting can cause
 charges to exceed it; the client-side ledger is not a hard spend limit. The
@@ -197,7 +199,10 @@ command arguments or files.
 
 ```bash
 set -euo pipefail
-cd "$HOME/src/R-Knowledge-MCP"  # repository checkout
+cd /mnt/c/programming_pj/cran-mcp
+if [[ ! -x .venv-wsl/bin/python ]]; then python3 -m venv .venv-wsl; fi
+source .venv-wsl/bin/activate
+python -m pip install -e '.[dev]'
 ADAPTER=benchmarks/codex_r/exploratory/adapter.py
 STATE="$HOME/.local/state/r-knowledge-mcp/r01a"
 WORKSPACE="$HOME/.cache/rkmcp/public-R01-A"
@@ -254,7 +259,8 @@ the verified cancellation command below; pressing Ctrl+C in the launch
 terminal is also supported. Cleanup failure blocks artifact export:
 
 ```bash
-cd "$HOME/src/R-Knowledge-MCP"
+cd /mnt/c/programming_pj/cran-mcp
+source .venv-wsl/bin/activate
 python benchmarks/codex_r/exploratory/adapter.py cancel-one
 ```
 
@@ -262,7 +268,8 @@ After the launch process exits, check Docker/session cleanup and inspect its
 saved audit:
 
 ```bash
-cd "$HOME/src/R-Knowledge-MCP"
+cd /mnt/c/programming_pj/cran-mcp
+source .venv-wsl/bin/activate
 STATE="$HOME/.local/state/r-knowledge-mcp/r01a"
 python benchmarks/codex_r/exploratory/adapter.py verify-cleanup \
   --result "$STATE/r01a-result.json"
