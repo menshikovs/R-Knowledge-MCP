@@ -1,49 +1,91 @@
-# Nine-trial exploratory Codex pilot: offline preparation
+# Nine-trial exploratory Codex pilot
 
 This is a separate exploratory protocol for R01, R06 and R11, each assigned
-once to conditions A, B and C. Its fixed seed is 1729; the generated order is
-stored in `../reports/exploratory-pilot-plan.json`. The plan fixes `gpt-6-luna`,
-reasoning `medium`, a 900-second per-row wall-time target, and a $10 total
-aggregate ceiling. It does not alter the preregistered 72-trial manifest or its
-30,000-token limit.
+once to conditions A, B and C: A exposes 0 MCP tools, B exposes 15 core tools,
+and C exposes 20 tools including Prompt Intelligence. The fixed model is
+`gpt-6-luna` with `medium` reasoning; each trial is limited to 900 seconds.
+Its nine rows and results are separate from the original strict 72-trial
+benchmark and do not alter that protocol, its token guard, or its artifacts.
 
-## Current gate: blocked
+## Balance-aware policy
 
-Only no-inference metadata checks and a synthetic dry-run are allowed in this
-stage. No Codex model request, Managed Agents session, paid call, deployment or
-merge is part of the implementation. The checked-in machine-readable report
-`../reports/exploratory-pilot-preflight.json` deliberately leaves these gates
-unverified:
+The operator's approximate $10 prepaid balance is an opening estimate, not an
+aggregate spending ceiling. The pilot does **not** require a provider-enforced
+hard $10 cap. The client ledger is a best-effort checkpoint record and cannot
+limit provider billing. Usage and cost accounting may be delayed, so charges can
+exceed the balance most recently displayed by the operator.
 
-- `MODEL_ACCESS_UNVERIFIED`: public model documentation and the local CLI's
-  `--model` option do not prove that this account can use the requested model.
-- `HARD_AGGREGATE_BUDGET_UNVERIFIED`: the local fake ledger is not provider
-  enforcement. Managed Agents exposes per-session monetary spend controls, but
-  its reported consumption/usage is best-effort and can be delayed; nine
-  independent sessions do not establish a strict aggregate ceiling.
-- `AGENT_ISOLATION_UNVERIFIED`: exact tool exposure is checked from the local
-  MCP interface self-test, but that does not prove candidate process, filesystem,
-  endpoint, credential, or session isolation.
+Before each individually authorized trial, the operator records the current
+available credit balance and chooses a conservative reserve. The default
+reserve is 200 cents and can be changed in `BalanceAwareLedger`. The ledger
+refuses to record an authorization when the balance is unknown or at/below the
+reserve, or while another trial is active. Authorization only records the
+operator's decision; this module has no real session launcher.
 
-The `codex_cli` object always has the same fields. Its `status` distinguishes
-`not_installed`, `discovery_error`, `metadata_error`, `unsupported_version`, and
-`verified`; capability values remain null until help metadata is available.
-`checked_without_inference: true` and `inference_performed: false` describe the
-preflight procedure in every branch. They do not assert that the CLI exists or
-that its capabilities were verified; those are reported separately by
-`available`, `metadata_verified`, and `capabilities_verified`.
+After each completed trial, stop and review all four items before making any
+new decision:
 
-These states are blocking. There is no command here that creates or launches a
-Codex session. Do not substitute a different model, transport, or budget scheme.
-Any later paid experiment requires explicit authorization and a separately
-reviewed protocol with provider-enforced cumulative controls and measured
-independent candidate isolation.
+1. Provider-reported spend for the session.
+2. Session usage values.
+3. Independent correctness/scoring review.
+4. A fresh available-credit balance and reconciliation against reported spend.
 
-## Verification and commands
+Missing or unreconciled spend, usage, or balance permanently stops the current
+ledger. A clean checkpoint never authorizes the next trial automatically; a
+new explicit operator decision is required. The balance check is advisory and
+cannot prevent delayed charges. OpenAI's documented Costs API returns
+time-bucketed organization costs and is not a live prepaid-credit balance
+endpoint; an operator dashboard balance and provider-reported session usage
+must remain separate observations. Do not infer a remaining balance from token
+usage or the Costs API.
 
-The checked-in plan is machine-readable and independent of the existing 72-row
-plan. Rebuild it deterministically, print a fresh offline gate report, or create
-synthetic events for all nine rows:
+Example offline ledger flow (no Codex process or API request is started):
+
+```python
+from benchmarks.codex_r.exploratory.pilot import BalanceAwareLedger
+import json
+from pathlib import Path
+
+ledger = BalanceAwareLedger(
+    available_balance_cents=1000,  # manually checked operator dashboard value
+    reserve_cents=250,  # operator-selected conservative reserve
+    balance_source="operator_dashboard",
+    checked_at="2026-10-23T10:00:00Z",
+)
+authorization_record = ledger.authorize_one(
+    "R01-A",
+    operator_authorized=True,  # affirm only after separately authorizing this one trial
+    estimated_spend_cents=150,  # operator estimate; explicitly non-binding
+)
+Path("exploratory-ledger.json").write_text(
+    json.dumps(ledger.audit_record(), indent=2) + "\n", encoding="utf-8"
+)
+# A separately reviewed execution adapter would run exactly this one row.
+# After that session completes, provide observed spend, usage, scoring review,
+# and a newly checked balance to ledger.checkpoint(...).
+# Export audit_record() again after the checkpoint; keep the prior record too.
+```
+
+Do not call `authorize_one` as a substitute for an execution preflight. The
+preflight still blocks on all of the following:
+
+- Actual account/model access for `gpt-6-luna` is unverified. The public model
+  page confirms the API model and reasoning setting, but not account access.
+- Actual candidate/agent isolation is unverified; no isolation evidence is
+  claimed by a local workspace check.
+- Hidden oracle exposure has not been independently ruled out for a real agent.
+- Actual effective MCP tool inventories in the execution environment are not
+  verified, even though local manifest inventories are 0/15/20.
+- Explicit operator authorization is required separately for every paid trial.
+- No real execution adapter is implemented or verified in this offline pilot.
+
+Therefore there is no command in this repository that launches a paid trial.
+No inference request, session creation, authentication probe, or credential
+inspection is performed by preflight or dry-run. One trial must be authorized
+and reviewed at a time after the isolation and execution interface receive a
+separate security review. Do not automatically start all nine rows.
+
+## Offline commands and validation
 
 ```powershell
 python benchmarks/codex_r/exploratory/pilot.py write-plan
@@ -51,37 +93,29 @@ python benchmarks/codex_r/exploratory/pilot.py preflight
 python benchmarks/codex_r/exploratory/pilot.py dry-run
 ```
 
-`preflight` exits with status 2 because the gate is blocked. The dry-run uses
-only in-memory fake process/event data. Its records are tagged
-`exploratory_dry_run_not_trial`, have null usage, and are rejected by the
-benchmark result importer. The synthetic `BudgetLedger` refuses reservations
-that exceed its total, as well as new work while spend is missing or unsettled;
-this tests fail-closed client bookkeeping only and cannot guarantee provider
-billing behavior.
-
-The verified local MCP interface exposes exactly 0 tools in A, 15 in B, and 20
-in C. This inventory check does not start a model and does not constitute proof
-of the actual Codex-side effective inventory for a future session.
+`preflight` returns status 2 while launch gates are blocked. The dry-run uses
+only in-memory synthetic data and creates no benchmark records. The tests mock
+Codex discovery and metadata commands; no local Codex installation or API
+credentials are required.
 
 ## Official interface references
 
-- [GPT-6 model catalog](https://developers.openai.com/api/docs/models) documents
-  the `gpt-6-luna` model ID, `medium` reasoning, and function tools.
-- [Using GPT-6](https://developers.openai.com/api/docs/guides/latest-model) says
-  reasoning tool use should use the Responses API; GPT-6 Luna Chat Completions
-  function calling is limited to `reasoning_effort: "none"`.
-- [Managed Agents API overview](https://developers.openai.com/api/docs/guides/agents-api/overview),
-  [create-session reference](https://developers.openai.com/api/reference/python/resources/beta/subresources/agents/subresources/sessions/methods/create),
-  and [observability](https://developers.openai.com/api/docs/guides/agents-api/observability)
-  describe session configuration and usage/spend controls. They do not verify
-  this account's access or establish a provider-enforced shared $10 cap over the
-  nine proposed sessions. Session `spend_control` is a per-session amount in
-  cents; session usage and consumed amounts are best-effort and can be null or
-  change as accounting arrives.
-- The preflight discovers `codex` with `shutil.which` and invokes version/help
-  against that exact executable path. These metadata-only checks do not invoke
-  inference or inspect credentials.
+- [GPT-6 Luna model](https://developers.openai.com/api/docs/models/gpt-6-luna)
+  documents the model ID, `medium` reasoning and Responses API tool support.
+- [Reasoning guide](https://developers.openai.com/api/docs/guides/reasoning)
+  describes reasoning configuration and tool use.
+- [Codex config basics](https://learn.chatgpt.com/docs/config-file/config-basic)
+  documents setting `model_reasoning_effort = "medium"` and MCP servers in
+  local Codex configuration. The preflight only checks CLI model/config flags;
+  it does not verify a real model turn or the effective tools in a session.
+- [Spend limits](https://developers.openai.com/api/docs/guides/rate-limits#spend-limits)
+  distinguishes alerts from provider-enforced hard limits. This pilot does not
+  require the latter.
+- [Admin API costs reporting](https://developers.openai.com/api/reference/resources/admin/subresources/organization/subresources/usage/methods/costs)
+  returns time-bucketed organization costs; it is not treated as a prepaid
+  balance lookup or a real-time per-session kill switch.
 
-Public API documentation verifies interface support, not account availability,
-actual charges, or an execution boundary. The exploratory results must not be
-pooled with the preregistered benchmark.
+The official API documentation establishes public interface capability only.
+It cannot establish account access, effective tools, actual spend, or a safe
+execution boundary. Pilot findings must never be pooled with the strict 72-trial
+benchmark.

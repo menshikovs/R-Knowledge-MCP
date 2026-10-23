@@ -21,7 +21,10 @@ def load():
 
 
 pilot = load()
-CLI_HELP = "Usage: codex exec\n  -m, --model <MODEL>\n  --json\n  --ephemeral\n"
+CLI_HELP = (
+    "Usage: codex exec\n  -m, --model <MODEL>\n  -c, --config <key=value>\n"
+    "  --json\n  --ephemeral\n"
+)
 controller_spec = importlib.util.spec_from_file_location(
     "codex_controller", ROOT / "runner/controller.py"
 )
@@ -40,7 +43,9 @@ def test_plan_has_exact_nine_deterministic_randomized_assignments():
     }
     assert first["model"] == "gpt-6-luna"
     assert first["reasoning_effort"] == "medium"
-    assert first["aggregate_budget_cents"] == 1_000
+    assert first["initial_available_balance_estimate_cents"] == 1_000
+    assert first["default_spending_reserve_cents"] == 200
+    assert first["spending_limit_type"] == "balance_aware_best_effort_not_hard_limit"
     assert first["trial_timeout_seconds"] == 900
     assert first["paid_execution_authorized"] is False
     assert first["sessions_created"] == 0
@@ -92,8 +97,16 @@ def test_preflight_is_machine_readable_and_blocked_without_authorizing_paid_work
     assert report["sessions_created"] == report["paid_calls_made"] == 0
     assert report["model"]["account_access_status"] == "MODEL_ACCESS_UNVERIFIED"
     assert report["budget"]["provider_enforced_aggregate_limit"] == (
-        "HARD_AGGREGATE_BUDGET_UNVERIFIED"
+        "not_required_for_exploratory_pilot"
     )
+    assert report["budget"]["ledger_is_hard_limit"] is False
+    assert "HARD_AGGREGATE_BUDGET_UNVERIFIED" not in json.dumps(report)
+    assert report["budget"]["sessions_may_run_concurrently"] is False
+    assert "MODEL_ACCESS_UNVERIFIED" in report["blocking_conditions"]
+    assert "AGENT_ISOLATION_UNVERIFIED" in report["blocking_conditions"]
+    assert "HIDDEN_ORACLE_EXPOSURE_UNVERIFIED" in report["blocking_conditions"]
+    assert "EFFECTIVE_TOOL_INVENTORY_UNVERIFIED" in report["blocking_conditions"]
+    assert "PAID_TRIAL_AUTHORIZATION_MISSING" in report["blocking_conditions"]
     assert report["isolation"]["status"] == "AGENT_ISOLATION_UNVERIFIED"
 
 
@@ -110,6 +123,8 @@ def test_cli_metadata_success_is_not_inference(monkeypatch):
     assert cli["metadata_verified"] is True
     assert cli["capabilities_verified"] is True
     assert cli["supports_model_flag"] is True
+    assert cli["supports_config_override"] is True
+    assert cli["supports_reasoning_effort_override"] is True
     assert cli["supports_json_events"] is True
     assert cli["supports_ephemeral_mode"] is True
     assert cli["version"] == "codex-cli 0.162.1"
@@ -220,20 +235,108 @@ def test_dry_run_reports_unexpected_tool_timeout_and_process_failure():
     assert failed["status"] == "simulated_process_failure"
 
 
-def test_budget_ledger_refuses_over_budget_missing_and_delayed_spend():
-    ledger = pilot.BudgetLedger()
-    ledger.reserve("one", 600)
-    with pytest.raises(pilot.PilotError, match="Unknown or delayed"):
-        pilot.BudgetLedger().reserve("unknown", None)
-    ledger.settle("one", None, final=False)
-    with pytest.raises(pilot.PilotError, match="Unknown or delayed"):
-        ledger.reserve("two", 100)
-    ledger.settle("one", 590, final=True)
-    with pytest.raises(pilot.PilotError, match="exceeded"):
-        ledger.reserve("overspend", 411)
-    ledger.reserve("two", 410)
-    with pytest.raises(pilot.PilotError, match="exceeds"):
-        ledger.settle("two", 411, final=True)
+def test_balance_aware_ledger_requires_fresh_balance_and_explicit_single_trial_auth():
+    unknown = pilot.BalanceAwareLedger(None)
+    with pytest.raises(pilot.PilotError, match="current reported available balance"):
+        unknown.authorize_one("R01-A", operator_authorized=True, estimated_spend_cents=100)
+    assert unknown.stopped_reason == "available_credit_balance_unknown"
+
+    ledger = pilot.BalanceAwareLedger(1_000, reserve_cents=250, checked_at="2026-10-23T10:00:00Z")
+    with pytest.raises(pilot.PilotError, match="Explicit operator authorization"):
+        ledger.authorize_one("R01-A", operator_authorized=False, estimated_spend_cents=100)
+    authorization = ledger.authorize_one(
+        "R01-A", operator_authorized=True, estimated_spend_cents=100
+    )
+    assert authorization["session_started"] is False
+    assert authorization["ledger_is_hard_limit"] is False
+    with pytest.raises(pilot.PilotError, match="concurrent paid sessions"):
+        ledger.authorize_one("R06-B", operator_authorized=True, estimated_spend_cents=100)
+
+
+def test_balance_aware_authorization_requires_timestamp_and_nonbinding_estimate():
+    with pytest.raises(pilot.PilotError, match="UTC timestamp"):
+        pilot.BalanceAwareLedger(1_000)
+    ledger = pilot.BalanceAwareLedger(300, reserve_cents=200, checked_at="2026-10-23T10:00:00Z")
+    with pytest.raises(pilot.PilotError, match="positive operator-estimated"):
+        ledger.authorize_one("R01-A", operator_authorized=True, estimated_spend_cents=None)
+    assert ledger.stopped_reason == "trial_spend_estimate_unavailable"
+
+
+def test_balance_checkpoint_reconciles_and_never_authorizes_next_trial():
+    ledger = pilot.BalanceAwareLedger(1_000, reserve_cents=200, checked_at="2026-10-23T10:00:00Z")
+    ledger.authorize_one("R01-A", operator_authorized=True, estimated_spend_cents=100)
+    checkpoint = ledger.checkpoint(
+        "R01-A",
+        reported_spend_cents=125,
+        usage={"input_tokens": 1_000, "output_tokens": 200},
+        correctness_review="Reviewed independently; acceptable",
+        remaining_balance_cents=875,
+        reconciled=True,
+        balance_source="operator_dashboard",
+        checked_at="2026-10-23T10:00:00Z",
+    )
+    assert checkpoint["reconciled"] is True
+    assert checkpoint["automatic_next_trial_authorized"] is False
+    assert checkpoint["ledger_is_hard_limit"] is False
+    assert ledger.available_balance_cents == 875
+    assert ledger.active_trial_id is None
+    audit = json.loads(json.dumps(ledger.audit_record()))
+    assert audit["authorizations"][0]["trial_id"] == "R01-A"
+    assert audit["checkpoints"][0]["reported_spend_cents"] == 125
+    assert audit["ledger_is_hard_limit"] is False
+    # A new explicit decision is necessary, even after a clean checkpoint.
+    ledger.authorize_one("R06-B", operator_authorized=True, estimated_spend_cents=100)
+
+
+@pytest.mark.parametrize(
+    ("spend", "usage", "remaining", "reconciled", "expected"),
+    [
+        (None, {"input_tokens": 1}, 900, True, "spending_unavailable"),
+        (100, None, 900, True, "usage_unavailable"),
+        (100, {"input_tokens": 1}, None, True, "remaining_balance_unavailable"),
+        (100, {"input_tokens": 1}, 850, True, "reported_balance_does_not_reconcile_with_spend"),
+        (100, {"input_tokens": 1}, 900, False, "spending_or_balance_unreconciled"),
+        (100, {"operator_secret": 2}, 900, True, "usage_unavailable"),
+    ],
+)
+def test_balance_checkpoint_stops_on_missing_or_unreconciled_data(
+    spend, usage, remaining, reconciled, expected
+):
+    ledger = pilot.BalanceAwareLedger(1_000, reserve_cents=200, checked_at="2026-10-23T10:00:00Z")
+    ledger.authorize_one("R01-A", operator_authorized=True, estimated_spend_cents=100)
+    result = ledger.checkpoint(
+        "R01-A",
+        reported_spend_cents=spend,
+        usage=usage,
+        correctness_review="Reviewed",
+        remaining_balance_cents=remaining,
+        reconciled=reconciled,
+        balance_source="operator_dashboard",
+        checked_at="2026-10-23T10:00:00Z",
+    )
+    assert result["reconciled"] is False
+    assert expected in result["stop_reasons"]
+    with pytest.raises(pilot.PilotError, match="Pilot is stopped"):
+        ledger.authorize_one("R06-B", operator_authorized=True, estimated_spend_cents=100)
+
+
+def test_balance_reserve_stops_next_trial_without_aggregate_hard_limit():
+    ledger = pilot.BalanceAwareLedger(400, reserve_cents=200, checked_at="2026-10-23T10:00:00Z")
+    ledger.authorize_one("R01-A", operator_authorized=True, estimated_spend_cents=100)
+    result = ledger.checkpoint(
+        "R01-A",
+        reported_spend_cents=200,
+        usage={"input_tokens": 10},
+        correctness_review="Reviewed",
+        remaining_balance_cents=200,
+        reconciled=True,
+        balance_source="operator_dashboard",
+        checked_at="2026-10-23T10:00:00Z",
+    )
+    assert result["reconciled"] is True
+    assert ledger.stopped_reason == "available_balance_at_or_below_reserve"
+    with pytest.raises(pilot.PilotError, match="Pilot is stopped"):
+        ledger.authorize_one("R06-B", operator_authorized=True, estimated_spend_cents=100)
 
 
 def test_public_workspace_and_artifact_sealing_keep_candidate_boundary(tmp_path):
