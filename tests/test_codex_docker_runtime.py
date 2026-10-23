@@ -59,6 +59,25 @@ def _docker_runtime():
     return docker_runtime.DockerCandidateRuntime(image_id)
 
 
+def _codex_runtime():
+    image_id = os.environ.get("R_KNOWLEDGE_CODEX_IMAGE_ID")
+    if not image_id:
+        pytest.skip("Set R_KNOWLEDGE_CODEX_IMAGE_ID to test the pinned Codex image")
+    if shutil.which("docker") is None:
+        pytest.skip("Docker CLI is unavailable")
+    available = subprocess.run(
+        ["docker", "version", "--format", "{{.Server.Version}}"],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        timeout=10,
+        check=False,
+    )
+    if available.returncode:
+        pytest.skip("Docker daemon is unavailable")
+    return docker_runtime.CodexCandidateRuntime(image_id)
+
+
 @pytest.mark.docker
 def test_real_docker_denies_host_evaluator_secret_and_network_access(tmp_path):
     runtime = _docker_runtime()
@@ -119,3 +138,24 @@ def test_frozen_image_digest_and_embedded_lockfile_are_verified():
     assert report["renv_lock_sha256"]
     assert report["server_version"]
     assert report["os_type"] == "linux"
+
+
+@pytest.mark.docker
+def test_real_codex_exec_server_starts_in_offline_isolated_candidate(tmp_path_factory):
+    runtime = _codex_runtime()
+    workspace = tmp_path_factory.getbasetemp() / "public-candidate-R01-A"
+    docker_runtime.prepared_r01_workspace(workspace)
+    report = runtime.run_offline_executor_probe(workspace, timeout_seconds=5)
+
+    assert report["record_type"] == "codex_exec_server_offline_startup_probe_not_trial"
+    assert report["image"]["codex_version"] == "0.163.0"
+    assert report["image"]["rootfs_layers_preserve_base"] is True
+    assert report["codex_exec_server_process_observed"] is True
+    assert report["negative_checks_passed"] is True
+    assert report["application_key_in_container"] is False
+    assert report["restricted_environment_key_present"] is False
+    assert report["network_mode"] == "none"
+    assert report["mcp_tools_exposed"] == 0
+    assert report["effective_agent_tools_verified"] is False
+    assert report["container_cleanup_verified"] is True
+    assert report["launch_permitted"] is False

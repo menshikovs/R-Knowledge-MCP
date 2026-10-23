@@ -98,17 +98,21 @@ only in-memory synthetic data and creates no benchmark records. The tests mock
 Codex discovery and metadata commands; no local Codex installation or API
 credentials are required.
 
-The single-trial readiness harness and its exact execution blockers are
-documented in [ADAPTER.md](ADAPTER.md). It can prepare public task workspaces
-and validate a one-row authorization record, but **does not launch Codex**;
-`run-one` remains fail-closed until a separately audited isolation, credential,
-egress and gateway backend is available. Its local process probe is synthetic
-and is not an agent or model trial.
+The single-trial runtime and its exact execution blockers are documented in
+[ADAPTER.md](ADAPTER.md). A separate Codex 0.163.0 image based on the unchanged
+frozen R image has been built and its real `codex exec-server` process has been
+started in a networkless, restricted Docker candidate container. The
+Managed Agents API configuration/client has mocked offline coverage. No API
+session or model turn was created; `run-one` remains fail-closed because a
+path-aware egress broker/relay and remaining lifecycle integrations are not
+verified.
 
-The optional [Docker/WSL2 boundary probe](ADAPTER.md#offline-use) uses the
-existing frozen R image and verifies a real no-network, unprivileged container
-with only the public candidate workspace mounted. This verifies the fixed
-container probe, not Codex-agent isolation or a usable model connection.
+The [Docker/WSL2 offline runtime probe](ADAPTER.md#rebuild-and-offline-checks)
+uses the pinned Codex image, runs the actual executor binary with only the
+public workspace mounted, and verifies the fixed filesystem/network boundary
+and container cleanup. It does not verify remote executor registration,
+effective tools in a Managed Agents session, account access, or model
+connectivity.
 
 ## Official interface references
 
