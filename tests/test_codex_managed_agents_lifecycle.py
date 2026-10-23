@@ -245,6 +245,10 @@ def test_create_session_diagnostic_is_preserved_in_safe_lifecycle_audit(tmp_path
 
     class SessionRejectedClient(FakeClient):
         def create_session(self, _context):
+            # Match the production client's conservative create-failure flags.
+            self.session_creation_attempted = True
+            self.session_creation_uncertain = True
+            self.session_state = "unknown"
             error = RuntimeError("safe synthetic rejection")
             error.diagnostics = {
                 "operation": "create_session",
@@ -258,11 +262,13 @@ def test_create_session_diagnostic_is_preserved_in_safe_lifecycle_audit(tmp_path
 
     controller.client = SessionRejectedClient(workspace)
     context = {"trial_id": "R01-A", "expected_tools": [], "workspace": str(workspace)}
-    report = controller.run_one(
-        context=context,
-        authorization={"synthetic": True},
-        state_directory=tmp_path / "state",
-    )
+    with pytest.raises(lifecycle.LifecycleError, match="Cleanup") as caught:
+        controller.run_one(
+            context=context,
+            authorization={"synthetic": True},
+            state_directory=tmp_path / "state",
+        )
+    report = caught.value.audit_record
 
     assert report["failure"] == {
         "operation": "create_session",
@@ -281,7 +287,9 @@ def test_create_session_diagnostic_is_preserved_in_safe_lifecycle_audit(tmp_path
     assert "never-store-this" not in str(report)
     assert "must-not-appear" not in str(report)
     assert runtime.stopped is False
-    assert topology.cleaned and ledger.active_trial_id is None and leases[0].released
+    assert report["session_creation_outcome"] == "uncertain"
+    assert report["session_deleted_verified"] is None and not report["cleanup_verified"]
+    assert topology.cleaned and ledger.active_trial_id is None and not leases[0].released
 
 
 @pytest.mark.parametrize(

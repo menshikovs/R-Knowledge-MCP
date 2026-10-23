@@ -18,7 +18,6 @@ import time
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
-from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = ROOT.parents[1]
@@ -29,6 +28,13 @@ if _PILOT_SPEC is None or _PILOT_SPEC.loader is None:
     raise RuntimeError("Exploratory pilot module could not be loaded")
 pilot = importlib.util.module_from_spec(_PILOT_SPEC)
 _PILOT_SPEC.loader.exec_module(pilot)
+_CONTRACT_SPEC = importlib.util.spec_from_file_location(
+    "r01_runtime_executor_contract", Path(__file__).with_name("executor_contract.py")
+)
+if _CONTRACT_SPEC is None or _CONTRACT_SPEC.loader is None:
+    raise RuntimeError("Executor contract is unavailable")
+contract = importlib.util.module_from_spec(_CONTRACT_SPEC)
+_CONTRACT_SPEC.loader.exec_module(contract)
 MAX_OUTPUT_BYTES = 1 << 20
 CONTAINER_NAME = re.compile(r"^rkmcp-probe-R01-A-[a-f0-9]{16}$")
 IMAGE_ID = re.compile(r"^sha256:[a-f0-9]{64}$")
@@ -168,6 +174,10 @@ Server(("0.0.0.0", 3128), Handler).serve_forever()
 class DockerRuntimeError(RuntimeError):
     """Docker daemon, image, workspace, or policy verification failed."""
 
+    def __init__(self, message, *, code="runtime_policy_rejected", **observed):
+        super().__init__(message)
+        self.diagnostics = contract.project_runtime_diagnostics({"reason_code": code, **observed})
+
 
 class DockerCommandTimeout(DockerRuntimeError):
     """A local Docker CLI operation exceeded its own deadline."""
@@ -197,11 +207,24 @@ def _bounded_run(
             env=env,
         )
     except subprocess.TimeoutExpired as exc:
-        raise DockerCommandTimeout("Docker command exceeded its local deadline") from exc
+        raise DockerCommandTimeout(
+            "Docker command exceeded its local deadline",
+            code="command_timeout",
+            exception_category="timeout",
+            timeout_classification="docker_command_deadline",
+        ) from exc
     except OSError as exc:
-        raise DockerRuntimeError("Docker command failed or timed out") from exc
+        raise DockerRuntimeError(
+            "Docker command failed",
+            code="executable_unavailable"
+            if isinstance(exc, FileNotFoundError)
+            else "command_os_error",
+            exception_category="subprocess",
+        ) from exc
     if len(result.stdout) + len(result.stderr) > MAX_OUTPUT_BYTES:
-        raise DockerRuntimeError("Docker command output exceeded its byte limit")
+        raise DockerRuntimeError(
+            "Docker command output exceeded its byte limit", code="output_limit"
+        )
     return result
 
 
@@ -230,13 +253,37 @@ def _executor_child_environment(
 class DockerCandidateRuntime:
     """Create and audit one disposable networkless R01-A candidate container."""
 
-    def __init__(self, image_id: str, docker: str | None = None):
+    def __init__(self, image_id: str, docker: str | None = None, *, command_runner=None):
         if not IMAGE_ID.fullmatch(image_id):
             raise DockerRuntimeError("Use the immutable sha256 image ID, not a tag")
         self.docker = docker or shutil.which("docker")
         if not self.docker:
             raise DockerRuntimeError("Docker CLI was not found")
         self.image_id = image_id
+        self._command_runner = command_runner or _bounded_run
+
+    def _run_command(self, argv, *, timeout=20, env=None):
+        """Inject only subprocess execution; validation and startup stay production code."""
+        try:
+            result = self._command_runner(argv, timeout=timeout, env=env)
+        except subprocess.TimeoutExpired as exc:
+            raise DockerCommandTimeout(
+                "Docker command exceeded its local deadline",
+                code="command_timeout",
+                exception_category="timeout",
+                timeout_classification="docker_command_deadline",
+            ) from exc
+        except OSError as exc:
+            raise DockerRuntimeError(
+                "Docker command failed",
+                code="executable_unavailable"
+                if isinstance(exc, FileNotFoundError)
+                else "command_os_error",
+                exception_category="subprocess",
+            ) from exc
+        if len(result.stdout) + len(result.stderr) > MAX_OUTPUT_BYTES:
+            raise DockerRuntimeError("Docker output limit exceeded", code="output_limit")
+        return result
 
     def _docker(
         self,
@@ -244,9 +291,14 @@ class DockerCandidateRuntime:
         timeout: int = 20,
         env: dict[str, str] | None = None,
     ) -> subprocess.CompletedProcess:
-        result = _bounded_run([self.docker, *args], timeout=timeout, env=env)
+        result = self._run_command([self.docker, *args], timeout=timeout, env=env)
         if result.returncode != 0:
-            raise DockerRuntimeError("Docker daemon rejected a required operation")
+            raise DockerRuntimeError(
+                "Docker daemon rejected a required operation",
+                code="cli_nonzero",
+                docker_cli_exit_code=result.returncode,
+                exception_category="subprocess",
+            )
         return result
 
     def _assert_removed(self, container_id: str) -> None:
@@ -265,25 +317,28 @@ class DockerCandidateRuntime:
         self, name: str, argv: list[str], *, env: dict[str, str] | None = None
     ) -> str:
         try:
-            result = _bounded_run(argv, env=env)
-        except DockerRuntimeError:
-            try:
-                _bounded_run([self.docker, "rm", "--force", name], timeout=20)
-                self._assert_name_absent(name)
-            except DockerRuntimeError as cleanup_error:
+            result = self._run_command(argv, env=env)
+            if result.returncode != 0:
                 raise DockerRuntimeError(
-                    "Container creation timed out and cleanup could not be verified"
-                ) from cleanup_error
+                    "Docker failed to create the candidate probe container",
+                    code="cli_nonzero",
+                    docker_cli_exit_code=result.returncode,
+                    exception_category="subprocess",
+                )
+            container_id = result.stdout.decode("utf-8", "replace").strip()
+            if not re.fullmatch(r"[a-f0-9]{64}", container_id):
+                raise DockerRuntimeError(
+                    "Docker returned an invalid container identifier", code="invalid_container_id"
+                )
+            return container_id
+        except DockerRuntimeError as primary:
+            try:
+                self._run_command([self.docker, "rm", "--force", name], timeout=20)
+                self._assert_name_absent(name)
+            except DockerRuntimeError:
+                primary.cleanup_unverified = True
+                primary.diagnostics["secondary_cleanup_failure"] = "cleanup_unverified"
             raise
-        if result.returncode != 0:
-            self._assert_name_absent(name)
-            raise DockerRuntimeError("Docker failed to create the candidate probe container")
-        container_id = result.stdout.decode("utf-8", "replace").strip()
-        if not re.fullmatch(r"[a-f0-9]{64}", container_id):
-            _bounded_run([self.docker, "rm", "--force", name], timeout=20)
-            self._assert_name_absent(name)
-            raise DockerRuntimeError("Docker returned an invalid container identifier")
-        return container_id
 
     def verify_engine_and_image(self) -> dict:
         version = (
@@ -657,10 +712,10 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
     register a Managed Agents environment or create a model session.
     """
 
-    def __init__(self, image_id: str, docker: str | None = None):
+    def __init__(self, image_id: str, docker: str | None = None, *, command_runner=None):
         if not AGENT_IMAGE_ID.fullmatch(image_id):
             raise DockerRuntimeError("Use the immutable Codex candidate image ID")
-        super().__init__(image_id, docker)
+        super().__init__(image_id, docker, command_runner=command_runner)
 
     def verify_candidate_image(self) -> dict:
         inspected = (
@@ -843,56 +898,64 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
         create sessions, submit work, or infer connection success from process
         startup.
         """
-        if not topology.started or topology.internal_network == "none":
-            raise DockerRuntimeError("A verified restricted egress topology is required")
-        if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", environment_id):
-            raise DockerRuntimeError("Managed Agents environment identity is invalid")
-        if not environment_key or not isinstance(environment_key, str):
-            raise DockerRuntimeError("A documented restricted environment key is required")
-        parsed = urlsplit(remote_url)
-        if (
-            parsed.scheme != "https"
-            or parsed.hostname != "api.openai.com"
-            or parsed.path != "/v1/agents/api"
-            or parsed.port not in (None, 443)
-            or parsed.username
-            or parsed.password
-            or parsed.fragment
-        ):
-            raise DockerRuntimeError("Executor remote URL is outside the documented endpoint")
-        workspace_info = self._validate_workspace(Path(workspace))
-        image = self.verify_candidate_image()
-        proxy_url = f"http://{ipaddress.ip_address(proxy_ip)}:3128"
-        name = f"rkmcp-probe-R01-A-{uuid.uuid4().hex[:16]}"
-        argv = self._create_args(
-            name,
-            Path(workspace_info["path"]),
-            [
-                "exec-server",
-                "--remote",
-                remote_url,
-                "--environment-id",
-                environment_id,
-            ],
-            network_mode=topology.internal_network,
-            proxy_enabled=True,
-            proxy_url=proxy_url,
-            deny_dns=True,
-            environment_key=True,
-        )
-        safe_env = _executor_child_environment(os.environ, environment_key)
-        container_id = self._create_container(name, argv, env=safe_env)
+        container_id = None
+        phase = "validate_topology"
         try:
+            if not topology.started or topology.internal_network == "none":
+                raise DockerRuntimeError("A verified restricted egress topology is required")
+            phase = "validate_environment"
+            if not re.fullmatch(r"[A-Za-z0-9_-]{1,128}", environment_id):
+                raise DockerRuntimeError("Managed Agents environment identity is invalid")
+            if not environment_key or not isinstance(environment_key, str):
+                raise DockerRuntimeError("A documented restricted environment key is required")
+            phase = "validate_remote_url"
+            try:
+                contract.validate_executor_remote_url(remote_url)
+            except contract.ExecutorURLValidationError as exc:
+                raise DockerRuntimeError(
+                    "Executor remote URL failed reviewed policy",
+                    code="remote_url_rejected",
+                    exception_category="validation",
+                ) from exc
+            phase = "validate_workspace"
+            workspace_info = self._validate_workspace(Path(workspace))
+            phase = "verify_image"
+            image = self.verify_candidate_image()
+            phase = "build_container_args"
+            proxy_url = f"http://{ipaddress.ip_address(proxy_ip)}:3128"
+            name = f"rkmcp-probe-R01-A-{uuid.uuid4().hex[:16]}"
+            argv = self._create_args(
+                name,
+                Path(workspace_info["path"]),
+                [
+                    "exec-server",
+                    "--remote",
+                    remote_url,
+                    "--environment-id",
+                    environment_id,
+                ],
+                network_mode=topology.internal_network,
+                proxy_enabled=True,
+                proxy_url=proxy_url,
+                deny_dns=True,
+                environment_key=True,
+            )
+            safe_env = _executor_child_environment(os.environ, environment_key)
+            phase = "create_container"
+            container_id = self._create_container(name, argv, env=safe_env)
+            phase = "inspect_policy"
             self._inspect_policy(
                 container_id,
                 Path(workspace_info["path"]),
                 expected_network=topology.internal_network,
             )
+            phase = "inspect_network"
             networks = json.loads(
                 self._docker(
                     "inspect", "--format", "{{json .NetworkSettings.Networks}}", container_id
                 ).stdout
             )
+            phase = "inspect_environment"
             env = json.loads(
                 self._docker("inspect", "--format", "{{json .Config.Env}}", container_id).stdout
             )
@@ -907,7 +970,9 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
                 )
             ):
                 raise DockerRuntimeError("Executor credential or network policy did not verify")
+            phase = "start_container"
             self._docker("start", container_id)
+            phase = "verify_process"
             deadline = time.monotonic() + 5
             while time.monotonic() < deadline:
                 top = self._docker("top", container_id, timeout=5)
@@ -928,32 +993,67 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
                         "status": "process_running_live_connection_unverified",
                     }
                 state = (
-                    self._docker("inspect", "--format", "{{.State.Status}}", container_id)
+                    self._docker(
+                        "inspect", "--format", "{{.State.Status}}|{{.State.ExitCode}}", container_id
+                    )
                     .stdout.decode("ascii", "replace")
                     .strip()
                 )
-                if state != "running":
-                    raise DockerRuntimeError("Codex executor exited before process verification")
+                state_parts = state.split("|", 1)
+                state_name = state_parts[0]
+                exit_code = None
+                if len(state_parts) == 2 and re.fullmatch(r"-?\d{1,10}", state_parts[1]):
+                    exit_code = int(state_parts[1])
+                if state_name != "running":
+                    raise DockerRuntimeError(
+                        "Codex executor exited before process verification",
+                        code="executor_exited",
+                        container_startup_state=state_name,
+                        container_exit_code=exit_code,
+                    )
                 time.sleep(0.1)
-            raise DockerRuntimeError("Codex executor process did not remain running")
+            raise DockerRuntimeError(
+                "Codex executor process did not remain running", code="executor_not_running"
+            )
         except BaseException as exc:
-            if not self.stop_managed_executor(container_id):
+            if isinstance(exc, DockerRuntimeError):
+                failure = exc
+                if (
+                    phase.startswith("inspect_")
+                    and failure.diagnostics["reason_code"] == "runtime_policy_rejected"
+                ):
+                    failure.diagnostics["reason_code"] = "invalid_inspection"
+            else:
                 failure = DockerRuntimeError(
-                    "Executor startup failed and container removal could not be verified"
+                    "Executor startup failed",
+                    code="invalid_inspection"
+                    if phase.startswith("inspect_")
+                    else "runtime_policy_rejected",
+                    exception_category="validation" if isinstance(exc, ValueError) else "runtime",
                 )
-                failure.container_id = container_id
-                raise failure from exc
-            raise
+            failure.diagnostics["sub_operation"] = phase
+            if container_id:
+                try:
+                    removed = self.stop_managed_executor(container_id)
+                except Exception:
+                    removed = False
+                if not removed:
+                    failure.container_id = container_id
+                    failure.cleanup_unverified = True
+                    failure.diagnostics["secondary_cleanup_failure"] = "cleanup_unverified"
+            if failure is exc:
+                raise
+            raise failure from exc
 
     def stop_managed_executor(self, container_id: str) -> bool:
         """Force-stop every process in the executor cgroup and verify removal."""
         if not re.fullmatch(r"[a-f0-9]{64}", container_id):
             raise DockerRuntimeError("Executor container identity is invalid")
-        removed = _bounded_run([self.docker, "rm", "--force", container_id], timeout=20)
+        removed = self._run_command([self.docker, "rm", "--force", container_id], timeout=20)
         if removed.returncode == 0:
             self._assert_removed(container_id)
             return True
-        listed = _bounded_run(
+        listed = self._run_command(
             [self.docker, "ps", "--all", "--filter", f"id={container_id}", "--format", "{{.ID}}"],
             timeout=5,
         )

@@ -144,6 +144,7 @@ def execution_configuration_fingerprint() -> str:
         ROOT / "exploratory" / "docker_runtime.py",
         ROOT / "exploratory" / "egress_proxy.py",
         ROOT / "exploratory" / "managed_agents.py",
+        ROOT / "exploratory" / "executor_contract.py",
         ROOT / "exploratory" / "lifecycle.py",
         Path(__file__).resolve(),
     ):

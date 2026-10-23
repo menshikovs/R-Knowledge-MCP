@@ -30,6 +30,9 @@ def _load(path: Path, name: str):
     return module
 
 
+contract = _load(Path(__file__).with_name("executor_contract.py"), "r01_lifecycle_contract")
+
+
 def validate_artifact_workspace(workspace: Path, *, max_bytes: int) -> dict[str, Path]:
     """Require only public inputs and the task's exact output allowlist."""
     workspace = Path(workspace)
@@ -197,6 +200,13 @@ class R01ALifecycleController:
             "session_creation_uncertain": False,
             "task_submission_attempted": False,
             "task_submission_uncertain": False,
+            "session_creation_outcome": "not_attempted",
+            "executor_startup_attempted": False,
+            "executor_startup_failed": False,
+            "executor_process_started": False,
+            "executor_connection_observed": False,
+            "task_submission_outcome": "not_attempted",
+            "cleanup_failures": [],
         }
         session_id = container_id = None
         lease = self.lease_factory("R01-A")
@@ -209,6 +219,53 @@ class R01ALifecycleController:
         deadline_timer = None
         deadline_expired = threading.Event()
         deadline_termination_verified = []
+        executor_cleanup_unverified = False
+
+        def refresh_client_state():
+            # Refresh before error reporting, not only after constructing its reason.
+            record["session_creation_attempted"] = bool(
+                getattr(
+                    self.client, "session_creation_attempted", record["session_creation_attempted"]
+                )
+            )
+            if getattr(self.client, "session_creation_response_received", False):
+                record["session_created"] = True
+                record["sessions_created_count"] = 1
+            record["session_creation_http_status"] = getattr(
+                self.client, "session_creation_http_status", record["session_creation_http_status"]
+            )
+            record["session_creation_uncertain"] = bool(
+                getattr(
+                    self.client, "session_creation_uncertain", record["session_creation_uncertain"]
+                )
+            )
+            record["session_creation_outcome"] = (
+                "uncertain"
+                if record["session_creation_uncertain"]
+                else "confirmed"
+                if record["session_created"]
+                else "attempted"
+                if record["session_creation_attempted"]
+                else "not_attempted"
+            )
+            record["task_submission_attempted"] |= bool(
+                getattr(self.client, "task_submission_attempted", False)
+            )
+            record["task_submission_uncertain"] = bool(
+                getattr(
+                    self.client, "task_submission_uncertain", record["task_submission_uncertain"]
+                )
+            )
+            record["task_submissions_attempted_count"] = int(record["task_submission_attempted"])
+            record["task_submission_outcome"] = (
+                "uncertain"
+                if record["task_submission_uncertain"]
+                else "submitted"
+                if record["inference_submitted"]
+                else "attempted"
+                if record["task_submission_attempted"]
+                else "not_attempted"
+            )
 
         def state(name: str):
             nonlocal current_operation
@@ -243,16 +300,22 @@ class R01ALifecycleController:
                 "topology_started_and_verified": True,
             }
             current_operation = "create_session"
+            record["session_creation_attempted"] = True
+            record["session_creation_uncertain"] = True
+            record["session_creation_outcome"] = "attempted"
             session = self.client.create_session(context)
             session_id = session["session_id"]
             record["resolved_session"] = session.get("resolved_agent")
             record["session_created"] = True
             record["sessions_created_count"] = 1
+            record["session_creation_uncertain"] = False
+            refresh_client_state()
             state("create_session")
 
             def start_executor():
-                nonlocal container_id
+                nonlocal container_id, executor_cleanup_unverified, current_operation
                 state("start_executor")
+                record["executor_startup_attempted"] = True
                 try:
                     started = self.runtime.start_managed_executor(
                         workspace,
@@ -263,15 +326,22 @@ class R01ALifecycleController:
                         proxy_ip=gateway["proxy_internal_ip"],
                     )
                 except Exception as exc:
+                    record["executor_startup_failed"] = True
+                    executor_cleanup_unverified = bool(getattr(exc, "cleanup_unverified", False))
                     container_id = getattr(exc, "container_id", None)
                     raise
                 container_id = started["container_id"]
+                record["executor_process_started"] = True
+                current_operation = "await_executor_connection"
 
             def connected():
                 nonlocal stream_connected, deadline_timer
                 stream_connected = True
+                record["executor_connection_observed"] = True
                 state("establish_connection")
                 state("submit_task")
+                # The HTTP client marks the attempt immediately before POST.
+                # A connected event alone is not a task-submission attempt.
 
                 def terminate_at_deadline():
                     deadline_expired.set()
@@ -288,11 +358,15 @@ class R01ALifecycleController:
                 deadline_timer.start()
 
             def task_submitted():
-                if record["task_submissions_attempted_count"] != 0:
+                nonlocal current_operation
+                if record["inference_submitted"]:
                     raise LifecycleError("Only one task submission is permitted for R01-A")
                 record["inference_submitted"] = True
                 record["task_submission_attempted"] = True
                 record["task_submissions_attempted_count"] = 1
+                record["task_submission_uncertain"] = False
+                record["task_submission_outcome"] = "submitted"
+                current_operation = "stream_events"
 
             state("stream_events")
             for event in self.client.send_and_stream(
@@ -303,7 +377,9 @@ class R01ALifecycleController:
                 on_environment_connected=connected,
                 on_task_submitted=task_submitted,
             ):
-                record["events"].append(event)
+                record["events"].append(
+                    contract.sanitize_reference_data(event, secrets=(self.environment_key,))
+                )
                 if event.get("type") == "agent.session.turn.completed":
                     turn_completed = True
                 if event.get("type") in {
@@ -324,25 +400,33 @@ class R01ALifecycleController:
             state("finish")
         except BaseException as exc:
             primary_error = exc
+            refresh_client_state()
             diagnostics = getattr(exc, "diagnostics", None)
-            if isinstance(diagnostics, dict):
+            if isinstance(diagnostics, dict) and diagnostics.get("category") == "docker_runtime":
+                record["failure"] = contract.project_runtime_diagnostics(diagnostics)
+                record["failure"]["operation"] = current_operation
+            elif isinstance(diagnostics, dict):
                 # Only a small, provider-neutral allowlist is persisted. Never
                 # serialize exception text, headers, body bytes, or remote URLs.
-                record["failure"] = {
-                    key: diagnostics.get(key)
-                    for key in (
-                        "operation",
-                        "category",
-                        "http_status",
-                        "reason",
-                        "reason_code",
-                        "field",
-                        "session_state",
-                        "session_deleted_verified",
-                        "cleanup_reason_code",
-                    )
-                    if diagnostics.get(key) is None or isinstance(diagnostics.get(key), (str, int))
-                }
+                record["failure"] = contract.sanitize_reference_data(
+                    {
+                        key: diagnostics.get(key)
+                        for key in (
+                            "operation",
+                            "category",
+                            "http_status",
+                            "reason",
+                            "reason_code",
+                            "field",
+                            "session_state",
+                            "session_deleted_verified",
+                            "cleanup_reason_code",
+                        )
+                        if diagnostics.get(key) is None
+                        or isinstance(diagnostics.get(key), (str, int))
+                    },
+                    secrets=(self.environment_key,),
+                )
             else:
                 record["failure"] = {
                     "operation": current_operation,
@@ -353,7 +437,16 @@ class R01ALifecycleController:
                     if not record["session_creation_attempted"]
                     else "Lifecycle operation failed; details omitted",
                 }
+            if not record["failure"].get("operation"):
+                record["failure"]["operation"] = current_operation
+            record["failure_category"] = (
+                record["failure"].get("category")
+                if isinstance(diagnostics, dict)
+                else type(exc).__name__
+            )
+            record["primary_failure_classification"] = record["failure_category"]
         finally:
+            refresh_client_state()
             if deadline_timer is not None:
                 deadline_timer.cancel()
                 if deadline_timer.is_alive():
@@ -373,35 +466,18 @@ class R01ALifecycleController:
                 except Exception:
                     container_removed = False
             else:
-                container_removed = True
+                container_removed = not executor_cleanup_unverified
+            if not container_removed:
+                record["cleanup_failures"].append("container_removal_unverified")
             record["container_termination_verified"] = container_removed
-            response_received = bool(
-                getattr(self.client, "session_creation_response_received", False)
-            )
-            if response_received:
-                record["session_created"] = True
-                record["sessions_created_count"] = 1
             record["session_state"] = getattr(
                 self.client,
                 "session_state",
-                "unknown" if record["session_creation_attempted"] else "not_started",
-            )
-            record["session_creation_http_status"] = getattr(
-                self.client, "session_creation_http_status", None
-            )
-            record["session_creation_uncertain"] = bool(
-                getattr(self.client, "session_creation_uncertain", False)
-            )
-            record["session_creation_attempted"] = bool(
-                getattr(self.client, "session_creation_attempted", record["session_created"])
-            )
-            record["task_submission_attempted"] = record["task_submission_attempted"] or bool(
-                getattr(self.client, "task_submission_attempted", False)
-            )
-            if record["task_submission_attempted"]:
-                record["task_submissions_attempted_count"] = 1
-            record["task_submission_uncertain"] = bool(
-                getattr(self.client, "task_submission_uncertain", False)
+                "created"
+                if record["session_created"]
+                else "unknown"
+                if record["session_creation_attempted"]
+                else "not_started",
             )
             client_deletion_status = getattr(self.client, "session_deletion_verified", None)
             if client_deletion_status is not None:
@@ -426,6 +502,10 @@ class R01ALifecycleController:
                 topology_removed = self.topology.cleanup()
             except Exception:
                 topology_removed = False
+            if session_deleted is False:
+                record["cleanup_failures"].append("session_delete_unverified")
+            if not topology_removed:
+                record["cleanup_failures"].append("topology_cleanup_unverified")
             cleanup_ok = (
                 container_removed
                 and session_deleted is True
@@ -434,7 +514,9 @@ class R01ALifecycleController:
             )
             record["cleanup_verified"] = cleanup_ok
             record["session_deleted_verified"] = session_deleted
-            if session_deleted is None:
+            if session_deleted is True and record["session_created"]:
+                record["session_state"] = "deleted"
+            elif session_deleted is None or session_deleted is False:
                 record["session_state"] = "unknown"
             record["topology_cleanup_verified"] = topology_removed
 

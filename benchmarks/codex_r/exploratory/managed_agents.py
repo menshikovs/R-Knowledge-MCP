@@ -7,13 +7,14 @@ account/model access are independently verified.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 import ssl
 import time
 import uuid
 from collections.abc import Callable
-from urllib.parse import parse_qsl, unquote, urlsplit
+from pathlib import Path
 
 import httpx
 
@@ -22,7 +23,14 @@ MAX_EVENT_BYTES = 1 << 20
 MAX_EVENT_COUNT = 10000
 MAX_EVENT_LOG_BYTES = 32 << 20
 API_ORIGIN = "https://api.openai.com"
-OFFICIAL_EXECUTOR_HOSTS = {"api.openai.com"}
+_CONTRACT_SPEC = importlib.util.spec_from_file_location(
+    "r01_client_executor_contract", Path(__file__).with_name("executor_contract.py")
+)
+if _CONTRACT_SPEC is None or _CONTRACT_SPEC.loader is None:
+    raise RuntimeError("Executor contract is unavailable")
+contract = importlib.util.module_from_spec(_CONTRACT_SPEC)
+_CONTRACT_SPEC.loader.exec_module(contract)
+OFFICIAL_EXECUTOR_HOSTS = contract.OFFICIAL_EXECUTOR_HOSTS
 SESSION_ID = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
 
 
@@ -96,73 +104,10 @@ def validate_environment_record(record: dict) -> dict:
     if not isinstance(env_id, str) or not SESSION_ID.fullmatch(env_id):
         raise _schema_error("environment_id_invalid", "environment.id")
     remote_url = environment.get("remote_url")
-    reason_code = None
-    field = "environment.remote_url"
-    if not isinstance(remote_url, str) or not remote_url:
-        reason_code = "remote_url_missing"
-    elif any(ord(char) < 0x20 or ord(char) == 0x7F for char in remote_url):
-        reason_code = "remote_url_invalid_characters"
-    elif "#" in remote_url:
-        reason_code = "remote_url_fragment_forbidden"
-    else:
-        try:
-            parsed = urlsplit(remote_url)
-            port = parsed.port
-        except ValueError:
-            parsed = None
-            port = None
-            reason_code = "remote_url_port_invalid"
-        if parsed is not None and reason_code is None:
-            if parsed.scheme.lower() != "https":
-                reason_code = "remote_url_scheme_not_https"
-            elif parsed.hostname not in OFFICIAL_EXECUTOR_HOSTS:
-                reason_code = "remote_url_hostname_not_allowlisted"
-            elif port not in (None, 443):
-                reason_code = "remote_url_port_not_permitted"
-            elif parsed.username is not None or parsed.password is not None:
-                reason_code = "remote_url_credentials_forbidden"
-            elif any(
-                key.casefold()
-                in {
-                    "api_key",
-                    "apikey",
-                    "access_token",
-                    "auth",
-                    "authorization",
-                    "bearer",
-                    "credential",
-                    "password",
-                    "secret",
-                    "sig",
-                    "signature",
-                    "token",
-                }
-                for key, _value in parse_qsl(parsed.query, keep_blank_values=True)
-            ):
-                reason_code = "remote_url_credentials_forbidden"
-            elif parsed.fragment:
-                reason_code = "remote_url_fragment_forbidden"
-            elif parsed.netloc.endswith(":"):
-                reason_code = "remote_url_port_invalid"
-            else:
-                # The API reference models remote_url as an opaque string and
-                # instructs clients to pass it unchanged. Keep it on the
-                # documented API endpoint namespace while accepting trailing
-                # slash/subpath variants that the fixed-path check rejected.
-                path = parsed.path
-                decoded_path = unquote(path)
-                path_parts = decoded_path.split("/")
-                if (
-                    not path.startswith("/v1/agents/api")
-                    or not (path == "/v1/agents/api" or path.startswith("/v1/agents/api/"))
-                    or any(part in {".", ".."} for part in path_parts)
-                    or "\\" in decoded_path
-                    or re.search(r"%(?![0-9A-Fa-f]{2})", path)
-                    or any(char.isspace() for char in path)
-                ):
-                    reason_code = "remote_url_path_not_permitted"
-    if reason_code:
-        raise _schema_error(reason_code, field)
+    try:
+        contract.validate_executor_remote_url(remote_url)
+    except contract.ExecutorURLValidationError as exc:
+        raise _schema_error(exc.reason_code, "environment.remote_url") from exc
     return {
         "session_id": record["id"],
         "environment_id": env_id,
@@ -395,6 +340,7 @@ class ManagedAgentsClient:
             "POST",
             f"/v1/agents/sessions/{session_id}/events",
             headers={"Idempotency-Key": key},
+            operation="submit_task",
             body={
                 "events": [
                     {
