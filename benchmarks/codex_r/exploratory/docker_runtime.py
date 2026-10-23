@@ -916,8 +916,13 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
                     raise DockerRuntimeError("Codex executor exited before process verification")
                 time.sleep(0.1)
             raise DockerRuntimeError("Codex executor process did not remain running")
-        except BaseException:
-            self.stop_managed_executor(container_id)
+        except BaseException as exc:
+            if not self.stop_managed_executor(container_id):
+                failure = DockerRuntimeError(
+                    "Executor startup failed and container removal could not be verified"
+                )
+                failure.container_id = container_id
+                raise failure from exc
             raise
 
     def stop_managed_executor(self, container_id: str) -> bool:
@@ -925,10 +930,14 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
         if not re.fullmatch(r"[a-f0-9]{64}", container_id):
             raise DockerRuntimeError("Executor container identity is invalid")
         removed = _bounded_run([self.docker, "rm", "--force", container_id], timeout=20)
-        if removed.returncode != 0:
-            return False
-        self._assert_removed(container_id)
-        return True
+        if removed.returncode == 0:
+            self._assert_removed(container_id)
+            return True
+        listed = _bounded_run(
+            [self.docker, "ps", "--all", "--filter", f"id={container_id}", "--format", "{{.ID}}"],
+            timeout=5,
+        )
+        return listed.returncode == 0 and not listed.stdout.strip()
 
 
 class RestrictedEgressNetwork:

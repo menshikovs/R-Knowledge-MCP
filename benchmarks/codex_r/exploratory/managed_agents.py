@@ -201,6 +201,8 @@ class ManagedAgentsClient:
         deadline_seconds: float = 900,
         idempotency_key: str | None = None,
         on_stream_ready: Callable[[], None] | None = None,
+        on_environment_connected: Callable[[], None] | None = None,
+        on_task_submitted: Callable[[], None] | None = None,
     ):
         """Subscribe before task submission and yield bounded, sanitized SSE events."""
         if not SESSION_ID.fullmatch(session_id) or not isinstance(task, str) or not task.strip():
@@ -278,8 +280,12 @@ class ManagedAgentsClient:
                         event = self._sanitize_event(event)
                         yield event
                         if event["type"] == "agent.session.environment.connected" and not submitted:
+                            if on_environment_connected is not None:
+                                on_environment_connected()
                             self.submit_task(session_id, task, idempotency_key=key)
                             submitted = True
+                            if on_task_submitted is not None:
+                                on_task_submitted()
                         if (
                             event["type"]
                             in {
