@@ -3,6 +3,7 @@ upstream/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+pytest-cache/
 .ruff_cache/
 *.egg-info/
 build/
