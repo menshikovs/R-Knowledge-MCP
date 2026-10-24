@@ -78,7 +78,7 @@ def prompt_max_grounding_packages() -> int:
 
 
 def prompt_default_target() -> str:
-    value = os.environ.get("PROMPT_DEFAULT_TARGET", "codex").strip().casefold()
+    value = os.environ.get("PROMPT_DEFAULT_TARGET", "generic").strip().casefold()
     if value not in {"codex", "chatgpt", "generic"}:
         raise KnowledgeError(
             "invalid_configuration", "PROMPT_DEFAULT_TARGET must be codex, chatgpt or generic"

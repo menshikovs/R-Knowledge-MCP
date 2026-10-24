@@ -29,7 +29,9 @@ an implementation sequence, and questions that still need project-owner decision
 `preferences` contains optional `prefer` and `exclude` string lists. The tool preserves
 objective, requirements, existing-stack entries, and preferences verbatim in
 `user_inputs_preserved`; non-English text is not translated.
-Inputs that match common credential patterns are rejected before metadata lookups.
+Inputs that match common credential patterns, including bearer headers and
+credential-bearing URLs, are rejected before metadata lookups. Detection is
+heuristic and does not identify every possible secret.
 
 ## Evidence and limits
 
@@ -45,8 +47,13 @@ Inputs that match common credential patterns are rejected before metadata lookup
   to match that role before recommending a result. Search results alone are not enough.
 - Package versions and source URLs come from the configured repository provider at
   `checked_at`. These are repository records, not installed versions.
-- `Depends`, `Imports`, `LinkingTo`, and `Suggests` are direct verbatim repository
-  fields. They are not expanded into a transitive dependency graph.
+- `Depends`, `Imports`, `LinkingTo`, `Suggests`, and `Enhances` are direct
+  verbatim repository fields. `Depends` and `Imports` are exposed as runtime
+  requirements; `LinkingTo` is separately exposed as a build-time/compilation
+  requirement. `Suggests` and `Enhances` are optional. The legacy `required`
+  field is retained for compatibility and still includes `LinkingTo`; new
+  clients should prefer the explicit `runtime_required` and `build_time`
+  fields. These fields are not expanded into a transitive dependency graph.
 - No R version is inferred. Bioconductor compatibility, local environment state,
   deployment compatibility, and actual behavior are not established by this tool.
 - No complementary non-R product is named unless the user already supplied it. For an

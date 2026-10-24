@@ -117,7 +117,8 @@ class SourceRepository(ABC):
             "package": package,
             "package_version": record["Version"],
             "dependencies": {
-                key: record.get(key, "") for key in ("Depends", "Imports", "Suggests", "LinkingTo")
+                key: record.get(key, "")
+                for key in ("Depends", "Imports", "Suggests", "LinkingTo", "Enhances")
             },
             "format": "Verbatim DCF values; empty string means field absent. Not transitive.",
             "sources": [artifact.provenance()],

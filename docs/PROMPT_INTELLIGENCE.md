@@ -1,10 +1,12 @@
 # Prompt Intelligence
 
 Prompt Intelligence is a deterministic R-specialized prompt builder layered on
-the package providers. It is intended to give Codex, ChatGPT and other MCP
-clients a clearer task specification, with current package context when the
-caller requests it and official sources can verify it. It does not execute the
-resulting prompt or any supplied R, shell, package, or repository content.
+the package providers. It gives MCP clients a clearer task specification, with
+current package context when the caller requests it and official sources can
+verify it. Application-authored headings and instructions are always in English;
+multilingual caller and retrieved content remains data and is not translated.
+It does not execute the resulting prompt or any supplied R, shell, package, or
+repository content.
 
 ## MCP surface
 
@@ -18,15 +20,21 @@ resulting prompt or any supplied R, shell, package, or repository content.
 | MCP Prompts | Fourteen user-selected local drafts, including `r-multi-stage-workflow`, spanning R, CSV/SQL, Shiny, Quarto, Bioconductor and visualization. |
 
 Tool-generated prompt requests can include `target` (`codex`, `chatgpt`,
-`generic`), `detail_level` (`concise`, `standard`, `comprehensive`),
+`generic`) as the requested downstream enhancement profile, `detail_level`
+(`concise`, `standard`, `comprehensive`),
 `task_category`, package names, R and Bioconductor versions, caller-supplied
 project context, constraints, source inclusion and `enhancement_mode`. The
 composable engine adds `composition_mode` (`auto`, `single`, `composed`),
 explicit `templates`, bounded `workflow_context`, `include_plan` and
-`include_provenance`; it returns the resolved template IDs, ordered stages,
-dependency edges, parallel groups, conflicts, warnings and a structural
-composition rubric. See [Composable Prompts](COMPOSABLE_PROMPTS.md) for the
-pipeline and complete generated example.
+`include_provenance`; deterministic instructions remain client-neutral for
+every target value. The target is retained in the response and may be passed to
+an explicitly injected enhancement provider. Composition returns the resolved
+template IDs, ordered stages, dependency edges, parallel groups, conflicts,
+warnings and a structural composition rubric. See
+[Composable Prompts](COMPOSABLE_PROMPTS.md) for the pipeline and complete
+generated example.
+The legacy `language` argument remains accepted as `auto`, `en` or `ru` for
+input compatibility; it does not localize generated instructions.
 Categories cover package development, data analysis and transformation,
 statistical modeling, visualization, Shiny, Quarto, Bioconductor, debugging,
 refactoring, architecture review, testing, reproducibility, performance, CSV
@@ -88,7 +96,7 @@ Example MCP requests (these are task examples, not claims about live package
 versions):
 
 ```json
-{"request":"Build a Shiny dashboard for reviewing sample QC","target":"codex","detail_level":"comprehensive"}
+{"request":"Build a Shiny dashboard for reviewing sample QC","detail_level":"comprehensive"}
 {"request":"Analyze RNA-seq counts with DESeq2","packages":["DESeq2"],"r_version":"4.5.1"}
 {"request":"Create a Quarto report with a ggplot2 figure","packages":["ggplot2","knitr"]}
 {"request":"Refactor this tidyr pipeline without changing output columns","packages":["tidyr"],"constraints":["Keep the output schema unchanged"]}
@@ -135,7 +143,7 @@ service. The MCP server can gate this feature with:
 | `PROMPT_MAX_INPUT_CHARS` | `8000` | `32000` |
 | `PROMPT_MAX_OUTPUT_CHARS` | `24000` | `48000` |
 | `PROMPT_MAX_GROUNDING_PACKAGES` | `5` | `10` |
-| `PROMPT_DEFAULT_TARGET` | `codex` | `codex`, `chatgpt`, `generic` |
+| `PROMPT_DEFAULT_TARGET` | `generic` | `codex`, `chatgpt`, `generic` |
 | `PROMPT_DEFAULT_DETAIL_LEVEL` | `standard` | `concise`, `standard`, `comprehensive` |
 
 The prompt boundary exposes an optional `PromptEnhancementProvider` protocol for

@@ -33,13 +33,12 @@ class ConstraintMerger:
         user_constraints: list[str],
         structured_context: dict,
         workflow_context: dict,
-        language: str,
     ) -> dict[str, list[str]]:
         requirements = []
         for task in tasks:
-            pair = CATEGORY_REQUIREMENTS.get(task.category)
-            if pair:
-                requirements.append(pair[1 if language == "ru" else 0])
+            requirement = CATEGORY_REQUIREMENTS.get(task.category)
+            if requirement:
+                requirements.append(requirement)
             requirements.extend(task.constraints)
         requirements.extend(user_constraints)
         requirements.extend(workflow_context.get("technical_constraints", []))

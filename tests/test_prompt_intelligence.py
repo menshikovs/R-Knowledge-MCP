@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+import re
+
+import pytest
+
 from cran_knowledge_mcp.errors import KnowledgeError
 from cran_knowledge_mcp.prompt_intelligence import PromptIntelligence
 from cran_knowledge_mcp.prompt_intelligence.intent import classify_request, detect_packages
@@ -150,19 +154,43 @@ async def test_prompt_reports_missing_packages_without_inventing_metadata():
     assert any("could not be verified" in question for question in result["unresolved_questions"])
 
 
-async def test_prompt_language_detail_and_profile_are_explicit():
+@pytest.mark.parametrize("target", ["codex", "chatgpt", "generic"])
+@pytest.mark.parametrize("detail_level", ["concise", "standard", "comprehensive"])
+async def test_prompt_language_detail_and_profile_are_explicit(target, detail_level):
     service = PromptIntelligence(None)
+    request = "Создать отчёт Quarto с ggplot2."
     result = await service.build_r_prompt(
-        "Создать отчёт Quarto с ggplot2.",
-        target="generic",
-        detail_level="comprehensive",
+        request,
+        target=target,
+        detail_level=detail_level,
         language="ru",
+        composition_mode="single",
     )
     assert result["task_category"] == "quarto_reporting"
-    assert "Исходный запрос" in result["prompt_text"]
-    assert "Quarto" in result["prompt_text"]
-    assert result["target"] == "generic"
-    assert "Подтвердите" not in result["prompt_text"] or "Критерии" in result["prompt_text"]
+    prompt = result["prompt_text"]
+    assert request in prompt
+    assert "## Role" in prompt
+    assert "Act as an AI coding assistant." in prompt
+    if detail_level == "concise":
+        assert "## Objective" in prompt
+    else:
+        assert "## Original request (preserve its intent)" in prompt
+    assert re.search(r"[\u0400-\u04ff]", prompt.replace(request, "")) is None
+    assert result["target"] == target
+    assert "codex coding assistant" not in prompt.casefold()
+    assert "chatgpt coding assistant" not in prompt.casefold()
+    for field in ("warnings", "unresolved_questions", "assumptions", "conflicts"):
+        assert all(re.search(r"[\u0400-\u04ff]", str(value)) is None for value in result[field])
+    validation = validate_prompt(prompt)
+    assert all(
+        re.search(r"[\u0400-\u04ff]", finding["message"]) is None
+        for finding in validation["findings"]
+    )
+
+
+async def test_invalid_language_option_keeps_english_validation_message():
+    with pytest.raises(KnowledgeError, match="language must be auto, en or ru"):
+        await PromptIntelligence(None).build_r_prompt("Build an R package", language="fr")
 
 
 async def test_improve_prompt_keeps_original_and_improvement_goals_verbatim():
@@ -214,6 +242,10 @@ async def test_templates_are_stable_descriptive_and_versioned_by_identifier():
         "tidyr-pipeline",
     } <= ids
     assert all(item["description"] for item in result["templates"])
+    assert all(
+        not any("\u0400" <= char <= "\u04ff" for char in item["description"])
+        for item in result["templates"]
+    )
 
 
 async def test_prompt_context_resolves_versioned_package_and_compatibility():

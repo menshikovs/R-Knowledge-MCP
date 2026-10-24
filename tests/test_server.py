@@ -12,6 +12,8 @@ from cran_knowledge_mcp.server import create_http_app, create_server
 
 TOOLS = {
     "search_packages",
+    "search_r_documentation",
+    "get_r_documentation_section",
     "get_package_info",
     "get_dependencies",
     "get_function_docs",
@@ -65,7 +67,7 @@ PROMPTS = {
 
 
 async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
-    api, _, _ = service
+    api, _, calls = service
     monkeypatch.setattr(
         "cran_knowledge_mcp.server.make_client",
         lambda: httpx.AsyncClient(transport=api.http.client._transport),
@@ -74,6 +76,19 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         tools = (await session.list_tools()).tools
         assert {tool.name for tool in tools} == TOOLS
         assert all(tool.annotations.readOnlyHint for tool in tools)
+        prompt_tool_names = {
+            "build_r_prompt",
+            "improve_r_prompt",
+            "validate_r_prompt",
+            "list_r_prompt_templates",
+            "get_r_prompt_context",
+        }
+        prompt_tools = [tool for tool in tools if tool.name in prompt_tool_names]
+        assert all(tool.description for tool in prompt_tools)
+        assert all(
+            not any("\u0400" <= char <= "\u04ff" for char in (tool.description or ""))
+            for tool in prompt_tools
+        )
         package_info_tool = next(tool for tool in tools if tool.name == "get_package_info")
         assert package_info_tool.inputSchema["properties"]["verify_archive"]["type"] == "boolean"
         assert "verify_archive" not in package_info_tool.inputSchema.get("required", [])
@@ -94,6 +109,10 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         ]
         prompts = (await session.list_prompts()).prompts
         assert {prompt.name for prompt in prompts} == PROMPTS
+        assert all(
+            not any("\u0400" <= char <= "\u04ff" for char in (prompt.description or ""))
+            for prompt in prompts
+        )
         prompt = await session.get_prompt(
             "shiny-app-development", {"request": "Build a Shiny dashboard"}
         )
@@ -136,6 +155,22 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
             "Пользовательские требования сохраняются без перевода."
         ]
         assert stack.structuredContent["stack"]["r_packages_by_role"] == []
+        call_count = len(calls)
+        credential = "Authorization: Bearer synthetic-token-value"
+        rejected_stack = await session.call_tool(
+            "recommend_technology_stack",
+            {"objective": f"Build an API. {credential}", "project_type": "api"},
+        )
+        assert rejected_stack.isError is True
+        assert rejected_stack.structuredContent["error"]["code"] == "sensitive_input"
+        assert credential not in str(rejected_stack.structuredContent)
+        assert len(calls) == call_count
+        invalid_manual_search = await session.call_tool(
+            "search_r_documentation",
+            {"query": "", "manuals": ["r-data-import-export"]},
+        )
+        assert invalid_manual_search.isError is True
+        assert invalid_manual_search.structuredContent["error"]["code"] == "invalid_input"
         result = await session.call_tool("get_package_info", {"package": "../bad"})
         assert result.isError is True
         assert result.structuredContent["error"]["code"] == "invalid_input"

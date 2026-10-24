@@ -29,6 +29,7 @@ from .providers.bioconductor import CATEGORIES
 from .providers.context7 import Context7Provider
 from .providers.framework_docs import FrameworkDocsProvider
 from .providers.github_agents import GitHubAgentsProvider
+from .providers.r_documentation import RDocumentationProvider
 from .releases import BioconductorReleases, r_minor
 from .technology_recommendation import (
     metadata_supports_role,
@@ -155,6 +156,7 @@ class KnowledgeService:
         agents_provider: GitHubAgentsProvider | None = None,
         context7_provider: Context7Provider | None = None,
         framework_docs_provider: FrameworkDocsProvider | None = None,
+        r_documentation_provider: RDocumentationProvider | None = None,
     ):
         self.http = http  # Backward-compatible injection point for offline clients/tests.
         self.bioc_http = BioconductorHTTP(http.client)
@@ -166,6 +168,7 @@ class KnowledgeService:
             http.client, context7_api_key(), ttl=cache_ttl(21600)
         )
         self.framework_docs = framework_docs_provider or FrameworkDocsProvider(http.client)
+        self.r_documentation = r_documentation_provider or RDocumentationProvider(http.client)
 
     async def provider(self, repository: str, bioc_version: str | None = None):
         if repository == "bioconductor":
@@ -413,6 +416,14 @@ class KnowledgeService:
             repository,
             provider.bioc_version,
         )
+
+    async def search_r_documentation(self, query, manuals=None, limit=5, r_version=None):
+        """Search the local official R manual index; this method never fetches sources."""
+        return await self.r_documentation.asearch(query, manuals, limit, r_version)
+
+    async def get_r_documentation_section(self, document_id, section_id, max_chars=8000):
+        """Read one section from the local official R manual index."""
+        return await self.r_documentation.aget_section(document_id, section_id, max_chars)
 
     async def get_package_knowledge(
         self,
@@ -1166,7 +1177,22 @@ class KnowledgeService:
                             key: dep_values.get(key, "")
                             for key in ("Depends", "Imports", "LinkingTo")
                         },
-                        "optional": {"Suggests": dep_values.get("Suggests", "")},
+                        "runtime_required": {
+                            key: dep_values.get(key, "") for key in ("Depends", "Imports")
+                        },
+                        "build_time": {"LinkingTo": dep_values.get("LinkingTo", "")},
+                        "optional": {
+                            key: dep_values.get(key, "") for key in ("Suggests", "Enhances")
+                        },
+                        "dependency_field_scope": {
+                            "required": (
+                                "Compatibility field retained from the initial response schema; "
+                                "includes runtime and build-time fields."
+                            ),
+                            "runtime_required_fields": ["Depends", "Imports"],
+                            "build_time_fields": ["LinkingTo"],
+                            "optional_fields": ["Suggests", "Enhances"],
+                        },
                         "scope": (
                             "verbatim direct repository fields; not a transitive dependency graph"
                         ),
@@ -1213,6 +1239,51 @@ class KnowledgeService:
                     if check.get("package") == entry["package"]:
                         check["status"] = entry["recommendation_status"]
                         check["recommendation_status"] = entry["recommendation_status"]
+
+        stack_doc_policy = {
+            "analytics": (
+                ["introduction-to-r", "r-data-import-export"],
+                "R data objects vectors import export connections",
+            ),
+            "api": (
+                ["r-installation-administration", "writing-r-extensions"],
+                "R installation libraries packages system requirements",
+            ),
+            "dashboard": (
+                ["r-installation-administration"],
+                "R installation runtime libraries environment",
+            ),
+            "package": (
+                ["writing-r-extensions"],
+                "package DESCRIPTION namespace dependencies documentation tests",
+            ),
+            "etl": (
+                ["r-data-import-export", "r-installation-administration"],
+                "data import export connections files encodings installation",
+            ),
+            "ml": (
+                ["introduction-to-r"],
+                "R objects functions data frames statistical models",
+            ),
+            "other": (
+                ["introduction-to-r"],
+                "R objects functions data structures programming",
+            ),
+        }
+        manuals, documentation_query = stack_doc_policy[resolved_type]
+        documentation_result = await self.search_r_documentation(
+            documentation_query, manuals=manuals, limit=2
+        )
+        documentation = {
+            "status": documentation_result.get("status", "index_unavailable"),
+            "references": documentation_result.get("results", []),
+            "warning": documentation_result.get("warning"),
+            "limitations": [
+                "The manuals can support R runtime, package and data-handling guidance only.",
+                "They do not establish claims about unrelated third-party products.",
+                "No package installation or transitive compatibility graph is tested.",
+            ],
+        }
 
         unique_sources = []
         seen_sources = set()
@@ -1332,8 +1403,12 @@ class KnowledgeService:
             "package_discovery": discovery,
             "dependencies": {
                 "by_package": dependencies,
+                # Preserve the original field for existing MCP clients. New
+                # clients should use the explicit runtime/build-time groups.
                 "required_fields": ["Depends", "Imports", "LinkingTo"],
-                "optional_fields": ["Suggests"],
+                "runtime_required_fields": ["Depends", "Imports"],
+                "build_time_fields": ["LinkingTo"],
+                "optional_fields": ["Suggests", "Enhances"],
                 "limitations": (
                     "Direct repository metadata only; not a solved or transitive dependency graph."
                 ),
@@ -1361,6 +1436,7 @@ class KnowledgeService:
             },
             "suggested_implementation_sequence": plan["sequence"],
             "sources": unique_sources,
+            "official_r_documentation": documentation,
             "verification_status": "partial",
             "verification_notes": [
                 "Architecture and trade-offs are deterministic heuristics, not "

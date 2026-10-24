@@ -6,6 +6,7 @@ import re
 from typing import Any
 
 from .errors import KnowledgeError
+from .input_safety import contains_credential_like_text
 from .prompt_intelligence.templates import TEMPLATE_BY_ID
 
 PROJECT_TYPES = ("analytics", "api", "dashboard", "package", "etl", "ml", "other")
@@ -294,10 +295,6 @@ _TYPE_HINTS = {
     "etl": ("etl", "data pipeline", "data integration", "import and load"),
     "ml": ("machine learning", "model training", "predictive model", "prediction"),
 }
-_SECRET_PATTERNS = (
-    re.compile(r"\b(?:sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16})\b"),
-    re.compile(r"(?i)\b(?:api[_ -]?key|access[_ -]?token|password|secret|credential)\s*[:=]\s*\S+"),
-)
 
 
 def _validate_text(value: Any, label: str, *, required: bool = False) -> str:
@@ -307,7 +304,7 @@ def _validate_text(value: Any, label: str, *, required: bool = False) -> str:
         )
     if any(ord(char) < 32 and char not in "\n\r\t" for char in value):
         raise KnowledgeError("invalid_input", f"{label} contains unsupported control characters")
-    if any(pattern.search(value) for pattern in _SECRET_PATTERNS):
+    if contains_credential_like_text(value):
         raise KnowledgeError(
             "sensitive_input",
             f"Remove credential-like text from {label} before requesting recommendations",
@@ -428,7 +425,31 @@ def metadata_supports_role(
     if not signals:
         return False
     text = " ".join(value for value in (title, description) if isinstance(value, str)).casefold()
-    return any(re.search(re.escape(signal), text) for signal in signals)
+    tokens = _role_tokens(text)
+    return any(_contains_role_phrase(tokens, _role_tokens(signal)) for signal in signals)
+
+
+def _role_tokens(value: str) -> list[str]:
+    return [_singular_role_token(token) for token in re.findall(r"[a-z0-9]+", value.casefold())]
+
+
+def _singular_role_token(token: str) -> str:
+    if len(token) > 4 and token.endswith("ies"):
+        return token[:-3] + "y"
+    if len(token) > 4 and token.endswith(("ches", "shes", "xes", "zes", "sses")):
+        return token[:-2]
+    if len(token) > 3 and token.endswith("s") and not token.endswith("ss"):
+        return token[:-1]
+    return token
+
+
+def _contains_role_phrase(tokens: list[str], phrase: list[str]) -> bool:
+    if not phrase or len(phrase) > len(tokens):
+        return False
+    width = len(phrase)
+    return any(
+        tokens[offset : offset + width] == phrase for offset in range(len(tokens) - width + 1)
+    )
 
 
 def project_plan(project_type: str) -> dict[str, Any]:

@@ -21,6 +21,7 @@ from .errors import KnowledgeError
 from .http import CranHTTP, make_client
 from .prompt_intelligence import PromptIntelligence
 from .prompt_intelligence.native_prompts import register_native_prompts
+from .providers.r_documentation import ManualId
 from .service import KnowledgeService, bounded, failure
 
 
@@ -144,6 +145,7 @@ def create_server(
         instructions=(
             "Read-only CRAN, Bioconductor, Shiny, Positron, Quarto, GitHub AGENTS.md "
             "and Context7 data. "
+            "Official R manual search reads a local index refreshed only by an explicit command. "
             "Cite repository, release, sources and checked_at. "
             "Check R/Bioconductor compatibility before recommending Bioconductor packages. "
             "Latest repository versions are not "
@@ -296,6 +298,37 @@ def create_server(
             ),
             repository=repository,
             bioc_version=bioc_version,
+        )
+
+    @server.tool(annotations=annotations)
+    async def search_r_documentation(
+        query: str,
+        ctx: Context,
+        manuals: list[ManualId] | None = None,
+        limit: int = 5,
+        r_version: str | None = None,
+    ) -> dict[str, Any]:
+        """Search the local index of six official CRAN R manuals; this tool never fetches pages."""
+        return await bounded(
+            ctx.request_context.lifespan_context.search_r_documentation(
+                query, manuals, limit, r_version
+            ),
+            repository="r_documentation",
+        )
+
+    @server.tool(annotations=annotations)
+    async def get_r_documentation_section(
+        document_id: ManualId,
+        section_id: str,
+        ctx: Context,
+        max_chars: int = 8000,
+    ) -> dict[str, Any]:
+        """Retrieve one exact section from the local official R manual index."""
+        return await bounded(
+            ctx.request_context.lifespan_context.get_r_documentation_section(
+                document_id, section_id, max_chars
+            ),
+            repository="r_documentation",
         )
 
     @server.tool(annotations=annotations)

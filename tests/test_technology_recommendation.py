@@ -1,7 +1,10 @@
 import pytest
 
 from cran_knowledge_mcp.errors import KnowledgeError
-from cran_knowledge_mcp.technology_recommendation import package_candidates
+from cran_knowledge_mcp.technology_recommendation import (
+    metadata_supports_role,
+    package_candidates,
+)
 
 
 def _sources(package):
@@ -57,6 +60,7 @@ async def _install_dashboard_metadata(monkeypatch, api, *, title_override=None):
                 "Imports": "methods",
                 "LinkingTo": "",
                 "Suggests": "testthat",
+                "Enhances": "SyntheticEnhancer",
             },
             "sources": _sources(package),
         }
@@ -93,7 +97,19 @@ async def test_dashboard_recommendations_are_role_and_metadata_grounded(service,
         "Imports": "methods",
         "LinkingTo": "",
     }
-    assert result["dependencies"]["by_package"][0]["optional"] == {"Suggests": "testthat"}
+    dependency = result["dependencies"]["by_package"][0]
+    assert dependency["runtime_required"] == {
+        "Depends": "R (>= 4.0)",
+        "Imports": "methods",
+    }
+    assert dependency["build_time"] == {"LinkingTo": ""}
+    assert dependency["optional"] == {
+        "Suggests": "testthat",
+        "Enhances": "SyntheticEnhancer",
+    }
+    assert dependency["dependency_field_scope"]["build_time_fields"] == ["LinkingTo"]
+    assert result["dependencies"]["runtime_required_fields"] == ["Depends", "Imports"]
+    assert result["dependencies"]["optional_fields"] == ["Suggests", "Enhances"]
     assert result["user_inputs_preserved"]["requirements"] == [
         "Требование оставить исходные русские формулировки."
     ]
@@ -332,3 +348,67 @@ def test_candidates_reuse_existing_versioned_workflow_templates():
         "csv-import",
         "csv-sql-pipeline",
     }
+
+
+@pytest.mark.parametrize(
+    ("package", "role", "title", "description", "expected"),
+    [
+        ("readr", None, "Database tools", "Database connections", False),
+        ("readr", None, "Data-import tools", None, True),
+        ("DBI", None, "DATABASE interface", "Connect to relational stores.", True),
+        ("shiny", None, "Interactive web applications", "Server framework", True),
+        ("ggplot2", None, "Statistical plots", "Visual summaries", True),
+        ("readr", None, None, None, False),
+        ("readr", None, "Database and data files", None, True),
+        ("Synthetic", "API framework", "HTTP Web Frameworks", None, True),
+        ("Synthetic", "API framework", "Database framework", None, False),
+    ],
+)
+def test_metadata_role_matching_uses_tokens_phrases_and_safe_plurals(
+    package, role, title, description, expected
+):
+    assert metadata_supports_role(package, title, description, role) is expected
+
+
+async def test_stack_recommendation_reuses_local_official_r_documentation(service, monkeypatch):
+    api, _, _ = service
+    calls = []
+
+    async def search_r_documentation(query, manuals=None, limit=5, r_version=None):
+        calls.append((query, manuals, limit, r_version))
+        return {
+            "status": "ok",
+            "results": [
+                {
+                    "document_id": "introduction-to-r",
+                    "document_title": "An Introduction to R",
+                    "heading": "Vectors",
+                    "excerpt": "R provides vector and list data structures.",
+                    "source_url": "https://cran.r-project.org/doc/manuals/r-release/R-intro.html",
+                    "anchor_url": None,
+                    "r_version": "4.5.1",
+                    "checked_at": "2026-10-24T00:00:00Z",
+                    "content_hash": "b" * 64,
+                    "verification_status": "indexed_official_documentation",
+                }
+            ],
+        }
+
+    monkeypatch.setattr(api, "search_r_documentation", search_r_documentation)
+    result = await api.recommend_technology_stack(
+        "Recommend an R project stack", project_type="other"
+    )
+
+    assert calls == [
+        (
+            "R objects functions data structures programming",
+            ["introduction-to-r"],
+            2,
+            None,
+        )
+    ]
+    assert result["official_r_documentation"]["status"] == "ok"
+    assert result["official_r_documentation"]["references"][0]["heading"] == "Vectors"
+    assert "unrelated third-party products" in " ".join(
+        result["official_r_documentation"]["limitations"]
+    )

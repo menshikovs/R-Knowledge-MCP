@@ -2,12 +2,10 @@
 
 import re
 
-SECRET_PATTERNS = (
-    re.compile(
-        r"\b(?:sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16})\b"
-    ),
-    re.compile(r"(?im)\b(?:api[_ -]?key|access[_ -]?token|password|secret)\s*[:=]\s*\S+"),
-)
+from ..input_safety import SECRET_PATTERNS as _SECRET_PATTERNS
+from ..input_safety import contains_credential_like_text
+
+SECRET_PATTERNS = _SECRET_PATTERNS
 NAMESPACE_CALL = re.compile(r"\b([A-Za-z][A-Za-z0-9.]*)::([A-Za-z.][A-Za-z0-9._]*)\s*\(")
 VERSION_ASSERTION = re.compile(
     r"\b(?:latest|current|compatible|supported)\s+(?:package\s+)?version\b", re.I
@@ -154,7 +152,7 @@ def validate_prompt(
             }
         )
 
-    if any(pattern.search(prompt_text) for pattern in SECRET_PATTERNS):
+    if contains_credential_like_text(prompt_text):
         findings.append(
             {
                 "severity": "high",

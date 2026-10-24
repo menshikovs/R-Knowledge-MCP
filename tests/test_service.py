@@ -27,6 +27,7 @@ async def test_all_tools_and_provenance(service):
         "Imports": "stats, other (>= 1.0)",
         "Suggests": "testthat, knitr",
         "LinkingTo": "",
+        "Enhances": "",
     }
     docs = await api.get_function_docs("ExamplePkg", "example_alias")
     assert docs["text"] == RD
