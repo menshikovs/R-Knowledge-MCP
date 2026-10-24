@@ -78,6 +78,7 @@ or provide a hosted endpoint. Codex configuration follows
 | `analyze_quarto_document` | `source`, optional project/R/dependency metadata | Safe YAML front matter, R chunk options, formats and citations; no render |
 | `analyze_quarto_project` | `_quarto.yml` text, optional `_metadata.yml` and manifest | Project/profile/format metadata and manifest-level bibliography checks |
 | `get_r_workflow_guidance` | scenario, explicit package list, optional R/Bioc versions | Combines selected package knowledge and framework docs without inventing recommendations |
+| `recommend_technology_stack` | objective, optional project type, requirements, existing stack, deployment target, preferences | Returns a provisional architecture and role-grouped R package candidates checked against repository metadata; does not install, execute, deploy, or assert compatibility |
 | `get_visualization_docs` | `package`, `function`, optional `package_version` | Exact current CRAN Rd for ggplot2, ggraph, tidyr, plotly or knitr; unavailable historical versions are explicit errors |
 | `get_visualization_workflow` | fixed scenario, optional package versions | Groups exact current Rd references for a named workflow; does not generate or run code |
 | `analyze_ggplot_code` | R source, optional schema and package versions | Static layers, mapped/fixed aesthetics and simple schema checks |
@@ -99,6 +100,9 @@ to CRAN. `all` keeps separate identities when names overlap, and exposes source
 failures in `errors` with `verification_status="partial"` or `"failed"`. Absence
 from a checked index differs from an unavailable source. Combined search orders
 CRAN results then Bioconductor results, using a shared offset/limit (1-20).
+
+See [Technology stack recommendations](docs/TECHNOLOGY_STACK_RECOMMENDATION.md) for
+the input example, evidence contract, and limits of `recommend_technology_stack`.
 
 `get_package_info` keeps deep archive verification as its backward-compatible
 default. Pass `verify_archive=false` to avoid downloading a package archive:

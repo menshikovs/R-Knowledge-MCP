@@ -584,6 +584,30 @@ def create_server(
         )
 
     @server.tool(annotations=annotations)
+    async def recommend_technology_stack(
+        objective: str,
+        ctx: Context,
+        project_type: Literal["analytics", "api", "dashboard", "package", "etl", "ml", "other"]
+        | None = None,
+        requirements: list[str] | None = None,
+        existing_stack: list[str] | None = None,
+        deployment_target: Literal["local", "docker", "cloud", "on_premises"] | None = None,
+        preferences: dict[str, list[str]] | None = None,
+    ) -> dict[str, Any]:
+        """Recommend a provisional R project architecture with current package provenance."""
+        return await bounded(
+            ctx.request_context.lifespan_context.recommend_technology_stack(
+                objective,
+                project_type,
+                requirements,
+                existing_stack,
+                deployment_target,
+                preferences,
+            ),
+            repository="technology_stack",
+        )
+
+    @server.tool(annotations=annotations)
     async def get_visualization_docs(
         package: Literal["ggplot2", "ggraph", "tidyr", "plotly", "knitr"],
         function: str,

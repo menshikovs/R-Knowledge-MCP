@@ -30,6 +30,13 @@ from .providers.context7 import Context7Provider
 from .providers.framework_docs import FrameworkDocsProvider
 from .providers.github_agents import GitHubAgentsProvider
 from .releases import BioconductorReleases, r_minor
+from .technology_recommendation import (
+    metadata_supports_role,
+    package_candidates,
+    project_plan,
+    resolve_project_type,
+    validate_recommendation_inputs,
+)
 from .visualization_analysis import (
     analyze_ggplot_code,
     analyze_ggplotly_compatibility,
@@ -972,6 +979,407 @@ class KnowledgeService:
                 "Package recommendations are limited to names supplied explicitly by the caller.",
                 "No app, report, dependency graph or local R environment is executed or inferred.",
             ],
+        }
+
+    async def recommend_technology_stack(
+        self,
+        objective,
+        project_type=None,
+        requirements=None,
+        existing_stack=None,
+        deployment_target=None,
+        preferences=None,
+    ):
+        """Return a deterministic architecture plan with repository-checked R package candidates."""
+        inputs = validate_recommendation_inputs(
+            objective,
+            project_type,
+            requirements,
+            existing_stack,
+            deployment_target,
+            preferences,
+        )
+        resolved_type, type_basis = resolve_project_type(
+            inputs["project_type"], inputs["objective"], inputs["requirements"]
+        )
+        plan = project_plan(resolved_type)
+        candidates = package_candidates(resolved_type)
+        discovery = {
+            "status": "workflow_template_candidates" if candidates else "not_applicable",
+            "query": None,
+            "candidate_limit": 5,
+        }
+        discovery_sources: list[dict] = []
+        dynamic_role = None
+        if not candidates and resolved_type in ("api", "ml"):
+            query, dynamic_role = (
+                ("api", "API framework")
+                if resolved_type == "api"
+                else ("machine learning", "modeling framework")
+            )
+            discovery["query"] = query
+            try:
+                search_result = await self.search_packages(query, limit=5, repository="cran")
+            except KnowledgeError as exc:
+                search_result = {"error": {"code": exc.code}}
+            search_sources = (
+                search_result.get("sources", []) if isinstance(search_result, dict) else []
+            )
+            if isinstance(search_sources, list):
+                discovery_sources.extend(
+                    source for source in search_sources if isinstance(source, dict)
+                )
+            if (
+                not isinstance(search_result, dict)
+                or "error" in search_result
+                or not isinstance(search_result.get("results"), list)
+            ):
+                discovery["status"] = "repository_search_unavailable"
+                if isinstance(search_result, dict) and isinstance(search_result.get("error"), dict):
+                    discovery["error_code"] = search_result["error"].get("code")
+            else:
+                discovery["status"] = "repository_search_completed"
+                for item in search_result["results"][:5]:
+                    if not isinstance(item, dict) or not isinstance(item.get("package"), str):
+                        continue
+                    try:
+                        package_name(item["package"])
+                    except KnowledgeError:
+                        continue
+                    candidates.append(
+                        {
+                            "package": item["package"],
+                            "role": dynamic_role,
+                            "role_fit": dynamic_role,
+                            "rationale": (
+                                f"Discovered through current CRAN search for {query}; "
+                                "the package DESCRIPTION must also support this role."
+                            ),
+                            "template_id": "provider_search",
+                        }
+                    )
+        excluded = {item.casefold() for item in inputs["preferences"]["exclude"]}
+        existing = {item.casefold() for item in inputs["existing_stack"]}
+        preferred = {item.casefold() for item in inputs["preferences"]["prefer"]}
+        grouped: dict[str, list[dict]] = {}
+        dependencies: list[dict] = []
+        sources: list[dict] = list(discovery_sources)
+        package_checks: list[dict] = []
+
+        for candidate in candidates:
+            package = candidate["package"]
+            if package.casefold() in excluded:
+                package_checks.append(
+                    {
+                        "package": package,
+                        "role": candidate["role"],
+                        "status": "excluded_by_user_preference",
+                    }
+                )
+                continue
+            info = await self.get_package_info(package, "cran", verify_archive=False)
+            info_sources = info.get("sources", []) if isinstance(info, dict) else []
+            if not isinstance(info_sources, list):
+                info_sources = []
+            sources.extend(info_sources)
+            if (
+                not isinstance(info, dict)
+                or "error" in info
+                or info.get("verification_status") != "verified"
+                or info.get("package") != package
+                or info.get("repository") != "cran"
+                or info.get("metadata_verification_level") != "description_version_matched"
+                or not info.get("package_version")
+                or not info_sources
+                or any(
+                    not isinstance(source, dict)
+                    or not isinstance(source.get("source_url"), str)
+                    or not isinstance(source.get("checked_at"), str)
+                    for source in info_sources
+                )
+            ):
+                package_checks.append(
+                    {
+                        "package": package,
+                        "role": candidate["role"],
+                        "status": "repository_metadata_unavailable",
+                        "error_code": info.get("error", {}).get("code")
+                        if isinstance(info, dict) and isinstance(info.get("error"), dict)
+                        else None,
+                    }
+                )
+                continue
+
+            fits_role = metadata_supports_role(
+                package,
+                info.get("title"),
+                info.get("description"),
+                candidate.get("role_fit"),
+            )
+            is_existing = package.casefold() in existing
+            package_entry = {
+                "package": package,
+                "role": candidate["role"],
+                "recommendation_status": "pending_role_selection",
+                "rationale": candidate["rationale"],
+                "metadata_fit_status": "title_or_description_matches_role"
+                if fits_role
+                else "metadata_does_not_confirm_role_fit",
+                "package_version": info["package_version"],
+                "repository": info.get("repository", "cran"),
+                "metadata_verification_level": info.get("metadata_verification_level"),
+                "sources": info_sources,
+                "_fits_role": fits_role,
+                "_is_existing": is_existing,
+                "_is_preferred": package.casefold() in preferred,
+            }
+            if package.casefold() in preferred:
+                package_entry["preference_match"] = "user_preferred"
+
+            dep_info = await self.get_dependencies(package, "cran")
+            dep_sources = dep_info.get("sources", []) if isinstance(dep_info, dict) else []
+            if not isinstance(dep_sources, list):
+                dep_sources = []
+            sources.extend(dep_sources)
+            dep_values = dep_info.get("dependencies") if isinstance(dep_info, dict) else None
+            dep_version_matches = (
+                isinstance(dep_info, dict)
+                and "error" not in dep_info
+                and dep_info.get("package") == package
+                and dep_info.get("repository") == "cran"
+                and dep_info.get("package_version") == info.get("package_version")
+                and isinstance(dep_values, dict)
+                and bool(dep_sources)
+                and all(
+                    isinstance(source, dict)
+                    and isinstance(source.get("source_url"), str)
+                    and isinstance(source.get("checked_at"), str)
+                    for source in dep_sources
+                )
+            )
+            if dep_version_matches:
+                dependencies.append(
+                    {
+                        "package": package,
+                        "package_version": info["package_version"],
+                        "required": {
+                            key: dep_values.get(key, "")
+                            for key in ("Depends", "Imports", "LinkingTo")
+                        },
+                        "optional": {"Suggests": dep_values.get("Suggests", "")},
+                        "scope": (
+                            "verbatim direct repository fields; not a transitive dependency graph"
+                        ),
+                        "sources": dep_sources,
+                    }
+                )
+                package_entry["dependency_verification_status"] = (
+                    "same_version_direct_fields_verified"
+                )
+            else:
+                package_entry["dependency_verification_status"] = "unavailable_or_version_mismatch"
+            grouped.setdefault(candidate["role"], []).append(package_entry)
+            package_checks.append(
+                {
+                    "package": package,
+                    "role": candidate["role"],
+                    "status": "metadata_and_dependencies_checked",
+                    "recommendation_status": "pending_role_selection",
+                    "dependency_verification_status": package_entry[
+                        "dependency_verification_status"
+                    ],
+                }
+            )
+
+        for entries in grouped.values():
+            eligible = [
+                entry for entry in entries if entry["_fits_role"] and not entry["_is_existing"]
+            ]
+            preferred_eligible = [entry for entry in eligible if entry["_is_preferred"]]
+            selected = (preferred_eligible or eligible or [None])[0]
+            for entry in entries:
+                if entry["_is_existing"]:
+                    entry["recommendation_status"] = "already_selected_by_user"
+                elif not entry["_fits_role"]:
+                    entry["recommendation_status"] = "requires_user_review"
+                elif entry is selected:
+                    entry["recommendation_status"] = "recommended"
+                else:
+                    entry["recommendation_status"] = "alternative"
+                entry.pop("_fits_role")
+                entry.pop("_is_existing")
+                entry.pop("_is_preferred")
+                for check in package_checks:
+                    if check.get("package") == entry["package"]:
+                        check["status"] = entry["recommendation_status"]
+                        check["recommendation_status"] = entry["recommendation_status"]
+
+        unique_sources = []
+        seen_sources = set()
+        for source in sources:
+            if not isinstance(source, dict):
+                continue
+            key = (source.get("source_url"), source.get("checked_at"))
+            if key not in seen_sources:
+                seen_sources.add(key)
+                unique_sources.append(source)
+
+        target_notes = {
+            None: ["Choose an explicit deployment target before finalizing operational controls."],
+            "local": ["Keep secrets outside source files and record the R/package environment."],
+            "docker": [
+                "Use a minimal image, a non-root runtime, pinned dependencies, and "
+                "runtime-injected secrets; do not bake credentials into image layers."
+            ],
+            "cloud": [
+                "Verify identity, network exposure, secret storage, scaling limits, logging, "
+                "and backup/retention controls for the selected provider."
+            ],
+            "on_premises": [
+                "Verify identity integration, patch ownership, network boundaries, secret "
+                "storage, backup, and recovery procedures."
+            ],
+        }
+        if resolved_type == "api":
+            unknowns_for_api = (
+                "Review the metadata-matched API framework candidates and confirm one "
+                "fits the request contract; no curated API workflow template exists."
+            )
+        else:
+            unknowns_for_api = None
+        unknowns = [
+            "Target R version and whether current repository versions meet the project "
+            "support policy.",
+            "Data size, concurrency, latency, and availability requirements.",
+            "Authentication, authorization, data sensitivity, and retention requirements.",
+            "Whether optional integrations and deployment components are approved for this "
+            "project.",
+        ]
+        if resolved_type in ("api", "etl"):
+            unknowns.append(
+                "Database engine/dialect, transaction policy, and credential owner, if a "
+                "database is used."
+            )
+        if resolved_type == "ml":
+            unknowns.append(
+                "Model family, evaluation metric, data-splitting policy, and artifact lifecycle."
+            )
+        if unknowns_for_api:
+            unknowns.insert(0, unknowns_for_api)
+        if type_basis == "unresolved":
+            unknowns.insert(
+                0,
+                "Project type is unresolved; provide project_type to select a workflow profile.",
+            )
+
+        return {
+            "tool": "recommend_technology_stack",
+            "recommendation_status": "provisional",
+            "project_type": {"value": resolved_type, "basis": type_basis},
+            "recommended_architecture": {
+                "pattern": plan["pattern"],
+                "components": plan["components"],
+                "basis": (
+                    "deterministic workflow profile; validate against the supplied requirements"
+                ),
+            },
+            "stack": {
+                "r_packages_by_role": [
+                    {"role": role, "packages": packages} for role, packages in grouped.items()
+                ],
+                "complementary_technologies": {
+                    "by_role": [
+                        {
+                            "role": "R runtime",
+                            "technologies": [
+                                {
+                                    "name": "R",
+                                    "basis": "project scope",
+                                    "version": None,
+                                }
+                            ],
+                        },
+                        {
+                            "role": "user-selected existing technologies; role not inferred",
+                            "technologies": inputs["existing_stack"],
+                        },
+                        {
+                            "role": "user preferences; not independently verified",
+                            "technologies": [
+                                {"kind": "preferred", "name": name}
+                                for name in inputs["preferences"]["prefer"]
+                            ]
+                            + [
+                                {"kind": "excluded", "name": name}
+                                for name in inputs["preferences"]["exclude"]
+                            ],
+                        },
+                    ],
+                    "user_selected_existing_stack": inputs["existing_stack"],
+                    "user_preferences": inputs["preferences"],
+                    "additional_named_technology_recommendations": [],
+                    "note": (
+                        "No complementary product is named without project-specific "
+                        "evidence and verification."
+                    ),
+                    "package_selection_policy": (
+                        "At most one metadata-matched package is recommended per role; "
+                        "other matching packages are alternatives."
+                    ),
+                },
+            },
+            "package_checks": package_checks,
+            "package_discovery": discovery,
+            "dependencies": {
+                "by_package": dependencies,
+                "required_fields": ["Depends", "Imports", "LinkingTo"],
+                "optional_fields": ["Suggests"],
+                "limitations": (
+                    "Direct repository metadata only; not a solved or transitive dependency graph."
+                ),
+            },
+            "compatibility": {
+                "r_version": None,
+                "claims": [],
+                "limitation": (
+                    "No target R version was supplied; package metadata does not establish "
+                    "compatibility with the user's installed environment."
+                ),
+            },
+            "alternatives_and_tradeoffs": plan["alternatives"],
+            "security_maintenance_deployment": {
+                "security": [
+                    "Keep credentials in an approved runtime secret store.",
+                    "Validate inputs at service boundaries and use least-privilege data access.",
+                ],
+                "maintenance": [
+                    "Review package metadata and direct dependencies before adoption.",
+                    "Pin the project environment after choosing a supported R version.",
+                ],
+                "deployment_target": inputs["deployment_target"],
+                "deployment_considerations": target_notes[inputs["deployment_target"]],
+            },
+            "suggested_implementation_sequence": plan["sequence"],
+            "sources": unique_sources,
+            "verification_status": "partial",
+            "verification_notes": [
+                "Architecture and trade-offs are deterministic heuristics, not "
+                "provider-verified facts.",
+                "A package is recommended only when current CRAN metadata is available and "
+                "its title or description matches its workflow role.",
+                "Package versions describe repository metadata at checked_at; they are "
+                "not installed versions or compatibility guarantees.",
+                "User-selected complementary technologies are preserved but not "
+                "independently verified by this tool.",
+            ],
+            "user_inputs_preserved": {
+                "objective": inputs["objective"],
+                "requirements": inputs["requirements"],
+                "existing_stack": inputs["existing_stack"],
+                "preferences": inputs["preferences"],
+            },
+            "unknowns_requiring_user_decisions": unknowns,
+            "not_executed": True,
         }
 
     async def check_package_version(self, package, installed_version):

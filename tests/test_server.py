@@ -31,6 +31,7 @@ TOOLS = {
     "analyze_quarto_document",
     "analyze_quarto_project",
     "get_r_workflow_guidance",
+    "recommend_technology_stack",
     "get_visualization_docs",
     "get_visualization_workflow",
     "analyze_ggplot_code",
@@ -76,6 +77,21 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         package_info_tool = next(tool for tool in tools if tool.name == "get_package_info")
         assert package_info_tool.inputSchema["properties"]["verify_archive"]["type"] == "boolean"
         assert "verify_archive" not in package_info_tool.inputSchema.get("required", [])
+        stack_tool = next(tool for tool in tools if tool.name == "recommend_technology_stack")
+        assert "objective" in stack_tool.inputSchema["required"]
+        project_type_schema = stack_tool.inputSchema["properties"]["project_type"]
+        project_type_values = (
+            project_type_schema.get("enum") or project_type_schema["anyOf"][0]["enum"]
+        )
+        assert project_type_values == [
+            "analytics",
+            "api",
+            "dashboard",
+            "package",
+            "etl",
+            "ml",
+            "other",
+        ]
         prompts = (await session.list_prompts()).prompts
         assert {prompt.name for prompt in prompts} == PROMPTS
         prompt = await session.get_prompt(
@@ -103,6 +119,23 @@ async def test_sdk_tool_registration_and_mocked_call(service, monkeypatch):
         result = await session.call_tool("get_dependencies", {"package": "ExamplePkg"})
         assert not result.isError
         assert result.structuredContent["latest_cran_version"] == "2.10-1"
+        stack = await session.call_tool(
+            "recommend_technology_stack",
+            {
+                "objective": "Expose a small analysis API",
+                "project_type": "api",
+                "requirements": ["Пользовательские требования сохраняются без перевода."],
+                "deployment_target": "local",
+                "preferences": {"prefer": ["existing router"], "exclude": []},
+            },
+        )
+        assert stack.isError is False
+        assert stack.structuredContent["tool"] == "recommend_technology_stack"
+        assert stack.structuredContent["not_executed"] is True
+        assert stack.structuredContent["user_inputs_preserved"]["requirements"] == [
+            "Пользовательские требования сохраняются без перевода."
+        ]
+        assert stack.structuredContent["stack"]["r_packages_by_role"] == []
         result = await session.call_tool("get_package_info", {"package": "../bad"})
         assert result.isError is True
         assert result.structuredContent["error"]["code"] == "invalid_input"
