@@ -181,6 +181,35 @@ class DockerCommandTimeout(DockerRuntimeError):
     """A local Docker CLI operation exceeded its own deadline."""
 
 
+def _classify_docker_cli_failure(stderr: bytes) -> str:
+    """Map bounded Docker CLI diagnostics to closed, non-sensitive reason codes."""
+    if not isinstance(stderr, bytes):
+        return "cli_nonzero"
+    sample = stderr[:MAX_OUTPUT_BYTES].decode("utf-8", "replace").casefold()
+    if "cannot connect to the docker daemon" in sample or "is the docker daemon running" in sample:
+        return "docker_daemon_unavailable"
+    if any(
+        marker in sample
+        for marker in (
+            "no such image",
+            "manifest unknown",
+            "pull access denied",
+            "repository does not exist",
+        )
+    ):
+        return "image_unavailable"
+    if any(
+        marker in sample
+        for marker in (
+            "invalid mount config",
+            "error while creating mount source path",
+            "permission denied",
+        )
+    ):
+        return "mount_or_workspace_failure"
+    return "cli_nonzero"
+
+
 def _load_controller():
     spec = importlib.util.spec_from_file_location(
         "codex_r_docker_controller", ROOT / "runner" / "controller.py"
@@ -314,7 +343,7 @@ class DockerCandidateRuntime:
         if result.returncode != 0:
             raise DockerRuntimeError(
                 "Docker daemon rejected a required operation",
-                code="cli_nonzero",
+                code=_classify_docker_cli_failure(result.stderr),
                 docker_cli_exit_code=result.returncode,
                 exception_category="subprocess",
             )
@@ -340,7 +369,7 @@ class DockerCandidateRuntime:
             if result.returncode != 0:
                 raise DockerRuntimeError(
                     "Docker failed to create the candidate probe container",
-                    code="cli_nonzero",
+                    code=_classify_docker_cli_failure(result.stderr),
                     docker_cli_exit_code=result.returncode,
                     exception_category="subprocess",
                 )

@@ -21,6 +21,11 @@ class LifecycleError(RuntimeError):
     """A trial lifecycle step failed or could not prove a required boundary."""
 
 
+# No independent zero-task Managed Agents connectivity evidence is currently
+# available. Local image, proxy, and credential checks cannot enable this gate.
+LIVE_ZERO_TASK_CONNECTIVITY_VERIFIED = False
+
+
 def _load(path: Path, name: str):
     spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
@@ -32,6 +37,50 @@ def _load(path: Path, name: str):
 
 contract = _load(Path(__file__).with_name("executor_contract.py"), "r01_lifecycle_contract")
 safety_lib = _load(Path(__file__).with_name("lifecycle_safety.py"), "r01_lifecycle_safety")
+# ATTEMPTS is the journal's accepted identity allowlist, not a historical-status
+# registry. Keep the four closed identities explicit so synthetic allowlist
+# entries can never be misclassified as closed history.
+CLOSED_R01A_ATTEMPT_IDS = frozenset(
+    {
+        "R01-A/attempt-1",
+        "R01-A/attempt-2",
+        "R01-A/recovery-after-attempt-2",
+        "R01-A/final-continuation",
+    }
+)
+
+
+def _approved_session_spend_limit(authorization: dict, context: dict) -> int:
+    """Require the separate attempt-bound approval before live preflight effects."""
+    attempt_id = context.get("attempt_id")
+    if not isinstance(attempt_id, str) or not attempt_id:
+        raise LifecycleError("Spend-control approval must bind to an attempt identity")
+    if attempt_id in CLOSED_R01A_ATTEMPT_IDS:
+        raise LifecycleError(
+            "A spend-controlled authorization cannot bind to a closed historical attempt"
+        )
+    if (
+        not isinstance(authorization, dict)
+        or type(authorization.get("schema_version")) is not int
+        or authorization.get("schema_version") != 2
+    ):
+        raise LifecycleError("Separate session spend-control approval is required")
+    approval = authorization.get("spend_control_approval")
+    if not isinstance(approval, dict) or set(approval) != {
+        "limit_cents",
+        "attempt_id",
+        "typed_confirmation",
+    }:
+        raise LifecycleError("Separate session spend-control approval is missing or malformed")
+    limit = approval["limit_cents"]
+    if type(limit) is not int or limit <= 0:
+        raise LifecycleError(
+            "Approved session spend limit must be a positive integer USD-cent amount"
+        )
+    expected = f"APPROVE SESSION SPEND LIMIT {limit} USD CENTS FOR {attempt_id}"
+    if approval["attempt_id"] != attempt_id or approval["typed_confirmation"] != expected:
+        raise LifecycleError("Session spend-control approval does not match this attempt and limit")
+    return limit
 
 
 def validate_artifact_workspace(workspace: Path, *, max_bytes: int) -> dict[str, Path]:
@@ -269,7 +318,22 @@ class R01ALifecycleController:
         if self.synthetic_mode is not bool(getattr(self.client, "synthetic", False)):
             raise LifecycleError("Synthetic mode must match the injected controller client")
 
+        approved_spend_limit_cents = None
+
         def prepare():
+            nonlocal approved_spend_limit_cents
+            # Validate authorization and the spend cap before live Docker probes,
+            # topology setup, or any session request.
+            self.authorize(authorization, context)
+            if not self.synthetic_mode:
+                approved_spend_limit_cents = _approved_session_spend_limit(authorization, context)
+            elif isinstance(authorization, dict) and "spend_control_approval" in authorization:
+                approved_spend_limit_cents = _approved_session_spend_limit(authorization, context)
+            if not self.synthetic_mode and not LIVE_ZERO_TASK_CONNECTIVITY_VERIFIED:
+                raise LifecycleError(
+                    "Independent zero-task Managed Agents connectivity prerequisite has "
+                    "not been verified"
+                )
             gates = self.current_live_gates()
             if not self.synthetic_mode and (
                 not isinstance(gates, dict)
@@ -277,7 +341,6 @@ class R01ALifecycleController:
                 or any(value is not True for value in gates.values())
             ):
                 raise LifecycleError("Live verification gates are incomplete")
-            self.authorize(authorization, context)
             if not self.environment_key:
                 raise LifecycleError("Restricted executor environment key is unavailable")
             workspace = Path(context["workspace"]).resolve(strict=True)
@@ -306,6 +369,7 @@ class R01ALifecycleController:
             ),
             "model": "gpt-6-luna",
             "reasoning_effort": "medium",
+            "spend_control_limit_cents": approved_spend_limit_cents,
             "states": [],
             "events": [],
             "session_created": False,
@@ -447,7 +511,10 @@ class R01ALifecycleController:
             self.safety.transition("session_creation")
             session = self.safety.call(
                 lambda: self.safety.effect(
-                    "session_create", lambda: self.client.create_session(context)
+                    "session_create",
+                    lambda: self.client.create_session(
+                        context, spend_control_limit_cents=approved_spend_limit_cents
+                    ),
                 )
             )
             session_id = session["session_id"]

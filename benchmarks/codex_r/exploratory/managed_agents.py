@@ -54,8 +54,23 @@ class ManagedAgentsError(RuntimeError):
         }
 
 
-def build_agent_config(context: dict, *, gateway_url: str | None = None) -> dict:
+def validate_spend_control_limit(value) -> int:
+    """Require a separately approved, positive integer amount in USD cents."""
+    if type(value) is not int or value <= 0:
+        raise ManagedAgentsError(
+            "Session spend_control.limit must be a positive integer USD-cent amount"
+        )
+    return value
+
+
+def build_agent_config(
+    context: dict,
+    *,
+    spend_control_limit_cents: int | None = None,
+    gateway_url: str | None = None,
+) -> dict:
     """Return the exact session config for a preregistered A/B/C condition."""
+    spend_limit = validate_spend_control_limit(spend_control_limit_cents)
     expected = {
         "trial_id",
         "condition",
@@ -79,6 +94,7 @@ def build_agent_config(context: dict, *, gateway_url: str | None = None) -> dict
             "tools": [],
         },
         "environment": {"type": "self_hosted", "workspace_directory": "/candidate"},
+        "spend_control": {"limit": spend_limit},
     }
 
 
@@ -197,6 +213,16 @@ class ManagedAgentsClient:
     ) -> dict:
         if not path.startswith("/v1/agents/") or ".." in path or "?" in path or "#" in path:
             raise ManagedAgentsError("Refused a non-protocol API route")
+        if (
+            isinstance(method, str)
+            and method.upper() == "POST"
+            and path.rstrip("/") == "/v1/agents/sessions"
+        ):
+            if not isinstance(body, dict) or not isinstance(body.get("spend_control"), dict):
+                raise ManagedAgentsError(
+                    "Session creation requires an approved spend_control.limit"
+                )
+            validate_spend_control_limit(body["spend_control"].get("limit"))
         self._last_response_status = None
         try:
             safety = getattr(self, "safety", None)
@@ -271,10 +297,20 @@ class ManagedAgentsClient:
             )
         return value
 
-    def create_session(self, context: dict, *, gateway_url: str | None = None) -> dict:
+    def create_session(
+        self,
+        context: dict,
+        *,
+        spend_control_limit_cents: int | None = None,
+        gateway_url: str | None = None,
+    ) -> dict:
         if self._session_creation_attempted:
             raise ManagedAgentsError("This client is restricted to one session creation attempt")
-        config = build_agent_config(context, gateway_url=gateway_url)
+        config = build_agent_config(
+            context,
+            spend_control_limit_cents=spend_control_limit_cents,
+            gateway_url=gateway_url,
+        )
         self._session_creation_attempted = True
         self.session_creation_attempted = True
         self.session_creation_uncertain = True

@@ -73,12 +73,8 @@ def test_docker_wait_classifies_cli_failure_and_container_exit_status():
     def completed(returncode, stdout=b"", stderr=b""):
         return subprocess.CompletedProcess(["docker", "wait"], returncode, stdout, stderr)
 
-    assert docker_runtime.DockerCandidateRuntime._docker_wait_exit_code(
-        completed(0, b"0\n")
-    ) == 0
-    assert docker_runtime.DockerCandidateRuntime._docker_wait_exit_code(
-        completed(0, b"20\n")
-    ) == 20
+    assert docker_runtime.DockerCandidateRuntime._docker_wait_exit_code(completed(0, b"0\n")) == 0
+    assert docker_runtime.DockerCandidateRuntime._docker_wait_exit_code(completed(0, b"20\n")) == 20
     with pytest.raises(docker_runtime.DockerRuntimeError) as cli_error:
         docker_runtime.DockerCandidateRuntime._docker_wait_exit_code(
             completed(125, stderr=b"daemon unavailable")
@@ -86,6 +82,63 @@ def test_docker_wait_classifies_cli_failure_and_container_exit_status():
     assert cli_error.value.diagnostics["docker_cli_exit_code"] == 125
     with pytest.raises(docker_runtime.DockerRuntimeError, match="valid container exit status"):
         docker_runtime.DockerCandidateRuntime._docker_wait_exit_code(completed(0))
+
+
+@pytest.mark.parametrize(
+    ("stderr", "expected"),
+    [
+        (
+            b"Cannot connect to the Docker daemon: synthetic-private-detail",
+            "docker_daemon_unavailable",
+        ),
+        (b"No such image: synthetic-image-label", "image_unavailable"),
+        (
+            b"invalid mount config: permission denied at synthetic-path",
+            "mount_or_workspace_failure",
+        ),
+        (b"unrecognized synthetic Docker failure", "cli_nonzero"),
+    ],
+)
+def test_docker_cli_failure_diagnostics_are_classified_without_persisting_stderr(stderr, expected):
+    argv = ["docker", "info"]
+    runtime = docker_runtime.DockerCandidateRuntime(
+        "sha256:" + "a" * 64,
+        docker="docker",
+        command_runner=lambda *_args, **_kwargs: subprocess.CompletedProcess(
+            argv, 125, b"", stderr
+        ),
+    )
+
+    with pytest.raises(docker_runtime.DockerRuntimeError) as caught:
+        runtime._docker("info")
+
+    assert caught.value.diagnostics["reason_code"] == expected
+    assert caught.value.diagnostics["docker_cli_exit_code"] == 125
+    assert "synthetic-private-detail" not in repr(caught.value.diagnostics)
+    assert "synthetic-path" not in repr(caught.value.diagnostics)
+
+
+def test_container_creation_classifies_image_failure_and_verifies_cleanup():
+    calls = []
+
+    def command_runner(argv, *, timeout, env):
+        calls.append(argv[1])
+        if argv[1] == "create":
+            return subprocess.CompletedProcess(
+                argv, 125, b"", b"No such image: synthetic-private-image-label"
+            )
+        return subprocess.CompletedProcess(argv, 0, b"", b"")
+
+    runtime = docker_runtime.DockerCandidateRuntime(
+        "sha256:" + "a" * 64, docker="docker", command_runner=command_runner
+    )
+    with pytest.raises(docker_runtime.DockerRuntimeError) as caught:
+        runtime._create_container("rkmcp-probe-R01-A-0123456789abcdef", ["docker", "create"])
+
+    assert caught.value.diagnostics["reason_code"] == "image_unavailable"
+    assert caught.value.diagnostics["docker_cli_exit_code"] == 125
+    assert "synthetic-private-image-label" not in repr(caught.value.diagnostics)
+    assert calls == ["create", "rm", "ps"]
 
 
 def test_container_logs_include_stderr_for_failure_diagnostics():

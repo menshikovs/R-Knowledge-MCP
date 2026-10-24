@@ -60,6 +60,14 @@ MAX_EVENT_COUNT = 100_000
 MAX_AUTHORIZATION_TTL_SECONDS = 300
 RECOVERY_ATTEMPT_ID = "R01-A/recovery-after-attempt-2"
 FINAL_CONTINUATION_ATTEMPT_ID = "R01-A/final-continuation"
+HISTORICAL_R01A_ATTEMPT_IDS = frozenset(
+    {
+        "R01-A/attempt-1",
+        "R01-A/attempt-2",
+        RECOVERY_ATTEMPT_ID,
+        FINAL_CONTINUATION_ATTEMPT_ID,
+    }
+)
 SESSION_QUIESCENCE_SOURCE = "https://api.openai.com/v1/agents/sessions"
 SESSION_QUIESCENCE_CONFIRMATION = "CONFIRM NO ACTIVE MANAGED AGENTS SESSIONS R01-A"
 SESSION_QUIESCENCE_MAX_AGE_SECONDS = 300
@@ -79,6 +87,55 @@ def _configured_secrets() -> tuple[str, ...]:
 
 class AdapterError(ValueError):
     """Invalid single-trial input or a blocked execution request."""
+
+
+def validate_spend_control_approval(approval: object, attempt_id: object) -> int:
+    """Validate a separately acknowledged cap bound to a nonhistorical attempt."""
+    if not isinstance(attempt_id, str) or not attempt_id.strip():
+        raise AdapterError("Spend-control approval must bind to an attempt identity")
+    if attempt_id in HISTORICAL_R01A_ATTEMPT_IDS:
+        raise AdapterError(
+            "A spend-controlled authorization cannot bind to a closed historical attempt"
+        )
+    if not isinstance(approval, dict) or set(approval) != {
+        "limit_cents",
+        "attempt_id",
+        "typed_confirmation",
+    }:
+        raise AdapterError("Separate session spend-control approval is missing or malformed")
+    limit = approval["limit_cents"]
+    if type(limit) is not int or limit <= 0:
+        raise AdapterError(
+            "Approved session spend limit must be a positive integer USD-cent amount"
+        )
+    expected = f"APPROVE SESSION SPEND LIMIT {limit} USD CENTS FOR {attempt_id}"
+    if approval["attempt_id"] != attempt_id or approval["typed_confirmation"] != expected:
+        raise AdapterError("Session spend-control approval does not match this attempt and limit")
+    return limit
+
+
+def make_spend_control_approval(
+    attempt_id: object, limit_cents: object, typed_confirmation: object
+) -> dict:
+    """Build the future-only approval record after exact operator confirmation."""
+    if not isinstance(attempt_id, str) or not attempt_id.strip():
+        raise AdapterError("Spend-control approval must bind to an attempt identity")
+    if attempt_id in HISTORICAL_R01A_ATTEMPT_IDS:
+        raise AdapterError(
+            "A spend-controlled authorization cannot bind to a closed historical attempt"
+        )
+    if type(limit_cents) is not int or limit_cents <= 0:
+        raise AdapterError(
+            "Approved session spend limit must be a positive integer USD-cent amount"
+        )
+    expected = f"APPROVE SESSION SPEND LIMIT {limit_cents} USD CENTS FOR {attempt_id}"
+    if typed_confirmation != expected:
+        raise AdapterError("Separate typed confirmation of the session spend limit is required")
+    return {
+        "limit_cents": limit_cents,
+        "attempt_id": attempt_id,
+        "typed_confirmation": expected,
+    }
 
 
 def default_state_directory() -> Path:
@@ -381,6 +438,12 @@ def build_preflight(context: dict, *, cli_report: dict | None = None, docker_rep
             "unverified",
             "No paid probe or session was authorized; account access remains unknown",
         ),
+        "independent_zero_task_connectivity": gate(
+            "ZERO_TASK_CONNECTIVITY_UNVERIFIED",
+            "unverified",
+            "No independent Managed Agents connection evidence exists; local checks cannot "
+            "establish service compatibility",
+        ),
         "docker_daemon": gate(
             "DOCKER_DAEMON_UNAVAILABLE",
             "verified" if docker_report.get("status") != "unavailable" else "blocked",
@@ -473,6 +536,8 @@ def create_authorization(
     balance_source: str,
     balance_checked_at: str,
     restricted_key_scope_confirmation: str,
+    spend_control_limit_cents: int | None = None,
+    spend_control_confirmation: str | None = None,
     attempt_id: str = "R01-A/attempt-1",
     previous_attempt_result: Path | None = None,
     first_attempt_result: Path | None = None,
@@ -483,6 +548,13 @@ def create_authorization(
     session_quiescence_evidence: Path | None = None,
 ) -> dict:
     """Create a narrowly scoped, short-lived consent record (never starts Codex)."""
+    spend_approval = None
+    if spend_control_limit_cents is not None or spend_control_confirmation is not None:
+        spend_approval = make_spend_control_approval(
+            attempt_id,
+            spend_control_limit_cents,
+            spend_control_confirmation,
+        )
     if (
         not isinstance(context, dict)
         or context.get("trial_id") != "R01-A"
@@ -599,8 +671,8 @@ def create_authorization(
         )
     except pilot.PilotError as exc:
         raise AdapterError(f"Balance-aware authorization was rejected: {exc}") from exc
-    return {
-        "schema_version": 1,
+    authorization = {
+        "schema_version": 2 if spend_approval is not None else 1,
         "authorization_id": uuid.uuid4().hex,
         "authorized": True,
         "issued_at": now.astimezone(UTC).isoformat(),
@@ -649,6 +721,9 @@ def create_authorization(
             "ledger_is_hard_limit": False,
         },
     }
+    if spend_approval is not None:
+        authorization["spend_control_approval"] = spend_approval
+    return authorization
 
 
 def validate_authorization(
@@ -672,10 +747,22 @@ def validate_authorization(
         "consumed",
         "balance_snapshot",
     }
-    if not isinstance(authorization, dict) or set(authorization) != required:
+    if not isinstance(authorization, dict):
         raise AdapterError("Authorization fields do not match the single-trial schema")
-    if authorization["schema_version"] != 1 or authorization["authorized"] is not True:
+    schema_version = authorization.get("schema_version")
+    expected_fields = required | ({"spend_control_approval"} if schema_version == 2 else set())
+    if (
+        type(schema_version) is not int
+        or schema_version not in {1, 2}
+        or set(authorization) != expected_fields
+    ):
+        raise AdapterError("Authorization fields do not match the single-trial schema")
+    if authorization["authorized"] is not True:
         raise AdapterError("Explicit paid-trial authorization is missing")
+    if schema_version == 2:
+        validate_spend_control_approval(
+            authorization["spend_control_approval"], context.get("attempt_id")
+        )
     if authorization["restricted_key_scope_operator_attested"] is not True:
         raise AdapterError("Separate executor-key scope attestation is missing")
     if authorization["consumed"] is not False:
@@ -830,6 +917,15 @@ def validate_authorization(
     except (pilot.PilotError, TypeError) as exc:
         raise AdapterError("Authorization balance snapshot failed validation") from exc
     return authorization
+
+
+def validate_live_authorization(authorization: dict, context: dict, **kwargs) -> dict:
+    """Validate ordinary scope and mandatory future-attempt session spend approval."""
+    validated = validate_authorization(authorization, context, **kwargs)
+    validate_spend_control_approval(
+        authorization.get("spend_control_approval"), context.get("attempt_id")
+    )
+    return validated
 
 
 class SingleTrialLease(AbstractContextManager):
@@ -1052,6 +1148,8 @@ def create_authorization_file(
     balance_source: str,
     balance_checked_at: str,
     restricted_key_scope_confirmation: str,
+    spend_control_limit_cents: int | None = None,
+    spend_control_confirmation: str | None = None,
     output: Path,
     attempt_id: str = "R01-A/attempt-1",
     previous_attempt_result: Path | None = None,
@@ -1089,6 +1187,8 @@ def create_authorization_file(
         balance_source=balance_source,
         balance_checked_at=balance_checked_at,
         restricted_key_scope_confirmation=restricted_key_scope_confirmation,
+        spend_control_limit_cents=spend_control_limit_cents,
+        spend_control_confirmation=spend_control_confirmation,
         attempt_id=attempt_id,
         previous_attempt_result=previous_attempt_result,
         first_attempt_result=first_attempt_result,
@@ -1162,6 +1262,7 @@ def _make_live_controller(context: dict, authorization: dict, state_directory: P
             is True,
             "condition_a_zero_tools": context["condition"] == "A"
             and context["expected_tools"] == [],
+            "independent_zero_task_connectivity": False,
         }
 
     bench = _load_module(ROOT / "runner" / "bench.py", "r01a_scorer")
@@ -1196,7 +1297,7 @@ def _make_live_controller(context: dict, authorization: dict, state_directory: P
         runtime=runtime,
         topology=topology,
         ledger=ledger,
-        authorize=validate_authorization,
+        authorize=validate_live_authorization,
         consume_authorization=consume_authorization,
         lease_factory=lambda trial: SingleTrialLease(state_directory, trial),
         score=lambda task, artifacts, image: bench.score(task, artifacts, image),
@@ -1292,7 +1393,7 @@ def run_one(
             attempt_two_authorization=attempt_two_authorization,
             session_quiescence_evidence=session_quiescence_evidence,
         )
-        validate_authorization(authorization, context)
+        validate_live_authorization(authorization, context)
         controller = _make_live_controller(context, authorization, Path(state_directory))
         return context, controller
 
@@ -2288,6 +2389,8 @@ def main(argv=None) -> int:
     auth_parser.add_argument("--available-balance-cents", type=int, required=True)
     auth_parser.add_argument("--reserve-cents", type=int, required=True)
     auth_parser.add_argument("--estimated-spend-cents", type=int, required=True)
+    auth_parser.add_argument("--spend-control-limit-cents", type=int, required=True)
+    auth_parser.add_argument("--confirm-spend-control", required=True)
     auth_parser.add_argument("--balance-source", required=True)
     auth_parser.add_argument("--balance-checked-at", required=True)
     auth_parser.add_argument("--confirm", required=True)
@@ -2364,6 +2467,8 @@ def main(argv=None) -> int:
                 available_balance_cents=args.available_balance_cents,
                 reserve_cents=args.reserve_cents,
                 estimated_spend_cents=args.estimated_spend_cents,
+                spend_control_limit_cents=args.spend_control_limit_cents,
+                spend_control_confirmation=args.confirm_spend_control,
                 balance_source=args.balance_source,
                 balance_checked_at=balance_checked_at.isoformat(),
                 restricted_key_scope_confirmation=args.confirm_restricted_key_scope,

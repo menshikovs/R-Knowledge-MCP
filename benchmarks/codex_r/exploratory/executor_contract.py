@@ -210,6 +210,9 @@ RUNTIME_CODES = frozenset(
         "executor_exited",
         "executor_not_running",
         "cleanup_unverified",
+        "docker_daemon_unavailable",
+        "image_unavailable",
+        "mount_or_workspace_failure",
     }
 )
 RUNTIME_OPERATIONS = frozenset(

@@ -5,11 +5,14 @@ import importlib.util
 import json
 import subprocess
 import sys
+import tempfile
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+
+pytestmark = pytest.mark.usefixtures("r01a_offline_guard")
 
 ROOT = Path(__file__).resolve().parents[1] / "benchmarks/codex_r"
 
@@ -25,6 +28,66 @@ def load_adapter():
 
 adapter = load_adapter()
 pilot = adapter.pilot
+
+_AUTHORIZATION_SCOPE_FIELDS = (
+    "trial_id",
+    "attempt_id",
+    "previous_attempt_audit_sha256",
+    "previous_attempt_failure_classification",
+    "previous_attempt_provider_status",
+    "recovery_first_attempt_audit_sha256",
+    "previous_attempt_authorization_sha256",
+    "previous_attempt_result",
+    "first_attempt_result",
+    "previous_attempt_authorization",
+    "final_continuation_provenance",
+    "first_attempt_authorization",
+    "attempt_two_result",
+    "attempt_two_authorization",
+    "session_quiescence_evidence",
+    "task",
+    "condition",
+    "model",
+    "reasoning_effort",
+    "environment_fingerprint",
+    "candidate_image_digest",
+    "execution_config_digest",
+    "workspace",
+    "state_directory",
+    "controller_version",
+)
+
+
+def synthetic_authorization(context, *, now, schema_version=2, limit_cents=731):
+    """Build in-memory authorization data for adapter validation tests only."""
+    authorization = {
+        "schema_version": schema_version,
+        "authorization_id": "e" * 32,
+        "authorized": True,
+        "issued_at": now.isoformat(),
+        "expires_at": (now + timedelta(seconds=120)).isoformat(),
+        "scope": {key: context[key] for key in _AUTHORIZATION_SCOPE_FIELDS},
+        "typed_confirmation": f"AUTHORIZE ONE PAID TRIAL {context['attempt_id']}",
+        "attempt_id": context["attempt_id"],
+        "restricted_key_scope_operator_attested": True,
+        "consumed": False,
+        "balance_snapshot": {
+            "available_balance_cents": 1000,
+            "reserve_cents": 200,
+            "estimated_spend_cents": 100,
+            "balance_source": "synthetic test fixture",
+            "checked_at": now.isoformat(),
+            "estimate_is_binding": False,
+            "ledger_is_hard_limit": False,
+        },
+    }
+    if schema_version == 2:
+        authorization["spend_control_approval"] = adapter.make_spend_control_approval(
+            context["attempt_id"],
+            limit_cents,
+            f"APPROVE SESSION SPEND LIMIT {limit_cents} USD CENTS FOR {context['attempt_id']}",
+        )
+    return authorization
 
 
 def test_jsonl_events_are_bounded_and_credentials_are_redacted():
@@ -82,6 +145,7 @@ def test_preflight_is_honest_and_never_ready_without_isolation_and_access():
     assert report["launch_permitted"] is False
     assert report["sessions_created"] == report["paid_calls_made"] == 0
     assert report["gates"]["account_model_access"]["status"] == "unverified"
+    assert report["gates"]["independent_zero_task_connectivity"]["status"] == "unverified"
     assert report["gates"]["candidate_isolation"]["status"] == "unverified"
     assert report["gates"]["hidden_oracle_exclusion"]["status"] == "unverified"
     assert "SECURE_CODEX_EXECUTION_BACKEND_NOT_IMPLEMENTED" in report["blocking_conditions"]
@@ -114,6 +178,8 @@ def test_authorization_is_single_row_scoped_expiring_and_one_use(tmp_path):
         restricted_key_scope_confirmation="CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A",
     )
     assert adapter.validate_authorization(authorization, context, now=now) is authorization
+    with pytest.raises(adapter.AdapterError, match="closed historical attempt"):
+        adapter.validate_live_authorization(authorization, context, now=now)
     with pytest.raises(adapter.AdapterError, match="does not match"):
         adapter.validate_authorization(
             authorization,
@@ -129,6 +195,66 @@ def test_authorization_is_single_row_scoped_expiring_and_one_use(tmp_path):
     authorization["consumed"] = True
     with pytest.raises(adapter.AdapterError, match="already been consumed"):
         adapter.validate_authorization(authorization, context, now=now)
+
+
+def test_session_spend_approval_is_positive_integer_and_attempt_bound():
+    attempt_id = "synthetic-future-attempt-fixture"
+    limit_cents = 731
+    approval = adapter.make_spend_control_approval(
+        attempt_id,
+        limit_cents,
+        f"APPROVE SESSION SPEND LIMIT {limit_cents} USD CENTS FOR {attempt_id}",
+    )
+    assert adapter.validate_spend_control_approval(approval, attempt_id) == limit_cents
+
+    for invalid in (None, 0, -1, 1.5, True, "731", float("nan"), float("inf")):
+        with pytest.raises(adapter.AdapterError, match="positive integer"):
+            adapter.make_spend_control_approval(
+                attempt_id,
+                invalid,
+                f"APPROVE SESSION SPEND LIMIT {invalid} USD CENTS FOR {attempt_id}",
+            )
+
+    with pytest.raises(adapter.AdapterError, match="does not match"):
+        adapter.validate_spend_control_approval(approval, "different-future-attempt")
+
+
+@pytest.mark.parametrize(
+    "attempt_id",
+    [
+        "R01-A/attempt-1",
+        "R01-A/attempt-2",
+        "R01-A/recovery-after-attempt-2",
+        "R01-A/final-continuation",
+    ],
+)
+def test_session_spend_approval_cannot_reopen_historical_attempt(attempt_id):
+    with pytest.raises(adapter.AdapterError, match="closed historical attempt"):
+        adapter.make_spend_control_approval(
+            attempt_id,
+            731,
+            f"APPROVE SESSION SPEND LIMIT 731 USD CENTS FOR {attempt_id}",
+        )
+
+
+def test_authorization_issuer_rejects_budget_for_historical_attempt():
+    attempt_id = "R01-A/final-continuation"
+    with pytest.raises(adapter.AdapterError, match="closed historical attempt"):
+        adapter.create_authorization(
+            {},
+            typed_confirmation=f"AUTHORIZE ONE PAID TRIAL {attempt_id}",
+            available_balance_cents=1000,
+            reserve_cents=200,
+            estimated_spend_cents=100,
+            balance_source="synthetic test snapshot",
+            balance_checked_at=datetime.now(UTC).isoformat(),
+            restricted_key_scope_confirmation="CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A",
+            spend_control_limit_cents=731,
+            spend_control_confirmation=(
+                f"APPROVE SESSION SPEND LIMIT 731 USD CENTS FOR {attempt_id}"
+            ),
+            attempt_id=attempt_id,
+        )
 
 
 def test_active_trial_lease_is_exclusive_and_retained_without_cleanup_proof(tmp_path):
@@ -416,6 +542,7 @@ def test_usage_extraction_uses_actual_managed_agents_turn_usage():
 
 
 def test_run_one_delegates_only_the_scoped_r01a_context_to_lifecycle(tmp_path, monkeypatch):
+    synthetic_attempt_id = "synthetic-future-attempt-fixture"
     workspace = tmp_path / "public-R01"
     adapter.prepare_workspace("R01", workspace)
     state = tmp_path / "state"
@@ -428,22 +555,29 @@ def test_run_one_delegates_only_the_scoped_r01a_context_to_lifecycle(tmp_path, m
         state_directory=state,
     )
     now = datetime.now(UTC)
-    authorization = adapter.create_authorization(
-        context,
-        typed_confirmation="AUTHORIZE ONE PAID TRIAL R01-A",
-        available_balance_cents=1000,
-        reserve_cents=200,
-        estimated_spend_cents=100,
-        balance_source="synthetic test snapshot",
-        balance_checked_at=now.isoformat(),
-        restricted_key_scope_confirmation="CONFIRM RESTRICTED EXECUTOR KEY SCOPE R01-A",
-    )
+    context["attempt_id"] = synthetic_attempt_id
+    authorization = synthetic_authorization(context, now=now)
+
+    def build_synthetic_context(_plan, _trial_id, _workspace, **kwargs):
+        # The production context builder intentionally supports only existing
+        # R01-A identities. This test-only seam supplies a future identity while
+        # run_one still performs its real authorization and scope validation.
+        assert kwargs["attempt_id"] == synthetic_attempt_id
+        return context
+
+    monkeypatch.setattr(adapter, "build_trial_context", build_synthetic_context)
 
     class FakeLifecycleController:
         def run_one(self, **kwargs):
+            assert set(kwargs) == {"context", "authorization", "state_directory"}
+            assert kwargs["context"] is context
             assert kwargs["context"]["trial_id"] == "R01-A"
+            assert kwargs["context"]["attempt_id"] == synthetic_attempt_id
+            assert kwargs["context"]["task"] == "R01"
+            assert kwargs["context"]["condition"] == "A"
             assert kwargs["context"]["expected_tools"] == []
             assert kwargs["authorization"] is authorization
+            assert kwargs["state_directory"] == state
             return {"record_type": "synthetic_r01a_lifecycle_audit_not_benchmark_result"}
 
     monkeypatch.setattr(
@@ -458,8 +592,79 @@ def test_run_one_delegates_only_the_scoped_r01a_context_to_lifecycle(tmp_path, m
         state_directory=state,
         workspace=workspace,
         candidate_image_digest=image,
+        attempt_id=synthetic_attempt_id,
     )
     assert result["record_type"].startswith("synthetic_")
+
+
+def test_unexpected_authorization_validation_error_stops_before_controller(monkeypatch):
+    workspace = ROOT / "synthetic-workspace-not-opened-by-auth-validation-test"
+    state = ROOT / "synthetic-state-not-created-by-auth-validation-test"
+    assert not state.exists()
+    context = {"trial_id": "R01-A", "attempt_id": "R01-A/attempt-1"}
+    authorization = {"synthetic": True, "consumed": False}
+    original_authorization = dict(authorization)
+    validations = []
+    controller_creations = []
+
+    monkeypatch.setattr(adapter, "build_trial_context", lambda *_args, **_kwargs: context)
+
+    def fail_validation(*_args, **_kwargs):
+        validations.append("called")
+        raise RuntimeError("synthetic authorization validator failure")
+
+    def create_controller(*_args, **_kwargs):
+        controller_creations.append("called")
+        raise AssertionError("controller must remain unreachable after validation failure")
+
+    monkeypatch.setattr(adapter, "validate_live_authorization", fail_validation)
+    monkeypatch.setattr(adapter, "_make_live_controller", create_controller)
+
+    with pytest.raises(RuntimeError, match="synthetic authorization validator failure"):
+        adapter.run_one(
+            plan=pilot.make_plan(),
+            trial_id="R01-A",
+            authorization=authorization,
+            state_directory=state,
+            workspace=workspace,
+            candidate_image_digest="sha256:" + "b" * 64,
+        )
+
+    assert validations == ["called"]
+    assert controller_creations == []
+    assert authorization == original_authorization
+    assert not state.exists()
+
+
+def test_legacy_authorization_cannot_gain_future_spend_approval(tmp_path):
+    synthetic_attempt_id = "synthetic-future-attempt-fixture"
+    workspace = tmp_path / "public-R01"
+    adapter.prepare_workspace("R01", workspace)
+    state = tmp_path / "state"
+    context = adapter.build_trial_context(
+        pilot.make_plan(),
+        "R01-A",
+        workspace,
+        candidate_image_digest="sha256:" + "b" * 64,
+        state_directory=state,
+    )
+    context["attempt_id"] = synthetic_attempt_id
+    now = datetime.now(UTC)
+
+    legacy = synthetic_authorization(context, now=now, schema_version=1)
+    with pytest.raises(adapter.AdapterError, match="missing or malformed"):
+        adapter.validate_live_authorization(legacy, context, now=now)
+
+    legacy_with_unversioned_approval = {
+        **legacy,
+        "spend_control_approval": adapter.make_spend_control_approval(
+            synthetic_attempt_id,
+            731,
+            "APPROVE SESSION SPEND LIMIT 731 USD CENTS FOR synthetic-future-attempt-fixture",
+        ),
+    }
+    with pytest.raises(adapter.AdapterError, match="schema"):
+        adapter.validate_live_authorization(legacy_with_unversioned_approval, context, now=now)
 
 
 def test_run_one_rejects_authorization_replay_under_different_state_directory(tmp_path):
@@ -1357,11 +1562,20 @@ def test_lifecycle_audit_is_not_valid_strict_benchmark_result():
 
 
 def test_live_controller_factory_uses_existing_components_and_keeps_keys_controller_side(
-    tmp_path, monkeypatch
+    monkeypatch,
 ):
-    workspace = tmp_path / "public-R01"
-    adapter.prepare_workspace("R01", workspace)
-    state = tmp_path / "state"
+    workspace = Path(tempfile.gettempdir()) / "synthetic-public-R01"
+    state = Path(tempfile.gettempdir()) / "synthetic-controller-state"
+    monkeypatch.setattr(
+        adapter,
+        "_load_controller",
+        lambda: SimpleNamespace(
+            validate_public_workspace=lambda _workspace, _task: {
+                "boundary_verified": False,
+                "files": ["TASK.md", "data/records.csv", "renv.lock"],
+            }
+        ),
+    )
     image = "sha256:" + "b" * 64
     context = adapter.build_trial_context(
         pilot.make_plan(),
@@ -1455,6 +1669,7 @@ def test_live_controller_factory_uses_existing_components_and_keeps_keys_control
         "restricted_environment_key_present_and_separate": True,
         "restricted_environment_key_scope_operator_attested": True,
         "condition_a_zero_tools": True,
+        "independent_zero_task_connectivity": False,
     }
     assert verified == ["candidate", "scorer"]
     assert instances["environment_key"] == "synthetic-restricted-key"

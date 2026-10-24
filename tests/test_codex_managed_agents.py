@@ -6,6 +6,8 @@ from pathlib import Path
 import httpx
 import pytest
 
+pytestmark = pytest.mark.usefixtures("r01a_offline_guard")
+
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
     "codex_managed_agents", ROOT / "benchmarks/codex_r/exploratory/managed_agents.py"
@@ -50,7 +52,7 @@ def session_record(remote_url="https://api.openai.com/v1/agents/api"):
 
 
 def test_condition_a_session_config_is_exact_model_medium_and_zero_mcp():
-    assert build_agent_config(context()) == {
+    assert build_agent_config(context(), spend_control_limit_cents=275) == {
         "agent": {
             "model": "gpt-6-luna",
             "reasoning": {"effort": "medium"},
@@ -58,6 +60,7 @@ def test_condition_a_session_config_is_exact_model_medium_and_zero_mcp():
             "tools": [],
         },
         "environment": {"type": "self_hosted", "workspace_directory": "/candidate"},
+        "spend_control": {"limit": 275},
     }
 
 
@@ -73,7 +76,52 @@ def test_condition_a_session_config_is_exact_model_medium_and_zero_mcp():
 )
 def test_unimplemented_rows_and_model_settings_are_rejected(changes):
     with pytest.raises(ManagedAgentsError):
-        build_agent_config(context(**changes))
+        build_agent_config(context(**changes), spend_control_limit_cents=275)
+
+
+@pytest.mark.parametrize("limit", [None, 0, -1, 1.5, True, "275", float("nan"), float("inf")])
+def test_invalid_session_spend_limits_are_rejected_before_transport(limit):
+    requests = []
+    client = ManagedAgentsClient(
+        "synthetic-app-secret",
+        transport=httpx.MockTransport(lambda request: requests.append(request)),
+    )
+    try:
+        with pytest.raises(ManagedAgentsError, match="spend_control.limit"):
+            client.create_session(context(), spend_control_limit_cents=limit)
+        assert requests == []
+        assert client.session_creation_attempted is False
+    finally:
+        client.close()
+
+
+def test_missing_spend_limit_is_rejected_before_transport():
+    requests = []
+    client = ManagedAgentsClient(
+        "synthetic-app-secret",
+        transport=httpx.MockTransport(lambda request: requests.append(request)),
+    )
+    try:
+        with pytest.raises(ManagedAgentsError, match="spend_control.limit"):
+            client.create_session(context())
+        assert requests == []
+    finally:
+        client.close()
+
+
+@pytest.mark.parametrize("method", ["POST", "post", "pOsT"])
+def test_raw_session_route_cannot_bypass_spend_limit_validation(method):
+    requests = []
+    client = ManagedAgentsClient(
+        "synthetic-app-secret",
+        transport=httpx.MockTransport(lambda request: requests.append(request)),
+    )
+    try:
+        with pytest.raises(ManagedAgentsError, match="approved spend_control.limit"):
+            client._request_json(method, "/v1/agents/sessions", body={"agent": {}})
+        assert requests == []
+    finally:
+        client.close()
 
 
 def test_managed_agents_mock_uses_fixed_routes_and_keeps_app_key_controller_side():
@@ -87,6 +135,7 @@ def test_managed_agents_mock_uses_fixed_routes_and_keeps_app_key_controller_side
             assert body["agent"]["model"] == "gpt-6-luna"
             assert body["agent"]["reasoning"]["effort"] == "medium"
             assert body["agent"]["tools"] == []
+            assert body["spend_control"] == {"limit": 275}
             assert "input" not in body  # no turn starts before executor readiness
             assert "OPENAI_API_KEY" not in request.content.decode()
             return httpx.Response(201, json=session_record())
@@ -100,7 +149,7 @@ def test_managed_agents_mock_uses_fixed_routes_and_keeps_app_key_controller_side
 
     client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
     try:
-        environment = client.create_session(context())
+        environment = client.create_session(context(), spend_control_limit_cents=275)
         assert environment == {
             "session_id": "sess_test123",
             "environment_id": "env_test123",
@@ -141,9 +190,9 @@ def test_client_is_limited_to_one_session_and_one_task_submission():
 
     client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
     try:
-        client.create_session(context())
+        client.create_session(context(), spend_control_limit_cents=275)
         with pytest.raises(ManagedAgentsError, match="one session creation attempt"):
-            client.create_session(context())
+            client.create_session(context(), spend_control_limit_cents=275)
         client.submit_task("sess_test123", "synthetic task", idempotency_key="one-task-key-12345")
         with pytest.raises(ManagedAgentsError, match="already attempted"):
             client.submit_task(
@@ -170,7 +219,7 @@ def test_invalid_created_session_is_deleted_before_any_task_can_be_submitted():
     client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
     try:
         with pytest.raises(ManagedAgentsError, match="Resolved session model") as raised:
-            client.create_session(context())
+            client.create_session(context(), spend_control_limit_cents=275)
         assert client.session_creation_uncertain is False
         assert client.session_creation_response_received is True
         assert client.session_deletion_verified is True
@@ -199,7 +248,7 @@ def test_created_session_with_invalid_url_is_deleted_and_failure_is_redacted():
     client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
     try:
         with pytest.raises(ManagedAgentsError) as raised:
-            client.create_session(context())
+            client.create_session(context(), spend_control_limit_cents=275)
         assert requests == ["POST", "DELETE"]
         assert client.session_creation_http_status == 201
         assert client.session_deletion_verified is True
@@ -222,7 +271,7 @@ def test_created_session_with_invalid_url_and_unconfirmed_delete_is_unknown():
     client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
     try:
         with pytest.raises(ManagedAgentsError) as raised:
-            client.create_session(context())
+            client.create_session(context(), spend_control_limit_cents=275)
         assert client.session_deletion_verified is False
         assert client.session_creation_uncertain is True
         assert client.session_state == "unknown"
@@ -242,7 +291,7 @@ def test_created_session_without_usable_id_keeps_deletion_state_unknown():
     )
     try:
         with pytest.raises(ManagedAgentsError) as raised:
-            client.create_session(context())
+            client.create_session(context(), spend_control_limit_cents=275)
         assert client.session_creation_response_received is True
         assert client.session_state == "unknown"
         assert client.session_deletion_verified is None
@@ -259,15 +308,15 @@ def test_ambiguous_session_creation_failure_is_marked_uncertain_without_retry():
     )
     try:
         with pytest.raises(ManagedAgentsError):
-            client.create_session(context())
+            client.create_session(context(), spend_control_limit_cents=275)
         assert client.session_creation_uncertain is True
         with pytest.raises(ManagedAgentsError, match="one session creation attempt"):
-            client.create_session(context())
+            client.create_session(context(), spend_control_limit_cents=275)
     finally:
         client.close()
 
 
-@pytest.mark.parametrize("status", [400, 401, 403, 404])
+@pytest.mark.parametrize("status", [400, 401, 403, 404, 429, 500])
 def test_session_creation_http_rejection_has_safe_structured_diagnostics(status):
     def handler(request):
         return httpx.Response(
@@ -279,7 +328,7 @@ def test_session_creation_http_rejection_has_safe_structured_diagnostics(status)
     client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
     try:
         with pytest.raises(ManagedAgentsError) as raised:
-            client.create_session(context())
+            client.create_session(context(), spend_control_limit_cents=275)
         assert raised.value.diagnostics == {
             "operation": "create_session",
             "category": "http_rejection",
@@ -302,10 +351,47 @@ def test_transport_and_tls_failures_have_distinct_safe_diagnostics():
     )
     try:
         with pytest.raises(ManagedAgentsError) as raised:
-            client.create_session(context())
+            client.create_session(context(), spend_control_limit_cents=275)
         assert raised.value.diagnostics["category"] == "network_error"
         assert raised.value.diagnostics["http_status"] is None
         assert "synthetic-secret" not in str(raised.value)
+    finally:
+        client.close()
+
+
+def test_partial_success_response_is_uncertain_and_never_retried():
+    requests = []
+
+    class PartialResponse(httpx.SyncByteStream):
+        def __init__(self, request):
+            self.request = request
+
+        def __iter__(self):
+            yield b'{"id":"sess_synthetic",'
+            raise httpx.ReadError("synthetic response tail secret", request=self.request)
+
+        def close(self):
+            return None
+
+    def handler(request):
+        requests.append(request)
+        return httpx.Response(201, stream=PartialResponse(request))
+
+    client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(handler))
+    try:
+        with pytest.raises(ManagedAgentsError) as raised:
+            client.create_session(context(), spend_control_limit_cents=275)
+        assert raised.value.diagnostics["category"] == "network_error"
+        assert raised.value.diagnostics["http_status"] is None
+        assert "response tail secret" not in str(raised.value)
+        assert client.session_creation_response_received is True
+        assert client.session_creation_http_status == 201
+        assert client.session_creation_uncertain is True
+        assert client.session_state == "unknown"
+        assert len(requests) == 1
+        with pytest.raises(ManagedAgentsError, match="one session creation attempt"):
+            client.create_session(context(), spend_control_limit_cents=275)
+        assert len(requests) == 1
     finally:
         client.close()
 
@@ -318,7 +404,7 @@ def test_transport_and_tls_failures_have_distinct_safe_diagnostics():
     client = ManagedAgentsClient("synthetic-app-secret", transport=httpx.MockTransport(tls_failure))
     try:
         with pytest.raises(ManagedAgentsError) as raised:
-            client.create_session(context())
+            client.create_session(context(), spend_control_limit_cents=275)
         assert raised.value.diagnostics["category"] == "tls_error"
         assert "certificate detail" not in str(raised.value)
     finally:
@@ -345,7 +431,7 @@ def test_session_creation_payload_failures_have_safe_diagnostics(response, categ
     )
     try:
         with pytest.raises(ManagedAgentsError) as raised:
-            client.create_session(context())
+            client.create_session(context(), spend_control_limit_cents=275)
         assert raised.value.diagnostics["operation"] == "create_session"
         assert raised.value.diagnostics["category"] == category
         assert raised.value.diagnostics["http_status"] == 200
@@ -437,7 +523,7 @@ def test_managed_agents_reject_redirects_and_oversized_responses():
     )
     client = ManagedAgentsClient("synthetic-app-secret", transport=redirect)
     with pytest.raises(ManagedAgentsError, match="redirects"):
-        client.create_session(context())
+        client.create_session(context(), spend_control_limit_cents=275)
     client.close()
 
     oversized = httpx.MockTransport(
@@ -445,7 +531,7 @@ def test_managed_agents_reject_redirects_and_oversized_responses():
     )
     client = ManagedAgentsClient("synthetic-app-secret", transport=oversized)
     with pytest.raises(ManagedAgentsError, match="size limit"):
-        client.create_session(context())
+        client.create_session(context(), spend_control_limit_cents=275)
     client.close()
 
 
