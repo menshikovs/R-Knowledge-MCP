@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
 import json
 import os
@@ -11,7 +12,7 @@ import sys
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import httpx
@@ -33,6 +34,8 @@ StagingJournal = harness_module.StagingJournal
 StagingLease = harness_module.StagingLease
 DockerExecutorAdapter = harness_module.DockerExecutorAdapter
 SpendControlApproval = harness_module.SpendControlApproval
+IssuedStagingCapability = harness_module.IssuedStagingCapability
+OfflineStagingAuthorizationStore = harness_module.OfflineStagingAuthorizationStore
 
 APP_KEY = "synthetic-application-secret-do-not-persist"
 ENV_KEY = "synthetic-environment-secret-do-not-persist"
@@ -57,6 +60,7 @@ def _unverified_staging_claims(**overrides):
         "project_name": "rkmcp-staging",
         "project_id": "synthetic-staging-project-id",
         "source_commit": AUTHORIZATION_TEST_COMMIT,
+        "issued_at": "2026-10-23T12:00:00Z",
         "session_count": 1,
         "task_count": 0,
         "task_submission_allowed": False,
@@ -65,9 +69,36 @@ def _unverified_staging_claims(**overrides):
         "expires_at": "2026-10-23T12:05:00Z",
         "billing_owner_id": "synthetic-billing-owner",
         "billing_owner_approval_reference": "synthetic-billing-approval",
+        "billing_owner_acknowledged": True,
     }
     claims.update(overrides)
     return claims
+
+
+def _staging_issue_claims(**overrides):
+    claims = _unverified_staging_claims(**overrides)
+    for field in ("schema_version", "authorization_id", "issuer_id", "issued_at"):
+        claims.pop(field)
+    return claims
+
+
+def _authorization_store(root, role_state):
+    return OfflineStagingAuthorizationStore(
+        root,
+        synthetic=True,
+        issuer_role="synthetic-issuer",
+        runtime_role="synthetic-runtime",
+        current_role=lambda: role_state["value"],
+    )
+
+
+def _issue_offline_capability(store, **changes):
+    return store.issue(
+        _staging_issue_claims(**changes),
+        expected_project_id="synthetic-staging-project-id",
+        expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+        now_utc=AUTHORIZATION_TEST_NOW,
+    )
 
 
 def _event(kind, environment_id=ENVIRONMENT_ID):
@@ -1320,6 +1351,434 @@ def test_concurrent_unverified_staging_authorizations_all_fail_closed():
         results = list(executor.map(attempt, range(16)))
 
     assert results == ["staging_authorization_issuer_unavailable"] * 16
+
+
+def test_offline_capability_store_cannot_enter_non_synthetic_mode():
+    with pytest.raises(harness_module.DurabilityError):
+        OfflineStagingAuthorizationStore(
+            Path("C:/unopened-f09-authorization-store"),
+            synthetic=False,
+            issuer_role="issuer",
+            runtime_role="runtime",
+            current_role=lambda: "runtime",
+        )
+
+
+def test_offline_capability_store_consumes_once_and_keeps_only_digest(tmp_path):
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "external-state", role)
+    capability = _issue_offline_capability(store)
+    record_path = store.issued_root / f"{capability.authorization_id}.json"
+    record_bytes = record_path.read_bytes()
+    token = capability._value
+
+    assert store.root.name == harness_module.STAGING_AUTHORIZATION_STORE_DIRNAME
+    assert token not in record_bytes
+    assert token.hex().encode() not in record_bytes
+    assert hashlib.sha256(token).hexdigest().encode() in record_bytes
+    assert token.hex() not in repr(capability)
+
+    role["value"] = "synthetic-runtime"
+    journal = StagingJournal(tmp_path / "journal-first", synthetic=True)
+    parsed = store.consume(
+        capability,
+        expected_project_id="synthetic-staging-project-id",
+        expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+        now_utc=AUTHORIZATION_TEST_NOW,
+        journal=journal,
+    )
+    assert parsed["session_count"] == 1
+    assert parsed["task_count"] == 0
+    assert parsed["spend_control_limit_cents"] == 200
+    marker = store.consumed_root / f"{capability.authorization_id}.consumed"
+    marker_bytes = marker.read_bytes()
+    assert token not in marker_bytes
+    assert token.hex().encode() not in marker_bytes
+    assert journal.pending == {}
+    journal_bytes = journal.path.read_bytes()
+    assert token not in journal_bytes
+    assert token.hex().encode() not in journal_bytes
+    assert b'"operation":"authorization_consume"' in journal_bytes
+    journal.close()
+
+    restarted = _authorization_store(tmp_path / "external-state", role)
+    replay_journal = StagingJournal(tmp_path / "journal-replay", synthetic=True)
+    with pytest.raises(ConnectivityError) as raised:
+        restarted.consume(
+            capability,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW,
+            journal=replay_journal,
+        )
+    assert raised.value.code == "staging_authorization_replayed"
+    assert replay_journal.pending
+    replay_journal.close()
+
+
+@pytest.mark.parametrize(
+    "changes, expected_project, expected_commit",
+    [
+        ({}, "different-project-id", AUTHORIZATION_TEST_COMMIT),
+        ({}, "synthetic-staging-project-id", "b" * 40),
+        (
+            {"billing_owner_acknowledged": False},
+            "synthetic-staging-project-id",
+            AUTHORIZATION_TEST_COMMIT,
+        ),
+        ({"approved": True}, "synthetic-staging-project-id", AUTHORIZATION_TEST_COMMIT),
+    ],
+)
+def test_offline_capability_store_rejects_scope_mismatch_and_forged_claims(
+    tmp_path, changes, expected_project, expected_commit
+):
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "external-state", role)
+    if "approved" in changes or "billing_owner_acknowledged" in changes:
+        claims = _staging_issue_claims()
+        claims.update(changes)
+        with pytest.raises(ConnectivityError) as raised:
+            store.issue(
+                claims,
+                expected_project_id="synthetic-staging-project-id",
+                expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+                now_utc=AUTHORIZATION_TEST_NOW,
+            )
+        assert raised.value.code == "staging_authorization_claims_invalid"
+        assert list(store.issued_root.iterdir()) == []
+        return
+
+    capability = _issue_offline_capability(store, **changes)
+    role["value"] = "synthetic-runtime"
+    journal = StagingJournal(tmp_path / "journal", synthetic=True)
+    with pytest.raises(ConnectivityError) as raised:
+        store.consume(
+            capability,
+            expected_project_id=expected_project,
+            expected_source_commit=expected_commit,
+            now_utc=AUTHORIZATION_TEST_NOW,
+            journal=journal,
+        )
+    assert raised.value.code == "staging_authorization_claims_invalid"
+    assert list(store.consumed_root.iterdir()) == []
+    journal.close()
+
+
+def test_offline_capability_store_rejects_tampering_and_wrong_capability(tmp_path):
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "tampered-state", role)
+    capability = _issue_offline_capability(store)
+    record_path = store.issued_root / f"{capability.authorization_id}.json"
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    record["claims"]["project_id"] = "forged-project-id"
+    record_path.write_bytes(store._canonical_bytes(record))
+
+    role["value"] = "synthetic-runtime"
+    journal = StagingJournal(tmp_path / "tampered-journal", synthetic=True)
+    with pytest.raises(ConnectivityError) as raised:
+        store.consume(
+            capability,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW,
+            journal=journal,
+        )
+    assert raised.value.code == "staging_authorization_claims_invalid"
+    assert list(store.consumed_root.iterdir()) == []
+    journal.close()
+
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "wrong-capability-state", role)
+    capability = _issue_offline_capability(store)
+    wrong = IssuedStagingCapability(capability.authorization_id, b"x" * 32)
+    role["value"] = "synthetic-runtime"
+    journal = StagingJournal(tmp_path / "wrong-capability-journal", synthetic=True)
+    with pytest.raises(ConnectivityError) as raised:
+        store.consume(
+            wrong,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW,
+            journal=journal,
+        )
+    assert raised.value.code == "staging_authorization_capability_invalid"
+    assert list(store.consumed_root.iterdir()) == []
+    journal.close()
+
+
+def test_offline_capability_store_enforces_expiry_and_short_window(tmp_path):
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "expiry-state", role)
+    capability = _issue_offline_capability(store)
+    role["value"] = "synthetic-runtime"
+    journal = StagingJournal(tmp_path / "expiry-journal", synthetic=True)
+    with pytest.raises(ConnectivityError) as raised:
+        store.consume(
+            capability,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW + timedelta(minutes=6),
+            journal=journal,
+        )
+    assert raised.value.code == "staging_authorization_claims_invalid"
+    assert list(store.consumed_root.iterdir()) == []
+    journal.close()
+
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "long-window-state", role)
+    with pytest.raises(ConnectivityError) as raised:
+        _issue_offline_capability(
+            store,
+            expires_at="2026-10-23T12:16:00Z",
+        )
+    assert raised.value.code == "staging_authorization_claims_invalid"
+    assert list(store.issued_root.iterdir()) == []
+
+
+def test_offline_capability_store_rejects_role_escalation_and_same_identity(tmp_path):
+    role = {"value": "synthetic-runtime"}
+    store = _authorization_store(tmp_path / "role-state", role)
+    with pytest.raises(ConnectivityError) as raised:
+        _issue_offline_capability(store)
+    assert raised.value.code == "staging_authorization_issuer_identity_mismatch"
+    assert list(store.issued_root.iterdir()) == []
+
+    with pytest.raises(harness_module.DurabilityError):
+        OfflineStagingAuthorizationStore(
+            tmp_path / "same-role-state",
+            synthetic=True,
+            issuer_role="same-role",
+            runtime_role="same-role",
+            current_role=lambda: "same-role",
+        )
+    with pytest.raises(harness_module.DurabilityError):
+        OfflineStagingAuthorizationStore(
+            tmp_path / "non-synthetic-state",
+            synthetic=False,
+            issuer_role="issuer",
+            runtime_role="runtime",
+            current_role=lambda: "runtime",
+        )
+
+
+def test_offline_capability_store_fsync_failures_never_return_consumption(tmp_path):
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "intent-failure-state", role)
+    capability = _issue_offline_capability(store)
+    role["value"] = "synthetic-runtime"
+    journal = StagingJournal(tmp_path / "intent-failure-journal", synthetic=True)
+
+    def fail_journal_fsync(_descriptor):
+        raise OSError("synthetic journal fsync failure")
+
+    journal._fsync = fail_journal_fsync
+    with pytest.raises(harness_module.DurabilityError):
+        store.consume(
+            capability,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW,
+            journal=journal,
+        )
+    assert list(store.consumed_root.iterdir()) == []
+    journal.close()
+
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "marker-failure-state", role)
+    capability = _issue_offline_capability(store)
+    role["value"] = "synthetic-runtime"
+    journal = StagingJournal(tmp_path / "marker-failure-journal", synthetic=True)
+
+    def fail_marker_fsync(_descriptor):
+        raise OSError("synthetic consumed-marker fsync failure")
+
+    store._fsync = fail_marker_fsync
+    with pytest.raises(ConnectivityError) as raised:
+        store.consume(
+            capability,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW,
+            journal=journal,
+        )
+    assert raised.value.code == "staging_authorization_durability_uncertain"
+    assert list(store.consumed_root.iterdir())
+    journal.close()
+
+    store._fsync = os.fsync
+    retry_journal = StagingJournal(tmp_path / "marker-retry-journal", synthetic=True)
+    with pytest.raises(ConnectivityError) as replay:
+        store.consume(
+            capability,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW,
+            journal=retry_journal,
+        )
+    assert replay.value.code == "staging_authorization_replayed"
+    retry_journal.close()
+
+
+def test_offline_capability_store_directory_fsync_failure_burns_capability(tmp_path):
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "directory-failure-state", role)
+    capability = _issue_offline_capability(store)
+    role["value"] = "synthetic-runtime"
+    store._sync_directory = lambda _path: (_ for _ in ()).throw(OSError("injected fsync"))
+    journal = StagingJournal(tmp_path / "directory-failure-journal", synthetic=True)
+    with pytest.raises(ConnectivityError) as raised:
+        store.consume(
+            capability,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW,
+            journal=journal,
+        )
+    assert raised.value.code == "staging_authorization_durability_uncertain"
+    assert list(store.consumed_root.iterdir())
+    journal.close()
+
+
+def test_offline_capability_store_journal_outcome_failure_keeps_consumed_marker(tmp_path):
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "outcome-failure-state", role)
+    capability = _issue_offline_capability(store)
+    role["value"] = "synthetic-runtime"
+    journal = StagingJournal(tmp_path / "outcome-failure-journal", synthetic=True)
+    fsync_calls = 0
+
+    def fail_outcome_fsync(descriptor):
+        nonlocal fsync_calls
+        fsync_calls += 1
+        if fsync_calls == 2:
+            raise OSError("synthetic outcome fsync failure")
+        os.fsync(descriptor)
+
+    journal._fsync = fail_outcome_fsync
+    with pytest.raises(harness_module.DurabilityError):
+        store.consume(
+            capability,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW,
+            journal=journal,
+        )
+    assert fsync_calls == 2
+    assert (store.consumed_root / f"{capability.authorization_id}.consumed").exists()
+    journal.close()
+
+
+def test_offline_capability_store_subprocess_consumption_is_single_use(tmp_path):
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "process-state", role)
+    capability = _issue_offline_capability(store)
+    start_path = tmp_path / "release-processes"
+    ready_root = tmp_path / "ready"
+    ready_root.mkdir()
+    child_code = r"""
+import importlib.util
+import json
+import sys
+import time
+from datetime import UTC, datetime
+from pathlib import Path
+
+spec = importlib.util.spec_from_file_location("f09_auth_child", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+data = json.load(sys.stdin)
+store = module.OfflineStagingAuthorizationStore(
+    Path(data["root"]), synthetic=True, issuer_role="synthetic-issuer",
+    runtime_role="synthetic-runtime", current_role=lambda: "synthetic-runtime",
+)
+journal = module.StagingJournal(Path(data["journal"]), synthetic=True)
+Path(data["ready"]).write_text("ready", encoding="ascii")
+deadline = time.monotonic() + 5
+while not Path(data["start"]).exists():
+    if time.monotonic() > deadline:
+        raise SystemExit(4)
+    time.sleep(0.005)
+capability = module.IssuedStagingCapability(data["authorization_id"], bytes.fromhex(data["token"]))
+try:
+    store.consume(capability, expected_project_id="synthetic-staging-project-id",
+        expected_source_commit="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        now_utc=datetime(2026, 10, 23, 12, 0, tzinfo=UTC), journal=journal)
+except module.ConnectivityError as error:
+    print("rejected:" + error.code)
+else:
+    print("consumed")
+finally:
+    journal.close()
+"""
+    data = {
+        "root": str(tmp_path / "process-state"),
+        "authorization_id": capability.authorization_id,
+        "token": capability._value.hex(),
+        "start": str(start_path),
+    }
+    executable = [
+        sys.executable,
+        "-c",
+        child_code,
+        str(Path(harness_module.__file__).resolve()),
+    ]
+    environment = {"PATH": os.defpath}
+    if os.name == "nt" and os.environ.get("SystemRoot"):
+        environment["SystemRoot"] = os.environ["SystemRoot"]
+    processes = []
+    results = []
+    try:
+        for index in range(2):
+            child_data = dict(data)
+            child_data["journal"] = str(tmp_path / f"process-journal-{index}")
+            child_data["ready"] = str(ready_root / str(index))
+            process = subprocess.Popen(
+                executable,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                env=environment,
+            )
+            assert process.stdin is not None
+            process.stdin.write(json.dumps(child_data))
+            process.stdin.close()
+            process.stdin = None
+            processes.append(process)
+        deadline = time.monotonic() + 5
+        while len(list(ready_root.iterdir())) != 2:
+            if time.monotonic() > deadline:
+                pytest.fail("authorization consumers did not reach the start barrier")
+            time.sleep(0.01)
+        start_path.touch()
+        for process in processes:
+            stdout, stderr = process.communicate(timeout=8)
+            assert process.returncode == 0, stderr
+            results.append(stdout.strip())
+    finally:
+        for process in processes:
+            if process.poll() is None:
+                process.kill()
+            process.communicate(timeout=5)
+
+    assert sorted(results) == [
+        "consumed",
+        "rejected:staging_authorization_replayed",
+    ]
+    restart_data = dict(data)
+    restart_data["journal"] = str(tmp_path / "process-journal-restart")
+    restart_data["ready"] = str(ready_root / "restart")
+    restarted = subprocess.run(
+        executable,
+        input=json.dumps(restart_data),
+        text=True,
+        capture_output=True,
+        timeout=8,
+        env=environment,
+        check=False,
+    )
+    assert restarted.returncode == 0, restarted.stderr
+    assert restarted.stdout.strip() == "rejected:staging_authorization_replayed"
 
 
 def test_worker_result_after_timeout_is_disposed_exactly_once():
