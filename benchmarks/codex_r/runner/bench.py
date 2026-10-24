@@ -43,7 +43,9 @@ def inside(path, parent):
 def safe_file(root, relative):
     path = root / relative
     if path.is_symlink() or not inside(path, root) or not path.is_file():
-        raise ValueError("File escapes its declared root or is not a regular file")
+        raise ValueError(
+            f"File escapes its declared root or is not a regular file: {path} (root: {root})"
+        )
     # Reject symlink parents too, even if their resolved target stays under root.
     if any(p.is_symlink() for p in path.parents if p != root.parent):
         raise ValueError("Symlink parents are not allowed")

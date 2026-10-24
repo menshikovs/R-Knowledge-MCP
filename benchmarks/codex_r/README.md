@@ -1,5 +1,117 @@
 # Independent Codex / R pilot
 
+## Simple R01 runner (Ubuntu WSL2)
+
+Run from the repository root, in the terminal that already exports
+`OPENAI_API_KEY` and `OPENAI_EXECUTOR_API_KEY`. The application key stays outside
+Docker; the executor receives the second key as `CODEX_API_KEY`, as required by
+the executor protocol. No other credential variables or env files are used.
+
+First run one real baseline task:
+
+```sh
+.venv-wsl/bin/python -m benchmarks.codex_r.run_simple --effort medium --tasks R01 --modes without-mcp
+```
+
+Then run the R01 comparison, without MCP (A) and with MCP (B):
+
+```sh
+.venv-wsl/bin/python -m benchmarks.codex_r.run_simple --effort medium
+```
+
+Use `--effort high` for high reasoning. The model is always `gpt-6-luna`.
+`--repetitions 2` repeats both modes; `--tasks all` selects all 12 existing tasks.
+Each attempt has a fresh OpenAI session and disposable Docker workspace. The
+session is deleted and the executor removed before the existing scorer runs.
+A failure stops the run after saving its reason; there are no automatic reruns.
+
+This command reuses the installed Python environment and existing images:
+`rkmcp-codex-runtime:codex-0.163.0`, `codex-r-benchmark:pilot`, and
+`cran-knowledge-mcp:shiny-quarto`. It resolves them to immutable IDs without
+pulling or building images. The MCP image runs the current `src` read-only.
+Image overrides are available through `--executor-image`, `--scorer-image`,
+and `--mcp-image`.
+
+Results go to `benchmarks/codex_r/results/<UTC-run-id>/results.csv` and
+`results.json`, with per-attempt results, events and source artifacts underneath.
+They include the model, effort, task, mode, score, errors, elapsed time, actual
+API usage and API cost when available. Missing usage/cost remains null. These
+are best-effort API measurements, not a final bill. Missing credentials also
+produce CSV/JSON with `startup_error`; that is not a completed model trial.
+
+Scoring uses the durable artifact export. R02's observed `summarize_sales.R`
+filename is accepted only inside the validated workspace root and exported as
+`solution.R`; `artifact_sources` records that mapping. Existing symlink, size
+and UTF-8 checks still apply. Exports can be rescored offline without another
+model turn; a deleted workspace without an export cannot be reconstructed from
+test output or an agent's success message.
+
+Executor startup runs concurrently with opening the event stream and never waits
+for SSE headers or a connection event. A session-state check handles a connection
+event missed during subscription; task submission happens once. On connection
+failure, `result.json` retains `environment_error` and `executor_diagnostics`
+(container state and bounded, redacted logs captured before cleanup). Diagnostics
+are also printed on failure; neither API key nor executor routing URLs are logged.
+
+The simple runner has no approval files, Git checks, preliminary audits or
+`spend_control` request field. It enforces a wall-clock timeout (default 900
+seconds), CPU/memory/process limits and networkless scoring. The executor uses
+a Docker bridge network for the OpenAI relay and MCP; it does not enforce the
+older pilot's egress allowlist or a hard 30,000-token cap. These results are
+simple benchmark runs, not compliance with the preregistered protocol below.
+
+The protocol follows official OpenAI documentation for
+[self-hosted executors](https://developers.openai.com/api/docs/guides/agents-api/environments/self-hosted),
+[MCP connections](https://developers.openai.com/api/docs/guides/agents-api/tools/mcp),
+and [usage](https://developers.openai.com/api/docs/guides/agents-api/observability).
+The real model turn must be verified from the terminal containing the keys;
+Docker component checks and mocked API tests do not establish that it completed.
+
+## Separate MCP documentation smoke test
+
+This task uses the same session, Docker executor, consolidated MCP configuration
+and event/server auditing as the hard runner. It does not select a hard task,
+export hard fixtures, or run a hidden R verifier. Standard agent instructions
+remain byte-for-byte unchanged. Only the separate TASK.md comes from
+[`smoke_mcp_closest.md`](smoke_mcp_closest.md).
+
+From the WSL2 terminal with the existing two keys exported, run:
+
+```sh
+.venv-wsl/bin/python -m benchmarks.codex_r.run_simple --effort medium --tasks mcp-smoke --modes with-mcp
+```
+
+Results use a new directory with `mcp-smoke-B-1/events.json` and `result.json`.
+`mcp_server_audit` is in that result and the aggregate `results.json`. There is
+no solution.R requirement, R score or `fully_correct` grade for this diagnostic.
+
+Success requires inspecting both sides:
+
+1. `events.json` contains a completed native `tool_search_call` (or the actual
+   emitted tool-search item type) discovering the R-Knowledge-MCP documentation
+   tool. `mcp_usage.tool_search_calls >= 1`. Automatic server `tools/list` is not
+   a model tool-search call.
+2. A completed MCP call targets `r_knowledge` / `get_function_docs` with actual
+   arguments `package="dplyr"`, `function="closest"`, `repository="cran"`.
+   `mcp_usage.calls >= 1` and its tool names contain `get_function_docs`.
+3. The actual tool result contains documentation for closest(), without an MCP
+   error or a provider error payload. Inspect the returned version, source URL
+   and UTC check time. An agent's success message alone is insufficient.
+4. `mcp_server_audit.list_tools_requests >= 1`, `call_tool_requests >= 1`,
+   `tool_names` includes `get_function_docs`, and `rejected_requests == 0`.
+5. The turn completes and session/container cleanup succeeds.
+
+`smoke_transport_checks` automatically checks the observable discovery/call
+counters on both sides. `smoke_transport_observed` is a traffic result, not proof
+of a successful documentation response; step 3 still requires inspecting the
+saved result. `smoke_transport_missing` exits nonzero. A tool error can produce
+a CallToolRequest, so counts alone cannot establish documentation retrieval.
+If MCP is called but tool_search is absent, MCP invocation is demonstrated but
+the discovery portion of this smoke test has not passed. The task requests native
+discovery explicitly; it cannot create a search capability absent from the API.
+
+## Original preregistered pilot
+
 Status: benchmark infrastructure; **zero actual Codex trials**. R oracle self-tests
 use private developer reference programs and semantic mutants. They do not measure
 Codex or the effect of MCP. See [methodology](../../docs/CODEX_MCP_BENCHMARK.md).

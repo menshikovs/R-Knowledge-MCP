@@ -4,10 +4,13 @@ This checklist is for a separately approved, zero-task staging check. Completing
 it does not authorize a run. R01-A remains **NO-GO** and its authorizations are
 not applicable to this harness.
 
-Live mode is currently disabled: provider project identity and credential scope
-cannot yet be verified by a reviewed implementation. Complete that implementation
-and independent offline review before this checklist can be used for approval.
-A local environment-variable match is insufficient.
+Live mode is unconditionally disabled. The current solo-operator workflow is
+described in [F09_SOLO_OPERATOR_GUIDE.md](F09_SOLO_OPERATOR_GUIDE.md). It trusts
+explicit local operator confirmation and dashboard attestation, not a local
+environment-variable match or provider-authenticated credential verification.
+Separate users, a privileged helper and an independent reviewer are not required
+under this threat model. Same-user malicious processes are outside its protection.
+Review the implementation and execution wiring separately before any live use.
 
 After the lease-release marker and inspector changes, the operator reported
 three focused lease tests passed and 49 full F09 synthetic tests passed under
@@ -34,9 +37,11 @@ complete-record boundary without an external trusted anchor.
 
 ## Approval and isolation
 
-- [ ] Obtain separate written approval naming the staging project, operator,
-  exact time window, maximum duration, and abort owner.
-- [ ] Use a dedicated staging project and newly issued credentials. Do not use
+- [ ] After separate live review, record interactive solo-operator approval for
+  the exact source/configuration, fresh F09 attempt, explicit amount and short
+  expiration. Confirm billing responsibility and best-effort spending control.
+  An edited JSON record or earlier synthetic approval is not a new decision.
+- [ ] Use the existing dedicated staging project and restricted credentials. Do not use
   R01-A authorization markers or production credentials.
 - [ ] In the OpenAI Platform dashboard, verify the project identity and that the
   application credential belongs to the approved project and has only the
@@ -45,9 +50,11 @@ complete-record boundary without an external trusted anchor.
   credential is restricted to executor connection. Confirm both credentials
   align to the approved organization, project and user/service account. The
   local project-ID environment variable is not proof of any of these facts.
-- [ ] Set `RKMCP_CONNECTIVITY_STAGING_PROJECT_ID` to the approved project ID and
-  independently verify the value without displaying credentials.
-- [ ] Use a reviewed POSIX host, owner-only state directory outside the
+- [ ] Bind the approved project ID in the non-secret request and dashboard
+  attestation without displaying credentials. Environment-variable equality is
+  not authorization or proof of credential identity.
+- [ ] Use a reviewed WSL2 Linux host, persistent native ext4/xfs/btrfs owner-only
+  state directory outside the repository (not `/mnt/c` or `/tmp`),
   repository, exclusive staging lease, pinned source commit and recorded
   executable/image digests. Confirm no stale lease or unresolved prior journal
   exists; do not remove one without investigating its run evidence.
@@ -55,18 +62,85 @@ complete-record boundary without an external trusted anchor.
   API and executor gateway destinations. Confirm no arbitrary direct egress,
   redirects, ambient proxy settings, credential mounts or evaluator/oracle
   mounts are available to the executor.
-- [ ] Obtain an externally approved positive integer spend limit in USD cents
-  and written billing-owner acknowledgment before preparing a session. Supply
-  the approval reference and acknowledgment to the harness; it has no default
+- [ ] Explicitly select a positive integer spend limit in USD cents and confirm
+  billing-owner responsibility interactively before preparing a session. The
+  local approval reference is created only after confirmation; there is no default
   limit and rejects missing, null, boolean, fractional, zero, negative, string,
   or unapproved limits before transport. It never rounds or converts. The code
-  checks the approval record's shape but does not authenticate the approver or
-  reference.
+  binds the local record and source but cannot defend against a malicious
+  process running as the operator. Spend control is best-effort, not a guaranteed
+  billing ceiling. The earlier 200-cent proposal is not automatically approved.
 - [ ] Verify the current official Agents API schema, including the exact
   `spend_control.limit` integer-USD-cent type and enforcement semantics, before
   any live use. This repository has no local schema copy. Do not assume the
   limit makes the session zero-cost; record any remaining provider charges and
   exposure.
+
+## Non-secret operator staging attestation template
+
+Complete this record for review only. Do not enter secret values, key prefixes,
+fingerprints, or redacted key strings. Use provider resource IDs and dashboard
+labels only.
+
+```text
+Staging organization ID: <organization_id>
+Approved staging project ID: <project_id>
+
+Application credential
+  Resource ID or dashboard label: <application_key_id_or_label>
+  Owner type and ID (user or service account): <owner_type_and_id>
+  Dashboard confirms api.agents.read: <yes/no>
+  Dashboard confirms api.agents.write: <yes/no>
+  Dashboard confirms api.responses.write is absent: <yes/no>
+  Other permissions reviewed and approved for this zero-task check: <yes/no; list permission names only>
+
+Executor environment credential
+  Dashboard label: <environment_key_label>
+  Owner type and ID (user or service account): <owner_type_and_id>
+  Dashboard confirms only environment connection is permitted and all other permissions are None: <yes/no>
+
+Identity alignment
+  Both credentials are in the approved organization: <yes/no>
+  Both credentials are in the approved project: <yes/no>
+  Both credentials have the intended matching owner: <yes/no>
+
+Dashboard review date (UTC): <YYYY-MM-DD>
+Operator name or organization ID: <operator>
+Reviewer name or organization ID (may be the same operator): <reviewer>
+
+Local manual approval reference (only after confirmation): <approval_reference>
+Billing owner identity and acknowledgment: <billing_owner_and_acknowledgment>
+Approved spend_control.limit (positive integer USD cents): <integer_cents>
+
+Authorized scope: exactly one staging session; zero task input, task submission,
+  Responses inference, or follow-up session.
+Approval expiration time (UTC): <YYYY-MM-DDTHH:MM:SSZ>
+
+Attestation limitation: this is a dashboard/operator attestation. It is not
+provider-authenticated verification that the runtime-loaded credentials are
+the listed credentials or that their effective permissions match this record.
+Completing this record does not authorize a check or unlock live mode.
+```
+
+Retain the completed record with the separate approval evidence. Keep live mode
+disabled unless a separately reviewed implementation and approval process
+establish the required credential and project checks.
+
+## Proposed staging budget status
+
+Operator-selected proposal; this is not approval to create a session.
+
+- Project: `rkmcp-staging`.
+- Scope: one future zero-task connectivity session.
+- Maximum `spend_control.limit`: `200` integer USD cents ($2.00).
+- Inference and Responses API use: prohibited.
+- Billing-owner acknowledgment: pending authenticated acknowledgment.
+- Project and credential ownership: pending final operator attestation.
+- Live mode: disabled.
+- R01-A: **NO-GO**.
+
+No approval reference, signature, reviewer confirmation, or expiration date has
+been supplied or recorded.
 
 ## Pre-run review
 
