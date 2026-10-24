@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "benchmark": "r-knowledge-mcp-hard-v1",
+  "status": "pilot: H01, H04 (data.table substitute), H10; offline-validated verifiers, no paid runs yet",
+  "environment": {
+    "r": "4.5.2",
+    "lockfile": "configs/renv.lock",
+    "note": "Executor (rkmcp-codex-runtime) and scorer (codex-r-benchmark) images were inspected on 2026-10-24; data.table, lubridate, clock, broom, dbplyr, httr2 and curl are NOT installed, so tasks use only locked packages."
+  },
+  "protocol": {
+    "score_seconds": 240,
+    "memory_mb": 2048,
+    "cpus": 2,
+    "pids": 256,
+    "artifact_bytes": 1048576,
+    "primary_metric": "fully_correct: every hidden behavioral check passes",
+    "secondary_metric": "passed/total hidden checks"
+  },
+  "mcp": {
+    "toolset": "consolidated",
+    "tools": [
+      "search_packages",
+      "get_package",
+      "get_function_docs",
+      "check_package_version",
+      "check_r_compatibility",
+      "search_r_documentation",
+      "get_r_documentation_section",
+      "get_framework_docs",
+      "get_r_workflow_guidance",
+      "analyze_r_source",
+      "analyze_r_project",
+      "recommend_technology_stack"
+    ]
+  },
+  "tasks": [
+    {
+      "id": "H01",
+      "title": "Dynamic weighted group summaries",
+      "packages": [
+        "dplyr",
+        "rlang",
+        "tibble"
+      ],
+      "spec": "tasks/H01/prompt.md",
+      "fixtures": [
+        "tasks/H01/fixture/sales.csv"
+      ],
+      "metadata": "tasks/H01/metadata.json",
+      "verifier": "verifier/H01.R",
+      "checks": 18,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "H04",
+      "title": "Point-in-time quote matching (dplyr rolling join; data.table substitute)",
+      "packages": [
+        "dplyr",
+        "tibble"
+      ],
+      "spec": "tasks/H04/prompt.md",
+      "fixtures": [
+        "tasks/H04/fixture/trades.csv",
+        "tasks/H04/fixture/quotes.csv"
+      ],
+      "metadata": "tasks/H04/metadata.json",
+      "verifier": "verifier/H04.R",
+      "checks": 17,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "H10",
+      "title": "Pooling multiple-imputation estimates (Rubin's rules)",
+      "packages": [],
+      "spec": "tasks/H10/prompt.md",
+      "fixtures": [
+        "tasks/H10/fixture/imputations.csv"
+      ],
+      "metadata": "tasks/H10/metadata.json",
+      "verifier": "verifier/H10.R",
+      "checks": 18,
+      "artifacts": [
+        "solution.R"
+      ]
+    }
+  ]
+}

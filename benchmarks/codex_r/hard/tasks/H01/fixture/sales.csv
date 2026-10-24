@@ -1,0 +1,9 @@
+store id,région,sales (€),weight,.data
+S1,Nord,10.5,2,a
+S1,Nord,NA,1,a
+S2,Sud,8,0,b
+S2,Sud,12,0,b
+S1,Sud,7.25,3,c
+S3,,5,1,d
+S3,,Inf,2,d
+S1,Nord,9,1.5,a

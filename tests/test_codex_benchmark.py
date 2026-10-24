@@ -74,7 +74,8 @@ def test_manifest_real_lock_and_independent_oracles():
 
 async def test_condition_tools_are_actual_public_interfaces(monkeypatch):
     monkeypatch.setenv("PROMPT_INTELLIGENCE_ENABLED", "true")
-    actual = {t.name for t in await create_server().list_tools()}
+    # The benchmark gateway and run_simple pin MCP_TOOLSET=legacy for these conditions.
+    actual = {t.name for t in await create_server(toolset="legacy").list_tools()}
     data = bench.manifest()
     for condition in "BC":
         assert set(data["conditions"][condition]["tools"]) <= actual

@@ -1,0 +1,11 @@
+{
+  "id": "H10",
+  "title": "Pooling multiple-imputation estimates with Rubin's rules",
+  "category": "statistical inference; degrees of freedom; numerical edge cases",
+  "source": "Original task from R_Knowledge_MCP_Hard_Benchmark_v1.md (H10). Method references: Rubin (1987) Multiple Imputation for Nonresponse in Surveys; Barnard & Rubin (1999) Biometrika 86(4):948-955. No third-party prompt, solution or verifier is reproduced.",
+  "packages": {"R": "4.5.2", "stats": "4.5.2"},
+  "difficulty_hypothesis": "Common errors: z instead of t interval, between variance with denominator m, missing (1 + 1/m) inflation, Barnard-Rubin df combined additively or without the (nu + 1)/(nu + 3) factor, NaN at the zero-variance limits, and naive squares that underflow/overflow for standard errors near 1e-170 or 1e+200 or sums that overflow near the largest double.",
+  "expected_mcp_relevance": "Low to moderate: base R only; R manuals and package documentation may help recall formulas, but the core difficulty is statistical and numerical.",
+  "setup_prerequisites": "Scorer and executor images contain R 4.5.2 with callr and testthat matching configs/renv.lock; no network or package installation. The oracle is validated analytically (exact rationals) every time the verifier loads.",
+  "checks_documented_in": "verifier/H10.R"
+}
