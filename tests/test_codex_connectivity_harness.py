@@ -279,6 +279,9 @@ def _http_client(
                 },
             )
         if request.method == "GET" and request.url.path.endswith("/events"):
+            assert request.url.path == f"/v1/agents/sessions/{SESSION_ID}/events"
+            assert request.url.query == b""
+            assert request.headers["accept"] == "text/event-stream"
             return httpx.Response(
                 200,
                 headers={"content-type": "text/event-stream"},
@@ -315,6 +318,9 @@ def test_public_surface_cannot_submit_tasks_or_responses_and_create_has_no_input
     assert audit["connected_observed"] is True
     assert audit["task_submission_count"] == audit["responses_calls"] == 0
     assert [call.method for call in calls] == ["POST", "GET", "DELETE"]
+    assert calls[1].url.path == f"/v1/agents/sessions/{SESSION_ID}/events"
+    assert calls[1].url.query == b""
+    assert calls[1].headers["accept"] == "text/event-stream"
     assert executor.starts == 1
     assert executor.stops[0][0] == "synthetic-container-id"
 
@@ -754,8 +760,15 @@ def test_fixed_route_client_rejects_task_and_responses_paths_before_transport(tm
         api._json("POST", f"/v1/agents/sessions/{SESSION_ID}/events")
     with pytest.raises(ConnectivityError) as responses_route:
         api._json("POST", "/v1/responses")
+    with pytest.raises(ConnectivityError) as noncanonical_stream_route:
+        api._json("GET", f"/v1/agents/sessions/{SESSION_ID}/events?stream=true")
 
-    assert task_route.value.code == responses_route.value.code == "route_rejected"
+    assert (
+        task_route.value.code
+        == responses_route.value.code
+        == noncanonical_stream_route.value.code
+        == "route_rejected"
+    )
     assert calls == []
 
     with pytest.raises(ConnectivityError) as task_body:

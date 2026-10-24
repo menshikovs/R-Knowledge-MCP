@@ -1117,9 +1117,7 @@ class StagingAgentsClient:
             (method == "POST" and path == "/v1/agents/sessions")
             or (
                 method == "GET"
-                and re.fullmatch(
-                    r"/v1/agents/sessions/[A-Za-z0-9_-]{1,128}/events\?stream=true", path
-                )
+                and re.fullmatch(r"/v1/agents/sessions/[A-Za-z0-9_-]{1,128}/events", path)
             )
             or (
                 method == "DELETE"
@@ -1246,7 +1244,7 @@ class StagingAgentsClient:
     def open_event_stream(self, session_id: str, *, timeout: float):
         if not SESSION_ID.fullmatch(session_id) or not 0 < timeout <= MAX_CONNECT_SECONDS:
             raise ConnectivityError("stream_parameters_invalid")
-        path = f"/v1/agents/sessions/{session_id}/events?stream=true"
+        path = f"/v1/agents/sessions/{session_id}/events"
         try:
             request = self._client.build_request(
                 "GET",
