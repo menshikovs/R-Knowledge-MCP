@@ -11,6 +11,7 @@ import hashlib
 import hmac
 import importlib.util
 import json
+import math
 import os
 import re
 import secrets
@@ -139,6 +140,9 @@ class SpendControlApproval:
 SPEND_APPROVAL_REFERENCE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
 STAGING_AUTHORIZATION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
 SOURCE_COMMIT_SHA = re.compile(r"^[a-f0-9]{40}$")
+F09_ATTEMPT_ID = re.compile(r"^F09-[A-Za-z0-9][A-Za-z0-9_-]{0,95}$")
+SHA256 = re.compile(r"^[a-f0-9]{64}$")
+MAX_STAGING_SPEND_LIMIT_CENTS = 200
 STAGING_AUTHORIZATION_FIELDS = frozenset(
     {
         "schema_version",
@@ -157,6 +161,10 @@ STAGING_AUTHORIZATION_FIELDS = frozenset(
         "billing_owner_id",
         "billing_owner_approval_reference",
         "billing_owner_acknowledged",
+        "billing_risk_acknowledged",
+        "attempt_id",
+        "configuration_sha256",
+        "credential_scope_sha256",
     }
 )
 STAGING_AUTHORIZATION_ISSUE_FIELDS = STAGING_AUTHORIZATION_FIELDS - {
@@ -168,6 +176,122 @@ STAGING_AUTHORIZATION_ISSUE_FIELDS = STAGING_AUTHORIZATION_FIELDS - {
 STAGING_AUTHORIZATION_STORE_DIRNAME = "f09-staging-one-time-authorization"
 STAGING_AUTHORIZATION_RECORD_TYPE = "f09_staging_authorization_not_r01a"
 STAGING_AUTHORIZATION_CONSUMED_TYPE = "f09_staging_authorization_consumed_not_r01a"
+
+
+class StagingAuthorizationBinding:
+    """Expected non-secret request scope; structural validation grants no authority."""
+
+    __slots__ = ("attempt_id", "configuration_sha256", "credential_scope_sha256", "limit")
+
+    def __init__(self, attempt_id, configuration_sha256, credential_scope_sha256, limit):
+        if (
+            type(attempt_id) is not str
+            or not F09_ATTEMPT_ID.fullmatch(attempt_id)
+            or type(configuration_sha256) is not str
+            or not SHA256.fullmatch(configuration_sha256)
+            or type(credential_scope_sha256) is not str
+            or not SHA256.fullmatch(credential_scope_sha256)
+            or type(limit) is not int
+            or not 0 < limit <= MAX_STAGING_SPEND_LIMIT_CENTS
+        ):
+            raise ConnectivityError("staging_authorization_binding_invalid")
+        object.__setattr__(self, "attempt_id", attempt_id)
+        object.__setattr__(self, "configuration_sha256", configuration_sha256)
+        object.__setattr__(self, "credential_scope_sha256", credential_scope_sha256)
+        object.__setattr__(self, "limit", limit)
+
+    def __setattr__(self, _name, _value):
+        raise AttributeError("Staging authorization bindings are immutable")
+
+
+def connectivity_configuration_sha256(
+    agent_config: dict, *, create_seconds: float, connect_seconds: float, cleanup_seconds: float
+) -> str:
+    """Bind the parameters controlled by this harness, excluding all key material.
+
+    This does not verify executable/image provenance or authenticate an approver.
+    """
+    budgets = (create_seconds, connect_seconds, cleanup_seconds)
+    caps = (MAX_CREATE_SECONDS, MAX_CONNECT_SECONDS, MAX_CLEANUP_SECONDS)
+    if any(
+        type(value) not in {int, float} or not math.isfinite(value) or not 0 < value <= cap
+        for value, cap in zip(budgets, caps, strict=True)
+    ):
+        raise ConnectivityError("staging_authorization_configuration_invalid")
+    agent = StagingAgentsClient._validate_agent_config(agent_config)
+    record = {
+        "agent": agent,
+        "workspace_directory": "/workspace",
+        "create_seconds": float(create_seconds),
+        "connect_seconds": float(connect_seconds),
+        "cleanup_seconds": float(cleanup_seconds),
+        "session_count": 1,
+        "task_count": 0,
+        "responses_calls": 0,
+    }
+    return hashlib.sha256(
+        json.dumps(record, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+    ).hexdigest()
+
+
+def unverified_credential_scope_sha256(attestation: object, *, expected_project_id: str) -> str:
+    """Hash explicit non-secret dashboard metadata, never runtime credentials.
+
+    The digest binds a reviewed attestation. It does not verify that loaded keys
+    are the listed resources or that the provider grants these permissions.
+    """
+    identifiers = {
+        "organization_id",
+        "project_id",
+        "owner_id",
+        "application_key_resource_id",
+        "environment_key_label",
+        "operator_id",
+        "reviewer_id",
+    }
+    fields = identifiers | {
+        "verification_method",
+        "application_permissions",
+        "environment_permissions",
+        "matching_organization_project_owner_confirmed",
+        "reviewed_at",
+    }
+    if type(attestation) is not dict or set(attestation) != fields:
+        raise ConnectivityError("staging_credential_attestation_invalid")
+    for field in identifiers:
+        value = attestation[field]
+        if (
+            type(value) is not str
+            or not STAGING_AUTHORIZATION_ID.fullmatch(value)
+            or contract.sanitize_reference_data(value, redact_urls=True) != value
+        ):
+            raise ConnectivityError("staging_credential_attestation_invalid")
+    if (
+        type(attestation["verification_method"]) is not str
+        or attestation["verification_method"] != "operator_dashboard_attestation"
+        or attestation["project_id"] != expected_project_id
+        or type(attestation["application_permissions"]) is not list
+        or type(attestation["environment_permissions"]) is not list
+        or len(attestation["application_permissions"]) != 2
+        or len(attestation["environment_permissions"]) != 1
+        or any(
+            type(permission) is not str
+            for permission in attestation["application_permissions"]
+            + attestation["environment_permissions"]
+        )
+        or attestation["application_permissions"] != ["api.agents.read", "api.agents.write"]
+        or attestation["environment_permissions"] != ["api.agents.environments.connect"]
+        or attestation["matching_organization_project_owner_confirmed"] is not True
+        or type(attestation["reviewed_at"]) is not str
+    ):
+        raise ConnectivityError("staging_credential_attestation_invalid")
+    try:
+        _parse_staging_utc_timestamp(attestation["reviewed_at"])
+    except (ValueError, OverflowError):
+        raise ConnectivityError("staging_credential_attestation_invalid") from None
+    return hashlib.sha256(
+        json.dumps(attestation, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
 
 
 def _parse_staging_utc_timestamp(value: str) -> datetime:
@@ -184,6 +308,7 @@ def parse_unverified_staging_authorization_claims(
     *,
     expected_project_id: str,
     expected_source_commit: str,
+    expected_binding: StagingAuthorizationBinding | None = None,
     now_utc: datetime,
 ) -> Mapping[str, object]:
     """Validate bounded authorization claims without granting authority.
@@ -195,6 +320,7 @@ def parse_unverified_staging_authorization_claims(
         type(claims) is not dict
         or len(claims) != len(STAGING_AUTHORIZATION_FIELDS)
         or set(claims) != STAGING_AUTHORIZATION_FIELDS
+        or type(expected_binding) is not StagingAuthorizationBinding
         or type(expected_project_id) is not str
         or not PROJECT_ID.fullmatch(expected_project_id)
         or type(expected_source_commit) is not str
@@ -215,13 +341,16 @@ def parse_unverified_staging_authorization_claims(
         claims["expires_at"],
         claims["billing_owner_id"],
         claims["billing_owner_approval_reference"],
+        claims["attempt_id"],
+        claims["configuration_sha256"],
+        claims["credential_scope_sha256"],
     )
     if any(type(value) is not str or len(value) > 256 for value in strings):
         raise ConnectivityError("staging_authorization_claims_invalid")
 
     if (
         type(claims["schema_version"]) is not int
-        or claims["schema_version"] != 1
+        or claims["schema_version"] != 2
         or not STAGING_AUTHORIZATION_ID.fullmatch(claims["authorization_id"])
         or not STAGING_AUTHORIZATION_ID.fullmatch(claims["issuer_id"])
         or claims["project_name"] != "rkmcp-staging"
@@ -229,9 +358,7 @@ def parse_unverified_staging_authorization_claims(
         or not PROJECT_ID.fullmatch(claims["project_id"])
         or claims["source_commit"] != expected_source_commit
         or not SOURCE_COMMIT_SHA.fullmatch(claims["source_commit"])
-        or not re.fullmatch(
-            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", claims["issued_at"]
-        )
+        or not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", claims["issued_at"])
         or type(claims["session_count"]) is not int
         or claims["session_count"] != 1
         or type(claims["task_count"]) is not int
@@ -239,15 +366,17 @@ def parse_unverified_staging_authorization_claims(
         or claims["task_submission_allowed"] is not False
         or claims["responses_inference_allowed"] is not False
         or type(claims["spend_control_limit_cents"]) is not int
-        or claims["spend_control_limit_cents"] != 200
+        or claims["spend_control_limit_cents"] != expected_binding.limit
+        or not 0 < claims["spend_control_limit_cents"] <= MAX_STAGING_SPEND_LIMIT_CENTS
+        or claims["attempt_id"] != expected_binding.attempt_id
+        or not F09_ATTEMPT_ID.fullmatch(claims["attempt_id"])
+        or claims["configuration_sha256"] != expected_binding.configuration_sha256
+        or claims["credential_scope_sha256"] != expected_binding.credential_scope_sha256
         or not STAGING_AUTHORIZATION_ID.fullmatch(claims["billing_owner_id"])
-        or not SPEND_APPROVAL_REFERENCE.fullmatch(
-            claims["billing_owner_approval_reference"]
-        )
+        or not SPEND_APPROVAL_REFERENCE.fullmatch(claims["billing_owner_approval_reference"])
         or claims["billing_owner_acknowledged"] is not True
-        or not re.fullmatch(
-            r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", claims["expires_at"]
-        )
+        or claims["billing_risk_acknowledged"] is not True
+        or not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z", claims["expires_at"])
     ):
         raise ConnectivityError("staging_authorization_claims_invalid")
 
@@ -278,10 +407,12 @@ def parse_unverified_staging_authorization_claims(
             "spend_control_limit_cents": claims["spend_control_limit_cents"],
             "expires_at": expiration,
             "billing_owner_id": claims["billing_owner_id"],
-            "billing_owner_approval_reference": claims[
-                "billing_owner_approval_reference"
-            ],
+            "billing_owner_approval_reference": claims["billing_owner_approval_reference"],
             "billing_owner_acknowledged": claims["billing_owner_acknowledged"],
+            "billing_risk_acknowledged": claims["billing_risk_acknowledged"],
+            "attempt_id": claims["attempt_id"],
+            "configuration_sha256": claims["configuration_sha256"],
+            "credential_scope_sha256": claims["credential_scope_sha256"],
         }
     )
 
@@ -291,6 +422,7 @@ def require_trusted_staging_authorization(
     *,
     expected_project_id: str,
     expected_source_commit: str,
+    expected_binding: StagingAuthorizationBinding | None = None,
     now_utc: datetime,
 ) -> None:
     """Fail closed until a separately reviewed trusted issuer is configured."""
@@ -298,6 +430,7 @@ def require_trusted_staging_authorization(
         claims,
         expected_project_id=expected_project_id,
         expected_source_commit=expected_source_commit,
+        expected_binding=expected_binding,
         now_utc=now_utc,
     )
     raise ConnectivityError("staging_authorization_issuer_unavailable")
@@ -867,16 +1000,32 @@ class OfflineStagingAuthorizationStore:
         )
         self.issued_root = self.root / "issued"
         self.consumed_root = self.root / "consumed"
+        _ensure_private_directory(self.root, synthetic=True)
         _ensure_private_directory(self.issued_root, synthetic=True)
         _ensure_private_directory(self.consumed_root, synthetic=True)
+        self._directory_identities = {
+            path: (path.stat().st_dev, path.stat().st_ino)
+            for path in (self.root, self.issued_root, self.consumed_root)
+        }
+
+    def _check_paths(self) -> None:
+        """Detect replaced synthetic state paths; this is not an OS trust boundary."""
+        try:
+            _check_external_private_root(self.root, allow_repository=False)
+            for path, identity in self._directory_identities.items():
+                metadata = path.lstat()
+                if (
+                    not stat.S_ISDIR(metadata.st_mode)
+                    or (metadata.st_dev, metadata.st_ino) != identity
+                    or (os.name != "nt" and stat.S_IMODE(metadata.st_mode) != 0o700)
+                ):
+                    raise OSError("synthetic store directory changed")
+        except (OSError, DurabilityError):
+            raise ConnectivityError("staging_authorization_store_invalid", uncertain=True) from None
 
     @staticmethod
     def _timestamp(value: datetime) -> str:
-        if (
-            not isinstance(value, datetime)
-            or value.tzinfo is None
-            or value.utcoffset() is None
-        ):
+        if not isinstance(value, datetime) or value.tzinfo is None or value.utcoffset() is None:
             raise ConnectivityError("staging_authorization_claims_invalid")
         return value.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -890,9 +1039,7 @@ class OfflineStagingAuthorizationStore:
 
     @staticmethod
     def _canonical_bytes(record: dict) -> bytes:
-        return (json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n").encode(
-            "utf-8"
-        )
+        return (json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
 
     def _write_new_file(
         self,
@@ -905,16 +1052,18 @@ class OfflineStagingAuthorizationStore:
         flags |= getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
         descriptor = None
         try:
+            self._check_paths()
             descriptor = os.open(path, flags, 0o600)
             offset = 0
             while offset < len(payload):
                 written = self._write(descriptor, payload[offset:])
-                if type(written) is not int or written <= 0:
+                if type(written) is not int or not 0 < written <= len(payload) - offset:
                     raise OSError("short authorization store write")
                 offset += written
             self._fsync(descriptor)
             if self._sync_directory(path.parent) is not True:
                 raise OSError("authorization directory fsync is unavailable")
+            self._check_paths()
         except FileExistsError:
             raise ConnectivityError(exists_code) from None
         except BaseException:
@@ -931,16 +1080,15 @@ class OfflineStagingAuthorizationStore:
         *,
         expected_project_id: str,
         expected_source_commit: str,
+        expected_binding: StagingAuthorizationBinding,
         now_utc: datetime,
     ) -> IssuedStagingCapability:
-        self._require_role(
-            self.issuer_role, "staging_authorization_issuer_identity_mismatch"
-        )
+        self._require_role(self.issuer_role, "staging_authorization_issuer_identity_mismatch")
         if type(claims) is not dict or set(claims) != STAGING_AUTHORIZATION_ISSUE_FIELDS:
             raise ConnectivityError("staging_authorization_claims_invalid")
         authorization_id = uuid.uuid4().hex
         full_claims = {
-            "schema_version": 1,
+            "schema_version": 2,
             "authorization_id": authorization_id,
             "issuer_id": self.issuer_role,
             **claims,
@@ -950,12 +1098,13 @@ class OfflineStagingAuthorizationStore:
             full_claims,
             expected_project_id=expected_project_id,
             expected_source_commit=expected_source_commit,
+            expected_binding=expected_binding,
             now_utc=now_utc,
         )
         capability = secrets.token_bytes(32)
         record = {
             "record_type": STAGING_AUTHORIZATION_RECORD_TYPE,
-            "schema_version": 1,
+            "schema_version": 2,
             "synthetic": True,
             "claims": full_claims,
             "capability_sha256": hashlib.sha256(capability).hexdigest(),
@@ -966,24 +1115,37 @@ class OfflineStagingAuthorizationStore:
         return IssuedStagingCapability(authorization_id, capability)
 
     def _read_issued_record(self, authorization_id: str) -> dict:
-        if not STAGING_AUTHORIZATION_ID.fullmatch(authorization_id):
+        if type(authorization_id) is not str or not STAGING_AUTHORIZATION_ID.fullmatch(
+            authorization_id
+        ):
             raise ConnectivityError("staging_authorization_claims_invalid")
         path = self.issued_root / f"{authorization_id}.json"
         flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
         try:
+            self._check_paths()
+            if path.is_symlink():
+                raise ValueError("linked authorization record")
             descriptor = os.open(path, flags)
             try:
                 metadata = os.fstat(descriptor)
                 if (
                     not stat.S_ISREG(metadata.st_mode)
+                    or metadata.st_nlink != 1
                     or metadata.st_size > MAX_STAGING_AUTHORIZATION_RECORD_BYTES
                 ):
                     raise ValueError("invalid authorization record file")
                 if os.name != "nt" and stat.S_IMODE(metadata.st_mode) & 0o077:
                     raise ValueError("authorization record permissions are not private")
                 raw = os.read(descriptor, MAX_STAGING_AUTHORIZATION_RECORD_BYTES + 1)
+                final_metadata = path.lstat()
+                if (metadata.st_dev, metadata.st_ino) != (
+                    final_metadata.st_dev,
+                    final_metadata.st_ino,
+                ) or metadata.st_size != len(raw):
+                    raise ValueError("authorization record replaced or incomplete")
             finally:
                 os.close(descriptor)
+            self._check_paths()
             if len(raw) > MAX_STAGING_AUTHORIZATION_RECORD_BYTES:
                 raise ValueError("authorization record is oversized")
             record = json.loads(raw)
@@ -993,7 +1155,7 @@ class OfflineStagingAuthorizationStore:
                 != {"record_type", "schema_version", "synthetic", "claims", "capability_sha256"}
                 or record["record_type"] != STAGING_AUTHORIZATION_RECORD_TYPE
                 or type(record["schema_version"]) is not int
-                or record["schema_version"] != 1
+                or record["schema_version"] != 2
                 or record["synthetic"] is not True
                 or not isinstance(record["capability_sha256"], str)
                 or not re.fullmatch(r"[a-f0-9]{64}", record["capability_sha256"])
@@ -1007,43 +1169,86 @@ class OfflineStagingAuthorizationStore:
                 "staging_authorization_record_invalid", uncertain=True
             ) from None
 
+    def validate(
+        self,
+        capability: IssuedStagingCapability,
+        *,
+        expected_project_id: str,
+        expected_source_commit: str,
+        expected_binding: StagingAuthorizationBinding,
+        now_utc: datetime,
+    ) -> Mapping[str, object]:
+        """Read-only validation; valid synthetic claims never grant live authority."""
+        self._require_role(self.runtime_role, "staging_authorization_runtime_identity_mismatch")
+        if (
+            type(capability) is not IssuedStagingCapability
+            or type(capability._value) is not bytes
+            or len(capability._value) != 32
+        ):
+            raise ConnectivityError("staging_authorization_capability_invalid")
+        record = self._read_issued_record(capability.authorization_id)
+        parsed = parse_unverified_staging_authorization_claims(
+            record["claims"],
+            expected_project_id=expected_project_id,
+            expected_source_commit=expected_source_commit,
+            expected_binding=expected_binding,
+            now_utc=now_utc,
+        )
+        supplied_digest = hashlib.sha256(capability._value).hexdigest()
+        if not hmac.compare_digest(record["capability_sha256"], supplied_digest):
+            raise ConnectivityError("staging_authorization_capability_invalid")
+        return parsed
+
     def consume(
         self,
         capability: IssuedStagingCapability,
         *,
         expected_project_id: str,
         expected_source_commit: str,
+        expected_binding: StagingAuthorizationBinding,
         now_utc: datetime,
         journal: StagingJournal,
     ) -> Mapping[str, object]:
-        self._require_role(
-            self.runtime_role, "staging_authorization_runtime_identity_mismatch"
-        )
-        if type(capability) is not IssuedStagingCapability:
-            raise ConnectivityError("staging_authorization_capability_invalid")
         if type(journal) is not StagingJournal or journal.synthetic is not True:
             raise ConnectivityError("staging_authorization_journal_invalid")
-        record = self._read_issued_record(capability.authorization_id)
-        parsed = parse_unverified_staging_authorization_claims(
-            record["claims"],
+        parsed = self.validate(
+            capability,
             expected_project_id=expected_project_id,
             expected_source_commit=expected_source_commit,
+            expected_binding=expected_binding,
             now_utc=now_utc,
         )
-        supplied_digest = hashlib.sha256(capability._value).hexdigest()
-        if not hmac.compare_digest(record["capability_sha256"], supplied_digest):
-            raise ConnectivityError("staging_authorization_capability_invalid")
 
         authorization_digest = hashlib.sha256(capability.authorization_id.encode()).hexdigest()
+        # An exclusive, retained consumption-start record burns the attempt even
+        # when the subsequent journal intent or final consumed-marker write fails.
+        # This is process-crash evidence only; a same-UID adversary can still
+        # rewrite this synthetic store, which is why it cannot authorize live use.
+        claim = {
+            "record_type": "f09_synthetic_consumption_started_not_r01a",
+            "schema_version": 2,
+            "synthetic": True,
+            "attempt_id": parsed["attempt_id"],
+            "authorization_id": capability.authorization_id,
+        }
+        self._write_new_file(
+            self.consumed_root / f"attempt-{_sha256(parsed['attempt_id'])}.claimed",
+            self._canonical_bytes(claim),
+            exists_code="staging_authorization_replayed",
+        )
         intent = journal.append(
             "authorization_consume", "intent", resource_sha256=authorization_digest
         )
         marker = {
             "record_type": STAGING_AUTHORIZATION_CONSUMED_TYPE,
-            "schema_version": 1,
+            "schema_version": 2,
             "synthetic": True,
             "authorization_id": capability.authorization_id,
-            "capability_sha256": record["capability_sha256"],
+            "capability_sha256": hashlib.sha256(capability._value).hexdigest(),
+            "attempt_id": parsed["attempt_id"],
+            "configuration_sha256": parsed["configuration_sha256"],
+            "credential_scope_sha256": parsed["credential_scope_sha256"],
+            "spend_control_limit_cents": parsed["spend_control_limit_cents"],
             "project_id": parsed["project_id"],
             "source_commit": parsed["source_commit"],
             "consumed_at": self._timestamp(now_utc),
@@ -1061,6 +1266,64 @@ class OfflineStagingAuthorizationStore:
             resource_sha256=authorization_digest,
         )
         return parsed
+
+
+class SyntheticStagingAuthorization:
+    """Offline rehearsal only; never a trusted issuer or a live-mode permit."""
+
+    def __init__(
+        self, store, capability, binding, *, project_id, source_commit, attestation, now_utc
+    ):
+        if type(store) is not OfflineStagingAuthorizationStore or store.synthetic is not True:
+            raise ConnectivityError("staging_authorization_store_invalid")
+        if type(binding) is not StagingAuthorizationBinding:
+            raise ConnectivityError("staging_authorization_binding_invalid")
+        self.store, self.capability, self.binding = store, capability, binding
+        self.project_id, self.source_commit = project_id, source_commit
+        self.attestation, self.now_utc = attestation, now_utc
+
+    def validate_request(self, harness) -> None:
+        if (
+            harness.journal.synthetic is not True
+            or type(harness.client) is not StagingAgentsClient
+            or harness.client.synthetic is not True
+            or harness.client.project_id_hash != _sha256(self.project_id)
+            or connectivity_configuration_sha256(
+                harness.agent_config,
+                create_seconds=harness.create_seconds,
+                connect_seconds=harness.connect_seconds,
+                cleanup_seconds=harness.cleanup_seconds,
+            )
+            != self.binding.configuration_sha256
+            or unverified_credential_scope_sha256(
+                self.attestation, expected_project_id=self.project_id
+            )
+            != self.binding.credential_scope_sha256
+        ):
+            raise ConnectivityError("staging_authorization_request_mismatch")
+        parsed = self.store.validate(
+            self.capability,
+            expected_project_id=self.project_id,
+            expected_source_commit=self.source_commit,
+            expected_binding=self.binding,
+            now_utc=self.now_utc(),
+        )
+        approval = harness.client._spend_control_approval
+        if (
+            _validated_spend_control(approval)["limit"] != self.binding.limit
+            or approval.approval_reference != parsed["billing_owner_approval_reference"]
+        ):
+            raise ConnectivityError("staging_authorization_request_mismatch")
+
+    def consume(self, journal) -> None:
+        self.store.consume(
+            self.capability,
+            expected_project_id=self.project_id,
+            expected_source_commit=self.source_commit,
+            expected_binding=self.binding,
+            now_utc=self.now_utc(),
+            journal=journal,
+        )
 
 
 class StagingAgentsClient:
@@ -1394,6 +1657,7 @@ class ConnectivityHarness:
         connect_seconds=MAX_CONNECT_SECONDS,
         cleanup_seconds=MAX_CLEANUP_SECONDS,
         wall_clock=lambda: datetime.now(UTC).isoformat(),
+        synthetic_authorization: SyntheticStagingAuthorization | None = None,
     ):
         if not isinstance(environment_key, str) or not environment_key:
             raise ValueError("A restricted staging environment key is required")
@@ -1423,6 +1687,13 @@ class ConnectivityHarness:
             raise ValueError("Live connectivity requires the concrete reviewed client")
         if not journal.synthetic and type(executor) is not DockerExecutorAdapter:
             raise ValueError("Live connectivity requires the reviewed Docker adapter")
+        if not journal.synthetic:
+            raise ValueError("Trusted F09 issuer and provider credential verification unavailable")
+        if synthetic_authorization is not None and type(synthetic_authorization) is not (
+            SyntheticStagingAuthorization
+        ):
+            raise ValueError("Only an explicit synthetic authorization rehearsal is supported")
+        self.synthetic_authorization = synthetic_authorization
         self.agent_config = StagingAgentsClient._validate_agent_config(agent_config)
         self._environment_key = environment_key
         self.clock, self.wall_clock = clock, wall_clock
@@ -1430,7 +1701,7 @@ class ConnectivityHarness:
         self.cleanup_seconds = cleanup_seconds
         self.state = "preflight"
         self._audit = {
-            "schema_version": 1,
+            "schema_version": 2,
             "record_type": "managed_agents_connectivity_audit_not_benchmark_result",
             "synthetic": journal.synthetic,
             "state": self.state,
@@ -1450,7 +1721,9 @@ class ConnectivityHarness:
             "cleanup_verified": False,
             "task_submission_count": 0,
             "responses_calls": 0,
-            "authorization_consumption": False,
+            # Preserve this categorical boolean through the shared sanitizer;
+            # credential-shaped field names deliberately redact their values.
+            "approval_consumption_durable": False,
             "failure_code": None,
             "transitions": [],
         }
@@ -1670,11 +1943,31 @@ class ConnectivityHarness:
                 late_state["executor_stop_verified"] = stopped
 
         try:
+            if self.synthetic_authorization is not None:
+                self.synthetic_authorization.validate_request(self)
             self.lease.acquire()
+            if self.synthetic_authorization is not None:
+                self.synthetic_authorization.consume(self.journal)
+                self._audit["approval_consumption_durable"] = True
+                self.synthetic_authorization.validate_request(self)
         except BaseException:
+            if self.lease.acquired:
+                self._audit["failure_code"] = "staging_authorization_failed"
+                try:
+                    self._persist_audit()
+                except BaseException:
+                    pass  # Retain the lease and all available evidence; never certify cleanup.
             self.journal.close()
             self.client.close()
             raise
+
+        def _create_session():
+            if self.synthetic_authorization is not None:
+                # Recheck expiration and exact request scope inside the bounded
+                # worker, immediately before the sole session-create boundary.
+                self.synthetic_authorization.validate_request(self)
+            return self.client.create_session(self.agent_config, timeout=remaining)
+
         create_deadline = self.clock() + self.create_seconds
         try:
             self._transition("create_intent")
@@ -1684,7 +1977,7 @@ class ConnectivityHarness:
                 if remaining <= 0:
                     raise TimeoutError
                 session = _bounded_call(
-                    lambda: self.client.create_session(self.agent_config, timeout=remaining),
+                    _create_session,
                     deadline=create_deadline,
                     clock=self.clock,
                     late_cleanup=_late_created_session,

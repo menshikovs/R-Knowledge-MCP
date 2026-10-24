@@ -50,11 +50,14 @@ SYNTHETIC_SPEND_APPROVAL = SpendControlApproval(
 )
 AUTHORIZATION_TEST_NOW = datetime(2026, 10, 23, 12, 0, tzinfo=UTC)
 AUTHORIZATION_TEST_COMMIT = "a" * 40
+AUTHORIZATION_TEST_BINDING = harness_module.StagingAuthorizationBinding(
+    "F09-synthetic-attempt", "c" * 64, "d" * 64, 200
+)
 
 
 def _unverified_staging_claims(**overrides):
     claims = {
-        "schema_version": 1,
+        "schema_version": 2,
         "authorization_id": "synthetic-auth-001",
         "issuer_id": "synthetic-staging-approver",
         "project_name": "rkmcp-staging",
@@ -70,6 +73,10 @@ def _unverified_staging_claims(**overrides):
         "billing_owner_id": "synthetic-billing-owner",
         "billing_owner_approval_reference": "synthetic-billing-approval",
         "billing_owner_acknowledged": True,
+        "billing_risk_acknowledged": True,
+        "attempt_id": AUTHORIZATION_TEST_BINDING.attempt_id,
+        "configuration_sha256": AUTHORIZATION_TEST_BINDING.configuration_sha256,
+        "credential_scope_sha256": AUTHORIZATION_TEST_BINDING.credential_scope_sha256,
     }
     claims.update(overrides)
     return claims
@@ -97,6 +104,7 @@ def _issue_offline_capability(store, **changes):
         _staging_issue_claims(**changes),
         expected_project_id="synthetic-staging-project-id",
         expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+        expected_binding=AUTHORIZATION_TEST_BINDING,
         now_utc=AUTHORIZATION_TEST_NOW,
     )
 
@@ -210,6 +218,7 @@ def _make(
     create_seconds=10,
     connect_seconds=10,
     cleanup_seconds=5,
+    synthetic_authorization=None,
 ):
     lease = StagingLease(tmp_path, synthetic=True)
     journal_args = {"synthetic": True}
@@ -232,6 +241,7 @@ def _make(
             connect_seconds=connect_seconds,
             cleanup_seconds=cleanup_seconds,
             wall_clock=lambda: "2030-01-01T00:00:00+00:00",
+            synthetic_authorization=synthetic_authorization,
         ),
         lease,
         journal,
@@ -253,11 +263,15 @@ def _http_client(
     create_status=200,
     delete_status=200,
     spend_approval=SYNTHETIC_SPEND_APPROVAL,
+    project_id="synthetic-staging-project",
+    on_request=None,
 ):
     calls = calls if calls is not None else []
     event_bytes = _sse(events)
 
     def handler(request):
+        if on_request is not None:
+            on_request(request)
         calls.append(request)
         if timeline is not None:
             timeline.append(f"http:{request.method}")
@@ -266,7 +280,7 @@ def _http_client(
             assert set(body) == {"agent", "environment", "spend_control"}
             assert "input" not in body and "events" not in body
             assert body["environment"]["type"] == "self_hosted"
-            assert body["spend_control"] == {"limit": 1250}
+            assert body["spend_control"] == {"limit": spend_approval.limit}
             return httpx.Response(
                 create_status,
                 json={
@@ -296,7 +310,7 @@ def _http_client(
 
     client = StagingAgentsClient(
         APP_KEY,
-        project_id="synthetic-staging-project",
+        project_id=project_id,
         spend_control_approval=spend_approval,
         transport=httpx.MockTransport(handler),
         synthetic=True,
@@ -1209,6 +1223,7 @@ def test_staging_authorization_claims_are_not_provider_verified_authority():
         claims,
         expected_project_id="synthetic-staging-project-id",
         expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+        expected_binding=AUTHORIZATION_TEST_BINDING,
         now_utc=AUTHORIZATION_TEST_NOW,
     )
 
@@ -1222,6 +1237,7 @@ def test_staging_authorization_claims_are_not_provider_verified_authority():
             claims,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
         )
     assert raised.value.code == "staging_authorization_issuer_unavailable"
@@ -1231,6 +1247,12 @@ def test_staging_authorization_claims_are_not_provider_verified_authority():
     "changes",
     [
         pytest.param({"schema_version": True}, id="boolean-schema-version"),
+        pytest.param({"schema_version": 1}, id="legacy-unbound-record"),
+        pytest.param({"attempt_id": "R01-A/attempt-1"}, id="historical-r01a"),
+        pytest.param({"attempt_id": "F09-different-attempt"}, id="attempt-mismatch"),
+        pytest.param({"configuration_sha256": "e" * 64}, id="configuration-mismatch"),
+        pytest.param({"credential_scope_sha256": "e" * 64}, id="credential-scope-mismatch"),
+        pytest.param({"billing_risk_acknowledged": False}, id="billing-risk-unacknowledged"),
         pytest.param({"project_name": "other-project"}, id="project-name"),
         pytest.param({"project_id": "other-project-id"}, id="project-id"),
         pytest.param({"source_commit": "b" * 40}, id="source-commit"),
@@ -1241,6 +1263,13 @@ def test_staging_authorization_claims_are_not_provider_verified_authority():
         pytest.param({"task_submission_allowed": True}, id="task-submission"),
         pytest.param({"responses_inference_allowed": True}, id="responses-inference"),
         pytest.param({"spend_control_limit_cents": True}, id="boolean-limit"),
+        pytest.param({"spend_control_limit_cents": None}, id="null-limit"),
+        pytest.param({"spend_control_limit_cents": 0}, id="zero-limit"),
+        pytest.param({"spend_control_limit_cents": -1}, id="negative-limit"),
+        pytest.param({"spend_control_limit_cents": "200"}, id="string-limit"),
+        pytest.param({"spend_control_limit_cents": 199}, id="unapproved-limit"),
+        pytest.param({"spend_control_limit_cents": float("nan")}, id="nan-limit"),
+        pytest.param({"spend_control_limit_cents": float("inf")}, id="infinite-limit"),
         pytest.param({"spend_control_limit_cents": 200.0}, id="fractional-limit"),
         pytest.param({"spend_control_limit_cents": 201}, id="over-limit"),
         pytest.param({"expires_at": "2026-10-23T11:59:59Z"}, id="expired"),
@@ -1258,6 +1287,7 @@ def test_unverified_staging_claims_reject_mismatch_and_unsafe_scope(changes):
             claims,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
         )
     assert raised.value.code == "staging_authorization_claims_invalid"
@@ -1271,6 +1301,7 @@ def test_unverified_staging_claims_require_expiration_and_exact_source_pin():
             claims,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
         )
     assert raised.value.code == "staging_authorization_claims_invalid"
@@ -1281,6 +1312,7 @@ def test_unverified_staging_claims_require_expiration_and_exact_source_pin():
             claims,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit="2ae58b0",
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
         )
     assert raised.value.code == "staging_authorization_claims_invalid"
@@ -1295,6 +1327,7 @@ def test_unverified_staging_authorization_rejected_on_replay_and_after_restart()
                 claims,
                 expected_project_id="synthetic-staging-project-id",
                 expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+                expected_binding=AUTHORIZATION_TEST_BINDING,
                 now_utc=AUTHORIZATION_TEST_NOW,
             )
         assert raised.value.code == "staging_authorization_issuer_unavailable"
@@ -1315,6 +1348,8 @@ try:
         claims,
         expected_project_id="synthetic-staging-project-id",
         expected_source_commit="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        expected_binding=module.StagingAuthorizationBinding(
+            "F09-synthetic-attempt", "c" * 64, "d" * 64, 200),
         now_utc=datetime(2026, 10, 23, 12, 0, tzinfo=UTC),
     )
 except module.ConnectivityError as error:
@@ -1354,6 +1389,7 @@ def test_concurrent_unverified_staging_authorizations_all_fail_closed():
                 claims,
                 expected_project_id="synthetic-staging-project-id",
                 expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+                expected_binding=AUTHORIZATION_TEST_BINDING,
                 now_utc=AUTHORIZATION_TEST_NOW,
             )
         except ConnectivityError as error:
@@ -1397,6 +1433,7 @@ def test_offline_capability_store_consumes_once_and_keeps_only_digest(tmp_path):
         capability,
         expected_project_id="synthetic-staging-project-id",
         expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+        expected_binding=AUTHORIZATION_TEST_BINDING,
         now_utc=AUTHORIZATION_TEST_NOW,
         journal=journal,
     )
@@ -1421,11 +1458,13 @@ def test_offline_capability_store_consumes_once_and_keeps_only_digest(tmp_path):
             capability,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
             journal=replay_journal,
         )
     assert raised.value.code == "staging_authorization_replayed"
-    assert replay_journal.pending
+    # Replay is now rejected by the retained attempt claim before a new intent.
+    assert replay_journal.pending == {}
     replay_journal.close()
 
 
@@ -1455,6 +1494,7 @@ def test_offline_capability_store_rejects_scope_mismatch_and_forged_claims(
                 claims,
                 expected_project_id="synthetic-staging-project-id",
                 expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+                expected_binding=AUTHORIZATION_TEST_BINDING,
                 now_utc=AUTHORIZATION_TEST_NOW,
             )
         assert raised.value.code == "staging_authorization_claims_invalid"
@@ -1469,6 +1509,7 @@ def test_offline_capability_store_rejects_scope_mismatch_and_forged_claims(
             capability,
             expected_project_id=expected_project,
             expected_source_commit=expected_commit,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
             journal=journal,
         )
@@ -1493,6 +1534,7 @@ def test_offline_capability_store_rejects_tampering_and_wrong_capability(tmp_pat
             capability,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
             journal=journal,
         )
@@ -1511,6 +1553,7 @@ def test_offline_capability_store_rejects_tampering_and_wrong_capability(tmp_pat
             wrong,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
             journal=journal,
         )
@@ -1530,6 +1573,7 @@ def test_offline_capability_store_enforces_expiry_and_short_window(tmp_path):
             capability,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW + timedelta(minutes=6),
             journal=journal,
         )
@@ -1590,10 +1634,13 @@ def test_offline_capability_store_fsync_failures_never_return_consumption(tmp_pa
             capability,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
             journal=journal,
         )
-    assert list(store.consumed_root.iterdir()) == []
+    # Consumption-start evidence survives even when the journal intent fails.
+    assert list(store.consumed_root.glob("*.claimed"))
+    assert list(store.consumed_root.glob("*.consumed")) == []
     journal.close()
 
     role = {"value": "synthetic-issuer"}
@@ -1611,6 +1658,7 @@ def test_offline_capability_store_fsync_failures_never_return_consumption(tmp_pa
             capability,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
             journal=journal,
         )
@@ -1625,6 +1673,7 @@ def test_offline_capability_store_fsync_failures_never_return_consumption(tmp_pa
             capability,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
             journal=retry_journal,
         )
@@ -1644,6 +1693,7 @@ def test_offline_capability_store_directory_fsync_failure_burns_capability(tmp_p
             capability,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
             journal=journal,
         )
@@ -1673,6 +1723,7 @@ def test_offline_capability_store_journal_outcome_failure_keeps_consumed_marker(
             capability,
             expected_project_id="synthetic-staging-project-id",
             expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
             now_utc=AUTHORIZATION_TEST_NOW,
             journal=journal,
         )
@@ -1715,6 +1766,8 @@ capability = module.IssuedStagingCapability(data["authorization_id"], bytes.from
 try:
     store.consume(capability, expected_project_id="synthetic-staging-project-id",
         expected_source_commit="aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        expected_binding=module.StagingAuthorizationBinding(
+            "F09-synthetic-attempt", "c" * 64, "d" * 64, 200),
         now_utc=datetime(2026, 10, 23, 12, 0, tzinfo=UTC), journal=journal)
 except module.ConnectivityError as error:
     print("rejected:" + error.code)
@@ -2152,3 +2205,394 @@ def test_chunk_sse_aggregate_limits(monkeypatch, limit):
     with pytest.raises(ConnectivityError) as raised:
         list(StagingAgentsClient._bounded_lines([b"data: x\n" for _ in range(5)]))
     assert raised.value.code == "stream_" + limit + "_limit"
+
+
+def _scope_attestation(**changes):
+    return {
+        "verification_method": "operator_dashboard_attestation",
+        "organization_id": "org_synthetic",
+        "project_id": "synthetic-staging-project-id",
+        "owner_id": "synthetic-service-account",
+        "application_key_resource_id": "synthetic-application-resource",
+        "environment_key_label": "synthetic-environment-label",
+        "operator_id": "synthetic-operator",
+        "reviewer_id": "synthetic-reviewer",
+        "application_permissions": ["api.agents.read", "api.agents.write"],
+        "environment_permissions": ["api.agents.environments.connect"],
+        "matching_organization_project_owner_confirmed": True,
+        "reviewed_at": "2026-10-23T12:00:00Z",
+        **changes,
+    }
+
+
+def _authorized_rehearsal(tmp_path, *, on_request=None, executor=None, create_status=200):
+    attestation = _scope_attestation()
+    binding = harness_module.StagingAuthorizationBinding(
+        "F09-synthetic-bound-attempt",
+        harness_module.connectivity_configuration_sha256(
+            AGENT, create_seconds=10, connect_seconds=10, cleanup_seconds=5
+        ),
+        harness_module.unverified_credential_scope_sha256(
+            attestation, expected_project_id=attestation["project_id"]
+        ),
+        200,
+    )
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "authorization", role)
+    capability = store.issue(
+        _staging_issue_claims(
+            attempt_id=binding.attempt_id,
+            configuration_sha256=binding.configuration_sha256,
+            credential_scope_sha256=binding.credential_scope_sha256,
+        ),
+        expected_project_id=attestation["project_id"],
+        expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+        expected_binding=binding,
+        now_utc=AUTHORIZATION_TEST_NOW,
+    )
+    role["value"] = "synthetic-runtime"
+    plan = harness_module.SyntheticStagingAuthorization(
+        store,
+        capability,
+        binding,
+        project_id=attestation["project_id"],
+        source_commit=AUTHORIZATION_TEST_COMMIT,
+        attestation=attestation,
+        now_utc=lambda: AUTHORIZATION_TEST_NOW,
+    )
+    api, calls = _http_client(
+        tmp_path,
+        [_event("agent.session.environment.connected")],
+        project_id=attestation["project_id"],
+        spend_approval=SpendControlApproval(200, "synthetic-billing-approval", True),
+        on_request=on_request,
+        create_status=create_status,
+    )
+    harness, lease, journal = _make(
+        tmp_path / "lifecycle", api, executor or FakeExecutor(), synthetic_authorization=plan
+    )
+    return harness, lease, journal, plan, calls
+
+
+def test_bound_authorization_has_no_default_or_inherited_spend_approval():
+    claims = _unverified_staging_claims(spend_control_limit_cents=100)
+    binding = harness_module.StagingAuthorizationBinding(
+        AUTHORIZATION_TEST_BINDING.attempt_id, "c" * 64, "d" * 64, 100
+    )
+    parsed = harness_module.parse_unverified_staging_authorization_claims(
+        claims,
+        expected_project_id="synthetic-staging-project-id",
+        expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+        expected_binding=binding,
+        now_utc=AUTHORIZATION_TEST_NOW,
+    )
+    assert parsed["spend_control_limit_cents"] == 100
+    assert parsed["billing_risk_acknowledged"] is True
+    with pytest.raises(ConnectivityError):
+        harness_module.parse_unverified_staging_authorization_claims(
+            claims,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            now_utc=AUTHORIZATION_TEST_NOW,
+        )
+    with pytest.raises(AttributeError):
+        binding.limit = 200
+
+
+@pytest.mark.parametrize(
+    "changes",
+    [
+        {"application_permissions": ["api.agents.read", "api.agents.write", "api.responses.write"]},
+        {"application_permissions": ("api.agents.read", "api.agents.write")},
+        {"application_permissions": ["api.agents.read", True]},
+        {"environment_permissions": None},
+        {"environment_permissions": ["api.agents.write"]},
+        {"matching_organization_project_owner_confirmed": False},
+        {"project_id": "different-project"},
+        {"verification_method": "provider_verified"},
+        {"application_key_resource_id": "sk-" + "x" * 60},
+        {"environment_key_label": "https://example.invalid/?token=synthetic"},
+    ],
+)
+def test_scope_attestation_rejects_unsafe_metadata_without_claiming_provider_verification(changes):
+    with pytest.raises(ConnectivityError) as raised:
+        harness_module.unverified_credential_scope_sha256(
+            _scope_attestation(**changes), expected_project_id="synthetic-staging-project-id"
+        )
+    assert raised.value.code == "staging_credential_attestation_invalid"
+    assert str(changes) not in str(raised.value)
+
+
+def test_scope_and_configuration_digests_preserve_input_and_detect_parameter_changes():
+    attestation = _scope_attestation()
+    before = json.dumps(attestation, sort_keys=True)
+    digest = harness_module.unverified_credential_scope_sha256(
+        attestation, expected_project_id=attestation["project_id"]
+    )
+    assert len(digest) == 64
+    assert json.dumps(attestation, sort_keys=True) == before
+    first = harness_module.connectivity_configuration_sha256(
+        AGENT, create_seconds=10, connect_seconds=10, cleanup_seconds=5
+    )
+    assert first != harness_module.connectivity_configuration_sha256(
+        AGENT, create_seconds=10, connect_seconds=10, cleanup_seconds=4
+    )
+    with pytest.raises(ConnectivityError):
+        harness_module.connectivity_configuration_sha256(
+            AGENT, create_seconds=True, connect_seconds=10, cleanup_seconds=5
+        )
+
+
+def test_authorization_rehearsal_consumes_durably_before_the_only_session_post(tmp_path, capsys):
+    observations = []
+
+    def observe(request):
+        if request.method == "POST":
+            records = [json.loads(line) for line in journal.path.read_text().splitlines()]
+            assert list(plan.store.consumed_root.glob("*.claimed"))
+            assert (
+                plan.store.consumed_root / f"{plan.capability.authorization_id}.consumed"
+            ).exists()
+            assert any(
+                row["operation"] == "authorization_consume"
+                and row["event"] == "outcome"
+                and row["code"] == "consumed"
+                for row in records
+            )
+            assert lease.acquired is True
+            observations.append("durable_consumption_before_post")
+
+    harness, lease, journal, plan, calls = _authorized_rehearsal(tmp_path, on_request=observe)
+    audit = harness.run()
+    assert observations == ["durable_consumption_before_post"]
+    assert [request.method for request in calls] == ["POST", "GET", "DELETE"]
+    assert audit["approval_consumption_durable"] is True
+    assert audit["cleanup_verified"] is True
+    assert audit["task_submission_count"] == audit["responses_calls"] == 0
+    assert lease.acquired is False
+    saved = _saved_audit(lease)
+    assert saved["approval_consumption_durable"] is True
+    assert saved["cleanup_verified"] is True
+    evidence = b"".join(path.read_bytes() for path in tmp_path.rglob("*") if path.is_file())
+    captured = capsys.readouterr()
+    for value in (APP_KEY, ENV_KEY, REMOTE_URL, plan.capability._value.hex()):
+        assert value.encode() not in evidence
+        assert value not in captured.out + captured.err
+
+
+@pytest.mark.parametrize(
+    "mismatch",
+    ["attempt", "commit", "project", "configuration", "scope", "limit", "missing", "expired"],
+)
+def test_authorization_rehearsal_rejects_request_mismatch_before_lease_or_transport(
+    tmp_path, mismatch
+):
+    harness, lease, _, plan, calls = _authorized_rehearsal(tmp_path)
+    if mismatch == "attempt":
+        plan.binding = harness_module.StagingAuthorizationBinding(
+            "F09-other-attempt",
+            plan.binding.configuration_sha256,
+            plan.binding.credential_scope_sha256,
+            200,
+        )
+    elif mismatch == "commit":
+        plan.source_commit = "b" * 40
+    elif mismatch == "project":
+        plan.project_id = "other-project"
+    elif mismatch == "configuration":
+        harness.connect_seconds = 9
+    elif mismatch == "scope":
+        plan.attestation["owner_id"] = "other-owner"
+    elif mismatch == "limit":
+        harness.client._spend_control_approval = SpendControlApproval(
+            100, "synthetic-billing-approval", True
+        )
+    elif mismatch == "missing":
+        plan.capability = None
+    else:
+        plan.now_utc = lambda: AUTHORIZATION_TEST_NOW + timedelta(minutes=6)
+    with pytest.raises(ConnectivityError):
+        harness.run()
+    assert calls == []
+    assert not lease.lock_path.exists()
+    assert not list(plan.store.consumed_root.iterdir())
+
+
+def test_authorization_rehearsal_journal_failure_burns_attempt_and_retains_lease(tmp_path):
+    harness, lease, journal, plan, calls = _authorized_rehearsal(tmp_path)
+    journal._fsync = lambda _fd: (_ for _ in ()).throw(OSError("synthetic journal fault"))
+    with pytest.raises(harness_module.DurabilityError):
+        harness.run()
+    assert calls == []
+    assert lease.acquired and lease.lock_path.exists()
+    assert list(plan.store.consumed_root.glob("*.claimed"))
+    restarted = StagingJournal(tmp_path / "restarted-journal", synthetic=True)
+    try:
+        with pytest.raises(ConnectivityError) as raised:
+            plan.consume(restarted)
+        assert raised.value.code == "staging_authorization_replayed"
+    finally:
+        restarted.close()
+
+
+@pytest.mark.parametrize("failure", ["ambiguous-create", "cleanup-unverified"])
+def test_authorization_rehearsal_failure_never_reuses_approval_or_certifies_cleanup(
+    tmp_path, failure
+):
+    harness, lease, _, plan, calls = _authorized_rehearsal(
+        tmp_path,
+        create_status=500 if failure == "ambiguous-create" else 200,
+        executor=FakeExecutor(stop=failure != "cleanup-unverified"),
+    )
+    with pytest.raises(ConnectivityError):
+        harness.run()
+    assert len([request for request in calls if request.method == "POST"]) == 1
+    assert lease.lock_path.exists()
+    assert _saved_audit(lease)["cleanup_verified"] is False
+    journal = StagingJournal(tmp_path / "second-journal", synthetic=True)
+    try:
+        with pytest.raises(ConnectivityError) as raised:
+            plan.consume(journal)
+        assert raised.value.code == "staging_authorization_replayed"
+    finally:
+        journal.close()
+
+
+def test_failed_second_consumption_write_preserves_attempt_guard_and_prevents_reissue(tmp_path):
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "store", role)
+    capability = _issue_offline_capability(store)
+    second_capability = _issue_offline_capability(store)
+    role["value"] = "synthetic-runtime"
+    journal = StagingJournal(tmp_path / "journal", synthetic=True)
+    write_calls = 0
+
+    def fail_final(descriptor, payload):
+        nonlocal write_calls
+        write_calls += 1
+        if write_calls == 2:
+            raise PermissionError("synthetic final marker denied")
+        return os.write(descriptor, payload)
+
+    store._write = fail_final
+    try:
+        with pytest.raises(ConnectivityError) as failure:
+            store.consume(
+                capability,
+                expected_project_id="synthetic-staging-project-id",
+                expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+                expected_binding=AUTHORIZATION_TEST_BINDING,
+                now_utc=AUTHORIZATION_TEST_NOW,
+                journal=journal,
+            )
+        assert failure.value.code == "staging_authorization_durability_uncertain"
+        assert list(store.consumed_root.glob("*.claimed"))
+        # O_EXCL creates the final marker before the injected write fails.
+        # Keep that empty evidence, without a matching successful outcome.
+        incomplete = store.consumed_root / f"{capability.authorization_id}.consumed"
+        assert incomplete.exists() and incomplete.stat().st_size == 0
+        assert journal.pending
+        assert not any(
+            record["operation"] == "authorization_consume" and record["event"] == "outcome"
+            for record in map(json.loads, journal.path.read_text().splitlines())
+        )
+    finally:
+        journal.close()
+    store._write = os.write
+    replay_journal = StagingJournal(tmp_path / "replay-journal", synthetic=True)
+    try:
+        with pytest.raises(ConnectivityError) as raised:
+            store.consume(
+                second_capability,
+                expected_project_id="synthetic-staging-project-id",
+                expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+                expected_binding=AUTHORIZATION_TEST_BINDING,
+                now_utc=AUTHORIZATION_TEST_NOW,
+                journal=replay_journal,
+            )
+        assert raised.value.code == "staging_authorization_replayed"
+    finally:
+        replay_journal.close()
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Linux replacement of an open file required")
+def test_approval_record_replacement_during_read_is_rejected(tmp_path, monkeypatch):
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "store", role)
+    capability = _issue_offline_capability(store)
+    path = store.issued_root / f"{capability.authorization_id}.json"
+    role["value"] = "synthetic-runtime"
+    read = harness_module.os.read
+
+    def replace_record(descriptor, length):
+        raw = read(descriptor, length)
+        replacement = path.with_suffix(".replacement")
+        replacement.write_bytes(raw)
+        replacement.replace(path)
+        return raw
+
+    monkeypatch.setattr(harness_module.os, "read", replace_record)
+    with pytest.raises(ConnectivityError) as raised:
+        store.validate(
+            capability,
+            expected_project_id="synthetic-staging-project-id",
+            expected_source_commit=AUTHORIZATION_TEST_COMMIT,
+            expected_binding=AUTHORIZATION_TEST_BINDING,
+            now_utc=AUTHORIZATION_TEST_NOW,
+        )
+    assert raised.value.code == "staging_authorization_record_invalid"
+    assert not list(store.consumed_root.iterdir())
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Linux symlink and mode semantics required")
+def test_approval_symlink_and_nonprivate_file_are_rejected(tmp_path):
+    role = {"value": "synthetic-issuer"}
+    store = _authorization_store(tmp_path / "store", role)
+    capability = _issue_offline_capability(store)
+    path = store.issued_root / f"{capability.authorization_id}.json"
+    target = path.with_suffix(".original")
+    path.rename(target)
+    path.symlink_to(target)
+    role["value"] = "synthetic-runtime"
+    arguments = {
+        "expected_project_id": "synthetic-staging-project-id",
+        "expected_source_commit": AUTHORIZATION_TEST_COMMIT,
+        "expected_binding": AUTHORIZATION_TEST_BINDING,
+        "now_utc": AUTHORIZATION_TEST_NOW,
+    }
+    with pytest.raises(ConnectivityError):
+        store.validate(capability, **arguments)
+    path.unlink()  # Only this synthetic fixture's link; no recovery marker is removed.
+    target.rename(path)
+    path.chmod(0o644)
+    with pytest.raises(ConnectivityError):
+        store.validate(capability, **arguments)
+    assert not list(store.consumed_root.iterdir())
+
+
+def test_no_production_store_or_live_gate_can_be_unlocked_by_synthetic_roles():
+    from types import SimpleNamespace
+
+    # No filesystem operations or role callbacks can manufacture a trusted store.
+    for root in (Path("/mnt/c/unopened-f09-store"), Path("/var/lib/unopened-f09-store")):
+        with pytest.raises(harness_module.DurabilityError, match="OS boundary is unavailable"):
+            OfflineStagingAuthorizationStore(
+                root,
+                synthetic=False,
+                issuer_role="issuer",
+                runtime_role="runtime",
+                current_role=lambda: "issuer",
+            )
+    client = object.__new__(StagingAgentsClient)
+    client.synthetic = False
+    client._live_capability = harness_module._LIVE_CLIENT_CAPABILITY
+    root = Path("unopened-synthetic-evidence")
+    with pytest.raises(ValueError, match="Trusted F09 issuer and provider"):
+        ConnectivityHarness(
+            client=client,
+            executor=object.__new__(DockerExecutorAdapter),
+            journal=SimpleNamespace(synthetic=False, root=root / "run"),
+            lease=SimpleNamespace(synthetic=False, root=root),
+            agent_config=AGENT,
+            environment_key=ENV_KEY,
+        )
