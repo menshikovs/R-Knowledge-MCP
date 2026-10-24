@@ -6,6 +6,8 @@ from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.usefixtures("r01a_offline_guard")
+
 ROOT = Path(__file__).resolve().parents[1] / "benchmarks/codex_r"
 
 

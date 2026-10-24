@@ -5,6 +5,8 @@ import threading
 
 import pytest
 
+pytestmark = pytest.mark.usefixtures("r01a_offline_guard")
+
 ROOT = __import__("pathlib").Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
     "codex_egress_proxy", ROOT / "benchmarks/codex_r/exploratory/egress_proxy.py"

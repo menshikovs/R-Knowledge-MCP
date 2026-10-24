@@ -14,6 +14,8 @@ from mcp.types import CallToolResult, TextContent, Tool
 
 from cran_knowledge_mcp.server import create_server
 
+pytestmark = pytest.mark.usefixtures("r01a_offline_guard")
+
 ROOT = Path(__file__).resolve().parents[1] / "benchmarks/codex_r"
 
 
@@ -96,6 +98,12 @@ def test_plan_randomized_balanced_and_reproducible():
         bench.plan("default", "high", IMAGE)
     with pytest.raises(ValueError):
         bench.plan(a["model"], "high", "mutable-image-tag")
+
+
+def test_plan_is_independent_of_current_working_directory(monkeypatch):
+    expected = experiment()
+    monkeypatch.chdir(ROOT)
+    assert experiment() == expected
 
 
 def test_prepare_has_only_public_inputs_and_reproducible_fixtures(tmp_path):
