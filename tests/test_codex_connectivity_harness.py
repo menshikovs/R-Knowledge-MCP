@@ -7,6 +7,7 @@ import importlib.util
 import io
 import json
 import os
+import shutil
 import stat
 import subprocess
 import sys
@@ -15,6 +16,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from types import SimpleNamespace
 
 import httpx
 import pytest
@@ -3037,6 +3039,99 @@ def test_solo_operator_phase_diagnostic_does_not_expose_unexpected_exception_tex
 
     assert raised.value.code == "solo_live_components_unavailable"
     assert secret_like not in str(raised.value)
+
+
+def test_live_component_construction_and_live_harness_init_are_offline(monkeypatch):
+    cli = _solo_cli_module()
+    request = _solo_request()
+    state_directory = Path("synthetic-f09-state").resolve()
+    record = {
+        "request": request,
+        "claims": {
+            "attempt_id": "F09-synthetic-attempt",
+            "billing_owner_approval_reference": "manual:synthetic-approval",
+        },
+    }
+    # This in-memory store exercises the live binding contract without reading or
+    # creating an approval record, credential, container, network, or session.
+    store = object.__new__(cli.harness.SoloOperatorApprovalStore)
+    store.synthetic = False
+    store.state_directory = state_directory
+    store.validate = lambda: record
+    authorization = cli.harness.SoloOperatorAuthorization(
+        store,
+        object.__new__(cli.harness.StagingLease),
+    )
+    lease = authorization.lease
+    lease.root = state_directory / cli.harness.JOURNAL_DIRNAME
+    lease.synthetic = False
+    lease.lock_path = lease.root / "active.lock"
+    lease.acquired = False
+    lease._lease_id = None
+
+    class NoNetworkHTTPClient:
+        def __init__(self, **kwargs):
+            assert kwargs["transport"] is None
+            assert kwargs["verify"] is True
+            assert kwargs["follow_redirects"] is False
+            assert kwargs["trust_env"] is False
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(cli.harness.httpx, "Client", NoNetworkHTTPClient)
+    docker_calls = []
+
+    def no_docker_executable(command):
+        assert command == "docker"
+        return "synthetic-docker-not-executed"
+
+    def forbid_subprocess(*_args, **_kwargs):
+        docker_calls.append(True)
+        raise AssertionError("Docker subprocess boundary must not be called")
+
+    monkeypatch.setattr(shutil, "which", no_docker_executable)
+    monkeypatch.setattr(subprocess, "run", forbid_subprocess)
+    client, executor, environment_key = cli._build_live_components(
+        store=store,
+        request=request,
+        authorization=authorization,
+        lease=lease,
+        journal=object(),
+        api_key="synthetic-application-key",
+        env_key="synthetic-environment-key",
+    )
+    assert type(client) is cli.harness.StagingAgentsClient
+    assert client.synthetic is False
+    assert client._live_capability is cli.harness._LIVE_CLIENT_CAPABILITY
+    journal = SimpleNamespace(synthetic=False, root=lease.root / "run-synthetic")
+
+    try:
+        controller = cli.harness.ConnectivityHarness(
+            client=client,
+            executor=executor,
+            journal=journal,
+            lease=lease,
+            agent_config=request["agent"],
+            environment_key=environment_key,
+            create_seconds=request["create_seconds"],
+            connect_seconds=request["connect_seconds"],
+            cleanup_seconds=request["cleanup_seconds"],
+            operator_authorization=authorization,
+        )
+
+        assert controller.state == "preflight"
+        assert client.synthetic is False
+        assert client._live_harness is controller
+        assert executor._live_harness is controller
+        assert type(executor).__name__ == "F09DockerExecutorAdapter"
+        assert type(executor.runtime).__name__ == "F09ConnectivityRuntime"
+        assert executor.topology.resource_scope == "F09"
+        assert executor.topology.started is False
+        assert environment_key == "synthetic-environment-key"
+        assert docker_calls == []
+    finally:
+        client.close()
 
 
 @pytest.mark.parametrize("case", ["missing", "expired", "replayed", "source-mismatch"])

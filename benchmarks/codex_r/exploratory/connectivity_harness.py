@@ -1922,6 +1922,7 @@ class StagingAgentsClient:
             raise ValueError("Live F09 client requires the solo-operator authorization entry point")
         self.synthetic = synthetic
         self._operator_authorization = operator_authorization
+        self._live_capability = _live_capability
         self._live_harness = None
         self._key = application_api_key
         self._spend_control_approval = spend_control_approval
