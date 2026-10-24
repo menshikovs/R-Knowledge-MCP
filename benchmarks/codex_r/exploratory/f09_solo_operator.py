@@ -111,6 +111,27 @@ def _live_credentials(environment=None):
     return api_key, env_key
 
 
+def _diagnostic_call(code, callback, /, *args, **kwargs):
+    """Run one setup phase while exposing only its fixed diagnostic code."""
+    try:
+        return callback(*args, **kwargs)
+    except (harness.ConnectivityError, harness.DurabilityError):
+        raise
+    except Exception:
+        raise harness.ConnectivityError(code) from None
+
+
+def _unexpected_lifecycle_error(store):
+    """Classify an unexpected run failure from read-only approval state only."""
+    try:
+        state = store.inspect().get("state")
+    except Exception:
+        state = None
+    if state == "pending_review":
+        return harness.ConnectivityError("solo_lifecycle_failed_before_consumption")
+    return harness.ConnectivityError("solo_lifecycle_failed_uncertain", uncertain=True)
+
+
 def _execute_approved(
     store,
     *,
@@ -144,7 +165,9 @@ def _execute_approved(
     controller = None
     try:
         if store.synthetic:
-            client, executor = synthetic_components(
+            client, executor = _diagnostic_call(
+                "solo_synthetic_components_unavailable",
+                synthetic_components,
                 store=store,
                 request=request,
                 authorization=authorization,
@@ -154,7 +177,9 @@ def _execute_approved(
             environment_key = "synthetic-environment-key"
         else:
             api_key, environment_key = _live_credentials()
-            client, executor, environment_key = _build_live_components(
+            client, executor, environment_key = _diagnostic_call(
+                "solo_live_components_unavailable",
+                _build_live_components,
                 store=store,
                 request=request,
                 authorization=authorization,
@@ -163,7 +188,9 @@ def _execute_approved(
                 api_key=api_key,
                 env_key=environment_key,
             )
-        controller = harness.ConnectivityHarness(
+        controller = _diagnostic_call(
+            "solo_harness_initialization_failed",
+            harness.ConnectivityHarness,
             client=client,
             executor=executor,
             journal=journal,
@@ -175,7 +202,12 @@ def _execute_approved(
             cleanup_seconds=request["cleanup_seconds"],
             operator_authorization=authorization,
         )
-        result = controller.run()
+        try:
+            result = controller.run()
+        except (harness.ConnectivityError, harness.DurabilityError):
+            raise
+        except Exception:
+            raise _unexpected_lifecycle_error(store) from None
         if result.get("cleanup_verified") is not True:
             raise harness.ConnectivityError("cleanup_unverified")
         if result.get("connected_observed") is not True or result.get("failure_code") is not None:

@@ -2974,6 +2974,71 @@ def test_solo_operator_run_cli_synthetic_end_to_end_consumes_once_and_cleans(tmp
     ]
 
 
+def test_solo_operator_unexpected_component_failure_is_classified_before_consumption(tmp_path):
+    cli = _solo_cli_module()
+    store, _ = _approve_cli_store(tmp_path)
+    terminal = _SoloTerminal()
+    synthetic_secret = "synthetic-secret-do-not-disclose"
+
+    def fail_before_client_creation(**_kwargs):
+        raise RuntimeError(f"transport setup detail {synthetic_secret}")
+
+    with pytest.raises(ConnectivityError) as raised:
+        cli._execute_approved(
+            store,
+            terminal_input=terminal,
+            terminal_output=terminal,
+            synthetic_components=fail_before_client_creation,
+        )
+
+    assert raised.value.code == "solo_synthetic_components_unavailable"
+    assert synthetic_secret not in str(raised.value)
+    assert store.inspect()["state"] == "pending_review"
+    assert not (store.root / "consumption.started").exists()
+    assert not (store.root / "consumed.json").exists()
+    journals = list(
+        (store.state_directory / harness_module.JOURNAL_DIRNAME).rglob("connectivity.jsonl")
+    )
+    assert len(journals) == 1 and journals[0].read_bytes() == b""
+
+
+@pytest.mark.parametrize(
+    ("state", "expected_code", "uncertain"),
+    [
+        ("pending_review", "solo_lifecycle_failed_before_consumption", False),
+        ("consumed_or_uncertain", "solo_lifecycle_failed_uncertain", True),
+        ("corrupt", "solo_lifecycle_failed_uncertain", True),
+    ],
+)
+def test_solo_operator_unexpected_lifecycle_diagnostic_uses_read_only_state(
+    state, expected_code, uncertain
+):
+    cli = _solo_cli_module()
+
+    class SyntheticInspection:
+        def inspect(self):
+            return {"state": state}
+
+    error = cli._unexpected_lifecycle_error(SyntheticInspection())
+    assert error.code == expected_code
+    assert error.uncertain is uncertain
+    assert "exception" not in str(error).lower()
+
+
+def test_solo_operator_phase_diagnostic_does_not_expose_unexpected_exception_text():
+    cli = _solo_cli_module()
+    secret_like = "Bearer synthetic-token https://example.invalid/?token=synthetic"
+
+    def fail():
+        raise RuntimeError(secret_like)
+
+    with pytest.raises(ConnectivityError) as raised:
+        cli._diagnostic_call("solo_live_components_unavailable", fail)
+
+    assert raised.value.code == "solo_live_components_unavailable"
+    assert secret_like not in str(raised.value)
+
+
 @pytest.mark.parametrize("case", ["missing", "expired", "replayed", "source-mismatch"])
 def test_solo_operator_run_cli_rejects_missing_expired_replayed_or_changed_approval(tmp_path, case):
     cli = _solo_cli_module()
