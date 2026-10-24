@@ -186,6 +186,74 @@ def test_prepared_candidate_workspace_grants_only_directory_acl_to_executor_uid(
         shutil.rmtree(temp_root)
 
 
+def test_f09_acl_reader_uses_numeric_ids_and_matches_ubuntu_grant_acl(monkeypatch):
+    calls = []
+    monkeypatch.setattr(docker_runtime.shutil, "which", lambda name: "/usr/bin/getfacl")
+
+    def fake_run(argv, **kwargs):
+        calls.append(argv)
+        # getfacl without -n may print the local account name for UID 65534.
+        output = (
+            b"user::rwx\nuser:65534:rwx\ngroup::---\nmask::rwx\nother::---\n"
+            if "n" in argv[1]
+            else b"user::rwx\nuser:nobody:rwx\ngroup::---\nmask::rwx\nother::---\n"
+        )
+        return subprocess.CompletedProcess(argv, 0, output, b"")
+
+    monkeypatch.setattr(docker_runtime.subprocess, "run", fake_run)
+    acl = docker_runtime._read_f09_workspace_acl(Path("synthetic-workspace"), {}, timeout=2)
+
+    assert calls[0][1] == "-cpn"
+    assert docker_runtime._has_reviewed_f09_workspace_acl(acl)
+    assert not docker_runtime._has_reviewed_f09_workspace_acl(
+        "user::rwx\nuser:nobody:rwx\ngroup::---\nmask::rwx\nother::---\n"
+    )
+
+
+def test_f09_revoked_acl_accepts_only_harmless_empty_mask():
+    assert docker_runtime._has_private_revoked_f09_workspace_acl(
+        "user::rwx\ngroup::---\nmask::---\nother::---\n"
+    )
+    assert docker_runtime._has_private_revoked_f09_workspace_acl(
+        "user::rwx\ngroup::---\nother::---\n"
+    )
+    assert not docker_runtime._has_private_revoked_f09_workspace_acl(
+        "user::rwx\nuser:65534:rwx\ngroup::---\nmask::rwx\nother::---\n"
+    )
+    assert not docker_runtime._has_private_revoked_f09_workspace_acl(
+        "user::rwx\ngroup::---\ngroup:65534:rwx\nmask::rwx\nother::---\n"
+    )
+    assert not docker_runtime._has_private_revoked_f09_workspace_acl(
+        "user::rwx\ngroup::---\nmask::rwx\nother::---\n"
+    )
+
+
+@pytest.mark.skipif(
+    os.name != "posix" or not shutil.which("getfacl") or not shutil.which("setfacl"),
+    reason="real F09 ACL integration requires Linux getfacl/setfacl",
+)
+def test_f09_workspace_acl_grant_and_revoke_on_native_tmp_filesystem(tmp_path):
+    workspace_root = tmp_path.resolve()
+    if not workspace_root.is_relative_to(Path("/tmp")):
+        pytest.skip("run with --basetemp under native Linux /tmp")
+    workspace = workspace_root / "f09-acl-workspace"
+    workspace.mkdir(mode=0o700)
+    runtime = docker_runtime.F09ConnectivityRuntime(
+        "sha256:" + "a" * 64,
+        workspace_root,
+    )
+
+    assert workspace.stat().st_mode & 0o777 == 0o700
+    runtime.grant_workspace_access(workspace)
+    assert workspace.stat().st_mode & 0o777 == 0o770
+    assert docker_runtime._has_reviewed_f09_workspace_acl(
+        docker_runtime._read_f09_workspace_acl(workspace, {})
+    )
+
+    assert runtime.revoke_workspace_access(workspace, timeout=5)
+    assert not workspace.exists()
+
+
 def test_restricted_executor_uses_private_proxy_and_fail_closed_dns(tmp_path):
     runtime = docker_runtime.CodexCandidateRuntime("sha256:" + "a" * 64, docker="docker")
     proxy_url = "http://172.20.0.2:3128"

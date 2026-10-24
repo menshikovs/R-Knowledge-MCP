@@ -1240,13 +1240,7 @@ class F09ConnectivityRuntime(CodexCandidateRuntime):
             ):
                 raise ValueError
             acl = _read_f09_workspace_acl(resolved, _operator_environment(os.environ))
-            if set(line for line in acl.splitlines() if line) != {
-                "user::rwx",
-                "user:65534:rwx",
-                "group::---",
-                "mask::rwx",
-                "other::---",
-            }:
+            if not _has_reviewed_f09_workspace_acl(acl):
                 raise ValueError
         except (OSError, ValueError, DockerRuntimeError):
             raise DockerRuntimeError(
@@ -1321,8 +1315,7 @@ class F09ConnectivityRuntime(CodexCandidateRuntime):
             acl = _read_f09_workspace_acl(
                 resolved, _operator_environment(os.environ), timeout=min(5, remaining)
             )
-            acl_lines = {line for line in acl.splitlines() if line}
-            if acl_lines != {"user::rwx", "group::---", "other::---"} or any(resolved.iterdir()):
+            if not _has_private_revoked_f09_workspace_acl(acl) or any(resolved.iterdir()):
                 return False
             if time.monotonic() >= absolute_deadline:
                 return False
@@ -1367,7 +1360,9 @@ def _read_f09_workspace_acl(workspace: Path, env: dict[str, str], *, timeout=5) 
         raise DockerRuntimeError("F09 workspace ACL inspection is unavailable")
     try:
         result = subprocess.run(
-            [getfacl, "-cp", "--", str(workspace)],
+            # Numeric IDs make ACL policy independent of host /etc/passwd names
+            # (for example, UID 65534 may be rendered as "nobody").
+            [getfacl, "-cpn", "--", str(workspace)],
             stdin=subprocess.DEVNULL,
             capture_output=True,
             timeout=timeout,
@@ -1379,6 +1374,36 @@ def _read_f09_workspace_acl(workspace: Path, env: dict[str, str], *, timeout=5) 
     if result.returncode != 0 or len(result.stdout) > 8192:
         raise DockerRuntimeError("F09 workspace ACL inspection failed")
     return result.stdout.decode("ascii", "strict")
+
+
+def _f09_acl_entries(acl: str) -> frozenset[str] | None:
+    entries = [line for line in acl.splitlines() if line]
+    # Duplicate or empty structures are not valid representations of the
+    # reviewed ACL and must not be collapsed into an apparently valid set.
+    if not entries or len(entries) != len(set(entries)):
+        return None
+    return frozenset(entries)
+
+
+def _has_reviewed_f09_workspace_acl(acl: str) -> bool:
+    return _f09_acl_entries(acl) == frozenset(
+        {
+            "user::rwx",
+            "user:65534:rwx",
+            "group::---",
+            "mask::rwx",
+            "other::---",
+        }
+    )
+
+
+def _has_private_revoked_f09_workspace_acl(acl: str) -> bool:
+    entries = _f09_acl_entries(acl)
+    private_base = frozenset({"user::rwx", "group::---", "other::---"})
+    # Linux may retain an empty ACL mask after removing the named executor UID.
+    # Accept only that exact residual entry; any named user/group or nonempty
+    # mask still fails closed.
+    return entries in {private_base, private_base | {"mask::---"}}
 
 
 def _run_f09_acl(action: str, entry: str, workspace: Path, *, timeout=5) -> bool:

@@ -108,6 +108,7 @@ ALLOWED_OPERATIONS = frozenset(
         "executor_start",
         "executor_stop",
         "session_delete",
+        "local_reconciliation",
         "audit_persist",
         "lease_release",
     }
@@ -804,41 +805,45 @@ class StagingLease:
         if not self.acquired:
             raise DurabilityError("Staging connectivity lease is not held")
         with _lease_operation_gate(self.root, synthetic=self.synthetic):
-            release_id = uuid.uuid4().hex
-            lease_hash = _sha256(self._lease_id)
-            pending = self.root / f"release-{release_id}.pending"
-            complete = self.root / f"release-{release_id}.complete"
+            self._release_while_gate_held()
+
+    def _release_while_gate_held(self) -> None:
+        """Run the existing durable release protocol under an already-held gate."""
+        if not self.acquired or not isinstance(self._lease_id, str):
+            raise DurabilityError("Staging connectivity lease is not held")
+        release_id = uuid.uuid4().hex
+        lease_hash = _sha256(self._lease_id)
+        pending = self.root / f"release-{release_id}.pending"
+        complete = self.root / f"release-{release_id}.complete"
+        _write_release_marker(
+            self.root,
+            pending,
+            _release_marker_bytes("pending", release_id, lease_hash),
+            synthetic=self.synthetic,
+        )
+        try:
+            flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
+            descriptor = os.open(self.lock_path, flags)
+            try:
+                lock_record = os.read(descriptor, 256)
+            finally:
+                os.close(descriptor)
+            expected = f"managed_agents_connectivity_lease_v1:{self._lease_id}\n".encode("ascii")
+            if lock_record != expected:
+                raise OSError("lease identity changed")
+            self.lock_path.unlink()
+            _fsync_directory(self.root, required=not self.synthetic)
             _write_release_marker(
                 self.root,
-                pending,
-                _release_marker_bytes("pending", release_id, lease_hash),
+                complete,
+                _release_marker_bytes("complete", release_id, lease_hash),
                 synthetic=self.synthetic,
             )
-            try:
-                flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
-                descriptor = os.open(self.lock_path, flags)
-                try:
-                    lock_record = os.read(descriptor, 256)
-                finally:
-                    os.close(descriptor)
-                expected = f"managed_agents_connectivity_lease_v1:{self._lease_id}\n".encode(
-                    "ascii"
-                )
-                if lock_record != expected:
-                    raise OSError("lease identity changed")
-                self.lock_path.unlink()
-                _fsync_directory(self.root, required=not self.synthetic)
-                _write_release_marker(
-                    self.root,
-                    complete,
-                    _release_marker_bytes("complete", release_id, lease_hash),
-                    synthetic=self.synthetic,
-                )
-            except BaseException:
-                raise DurabilityError(
-                    "Lease release is unresolved; operator reconciliation required"
-                ) from None
-            self.acquired = False
+        except BaseException:
+            raise DurabilityError(
+                "Lease release is unresolved; operator reconciliation required"
+            ) from None
+        self.acquired = False
 
 
 class StagingJournal:

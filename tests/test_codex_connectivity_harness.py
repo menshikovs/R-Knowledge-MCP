@@ -2908,8 +2908,45 @@ def test_solo_operator_command_exposes_approve_inspect_and_scoped_run():
         check=False,
     )
     assert result.returncode == 0
-    assert "approve" in result.stdout and "inspect" in result.stdout and "run" in result.stdout
+    assert (
+        "approve" in result.stdout
+        and "inspect" in result.stdout
+        and "run" in result.stdout
+        and "reconcile-preflight" in result.stdout
+    )
     assert "run-one" not in result.stdout and "authorize-one" not in result.stdout
+
+
+def test_preflight_reconciliation_inventory_uses_only_fixed_read_only_docker_queries(
+    monkeypatch,
+):
+    cli = _solo_cli_module()
+    calls = []
+    responses = [
+        b"rkmcp-probe-F09-0123456789abcdef\nunrelated-container\n",
+        b"rkmcp-candidate-F09-0123456789ab\nunrelated-network\n",
+    ]
+    runtime = SimpleNamespace(
+        F09_DOCKER_SOCKET="unix:///var/run/docker.sock",
+        _operator_environment=lambda environment: {"PATH": environment.get("PATH", "")},
+    )
+
+    def bounded_run(command, *, timeout, env):
+        calls.append((command, timeout, env))
+        return subprocess.CompletedProcess(command, 0, responses.pop(0), b"")
+
+    runtime._bounded_run = bounded_run
+    monkeypatch.setattr(cli.shutil, "which", lambda name: "/usr/bin/docker")
+    inventory = cli._f09_docker_inventory(runtime)
+
+    assert inventory == {
+        "containers": ["rkmcp-probe-F09-0123456789abcdef"],
+        "networks": ["rkmcp-candidate-F09-0123456789ab"],
+    }
+    assert len(calls) == 2
+    assert calls[0][0][3:] == ["ps", "--all", "--format", "{{.Names}}"]
+    assert calls[1][0][3:] == ["network", "ls", "--format", "{{.Name}}"]
+    assert all(call[0][1:3] == ["--host", "unix:///var/run/docker.sock"] for call in calls)
 
 
 def _solo_cli_module():
@@ -2927,6 +2964,270 @@ def _approve_cli_store(tmp_path):
     store, _, current = _solo_store(tmp_path)
     store.approve(_solo_request(), expires_in_seconds=120)
     return store, current
+
+
+def _preflight_failure_state(tmp_path, *, audit_changes=None, extra_operations=()):
+    store, _, _ = _solo_store(tmp_path)
+    approval = store.approve(_solo_request(), expires_in_seconds=120)
+    attempt_id = approval["attempt_id"]
+    lease = StagingLease(store.state_directory, synthetic=True)
+    lease.acquire()
+    journal = StagingJournal(store.state_directory, synthetic=True)
+    store.consume(journal, lease)
+    preflight = journal.append("executor_preflight", "intent")
+    journal.append("executor_preflight", "outcome", intent_seq=preflight, code="preflight_failed")
+    audit = {
+        "schema_version": 2,
+        "record_type": "managed_agents_connectivity_audit_not_benchmark_result",
+        "synthetic": True,
+        "state": "preflight",
+        "failure_code": "executor_preflight_failed",
+        "session_creation_outcome": "not_attempted",
+        "session_id_sha256": None,
+        "environment_id_sha256": None,
+        "connected_observed": False,
+        "session_deletion_verified": False,
+        "session_deletion_not_required": False,
+        "executor_start_attempted": False,
+        "executor_preflight_verified": False,
+        "executor_termination_verified": False,
+        "approval_consumption_durable": True,
+        "cleanup_verified": False,
+        "task_submission_count": 0,
+        "responses_calls": 0,
+        "transitions": [],
+    }
+    audit.update(audit_changes or {})
+    audit_intent = journal.append("audit_persist", "intent")
+    audit_path = journal.root / "connectivity-audit.json"
+    audit_path.write_text(json.dumps(audit), encoding="utf-8")
+    audit_path.chmod(0o600)
+    journal.append("audit_persist", "outcome", intent_seq=audit_intent)
+    for operation in extra_operations:
+        intent = journal.append(operation, "intent")
+        journal.append(operation, "outcome", intent_seq=intent, code="synthetic_rejected")
+    original_journal_path = journal.path
+    journal.close()
+
+    workspace_parent = store.state_directory / "f09-workspaces"
+    workspace_parent.mkdir(mode=0o700)
+    workspace = workspace_parent / attempt_id
+    workspace.mkdir(mode=0o700)
+    store.read_only = True
+    return store, attempt_id, original_journal_path, audit_path, workspace
+
+
+def _install_reconciliation_fakes(monkeypatch, cli, *, acl=None, inventory=None):
+    runtime = cli._load_docker_runtime()
+    acl = acl or "user::rwx\ngroup::---\nmask::---\nother::---\n"
+    monkeypatch.setattr(
+        runtime,
+        "_read_f09_workspace_acl",
+        lambda *_args, **_kwargs: acl,
+    )
+    monkeypatch.setattr(cli, "_load_docker_runtime", lambda: runtime)
+    inventory_calls = []
+
+    def read_inventory(_runtime):
+        inventory_calls.append("read")
+        return inventory or {"containers": [], "networks": []}
+
+    monkeypatch.setattr(cli, "_f09_docker_inventory", read_inventory)
+    return runtime, inventory_calls
+
+
+def _reconciliation_rejection_snapshot(store, workspace):
+    lease_root = store.state_directory / harness_module.JOURNAL_DIRNAME
+    return {
+        "lease": (lease_root / "active.lock").read_bytes(),
+        "consumed_markers": {
+            name: (store.root / name).read_bytes()
+            for name in ("consumption.started", "consumed.json")
+        },
+        "workspace": {
+            path.name: path.read_bytes() if path.is_file() else None for path in workspace.iterdir()
+        },
+        "run_names": sorted(path.name for path in lease_root.glob("run-*")),
+        "run_files": {
+            str(path.relative_to(lease_root)): path.read_bytes()
+            for path in lease_root.glob("run-*/*")
+            if path.is_file()
+        },
+        "release_markers": sorted(path.name for path in lease_root.glob("release-*")),
+    }
+
+
+def _assert_reconciliation_rejection_unchanged(store, workspace, snapshot):
+    lease_root = store.state_directory / harness_module.JOURNAL_DIRNAME
+    assert (lease_root / "active.lock").read_bytes() == snapshot["lease"]
+    assert {
+        name: (store.root / name).read_bytes() for name in ("consumption.started", "consumed.json")
+    } == snapshot["consumed_markers"]
+    assert store.inspect()["state"] == "consumed_or_uncertain"
+    assert {
+        path.name: path.read_bytes() if path.is_file() else None for path in workspace.iterdir()
+    } == snapshot["workspace"]
+    assert sorted(path.name for path in lease_root.glob("run-*")) == snapshot["run_names"]
+    assert {
+        str(path.relative_to(lease_root)): path.read_bytes()
+        for path in lease_root.glob("run-*/*")
+        if path.is_file()
+    } == snapshot["run_files"]
+    assert sorted(path.name for path in lease_root.glob("release-*")) == snapshot["release_markers"]
+    assert not list(lease_root.glob("run-*/preflight-reconciliation.json"))
+
+
+def test_preflight_reconciliation_removes_workspace_and_releases_only_verified_lease(
+    tmp_path, monkeypatch
+):
+    cli = _solo_cli_module()
+    store, attempt_id, journal_path, audit_path, workspace = _preflight_failure_state(tmp_path)
+    _install_reconciliation_fakes(monkeypatch, cli)
+    old_journal = journal_path.read_bytes()
+    old_audit = audit_path.read_bytes()
+    markers = {
+        name: (store.root / name).read_bytes() for name in ("consumption.started", "consumed.json")
+    }
+    terminal = _SoloTerminal()
+
+    result = cli._reconcile_preflight_failure(
+        store,
+        attempt_id,
+        terminal_input=terminal,
+        terminal_output=terminal,
+        _synthetic_test=True,
+    )
+
+    assert result == {
+        "attempt_id": attempt_id,
+        "local_reconciliation_verified": True,
+        "approval_consumption_preserved": True,
+        "session_creation_outcome": "not_attempted",
+        "executor_start_attempted": False,
+        "workspace_removed": True,
+        "f09_resources_absent": True,
+        "lease_release_state": "resolved",
+        "live_execution_authorized": False,
+    }
+    assert not workspace.exists()
+    assert not (store.state_directory / harness_module.JOURNAL_DIRNAME / "active.lock").exists()
+    assert journal_path.read_bytes() == old_journal
+    assert audit_path.read_bytes() == old_audit
+    assert {
+        name: (store.root / name).read_bytes() for name in ("consumption.started", "consumed.json")
+    } == markers
+    assert store.inspect()["state"] == "consumed_or_uncertain"
+    new_journal = next(
+        path
+        for path in (store.state_directory / harness_module.JOURNAL_DIRNAME).glob(
+            "run-*/connectivity.jsonl"
+        )
+        if path != journal_path
+    )
+    report = harness_module.inspect_staging_journal(new_journal)
+    assert report["integrity"] == "valid"
+    assert report["durable_release_authorization"] is True
+    assert report["cleanup_complete"] is False
+
+    store.read_only = False
+    with pytest.raises(ConnectivityError):
+        cli._execute_approved(store)
+
+
+@pytest.mark.parametrize("operation", ["session_create", "executor_start"])
+def test_preflight_reconciliation_rejects_any_session_or_executor_start_intent(
+    tmp_path, monkeypatch, operation
+):
+    cli = _solo_cli_module()
+    store, attempt_id, _journal_path, _, workspace = _preflight_failure_state(
+        tmp_path, extra_operations=(operation,)
+    )
+    _, inventory_calls = _install_reconciliation_fakes(monkeypatch, cli)
+    terminal = _SoloTerminal()
+    snapshot = _reconciliation_rejection_snapshot(store, workspace)
+
+    with pytest.raises(ConnectivityError) as rejected:
+        cli._reconcile_preflight_failure(
+            store,
+            attempt_id,
+            terminal_input=terminal,
+            terminal_output=terminal,
+            _synthetic_test=True,
+        )
+    assert rejected.value.code == "reconcile_journal_not_preflight_only"
+    assert str(rejected.value) == "Managed Agents connectivity check failed"
+    assert inventory_calls == []
+    _assert_reconciliation_rejection_unchanged(store, workspace, snapshot)
+
+
+def test_preflight_reconciliation_rejects_docker_resources_and_keeps_lease(tmp_path, monkeypatch):
+    cli = _solo_cli_module()
+    store, attempt_id, _journal_path, _, workspace = _preflight_failure_state(tmp_path)
+    _, inventory_calls = _install_reconciliation_fakes(
+        monkeypatch,
+        cli,
+        inventory={"containers": ["rkmcp-probe-F09-0123456789abcdef"], "networks": []},
+    )
+    terminal = _SoloTerminal()
+    snapshot = _reconciliation_rejection_snapshot(store, workspace)
+
+    with pytest.raises(ConnectivityError) as rejected:
+        cli._reconcile_preflight_failure(
+            store,
+            attempt_id,
+            terminal_input=terminal,
+            terminal_output=terminal,
+            _synthetic_test=True,
+        )
+    assert rejected.value.code == "reconcile_f09_resources_present"
+    assert str(rejected.value) == "Managed Agents connectivity check failed"
+    assert inventory_calls == ["read"]
+    _assert_reconciliation_rejection_unchanged(store, workspace, snapshot)
+
+
+@pytest.mark.parametrize(
+    ("audit_changes", "workspace_file", "acl", "expected_code"),
+    [
+        (
+            {"session_creation_outcome": "unknown"},
+            False,
+            None,
+            "reconcile_audit_not_preflight_only",
+        ),
+        ({}, True, None, "reconcile_workspace_not_empty_or_scoped"),
+        (
+            {},
+            False,
+            "user::rwx\nuser:65534:rwx\ngroup::---\nmask::rwx\nother::---\n",
+            "reconcile_workspace_acl_not_private",
+        ),
+    ],
+)
+def test_preflight_reconciliation_rejects_uncertain_audit_or_workspace(
+    tmp_path, monkeypatch, audit_changes, workspace_file, acl, expected_code
+):
+    cli = _solo_cli_module()
+    store, attempt_id, _journal_path, _, workspace = _preflight_failure_state(
+        tmp_path, audit_changes=audit_changes
+    )
+    _, inventory_calls = _install_reconciliation_fakes(monkeypatch, cli, acl=acl)
+    if workspace_file:
+        (workspace / "unexpected").write_text("synthetic", encoding="utf-8")
+    terminal = _SoloTerminal()
+    snapshot = _reconciliation_rejection_snapshot(store, workspace)
+
+    with pytest.raises(ConnectivityError) as rejected:
+        cli._reconcile_preflight_failure(
+            store,
+            attempt_id,
+            terminal_input=terminal,
+            terminal_output=terminal,
+            _synthetic_test=True,
+        )
+    assert rejected.value.code == expected_code
+    assert str(rejected.value) == "Managed Agents connectivity check failed"
+    assert inventory_calls == []
+    _assert_reconciliation_rejection_unchanged(store, workspace, snapshot)
 
 
 def test_solo_operator_run_cli_synthetic_end_to_end_consumes_once_and_cleans(tmp_path, capsys):
