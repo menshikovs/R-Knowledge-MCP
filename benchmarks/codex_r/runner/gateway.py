@@ -131,6 +131,8 @@ async def serve(condition, audit_path):
     # Fresh upstream process/cache per independent trial. No account credentials.
     env = {k: os.environ[k] for k in ("PATH", "SYSTEMROOT", "TEMP", "TMP") if k in os.environ}
     env["PROMPT_INTELLIGENCE_ENABLED"] = "true"
+    # Benchmark conditions name the original tools; pin that surface explicitly.
+    env["MCP_TOOLSET"] = "legacy"
     params = StdioServerParameters(
         command=sys.executable, args=["-m", "cran_knowledge_mcp.server"], env=env
     )

@@ -8,7 +8,9 @@ BIOC_URL = "https://bioconductor.org/config.yaml"
 
 
 class OfflineKnowledge:
-    async def get_package_info(self, package, repository="cran", bioc_version=None):
+    async def get_package_info(
+        self, package, repository="cran", bioc_version=None, verify_archive=True
+    ):
         is_bioc = package.casefold() == "deseq2"
         record = {
             "package": package,

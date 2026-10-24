@@ -1,0 +1,11 @@
+{
+  "id": "H01",
+  "title": "Dynamic weighted group summaries with tidy evaluation",
+  "category": "non-standard evaluation; literal column names; grouping semantics",
+  "source": "Original task from R_Knowledge_MCP_Hard_Benchmark_v1.md (H01). Inspired in spirit by challenging tidyverse questions such as vitals::are (https://vitals.tidyverse.org/reference/are.html); no third-party prompt, solution or verifier is reproduced.",
+  "packages": {"R": "4.5.2", "dplyr": "1.2.1", "rlang": "1.3.0", "tibble": "3.3.1", "vctrs": "0.7.1"},
+  "difficulty_hypothesis": "Typical solutions filter invalid rows before grouping (losing all-invalid groups), let 0/0 produce NaN, keep an input's existing grouping or return a grouped result, turn names into code (parse_expr) or collide with the .data/.env pronouns, and sum integer weights in integer arithmetic.",
+  "expected_mcp_relevance": "Moderate: dplyr/rlang Rd for pick(), across(all_of()), arrange(.locale), summarise(.groups) and the .data/.env pronouns is available through get_function_docs; the core difficulty is reasoning about edge cases.",
+  "setup_prerequisites": "Scorer and executor images contain R 4.5.2 with dplyr, rlang, tibble, vctrs, callr and testthat matching configs/renv.lock; no network or package installation.",
+  "checks_documented_in": "verifier/H01.R"
+}

@@ -59,49 +59,62 @@ or provide a hosted endpoint. Codex configuration follows
 
 ## Tools and repository selection
 
-| Tool | Main arguments | Behavior |
-| --- | --- | --- |
-| `search_packages` | `query`, `repository="cran"`, `bioc_version`, `limit=10`, `offset=0` | Names and available title keywords |
-| `get_package_info` | `package`, `repository="cran"`, `bioc_version`, `verify_archive=true` | Versioned DESCRIPTION fields with explicit index/DESCRIPTION/archive assurance |
-| `get_dependencies` | `package`, `repository="cran"`, `bioc_version`, `resolve_repositories=false` | Raw dependency fields and optional repository resolution |
-| `get_function_docs` | `package`, `function`, `repository="cran"`, `bioc_version`, `offset=0` | Genuine raw Rd, paginated |
-| `get_package_vignettes` | `package`, `repository="cran"`, `bioc_version` | Vignette links from the version-checked official package page |
-| `get_package_agent_guidance` | `package`, `revision`, `repository`, `bioc_version` | AGENTS.md files from the package's metadata-declared GitHub repository at an explicit ref, pinned to a commit SHA |
-| `get_context7_docs` | `package`, `question`, `repository`, `bioc_version` | Context7 documentation/examples only after its library ID matches the package's verified metadata URL |
-| `get_package_knowledge` | `package`, optional `question`, `revision`, `repository`, `bioc_version` | Package metadata and dependencies, plus requested GitHub/Context7 sections with their own provenance |
-| `get_shiny_docs` | `package`, `function`, optional `package_version` | Exact Rd alias from current indexed CRAN source; known Shiny function ownership checked |
-| `explain_shiny_reactivity` | `topic`, `question`, optional `source` | Reactive concept with retrieved official Shiny article and optional static findings |
-| `analyze_shiny_app` | `source` or `files`, optional `shiny_version` | Heuristic checks on caller-supplied R text; never executes it |
-| `get_positron_guidance` | `topic`, optional version/OS/R/project metadata | Retrieved Positron docs; current docs are not version-pinned |
-| `analyze_r_workspace` | `files` mapping | Analyze selected contents and renv metadata; `.Renviron` values are redacted |
-| `get_quarto_docs` | `topic`, optional `quarto_version` | Retrieved official Quarto pages; version caveat is explicit |
-| `analyze_quarto_document` | `source`, optional project/R/dependency metadata | Safe YAML front matter, R chunk options, formats and citations; no render |
-| `analyze_quarto_project` | `_quarto.yml` text, optional `_metadata.yml` and manifest | Project/profile/format metadata and manifest-level bibliography checks |
-| `get_r_workflow_guidance` | scenario, explicit package list, optional R/Bioc versions | Combines selected package knowledge and framework docs without inventing recommendations |
-| `get_visualization_docs` | `package`, `function`, optional `package_version` | Exact current CRAN Rd for ggplot2, ggraph, tidyr, plotly or knitr; unavailable historical versions are explicit errors |
-| `get_visualization_workflow` | fixed scenario, optional package versions | Groups exact current Rd references for a named workflow; does not generate or run code |
-| `analyze_ggplot_code` | R source, optional schema and package versions | Static layers, mapped/fixed aesthetics and simple schema checks |
-| `analyze_ggraph_code` | R source, optional node/edge schemas | Static layout and scope-aware node/edge mapping checks |
-| `analyze_tidyr_pipeline` | R source, optional input/expected schemas | Conservative reshape analysis and pivot key warnings |
-| `analyze_ggplotly_compatibility` | R source, optional package versions | Narrow documented conversion caveats, not full compatibility |
-| `analyze_knitr_chunks` | R Markdown/Quarto text, optional package versions | Static chunk labels/options/dependencies; no render or execution |
-| `get_bioconductor_version` | `r_version` | Official R/release mapping and latest released recommendation for that R |
-| `check_package_compatibility` | `package`, `r_version`, `bioc_version` | Bioconductor/R mapping and direct required dependency checks |
-| `check_package_version` | `package`, `installed_version` | Existing CRAN numeric version comparison |
-| `build_r_prompt` | request, optional R/Bioconductor context, packages, constraints, `structured_context`, `composition_mode`, `templates`, `workflow_context`, `include_plan`, `include_provenance` | Build a backward-compatible single-task prompt or one unified multi-stage workflow; package versions/docs are grounded only when verified from configured repository providers |
-| `improve_r_prompt` | existing prompt, goals, optional context and `structured_context` | Add structure while preserving the full original text and explicit goals |
-| `validate_r_prompt` | `prompt_text` | Heuristic checklist for gaps, conflicts, likely secrets and unverified `pkg::function()` references |
-| `list_r_prompt_templates` | — | List stable IDs for 30 local R task templates, including CSV and SQL workflows |
-| `get_r_prompt_context` | packages, optional R/Bioconductor versions | Return verified package metadata, dependencies, compatibility and source provenance without generating a prompt |
+The default surface (`MCP_TOOLSET=consolidated`) has 15 tools. Every parameter has
+a schema description, every tool has a title and `readOnlyHint=true`, and
+`openWorldHint` is false only for tools that never contact an upstream service.
+`MCP_TOOLSET=legacy` restores the original 35 tools unchanged (used by the Codex
+benchmark conditions); resources and prompts are registered in both modes.
+
+| Tool | Main arguments | Behavior | Replaces (legacy) |
+| --- | --- | --- | --- |
+| `search_packages` | `query`, `repository="cran"`, `bioc_version`, `limit`, `offset` | Ranked name/title search; every term must match | same name |
+| `get_package` | `package`, `include=["metadata"]`, `repository`, `bioc_version`, `verify_archive=false`, `resolve_repositories`, `revision`, `question` | One call returns any of: metadata, dependencies, vignettes, agent_guidance (needs `revision`), context7 (needs `question`); each section keeps its own provenance and failure | `get_package_info`, `get_dependencies`, `get_package_vignettes`, `get_package_agent_guidance`, `get_context7_docs`, `get_package_knowledge` |
+| `get_function_docs` | `package`, `function`, `offset`, `repository`, `bioc_version`, optional `package_version` | Raw Rd from the verified current source archive; a different requested version is an explicit error | `get_function_docs`, `get_shiny_docs`, `get_visualization_docs` |
+| `check_package_version` | `package`, `installed_version` | Compare a client-supplied version with latest CRAN | same name |
+| `check_r_compatibility` | `r_version`, optional `package`, `repository="cran"`, `bioc_version` | CRAN or Bioconductor R and direct dependency constraints; without `package` (Bioconductor) the official R/release map | `get_bioconductor_version`, `check_package_compatibility` (CRAN check is new) |
+| `search_r_documentation` | `query`, `manuals`, `limit`, `r_version` | BM25 (SQLite FTS5) over the local index of six official R manuals | same name |
+| `get_r_documentation_section` | `document_id`, `section_id`, `max_chars` | One indexed manual section | same name |
+| `get_framework_docs` | `framework` (shiny/positron/quarto), `topic`, optional `version` and framework-specific fields | Page from the fixed official catalog | `explain_shiny_reactivity`, `get_positron_guidance`, `get_quarto_docs` |
+| `get_r_workflow_guidance` | `scenario`, `packages`, `r_version`, `bioc_version`, `package_versions` | Framework scenarios combine docs and package knowledge; visualization scenarios group current Rd references | `get_r_workflow_guidance`, `get_visualization_workflow` |
+| `analyze_r_source` | `kind` (ggplot, ggraph, tidyr, ggplotly, knitr, shiny, quarto), `source`, `schemas`, kind-specific options | Bounded static analysis; options that the selected kind cannot use are rejected, not ignored | `analyze_ggplot_code`, `analyze_ggraph_code`, `analyze_tidyr_pipeline`, `analyze_ggplotly_compatibility`, `analyze_knitr_chunks`, `analyze_shiny_app`, `analyze_quarto_document` |
+| `analyze_r_project` | `files`, optional `file_manifest` | Workspace metadata; adds Quarto project analysis when `_quarto.yml` is supplied | `analyze_r_workspace`, `analyze_quarto_project` |
+| `recommend_technology_stack` | objective, project type, requirements, stack, target, preferences | Provisional architecture with repository-checked candidates | same name |
+| `build_r_prompt` | `request`, `mode="build"` or `"improve"`, prompt options | Build a prompt, or improve an existing one verbatim | `build_r_prompt`, `improve_r_prompt` |
+| `validate_r_prompt` | `prompt_text` | Heuristic structural checklist | same name |
+| `get_r_prompt_context` | `packages`, R/Bioconductor versions | Verified package context for prompt grounding | same name |
+
+Tools that return repository data accept `verbosity="compact"` (default) or
+`"full"`. Compact responses omit repeated static notes (`limitations`,
+`verification_notes`) and merge nested `sources` lists into one deduplicated
+top-level list; nested results keep their own `source_url` and `checked_at`, and
+safety fields such as `trust` and `not_executed` are always present. Results that
+still exceed 60,000 bytes have their longest text fields shortened and list each
+cut in `output_truncation`.
+
+Resources (both tool sets):
+
+| URI | Content |
+| --- | --- |
+| `r-knowledge://framework-docs` | Fixed Shiny, Positron and Quarto topic catalog |
+| `r-knowledge://prompt-templates` | Built-in prompt template identifiers |
+| `r-manual://{document_id}` | Section ids and headings of one indexed R manual |
+| `r-manual://{document_id}/{section_id}` | One manual section (up to 32,000 characters) |
+| `cran://{package}/man/{alias}` | First page of raw Rd for one alias from current CRAN |
 
 `repository` accepts **cran**, **bioconductor**, and **all**. Existing calls default
 to CRAN. `all` keeps separate identities when names overlap, and exposes source
 failures in `errors` with `verification_status="partial"` or `"failed"`. Absence
 from a checked index differs from an unavailable source. Combined search orders
 CRAN results then Bioconductor results, using a shared offset/limit (1-20).
+Within a repository, results rank exact names first, then name prefixes and name
+words, then title words; title terms match whole words or word prefixes, so
+`api` does not match `therapy`.
 
-`get_package_info` keeps deep archive verification as its backward-compatible
-default. Pass `verify_archive=false` to avoid downloading a package archive:
+See [Technology stack recommendations](docs/TECHNOLOGY_STACK_RECOMMENDATION.md) for
+the input example, evidence contract, and limits of `recommend_technology_stack`.
+
+The legacy `get_package_info` keeps deep archive verification as its default;
+`get_package` defaults to `verify_archive=false`. Without archive verification:
 CRAN reads the official per-package DESCRIPTION and checks its exact package and
 version against PACKAGES; if that optional endpoint returns 404, the tool returns
 partial index-only metadata and identifies missing fields. Bioconductor returns
@@ -273,9 +286,25 @@ Prompt settings include `PROMPT_INTELLIGENCE_ENABLED`,
 `PROMPT_MAX_INPUT_CHARS`, `PROMPT_MAX_OUTPUT_CHARS`,
 `PROMPT_MAX_GROUNDING_PACKAGES`, `PROMPT_DEFAULT_TARGET`, and
 `PROMPT_DEFAULT_DETAIL_LEVEL`. See the prompt guide for bounds and meanings.
+`MCP_TOOLSET` selects `consolidated` (default, 15 tools) or `legacy` (the original
+35). `GITHUB_TOKEN` is optional; it raises the GitHub API limit for AGENTS.md
+lookups from 60 to 5,000 requests per hour, is sent only as an `Authorization`
+header to `api.github.com`, and never appears in URLs, logs or results.
+`R_KNOWLEDGE_NATIVE=0` forces the pure-Python implementations even when the
+optional Rust extension is installed.
+
+CRAN and Bioconductor indexes are fetched as `PACKAGES.gz` (falling back to
+`PACKAGES` only when the compressed file is absent). Expired cache entries are
+revalidated with `If-None-Match`/`If-Modified-Since`; a `304` keeps the parsed
+index and records the new `checked_at`, while any error still fails explicitly
+instead of serving stale data.
 
 Compatibility returns `metadata_compatible`, `incompatible` or `unknown`, with a
-nullable `compatible` flag. It checks the official R/release mapping, package R
+nullable `compatible` flag. For CRAN it checks the current record's `R (...)`
+constraint and its direct required dependencies in the CRAN index; dependencies
+outside CRAN, or a patch-level bound for an R minor version such as `4.1`, make
+the result `unknown`. Only the current CRAN version is checked. For Bioconductor
+it checks the official R/release mapping, package R
 constraints including patch requirements, and direct required dependency
 availability/version/R constraints. It does not solve transitive dependencies,
 inspect installed packages, or test platform binaries/system libraries.
@@ -378,6 +407,20 @@ python -m pip install -e '.[dev]'
 ruff check .
 ruff format --check .
 pytest
+```
+
+Optional Rust accelerators live in `native/` (PyO3, abi3 wheel for CPython
+3.11+). They speed up R source scanning (5–9x on 250 KiB inputs) and package
+search ranking (about 12x on 22k packages). The pure-Python code remains the
+reference: without the extension everything works identically, and
+`tests/test_native_parity.py` compares both implementations on generated inputs
+(it is skipped when the extension is absent).
+
+```sh
+cd native
+maturin build --release -i ../.venv/bin/python   # Windows: ..\.venv\Scripts\python.exe
+pip install target/wheels/cran_knowledge_native-*.whl
+cargo clippy --release -- -D warnings
 ```
 
 CI tests Python 3.11–3.14 and builds Docker without pushing an image. Unit and

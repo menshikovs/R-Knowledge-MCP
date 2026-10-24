@@ -10,6 +10,8 @@ from pathlib import Path
 
 import pytest
 
+pytestmark = pytest.mark.usefixtures("r01a_offline_guard")
+
 ROOT = Path(__file__).resolve().parents[1] / "benchmarks/codex_r"
 SPEC = importlib.util.spec_from_file_location(
     "codex_r_lifecycle", ROOT / "exploratory/lifecycle.py"
@@ -87,8 +89,10 @@ class FakeClient:
         self.submitted = False
         self.cancelled = False
         self.deleted = False
+        self.spend_control_limit_cents = None
 
-    def create_session(self, _context):
+    def create_session(self, _context, *, spend_control_limit_cents=None):
+        self.spend_control_limit_cents = spend_control_limit_cents
         return {
             "session_id": "synthetic_session",
             "environment_id": "synthetic_env",
@@ -217,6 +221,45 @@ def test_synthetic_controller_runs_one_ordered_lifecycle_and_checkpoints(tmp_pat
     assert leases[0].released
 
 
+def test_lifecycle_forwards_only_attempt_bound_spend_limit(tmp_path, monkeypatch):
+    synthetic_attempt_id = "synthetic-future-attempt-fixture"
+    monkeypatch.setattr(
+        lifecycle.safety_lib,
+        "ATTEMPTS",
+        lifecycle.safety_lib.ATTEMPTS | {synthetic_attempt_id},
+    )
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    prepare_workspace(workspace)
+    controller, client, *_ = make_controller(workspace)
+    limit_cents = 731
+    authorization = {
+        "schema_version": 2,
+        "spend_control_approval": {
+            "limit_cents": limit_cents,
+            "attempt_id": synthetic_attempt_id,
+            "typed_confirmation": (
+                f"APPROVE SESSION SPEND LIMIT {limit_cents} USD CENTS FOR {synthetic_attempt_id}"
+            ),
+        },
+    }
+
+    report = controller.run_one(
+        context={
+            "trial_id": "R01-A",
+            "attempt_id": synthetic_attempt_id,
+            "expected_tools": [],
+            "workspace": str(workspace),
+        },
+        authorization=authorization,
+        state_directory=tmp_path / "state",
+    )
+
+    assert client.spend_control_limit_cents == limit_cents
+    assert report["spend_control_limit_cents"] == limit_cents
+    assert report["synthetic"] is True
+
+
 def test_stream_failure_cancels_and_requires_spend_checkpoint(tmp_path):
     workspace = tmp_path / "workspace"
     workspace.mkdir()
@@ -244,7 +287,11 @@ def test_create_session_diagnostic_is_preserved_in_safe_lifecycle_audit(tmp_path
     controller, _client, runtime, topology, ledger, leases = make_controller(workspace)
 
     class SessionRejectedClient(FakeClient):
-        def create_session(self, _context):
+        def create_session(self, _context, *, spend_control_limit_cents=None):
+            # Match the production client's conservative create-failure flags.
+            self.session_creation_attempted = True
+            self.session_creation_uncertain = True
+            self.session_state = "unknown"
             error = RuntimeError("safe synthetic rejection")
             error.diagnostics = {
                 "operation": "create_session",
@@ -258,11 +305,13 @@ def test_create_session_diagnostic_is_preserved_in_safe_lifecycle_audit(tmp_path
 
     controller.client = SessionRejectedClient(workspace)
     context = {"trial_id": "R01-A", "expected_tools": [], "workspace": str(workspace)}
-    report = controller.run_one(
-        context=context,
-        authorization={"synthetic": True},
-        state_directory=tmp_path / "state",
-    )
+    with pytest.raises(lifecycle.LifecycleError, match="Cleanup") as caught:
+        controller.run_one(
+            context=context,
+            authorization={"synthetic": True},
+            state_directory=tmp_path / "state",
+        )
+    report = caught.value.audit_record
 
     assert report["failure"] == {
         "operation": "create_session",
@@ -281,7 +330,9 @@ def test_create_session_diagnostic_is_preserved_in_safe_lifecycle_audit(tmp_path
     assert "never-store-this" not in str(report)
     assert "must-not-appear" not in str(report)
     assert runtime.stopped is False
-    assert topology.cleaned and ledger.active_trial_id is None and leases[0].released
+    assert report["session_creation_outcome"] == "uncertain"
+    assert report["session_deleted_verified"] is None and not report["cleanup_verified"]
+    assert topology.cleaned and ledger.active_trial_id is None and not leases[0].released
 
 
 @pytest.mark.parametrize(
@@ -310,7 +361,7 @@ def test_http_201_validation_failure_audit_reports_session_deletion_state(
             self.session_deletion_verified = deletion_status
             self.session_state = session_state
 
-        def create_session(self, _context):
+        def create_session(self, _context, *, spend_control_limit_cents=None):
             error = RuntimeError("Managed Agents session response failed validation")
             error.diagnostics = {
                 "operation": "create_session",
@@ -385,11 +436,17 @@ def test_deadline_watchdog_terminates_executor_and_requires_checkpoint(tmp_path)
     controller, client, runtime, topology, _ledger, _leases = make_controller(workspace, delay=0.05)
     controller.trial_timeout_seconds = 0.01
     context = {"trial_id": "R01-A", "expected_tools": [], "workspace": str(workspace)}
-    report = controller.run_one(
-        context=context,
-        authorization={"synthetic": True},
-        state_directory=tmp_path / "state",
-    )
+    with pytest.raises(lifecycle.LifecycleError) as caught:
+        controller.run_one(
+            context=context,
+            authorization={"synthetic": True},
+            state_directory=tmp_path / "state",
+        )
+    report = caught.value.audit_record
+    # The deliberately uncooperative fake stream can still be running after
+    # candidate termination; that uncertainty must retain the lease.
+    assert report["unfinished_operations_uncertain"] is True
+    assert report["cleanup_verified"] is False
     assert report["deadline_expired"] is True
     assert report["deadline_termination_verified"] is True
     assert report["checkpoint"] is not None
@@ -408,16 +465,249 @@ def test_live_mode_rejects_synthetic_client_before_authorization(tmp_path):
         )
 
 
-def test_live_mode_stays_blocked_without_verified_gates(tmp_path):
-    controller, client, *_ = make_controller(tmp_path)
+def test_live_mode_rejects_closed_attempt_before_gates_or_external_effects(tmp_path):
+    controller, client, runtime, topology, ledger, leases = make_controller(tmp_path)
     client.synthetic = False
     controller.synthetic_mode = False
-    with pytest.raises(lifecycle.LifecycleError, match="verification gates"):
+
+    gate_reads = []
+    attempted_side_effects = []
+    controller.current_live_gates = lambda: gate_reads.append(True) or {}
+
+    def forbidden(name):
+        def attempt(*_args, **_kwargs):
+            attempted_side_effects.append(name)
+            raise RuntimeError(f"unexpected pre-gate side effect: {name}")
+
+        return attempt
+
+    controller.authorize = lambda *_: None
+    controller.consume_authorization = forbidden("consume_authorization")
+    controller.lease_factory = forbidden("lease_acquisition")
+    ledger.authorize_one = forbidden("ledger_authorize")
+    topology.start = forbidden("topology_start")
+    topology.cleanup = forbidden("topology_cleanup")
+    client.create_session = forbidden("session_creation")
+    client.send_and_stream = forbidden("task_stream_and_submission")
+    client.cancel_turn = forbidden("session_cancellation")
+    client.delete_session = forbidden("session_deletion")
+    runtime.start_managed_executor = forbidden("executor_start")
+    runtime.stop_managed_executor = forbidden("executor_termination")
+
+    with pytest.raises(lifecycle.LifecycleError) as caught:
         controller.run_one(
-            context={"trial_id": "R01-A", "expected_tools": [], "workspace": str(tmp_path)},
+            context={
+                "trial_id": "R01-A",
+                "attempt_id": "R01-A/attempt-1",
+                "expected_tools": [],
+                "workspace": str(tmp_path),
+            },
             authorization={},
             state_directory=tmp_path / "state",
         )
+
+    assert str(caught.value) == "Cleanup or executor termination/evidence requires review"
+    assert isinstance(caught.value.__cause__, lifecycle.LifecycleError)
+    assert str(caught.value.__cause__) == (
+        "A spend-controlled authorization cannot bind to a closed historical attempt"
+    )
+    assert gate_reads == []
+    assert attempted_side_effects == []
+    assert leases == []
+    assert client.submitted is False and client.deleted is False and client.cancelled is False
+    assert runtime.stopped is False
+    assert topology.started is False and topology.cleaned is False
+    assert ledger.active_trial_id is None
+    report = caught.value.audit_record
+    assert report["cleanup_verified"] is False
+    assert report["failure"]["operation"] == "preparation"
+    assert report["failure"]["category"] == "preparation_failed"
+    audit_path = controller.safety.journal.path.with_suffix(".audit.json")
+    assert audit_path.is_file()
+
+
+def test_future_spend_approval_is_typed_and_bound_before_live_gates():
+    attempt_id = "synthetic-future-attempt-fixture"
+    limit_cents = 731
+    authorization = {
+        "schema_version": 2,
+        "spend_control_approval": {
+            "limit_cents": limit_cents,
+            "attempt_id": attempt_id,
+            "typed_confirmation": (
+                f"APPROVE SESSION SPEND LIMIT {limit_cents} USD CENTS FOR {attempt_id}"
+            ),
+        },
+    }
+    assert (
+        lifecycle._approved_session_spend_limit(authorization, {"attempt_id": attempt_id})
+        == limit_cents
+    )
+
+    for invalid in (None, 0, -1, 1.5, True, "731", float("nan"), float("inf")):
+        malformed = {
+            **authorization,
+            "spend_control_approval": {
+                **authorization["spend_control_approval"],
+                "limit_cents": invalid,
+            },
+        }
+        with pytest.raises(lifecycle.LifecycleError, match="positive integer"):
+            lifecycle._approved_session_spend_limit(malformed, {"attempt_id": attempt_id})
+
+
+@pytest.mark.parametrize(
+    "attempt_id",
+    [
+        "R01-A/attempt-1",
+        "R01-A/attempt-2",
+        "R01-A/recovery-after-attempt-2",
+        "R01-A/final-continuation",
+    ],
+)
+def test_lifecycle_spend_approval_rejects_every_closed_historical_attempt(attempt_id):
+    limit_cents = 731
+    authorization = {
+        "schema_version": 2,
+        "spend_control_approval": {
+            "limit_cents": limit_cents,
+            "attempt_id": attempt_id,
+            "typed_confirmation": (
+                f"APPROVE SESSION SPEND LIMIT {limit_cents} USD CENTS FOR {attempt_id}"
+            ),
+        },
+    }
+
+    with pytest.raises(lifecycle.LifecycleError, match="closed historical attempt"):
+        lifecycle._approved_session_spend_limit(authorization, {"attempt_id": attempt_id})
+
+
+def test_synthetic_journal_allowlist_entry_is_not_treated_as_closed_history(monkeypatch):
+    attempt_id = "synthetic-future-attempt-fixture"
+    monkeypatch.setattr(
+        lifecycle.safety_lib,
+        "ATTEMPTS",
+        lifecycle.safety_lib.ATTEMPTS | {attempt_id},
+    )
+    limit_cents = 731
+    authorization = {
+        "schema_version": 2,
+        "spend_control_approval": {
+            "limit_cents": limit_cents,
+            "attempt_id": attempt_id,
+            "typed_confirmation": (
+                f"APPROVE SESSION SPEND LIMIT {limit_cents} USD CENTS FOR {attempt_id}"
+            ),
+        },
+    }
+
+    assert (
+        lifecycle._approved_session_spend_limit(authorization, {"attempt_id": attempt_id})
+        == limit_cents
+    )
+    for historical_attempt_id in lifecycle.CLOSED_R01A_ATTEMPT_IDS:
+        with pytest.raises(lifecycle.LifecycleError, match="closed historical attempt"):
+            lifecycle._approved_session_spend_limit(
+                authorization, {"attempt_id": historical_attempt_id}
+            )
+
+
+def test_live_session_path_blocks_without_independent_connectivity_evidence(monkeypatch):
+    class MemoryJournal:
+        path = Path("synthetic-live-gate-journal.jsonl")
+        directory_sync = True
+
+        def close(self):
+            pass
+
+    class MemorySafety:
+        journal = MemoryJournal()
+        transitions = ["preparation"]
+        timeouts = []
+        abandoned = False
+        evidence_failed = False
+        clock = time.monotonic
+
+        def call(self, fn, *, flow=None):
+            return fn()
+
+        def effect(self, _name, fn):
+            return fn()
+
+    monkeypatch.setattr(
+        lifecycle.safety_lib,
+        "inspect_journal",
+        lambda _path: {
+            "pending_operations": [],
+            "invalid_record": False,
+            "incomplete_tail": False,
+        },
+    )
+    controller, client, runtime, topology, ledger, leases = make_controller(
+        Path("synthetic-workspace-not-read")
+    )
+    client.synthetic = False
+    controller.synthetic_mode = False
+    controller.safety_factory = lambda *_args: MemorySafety()
+    saved_audits = []
+    controller.audit_writer = lambda path, record: saved_audits.append((path, record))
+    gate_reads = []
+    controller.current_live_gates = lambda: (
+        gate_reads.append(True)
+        or {
+            "local_docker": True,
+            "local_credentials": True,
+        }
+    )
+    attempted_side_effects = []
+    controller.consume_authorization = lambda *_args, **_kwargs: attempted_side_effects.append(
+        "consume_authorization"
+    )
+    client.create_session = lambda *_args, **_kwargs: attempted_side_effects.append(
+        "session_create"
+    )
+    client.send_and_stream = lambda *_args, **_kwargs: attempted_side_effects.append(
+        "task_submission"
+    )
+    topology.start = lambda: attempted_side_effects.append("topology_start")
+    runtime.start_managed_executor = lambda *_args, **_kwargs: attempted_side_effects.append(
+        "executor_start"
+    )
+    attempt_id = "synthetic-future-attempt-fixture"
+    limit_cents = 731
+    authorization = {
+        "schema_version": 2,
+        "spend_control_approval": {
+            "limit_cents": limit_cents,
+            "attempt_id": attempt_id,
+            "typed_confirmation": (
+                f"APPROVE SESSION SPEND LIMIT {limit_cents} USD CENTS FOR {attempt_id}"
+            ),
+        },
+    }
+
+    with pytest.raises(lifecycle.LifecycleError) as caught:
+        controller.run_one(
+            context={
+                "trial_id": "R01-A",
+                "attempt_id": attempt_id,
+                "expected_tools": [],
+                "workspace": "synthetic-workspace-not-read",
+            },
+            authorization=authorization,
+            state_directory=Path("synthetic-state-not-created"),
+        )
+
+    assert isinstance(caught.value.__cause__, lifecycle.LifecycleError)
+    assert "Independent zero-task Managed Agents connectivity" in str(caught.value.__cause__)
+    assert gate_reads == []
+    assert attempted_side_effects == []
+    assert leases == []
+    assert client.submitted is False
+    assert topology.started is False and topology.cleaned is False
+    assert runtime.stopped is False and ledger.active_trial_id is None
+    assert len(saved_audits) == 1
+    assert saved_audits[0][1]["cleanup_verified"] is False
 
 
 def test_unverified_container_termination_blocks_export_and_retains_lease(tmp_path):

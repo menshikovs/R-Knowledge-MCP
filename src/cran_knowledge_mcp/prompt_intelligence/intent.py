@@ -259,13 +259,12 @@ def detect_functions(request: str) -> list[tuple[str, str]]:
     return list(dict.fromkeys(NAMESPACE_PATTERN.findall(request)))[:3]
 
 
-def infer_language(request: str, language: str | None) -> str:
-    if language is not None:
-        value = language.strip().casefold()
-        if value in {"ru", "russian", "русский"}:
-            return "ru"
-        if value in {"en", "english"}:
-            return "en"
-        if value != "auto":
-            raise KnowledgeError("invalid_input", "language must be auto, en or ru")
-    return "ru" if re.search(r"[А-Яа-яЁё]", request) else "en"
+def validate_language(language: str | None) -> None:
+    """Validate the legacy language option; generated instructions are English."""
+    if language is None:
+        return
+    if not isinstance(language, str):
+        raise KnowledgeError("invalid_input", "language must be auto, en or ru")
+    value = language.strip().casefold()
+    if value not in {"auto", "ru", "russian", "русский", "en", "english"}:
+        raise KnowledgeError("invalid_input", "language must be auto, en or ru")

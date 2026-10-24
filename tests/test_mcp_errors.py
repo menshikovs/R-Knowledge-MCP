@@ -13,6 +13,12 @@ from cran_knowledge_mcp.server import create_server
 from cran_knowledge_mcp.service import KnowledgeService
 
 
+@pytest.fixture(autouse=True)
+def legacy_toolset(monkeypatch):
+    """These contract tests cover the original 35-tool surface kept for MCP_TOOLSET=legacy."""
+    monkeypatch.setenv("MCP_TOOLSET", "legacy")
+
+
 async def _session(service):
     return create_connected_server_and_client_session(create_server(service=service))
 

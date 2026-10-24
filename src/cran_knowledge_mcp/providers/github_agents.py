@@ -50,9 +50,11 @@ def github_repository(urls: str | None) -> tuple[str, str]:
 class GitHubAgentsProvider:
     """GitHub-only data provider; all paths are derived from validated API identifiers."""
 
-    def __init__(self, client: httpx.AsyncClient, ttl: float = 3600):
+    def __init__(self, client: httpx.AsyncClient, ttl: float = 3600, token: str | None = None):
         self.client = client
         self.ttl = ttl
+        # Sent only as a header to the fixed API host; never in URLs, logs or results.
+        self._token = token.strip() if token and token.strip() else None
         self._cache: OrderedDict[str, tuple[float, dict]] = OrderedDict()
 
     @staticmethod
@@ -78,6 +80,15 @@ class GitHubAgentsProvider:
             )
         )
 
+    def _headers(self) -> dict[str, str]:
+        headers = {
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        if self._token:
+            headers["Authorization"] = f"Bearer {self._token}"
+        return headers
+
     async def _get(
         self, path: str, max_bytes: int = MAX_TREE, query: str | None = None
     ) -> tuple[dict, Artifact]:
@@ -93,20 +104,25 @@ class GitHubAgentsProvider:
                     url,
                     follow_redirects=False,
                     timeout=15,
-                    headers={
-                        "Accept": "application/vnd.github+json",
-                        "X-GitHub-Api-Version": "2022-11-28",
-                    },
+                    headers=self._headers(),
                 ) as response:
                     if response.status_code != 200:
-                        code = "not_found" if response.status_code == 404 else "source_unavailable"
-                        message = (
-                            "GitHub API rate limit exceeded"
-                            if response.status_code == 403
+                        if response.status_code == 401:
+                            raise KnowledgeError(
+                                "authentication_failed",
+                                "GitHub rejected the server GITHUB_TOKEN",
+                                url,
+                            )
+                        if response.status_code == 429 or (
+                            response.status_code == 403
                             and response.headers.get("X-RateLimit-Remaining") == "0"
-                            else f"GitHub API HTTP {response.status_code}"
-                        )
-                        raise KnowledgeError(code, message, url)
+                        ):
+                            message = "GitHub API rate limit exceeded"
+                            if not self._token:
+                                message += "; set server-side GITHUB_TOKEN for a higher limit"
+                            raise KnowledgeError("rate_limited", message, url)
+                        code = "not_found" if response.status_code == 404 else "source_unavailable"
+                        raise KnowledgeError(code, f"GitHub API HTTP {response.status_code}", url)
                     body = bytearray()
                     async for chunk in response.aiter_bytes(65536):
                         body.extend(chunk)

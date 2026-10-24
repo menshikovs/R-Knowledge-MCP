@@ -26,6 +26,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = ROOT.parents[1]
+_SANITIZER_SPEC = importlib.util.spec_from_file_location(
+    "r01_adapter_executor_contract", ROOT / "exploratory" / "executor_contract.py"
+)
+if _SANITIZER_SPEC is None or _SANITIZER_SPEC.loader is None:
+    raise RuntimeError("Reference-data sanitizer is unavailable")
+_SANITIZER = importlib.util.module_from_spec(_SANITIZER_SPEC)
+_SANITIZER_SPEC.loader.exec_module(_SANITIZER)
 _PILOT_SPEC = importlib.util.spec_from_file_location(
     "codex_r_exploratory_pilot", ROOT / "exploratory" / "pilot.py"
 )
@@ -53,20 +60,82 @@ MAX_EVENT_COUNT = 100_000
 MAX_AUTHORIZATION_TTL_SECONDS = 300
 RECOVERY_ATTEMPT_ID = "R01-A/recovery-after-attempt-2"
 FINAL_CONTINUATION_ATTEMPT_ID = "R01-A/final-continuation"
+HISTORICAL_R01A_ATTEMPT_IDS = frozenset(
+    {
+        "R01-A/attempt-1",
+        "R01-A/attempt-2",
+        RECOVERY_ATTEMPT_ID,
+        FINAL_CONTINUATION_ATTEMPT_ID,
+    }
+)
 SESSION_QUIESCENCE_SOURCE = "https://api.openai.com/v1/agents/sessions"
 SESSION_QUIESCENCE_CONFIRMATION = "CONFIRM NO ACTIVE MANAGED AGENTS SESSIONS R01-A"
 SESSION_QUIESCENCE_MAX_AGE_SECONDS = 300
 INTERNAL_PROBE_FLAG = "--internal-local-timeout-probe"
-SECRET_PATTERNS = (
-    re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+/-]+=*"),
-    re.compile(r"\bsk-[A-Za-z0-9_-]{12,}\b"),
-    re.compile(r"(?i)(api[_-]?key|access[_-]?token|refresh[_-]?token)\s*[:=]\s*[^\s,;]+"),
-)
-SECRET_KEY = re.compile(r"(?i)(api[_-]?key|access[_-]?token|refresh[_-]?token|authorization)")
+
+
+def _configured_secrets() -> tuple[str, ...]:
+    return tuple(
+        value
+        for value in (
+            os.environ.get("OPENAI_API_KEY", ""),
+            os.environ.get("OPENAI_EXECUTOR_API_KEY", ""),
+        )
+        if value
+    )
 
 
 class AdapterError(ValueError):
     """Invalid single-trial input or a blocked execution request."""
+
+
+def validate_spend_control_approval(approval: object, attempt_id: object) -> int:
+    """Validate a separately acknowledged cap bound to a nonhistorical attempt."""
+    if not isinstance(attempt_id, str) or not attempt_id.strip():
+        raise AdapterError("Spend-control approval must bind to an attempt identity")
+    if attempt_id in HISTORICAL_R01A_ATTEMPT_IDS:
+        raise AdapterError(
+            "A spend-controlled authorization cannot bind to a closed historical attempt"
+        )
+    if not isinstance(approval, dict) or set(approval) != {
+        "limit_cents",
+        "attempt_id",
+        "typed_confirmation",
+    }:
+        raise AdapterError("Separate session spend-control approval is missing or malformed")
+    limit = approval["limit_cents"]
+    if type(limit) is not int or limit <= 0:
+        raise AdapterError(
+            "Approved session spend limit must be a positive integer USD-cent amount"
+        )
+    expected = f"APPROVE SESSION SPEND LIMIT {limit} USD CENTS FOR {attempt_id}"
+    if approval["attempt_id"] != attempt_id or approval["typed_confirmation"] != expected:
+        raise AdapterError("Session spend-control approval does not match this attempt and limit")
+    return limit
+
+
+def make_spend_control_approval(
+    attempt_id: object, limit_cents: object, typed_confirmation: object
+) -> dict:
+    """Build the future-only approval record after exact operator confirmation."""
+    if not isinstance(attempt_id, str) or not attempt_id.strip():
+        raise AdapterError("Spend-control approval must bind to an attempt identity")
+    if attempt_id in HISTORICAL_R01A_ATTEMPT_IDS:
+        raise AdapterError(
+            "A spend-controlled authorization cannot bind to a closed historical attempt"
+        )
+    if type(limit_cents) is not int or limit_cents <= 0:
+        raise AdapterError(
+            "Approved session spend limit must be a positive integer USD-cent amount"
+        )
+    expected = f"APPROVE SESSION SPEND LIMIT {limit_cents} USD CENTS FOR {attempt_id}"
+    if typed_confirmation != expected:
+        raise AdapterError("Separate typed confirmation of the session spend limit is required")
+    return {
+        "limit_cents": limit_cents,
+        "attempt_id": attempt_id,
+        "typed_confirmation": expected,
+    }
 
 
 def default_state_directory() -> Path:
@@ -74,20 +143,11 @@ def default_state_directory() -> Path:
     return Path.home() / ".local" / "state" / "r-knowledge-mcp" / "r01a"
 
 
-def redact(value):
-    """Return JSON-safe evidence with common credential-shaped values removed."""
-    if isinstance(value, str):
-        for pattern in SECRET_PATTERNS:
-            value = pattern.sub("[REDACTED]", value)
-        return value
-    if isinstance(value, list):
-        return [redact(item) for item in value]
-    if isinstance(value, dict):
-        return {
-            key: "[REDACTED]" if SECRET_KEY.search(str(key)) else redact(item)
-            for key, item in value.items()
-        }
-    return value
+def redact(value, *, secrets=()):
+    """Return bounded, collision-free JSON-safe evidence with keys scrubbed too."""
+    return _SANITIZER.sanitize_reference_data(
+        value, secrets=(*_configured_secrets(), *secrets), redact_urls=False
+    )
 
 
 def parse_jsonl_events(data: bytes) -> list[dict]:
@@ -144,6 +204,8 @@ def execution_configuration_fingerprint() -> str:
         ROOT / "exploratory" / "docker_runtime.py",
         ROOT / "exploratory" / "egress_proxy.py",
         ROOT / "exploratory" / "managed_agents.py",
+        ROOT / "exploratory" / "executor_contract.py",
+        ROOT / "exploratory" / "lifecycle_safety.py",
         ROOT / "exploratory" / "lifecycle.py",
         Path(__file__).resolve(),
     ):
@@ -376,6 +438,12 @@ def build_preflight(context: dict, *, cli_report: dict | None = None, docker_rep
             "unverified",
             "No paid probe or session was authorized; account access remains unknown",
         ),
+        "independent_zero_task_connectivity": gate(
+            "ZERO_TASK_CONNECTIVITY_UNVERIFIED",
+            "unverified",
+            "No independent Managed Agents connection evidence exists; local checks cannot "
+            "establish service compatibility",
+        ),
         "docker_daemon": gate(
             "DOCKER_DAEMON_UNAVAILABLE",
             "verified" if docker_report.get("status") != "unavailable" else "blocked",
@@ -468,6 +536,8 @@ def create_authorization(
     balance_source: str,
     balance_checked_at: str,
     restricted_key_scope_confirmation: str,
+    spend_control_limit_cents: int | None = None,
+    spend_control_confirmation: str | None = None,
     attempt_id: str = "R01-A/attempt-1",
     previous_attempt_result: Path | None = None,
     first_attempt_result: Path | None = None,
@@ -478,6 +548,13 @@ def create_authorization(
     session_quiescence_evidence: Path | None = None,
 ) -> dict:
     """Create a narrowly scoped, short-lived consent record (never starts Codex)."""
+    spend_approval = None
+    if spend_control_limit_cents is not None or spend_control_confirmation is not None:
+        spend_approval = make_spend_control_approval(
+            attempt_id,
+            spend_control_limit_cents,
+            spend_control_confirmation,
+        )
     if (
         not isinstance(context, dict)
         or context.get("trial_id") != "R01-A"
@@ -594,8 +671,8 @@ def create_authorization(
         )
     except pilot.PilotError as exc:
         raise AdapterError(f"Balance-aware authorization was rejected: {exc}") from exc
-    return {
-        "schema_version": 1,
+    authorization = {
+        "schema_version": 2 if spend_approval is not None else 1,
         "authorization_id": uuid.uuid4().hex,
         "authorized": True,
         "issued_at": now.astimezone(UTC).isoformat(),
@@ -644,6 +721,9 @@ def create_authorization(
             "ledger_is_hard_limit": False,
         },
     }
+    if spend_approval is not None:
+        authorization["spend_control_approval"] = spend_approval
+    return authorization
 
 
 def validate_authorization(
@@ -667,10 +747,22 @@ def validate_authorization(
         "consumed",
         "balance_snapshot",
     }
-    if not isinstance(authorization, dict) or set(authorization) != required:
+    if not isinstance(authorization, dict):
         raise AdapterError("Authorization fields do not match the single-trial schema")
-    if authorization["schema_version"] != 1 or authorization["authorized"] is not True:
+    schema_version = authorization.get("schema_version")
+    expected_fields = required | ({"spend_control_approval"} if schema_version == 2 else set())
+    if (
+        type(schema_version) is not int
+        or schema_version not in {1, 2}
+        or set(authorization) != expected_fields
+    ):
+        raise AdapterError("Authorization fields do not match the single-trial schema")
+    if authorization["authorized"] is not True:
         raise AdapterError("Explicit paid-trial authorization is missing")
+    if schema_version == 2:
+        validate_spend_control_approval(
+            authorization["spend_control_approval"], context.get("attempt_id")
+        )
     if authorization["restricted_key_scope_operator_attested"] is not True:
         raise AdapterError("Separate executor-key scope attestation is missing")
     if authorization["consumed"] is not False:
@@ -827,6 +919,15 @@ def validate_authorization(
     return authorization
 
 
+def validate_live_authorization(authorization: dict, context: dict, **kwargs) -> dict:
+    """Validate ordinary scope and mandatory future-attempt session spend approval."""
+    validated = validate_authorization(authorization, context, **kwargs)
+    validate_spend_control_approval(
+        authorization.get("spend_control_approval"), context.get("attempt_id")
+    )
+    return validated
+
+
 class SingleTrialLease(AbstractContextManager):
     """Cross-process exclusive lock; keep it after unsafe/incomplete cleanup."""
 
@@ -861,6 +962,10 @@ class SingleTrialLease(AbstractContextManager):
                 os.fsync(lock.fileno())
                 info = os.fstat(lock.fileno())
                 self._file_identity = (info.st_dev, info.st_ino)
+                durability = _load_module(
+                    ROOT / "exploratory" / "lifecycle_safety.py", "r01_lease_fsync"
+                )
+                durability.sync_directory(root)
         except FileExistsError as exc:
             raise AdapterError(
                 "Another trial is active or a stale lock needs operator review"
@@ -895,6 +1000,10 @@ class SingleTrialLease(AbstractContextManager):
     def __exit__(self, exc_type, exc, tb):
         if self.acquired and self.cleanup_verified and self.owns_lock():
             self.lock_path.unlink(missing_ok=True)
+            durability = _load_module(
+                ROOT / "exploratory" / "lifecycle_safety.py", "r01_lease_release_fsync"
+            )
+            durability.sync_directory(self.state_directory)
         return False
 
 
@@ -910,10 +1019,13 @@ def consume_authorization(
     root = Path(state_directory).resolve()
     if root.is_relative_to(REPO.resolve()):
         raise AdapterError("Authorization state must be outside the evaluator repository")
+    durability = _load_module(
+        ROOT / "exploratory" / "lifecycle_safety.py", "r01_marker_directory_fsync"
+    )
     consumed = root / "consumed-authorizations"
-    consumed.mkdir(parents=True, exist_ok=True)
+    durability.ensure_directory(consumed)
     consumed_trials = root / "consumed-trials"
-    consumed_trials.mkdir(parents=True, exist_ok=True)
+    durability.ensure_directory(consumed_trials)
     attempt_id = context.get("attempt_id", "R01-A/attempt-1")
     if attempt_id not in {
         "R01-A/attempt-1",
@@ -972,31 +1084,32 @@ def consume_authorization(
         )
         if verified != context.get("final_continuation_provenance"):
             raise AdapterError("Final continuation provenance changed after authorization")
-    try:
-        with trial_marker.open("x", encoding="utf-8") as output:
-            json.dump(
+    safety = getattr(lease, "safety", None) if lease is not None else None
+
+    def write_marker(path, operation):
+        def write():
+            _private_json_write(
+                path,
                 {
                     "trial_id": context["trial_id"],
                     "authorization_id": authorization["authorization_id"],
                     "consumed_at": datetime.now(UTC).isoformat(),
                 },
-                output,
+                redact_content=False,
             )
-            output.write("\n")
+
+        if safety is not None:
+            safety.effect(operation, write)
+        else:
+            write()
+
+    try:
+        write_marker(trial_marker, "trial_marker_create")
     except FileExistsError as exc:
         raise AdapterError("This pilot trial already has a consumed authorization") from exc
     marker = consumed / f"{authorization['authorization_id']}.json"
     try:
-        with marker.open("x", encoding="utf-8") as output:
-            json.dump(
-                {
-                    "authorization_id": authorization["authorization_id"],
-                    "trial_id": context["trial_id"],
-                    "consumed_at": datetime.now(UTC).isoformat(),
-                },
-                output,
-            )
-            output.write("\n")
+        write_marker(marker, "authorization_marker_create")
     except FileExistsError as exc:
         raise AdapterError("Authorization was already consumed") from exc
     return marker
@@ -1015,22 +1128,10 @@ def _private_json_write(
     path: Path, value: dict, *, exclusive: bool = True, redact_content: bool = True
 ) -> None:
     """Write bounded local authorization or result records with owner-only mode."""
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    flags = os.O_WRONLY | os.O_CREAT | (os.O_EXCL if exclusive else os.O_TRUNC)
-    descriptor = os.open(path, flags, 0o600)
-    try:
-        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as output:
-            json.dump(
-                redact(value) if redact_content else value, output, indent=2, ensure_ascii=False
-            )
-            output.write("\n")
-    except BaseException:
-        try:
-            path.unlink(missing_ok=True)
-        except OSError:
-            pass
-        raise
+    safety = _load_module(ROOT / "exploratory" / "lifecycle_safety.py", "r01_private_evidence")
+    safety.private_write(
+        Path(path), redact(value) if redact_content else value, exclusive=exclusive
+    )
 
 
 def create_authorization_file(
@@ -1047,6 +1148,8 @@ def create_authorization_file(
     balance_source: str,
     balance_checked_at: str,
     restricted_key_scope_confirmation: str,
+    spend_control_limit_cents: int | None = None,
+    spend_control_confirmation: str | None = None,
     output: Path,
     attempt_id: str = "R01-A/attempt-1",
     previous_attempt_result: Path | None = None,
@@ -1084,6 +1187,8 @@ def create_authorization_file(
         balance_source=balance_source,
         balance_checked_at=balance_checked_at,
         restricted_key_scope_confirmation=restricted_key_scope_confirmation,
+        spend_control_limit_cents=spend_control_limit_cents,
+        spend_control_confirmation=spend_control_confirmation,
         attempt_id=attempt_id,
         previous_attempt_result=previous_attempt_result,
         first_attempt_result=first_attempt_result,
@@ -1120,16 +1225,7 @@ def _make_live_controller(context: dict, authorization: dict, state_directory: P
         raise AdapterError("Condition A must have zero MCP tools")
     image_digest = context.get("candidate_image_digest")
     runtime = docker_runtime.CodexCandidateRuntime(image_digest)
-    candidate_report = runtime.verify_candidate_image()
-    if candidate_report["image_id"] != image_digest:
-        raise AdapterError("Verified Codex image differs from the authorized digest")
     r_runtime = docker_runtime.DockerCandidateRuntime(docker_runtime.FROZEN_R_IMAGE_ID)
-    r_image_report = r_runtime.verify_engine_and_image()
-    if r_image_report["image_id"] != docker_runtime.FROZEN_R_IMAGE_ID:
-        raise AdapterError("Frozen R scorer image is not verified")
-    workspace_report = runtime._validate_workspace(Path(context["workspace"]))
-    if workspace_report["files"] != ["TASK.md", "data/records.csv", "renv.lock"]:
-        raise AdapterError("Public R01 workspace differs from the authorized file set")
 
     snapshot = authorization["balance_snapshot"]
     ledger = pilot.BalanceAwareLedger(
@@ -1142,6 +1238,16 @@ def _make_live_controller(context: dict, authorization: dict, state_directory: P
     client = managed_agents.ManagedAgentsClient(application_key)
 
     def live_gates():
+        r_runtime.safety = runtime.safety
+        candidate_report = runtime.verify_candidate_image()
+        if candidate_report["image_id"] != image_digest:
+            raise AdapterError("Verified Codex image differs from the authorized digest")
+        r_image_report = r_runtime.verify_engine_and_image()
+        if r_image_report["image_id"] != docker_runtime.FROZEN_R_IMAGE_ID:
+            raise AdapterError("Frozen R scorer image is not verified")
+        workspace_report = runtime._validate_workspace(Path(context["workspace"]))
+        if workspace_report["files"] != ["TASK.md", "data/records.csv", "renv.lock"]:
+            raise AdapterError("Public R01 workspace differs from the authorized file set")
         return {
             "docker_candidate_image": candidate_report["image_id"] == image_digest,
             "frozen_r_scorer_image": r_image_report["image_id"] == docker_runtime.FROZEN_R_IMAGE_ID,
@@ -1156,6 +1262,7 @@ def _make_live_controller(context: dict, authorization: dict, state_directory: P
             is True,
             "condition_a_zero_tools": context["condition"] == "A"
             and context["expected_tools"] == [],
+            "independent_zero_task_connectivity": False,
         }
 
     bench = _load_module(ROOT / "runner" / "bench.py", "r01a_scorer")
@@ -1190,7 +1297,7 @@ def _make_live_controller(context: dict, authorization: dict, state_directory: P
         runtime=runtime,
         topology=topology,
         ledger=ledger,
-        authorize=validate_authorization,
+        authorize=validate_live_authorization,
         consume_authorization=consume_authorization,
         lease_factory=lambda trial: SingleTrialLease(state_directory, trial),
         score=lambda task, artifacts, image: bench.score(task, artifacts, image),
@@ -1200,6 +1307,7 @@ def _make_live_controller(context: dict, authorization: dict, state_directory: P
         checkpoint_review=checkpoint_review,
         current_live_gates=live_gates,
         trial_timeout_seconds=900,
+        audit_writer=_private_json_write,
     )
 
 
@@ -1264,23 +1372,40 @@ def run_one(
     session_quiescence_evidence: Path | None = None,
 ):
     """Run exactly one fully authorized R01-A lifecycle; never retries or batches."""
-    context = build_trial_context(
-        plan,
-        trial_id,
-        Path(workspace),
-        candidate_image_digest=candidate_image_digest,
-        state_directory=Path(state_directory),
-        attempt_id=attempt_id,
-        previous_attempt_result=previous_attempt_result,
-        first_attempt_result=first_attempt_result,
-        previous_attempt_authorization=previous_attempt_authorization,
-        first_attempt_authorization=first_attempt_authorization,
-        attempt_two_result=attempt_two_result,
-        attempt_two_authorization=attempt_two_authorization,
-        session_quiescence_evidence=session_quiescence_evidence,
+    safety_lib = _load_module(
+        ROOT / "exploratory" / "lifecycle_safety.py", "r01_preparation_budget"
     )
-    validate_authorization(authorization, context)
-    controller = _make_live_controller(context, authorization, Path(state_directory))
+    preparation = safety_lib.LifecycleSafety(None)
+
+    def prepare():
+        context = build_trial_context(
+            plan,
+            trial_id,
+            Path(workspace),
+            candidate_image_digest=candidate_image_digest,
+            state_directory=Path(state_directory),
+            attempt_id=attempt_id,
+            previous_attempt_result=previous_attempt_result,
+            first_attempt_result=first_attempt_result,
+            previous_attempt_authorization=previous_attempt_authorization,
+            first_attempt_authorization=first_attempt_authorization,
+            attempt_two_result=attempt_two_result,
+            attempt_two_authorization=attempt_two_authorization,
+            session_quiescence_evidence=session_quiescence_evidence,
+        )
+        validate_live_authorization(authorization, context)
+        controller = _make_live_controller(context, authorization, Path(state_directory))
+        return context, controller
+
+    context, controller = preparation.call(prepare)
+
+    def attach_journal(root, prepared_context, synthetic):
+        preparation.journal = safety_lib.Journal(
+            root, prepared_context.get("attempt_id", "R01-A/attempt-1"), synthetic=synthetic
+        )
+        return preparation
+
+    controller.safety_factory = attach_journal
     return controller.run_one(
         context=context, authorization=authorization, state_directory=state_directory
     )
@@ -1340,6 +1465,33 @@ def verify_cleanup(
         audit = json.loads(result_path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise AdapterError("Lifecycle cleanup audit is unavailable or invalid") from exc
+    journal_verified = None
+    if isinstance(audit, dict) and audit.get("journal_reference") is not None:
+        reference = audit["journal_reference"]
+        allowed = {
+            "R01-A-attempt-1.jsonl",
+            "R01-A-attempt-2.jsonl",
+            "R01-A-recovery-after-attempt-2.jsonl",
+            "R01-A-final-continuation.jsonl",
+        }
+        journal_verified = False
+        if isinstance(reference, str) and reference in allowed:
+            safety_lib = _load_module(
+                ROOT / "exploratory" / "lifecycle_safety.py", "r01_cleanup_evidence"
+            )
+            try:
+                inspection = safety_lib.inspect_journal(
+                    state_directory / "lifecycle-journals" / reference
+                )
+                journal_verified = bool(
+                    inspection["final_audit_outcome_recorded"]
+                    and inspection["lease_release_outcome_recorded"]
+                    and not inspection["invalid_record"]
+                    and not inspection["incomplete_tail"]
+                    and not inspection["pending_operations"]
+                )
+            except (RuntimeError, OSError):
+                pass
     live_audit_clean = (
         isinstance(audit, dict)
         and audit.get("record_type") == "managed_agents_r01a_lifecycle_audit_not_benchmark_result"
@@ -1348,6 +1500,7 @@ def verify_cleanup(
         and audit.get("session_deleted_verified") is True
         and audit.get("container_termination_verified") is True
         and audit.get("topology_cleanup_verified") is True
+        and journal_verified is not False
     )
     return {
         "record_type": "r01a_cleanup_verification_not_trial",
@@ -1357,6 +1510,7 @@ def verify_cleanup(
         "remaining_rkmcp_containers": names,
         "remaining_r01a_networks": networks,
         "live_lifecycle_cleanup_verified": live_audit_clean,
+        "durable_journal_verified": journal_verified,
         "local_cleanup_verified": (
             (not lock_exists if lease is None else lock_owned) and not names and not networks
         ),
@@ -2235,6 +2389,8 @@ def main(argv=None) -> int:
     auth_parser.add_argument("--available-balance-cents", type=int, required=True)
     auth_parser.add_argument("--reserve-cents", type=int, required=True)
     auth_parser.add_argument("--estimated-spend-cents", type=int, required=True)
+    auth_parser.add_argument("--spend-control-limit-cents", type=int, required=True)
+    auth_parser.add_argument("--confirm-spend-control", required=True)
     auth_parser.add_argument("--balance-source", required=True)
     auth_parser.add_argument("--balance-checked-at", required=True)
     auth_parser.add_argument("--confirm", required=True)
@@ -2273,6 +2429,8 @@ def main(argv=None) -> int:
     sub.add_parser("cancel-one")
     cleanup_parser = sub.add_parser("verify-cleanup")
     cleanup_parser.add_argument("--result", type=Path, required=True)
+    journal_parser = sub.add_parser("inspect-journal")
+    journal_parser.add_argument("--journal", type=Path, required=True)
     result_parser = sub.add_parser("inspect-result")
     result_parser.add_argument("--result", type=Path, required=True)
     args = parser.parse_args(argv)
@@ -2309,6 +2467,8 @@ def main(argv=None) -> int:
                 available_balance_cents=args.available_balance_cents,
                 reserve_cents=args.reserve_cents,
                 estimated_spend_cents=args.estimated_spend_cents,
+                spend_control_limit_cents=args.spend_control_limit_cents,
+                spend_control_confirmation=args.confirm_spend_control,
                 balance_source=args.balance_source,
                 balance_checked_at=balance_checked_at.isoformat(),
                 restricted_key_scope_confirmation=args.confirm_restricted_key_scope,
@@ -2329,6 +2489,12 @@ def main(argv=None) -> int:
         elif args.command == "verify-cleanup":
             result = verify_cleanup(default_state_directory(), args.result)
             code = 0 if result["cleanup_verified"] else 2
+        elif args.command == "inspect-journal":
+            safety = _load_module(
+                ROOT / "exploratory" / "lifecycle_safety.py", "r01_recovery_reader"
+            )
+            result = safety.inspect_journal(args.journal)
+            code = 0
         elif args.command == "inspect-result":
             result = inspect_result(args.result)
             code = 0

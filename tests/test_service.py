@@ -1,8 +1,12 @@
+import json
+
 import pytest
 from conftest import DESCRIPTION, RD, archive
 
 from cran_knowledge_mcp.errors import KnowledgeError
 from cran_knowledge_mcp.http import CATALOG, INDEX
+from cran_knowledge_mcp.providers import base, cran
+from cran_knowledge_mcp.providers.base import PackageSearchIndex
 from cran_knowledge_mcp.service import bounded
 
 
@@ -27,6 +31,7 @@ async def test_all_tools_and_provenance(service):
         "Imports": "stats, other (>= 1.0)",
         "Suggests": "testthat, knitr",
         "LinkingTo": "",
+        "Enhances": "",
     }
     docs = await api.get_function_docs("ExamplePkg", "example_alias")
     assert docs["text"] == RD
@@ -131,9 +136,29 @@ async def test_invalid_installed_version(service, version):
     assert not calls
 
 
-async def test_response_bound():
+async def test_response_bound_truncates_long_text_and_records_the_cut():
     async def operation():
-        return {"text": "x" * 60001}
+        return {
+            "package": "ExamplePkg",
+            "sections": {"guidance": {"files": [{"path": "AGENTS.md", "text": "x" * 90000}]}},
+            "sources": [{"source_url": "https://example.test", "checked_at": "now"}],
+        }
+
+    result = await bounded(operation())
+    assert len(json.dumps(result, ensure_ascii=False).encode()) <= 60_000
+    assert result["package"] == "ExamplePkg"
+    assert result["sources"] == [{"source_url": "https://example.test", "checked_at": "now"}]
+    text = result["sections"]["guidance"]["files"][0]["text"]
+    assert text.startswith("xxx") and text.endswith("[truncated by server output limit]")
+    truncation = result["output_truncation"]
+    assert truncation["truncated"] is True
+    assert truncation["fields"][0]["field"] == "sections.guidance.files[0].text"
+    assert truncation["fields"][0]["original_characters"] == 90000
+
+
+async def test_response_bound_still_fails_when_text_cannot_be_shortened_enough():
+    async def operation():
+        return {"items": [f"value-{index}" for index in range(10000)]}
 
     assert (await bounded(operation()))["error"]["code"] == "response_too_large"
 
@@ -187,3 +212,75 @@ async def test_prompt_and_credential_like_exception_text_is_not_logged_by_defaul
     assert sensitive_prompt not in caplog.text
     assert credential not in caplog.text
     assert "Traceback" not in caplog.text
+
+
+async def test_repeated_function_docs_reuse_one_verified_archive_parse(service, monkeypatch):
+    api, _, calls = service
+    parses = []
+    original = base.source_files
+
+    def counting(body, package):
+        parses.append(package)
+        return original(body, package)
+
+    monkeypatch.setattr(base, "source_files", counting)
+    first = await api.get_function_docs("ExamplePkg", "example")
+    second = await api.get_function_docs("ExamplePkg", "example_alias")
+    assert first["archive_member"] == second["archive_member"] == "ExamplePkg/man/example.Rd"
+    assert parses == ["ExamplePkg"]
+    assert sum(call.url.path.endswith(".tar.gz") for call in calls) == 1
+
+
+async def test_title_catalog_is_parsed_once_per_fetched_artifact(service, monkeypatch):
+    api, _, _ = service
+    parses = []
+    original = cran._parse_catalog
+
+    def counting(artifact):
+        parses.append(artifact.source_url)
+        return original(artifact)
+
+    monkeypatch.setattr(cran, "_parse_catalog", counting)
+    assert (await api.search_packages("synthetic"))["total"] == 1
+    assert (await api.search_packages("data tools"))["total"] == 1
+    assert len(parses) == 1
+
+
+async def test_package_knowledge_reads_description_without_downloading_archive(service):
+    api, _, calls = service
+    result = await api.get_package_knowledge("ExamplePkg")
+    info = result["sections"]["package_info"]
+    assert info["metadata_verification_level"] == "description_version_matched"
+    assert info["urls"] == "https://example.invalid"
+    assert not any(call.url.path.endswith(".tar.gz") for call in calls)
+
+
+async def test_package_knowledge_falls_back_to_archive_without_description_page(service):
+    api, routes, calls = service
+    del routes["/web/packages/ExamplePkg/DESCRIPTION"]
+    result = await api.get_package_knowledge("ExamplePkg")
+    info = result["sections"]["package_info"]
+    assert info["verification_status"] == "verified"
+    assert info["metadata_verification_level"] != "index_verified"
+    assert info["urls"] == "https://example.invalid"
+    assert any(call.url.path.endswith(".tar.gz") for call in calls)
+
+
+def test_package_search_ranks_names_before_titles_and_requires_word_matches():
+    index = PackageSearchIndex(
+        [
+            ("rapidapi", "Rapid helpers"),
+            ("plumber", "An API Generator for R"),
+            ("therapy", "Tools for therapist schedules"),
+            ("api2lm", "Functions for linear models"),
+            ("httr2", "Perform HTTP requests and process the responses; web APIs"),
+            ("ggplot2", "Create Elegant Data Visualisations"),
+            ("data.table", "Extension of data.frame"),
+        ]
+    )
+    # 'api' never matches inside 'therapy'/'therapist'; name matches outrank title words.
+    assert index.search("api") == ["api2lm", "rapidapi", "plumber", "httr2"]
+    assert index.search("plot")[0] == "ggplot2"
+    assert index.search("data.table") == ["data.table"]
+    assert index.search("visual table") == []
+    assert index.search("api generator") == ["plumber"]

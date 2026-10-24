@@ -1,6 +1,25 @@
 # Single-trial Codex runtime integration
 
-## Status: one-trial lifecycle is wired; no live trial has been run
+## Status: four historical attempts closed; new live execution is NO-GO
+
+## Mandatory session spend-control gate
+
+Every future R01-A session-create request must include
+`spend_control.limit` as a positive integer number of USD cents. The amount
+must be separately confirmed for the exact attempt in the one-use authorization;
+the balance estimate and local ledger are not substitutes for this provider-side
+session limit. The F09 staging proposal of 200 cents is unrelated and is not
+imported here.
+
+The current implementation preserves version-1 historical authorization
+validation for provenance, but live execution requires the version-2
+spend-control approval. It rejects approvals bound to any of the four closed
+historical attempt identities. No new R01-A attempt identity is defined or
+enabled by this change, so this does not authorize or make a run available. The
+legacy command examples below describe those historical identities and must not
+be executed or used to recreate authorizations. A future attempt requires a
+separately reviewed identity and authorization protocol. Live API schema and
+provider enforcement compatibility remain unverified; R01-A remains NO-GO.
 
 The primary interface selected for a future real turn is the documented
 OpenAI Managed Agents API with a self-hosted Docker executor. GPT-6 Luna

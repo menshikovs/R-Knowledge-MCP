@@ -3,6 +3,7 @@ upstream/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+pytest-cache/
 .ruff_cache/
 *.egg-info/
 build/
@@ -11,3 +12,6 @@ dist/
 .test-tmp/
 pytest-cache-files-*/
 .playwright-mcp/
+.venv-wsl
+native/target/
+tests/.r-doc-index-*.json

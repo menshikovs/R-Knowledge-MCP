@@ -7,13 +7,14 @@ account/model access are independently verified.
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import re
 import ssl
 import time
 import uuid
 from collections.abc import Callable
-from urllib.parse import parse_qsl, unquote, urlsplit
+from pathlib import Path
 
 import httpx
 
@@ -22,7 +23,14 @@ MAX_EVENT_BYTES = 1 << 20
 MAX_EVENT_COUNT = 10000
 MAX_EVENT_LOG_BYTES = 32 << 20
 API_ORIGIN = "https://api.openai.com"
-OFFICIAL_EXECUTOR_HOSTS = {"api.openai.com"}
+_CONTRACT_SPEC = importlib.util.spec_from_file_location(
+    "r01_client_executor_contract", Path(__file__).with_name("executor_contract.py")
+)
+if _CONTRACT_SPEC is None or _CONTRACT_SPEC.loader is None:
+    raise RuntimeError("Executor contract is unavailable")
+contract = importlib.util.module_from_spec(_CONTRACT_SPEC)
+_CONTRACT_SPEC.loader.exec_module(contract)
+OFFICIAL_EXECUTOR_HOSTS = contract.OFFICIAL_EXECUTOR_HOSTS
 SESSION_ID = re.compile(r"^[A-Za-z0-9_-]{1,128}$")
 
 
@@ -46,8 +54,23 @@ class ManagedAgentsError(RuntimeError):
         }
 
 
-def build_agent_config(context: dict, *, gateway_url: str | None = None) -> dict:
+def validate_spend_control_limit(value) -> int:
+    """Require a separately approved, positive integer amount in USD cents."""
+    if type(value) is not int or value <= 0:
+        raise ManagedAgentsError(
+            "Session spend_control.limit must be a positive integer USD-cent amount"
+        )
+    return value
+
+
+def build_agent_config(
+    context: dict,
+    *,
+    spend_control_limit_cents: int | None = None,
+    gateway_url: str | None = None,
+) -> dict:
     """Return the exact session config for a preregistered A/B/C condition."""
+    spend_limit = validate_spend_control_limit(spend_control_limit_cents)
     expected = {
         "trial_id",
         "condition",
@@ -71,6 +94,7 @@ def build_agent_config(context: dict, *, gateway_url: str | None = None) -> dict
             "tools": [],
         },
         "environment": {"type": "self_hosted", "workspace_directory": "/candidate"},
+        "spend_control": {"limit": spend_limit},
     }
 
 
@@ -96,73 +120,10 @@ def validate_environment_record(record: dict) -> dict:
     if not isinstance(env_id, str) or not SESSION_ID.fullmatch(env_id):
         raise _schema_error("environment_id_invalid", "environment.id")
     remote_url = environment.get("remote_url")
-    reason_code = None
-    field = "environment.remote_url"
-    if not isinstance(remote_url, str) or not remote_url:
-        reason_code = "remote_url_missing"
-    elif any(ord(char) < 0x20 or ord(char) == 0x7F for char in remote_url):
-        reason_code = "remote_url_invalid_characters"
-    elif "#" in remote_url:
-        reason_code = "remote_url_fragment_forbidden"
-    else:
-        try:
-            parsed = urlsplit(remote_url)
-            port = parsed.port
-        except ValueError:
-            parsed = None
-            port = None
-            reason_code = "remote_url_port_invalid"
-        if parsed is not None and reason_code is None:
-            if parsed.scheme.lower() != "https":
-                reason_code = "remote_url_scheme_not_https"
-            elif parsed.hostname not in OFFICIAL_EXECUTOR_HOSTS:
-                reason_code = "remote_url_hostname_not_allowlisted"
-            elif port not in (None, 443):
-                reason_code = "remote_url_port_not_permitted"
-            elif parsed.username is not None or parsed.password is not None:
-                reason_code = "remote_url_credentials_forbidden"
-            elif any(
-                key.casefold()
-                in {
-                    "api_key",
-                    "apikey",
-                    "access_token",
-                    "auth",
-                    "authorization",
-                    "bearer",
-                    "credential",
-                    "password",
-                    "secret",
-                    "sig",
-                    "signature",
-                    "token",
-                }
-                for key, _value in parse_qsl(parsed.query, keep_blank_values=True)
-            ):
-                reason_code = "remote_url_credentials_forbidden"
-            elif parsed.fragment:
-                reason_code = "remote_url_fragment_forbidden"
-            elif parsed.netloc.endswith(":"):
-                reason_code = "remote_url_port_invalid"
-            else:
-                # The API reference models remote_url as an opaque string and
-                # instructs clients to pass it unchanged. Keep it on the
-                # documented API endpoint namespace while accepting trailing
-                # slash/subpath variants that the fixed-path check rejected.
-                path = parsed.path
-                decoded_path = unquote(path)
-                path_parts = decoded_path.split("/")
-                if (
-                    not path.startswith("/v1/agents/api")
-                    or not (path == "/v1/agents/api" or path.startswith("/v1/agents/api/"))
-                    or any(part in {".", ".."} for part in path_parts)
-                    or "\\" in decoded_path
-                    or re.search(r"%(?![0-9A-Fa-f]{2})", path)
-                    or any(char.isspace() for char in path)
-                ):
-                    reason_code = "remote_url_path_not_permitted"
-    if reason_code:
-        raise _schema_error(reason_code, field)
+    try:
+        contract.validate_executor_remote_url(remote_url)
+    except contract.ExecutorURLValidationError as exc:
+        raise _schema_error(exc.reason_code, "environment.remote_url") from exc
     return {
         "session_id": record["id"],
         "environment_id": env_id,
@@ -212,7 +173,36 @@ class ManagedAgentsClient:
         self._submitted_sessions: set[str] = set()
         self._last_response_status: int | None = None
 
-    def _request_json(
+    def _request_json(self, method, path, *, body=None, headers=None, operation=None):
+        safety = getattr(self, "safety", None)
+        effects = {"create_session": "session_create", "submit_task": "task_submit"}
+        significant = effects.get(operation)
+        if method == "DELETE":
+            significant = "session_delete"
+        elif method == "POST" and isinstance(body, dict):
+            events = body.get("events", [])
+            if events and events[0].get("type") == "agent.session.input.cancel":
+                significant = "cancellation"
+
+        def raw_request():
+            return self._request_json_impl(
+                method, path, body=body, headers=headers, operation=operation
+            )
+
+        def request():
+            if safety is not None:
+                return safety.io(
+                    raw_request,
+                    cap=15,
+                    phase="task_submission" if significant == "task_submit" else None,
+                )
+            return raw_request()
+
+        if safety is not None and significant:
+            return safety.effect(significant, request)
+        return request()
+
+    def _request_json_impl(
         self,
         method: str,
         path: str,
@@ -223,10 +213,29 @@ class ManagedAgentsClient:
     ) -> dict:
         if not path.startswith("/v1/agents/") or ".." in path or "?" in path or "#" in path:
             raise ManagedAgentsError("Refused a non-protocol API route")
+        if (
+            isinstance(method, str)
+            and method.upper() == "POST"
+            and path.rstrip("/") == "/v1/agents/sessions"
+        ):
+            if not isinstance(body, dict) or not isinstance(body.get("spend_control"), dict):
+                raise ManagedAgentsError(
+                    "Session creation requires an approved spend_control.limit"
+                )
+            validate_spend_control_limit(body["spend_control"].get("limit"))
         self._last_response_status = None
         try:
-            with self._client.stream(method, path, json=body, headers=headers) as response:
+            safety = getattr(self, "safety", None)
+            timeout = safety.timeout(15) if safety is not None else self._client.timeout
+            with self._client.stream(
+                method, path, json=body, headers=headers, timeout=timeout
+            ) as response:
                 self._last_response_status = response.status_code
+                if operation == "create_session" and response.is_success:
+                    # Stable creation evidence must not be overwritten by a
+                    # concurrent teardown request after a controller deadline.
+                    self.session_creation_response_received = True
+                    self.session_creation_http_status = response.status_code
                 if response.is_redirect:
                     raise ManagedAgentsError(
                         "Managed Agents API redirects are not accepted",
@@ -243,6 +252,8 @@ class ManagedAgentsClient:
                     )
                 content = bytearray()
                 for chunk in response.iter_bytes():
+                    if safety is not None:
+                        safety.check()
                     if len(content) + len(chunk) > MAX_API_RESPONSE_BYTES:
                         raise ManagedAgentsError(
                             "Managed Agents API response exceeded the size limit",
@@ -286,10 +297,20 @@ class ManagedAgentsClient:
             )
         return value
 
-    def create_session(self, context: dict, *, gateway_url: str | None = None) -> dict:
+    def create_session(
+        self,
+        context: dict,
+        *,
+        spend_control_limit_cents: int | None = None,
+        gateway_url: str | None = None,
+    ) -> dict:
         if self._session_creation_attempted:
             raise ManagedAgentsError("This client is restricted to one session creation attempt")
-        config = build_agent_config(context, gateway_url=gateway_url)
+        config = build_agent_config(
+            context,
+            spend_control_limit_cents=spend_control_limit_cents,
+            gateway_url=gateway_url,
+        )
         self._session_creation_attempted = True
         self.session_creation_attempted = True
         self.session_creation_uncertain = True
@@ -298,15 +319,17 @@ class ManagedAgentsClient:
             record = self._request_json(
                 "POST", "/v1/agents/sessions", body=config, operation="create_session"
             )
-        except ManagedAgentsError:
-            status = self._last_response_status
+        except Exception:
+            status = self.session_creation_http_status or self._last_response_status
             if status is not None and 200 <= status < 300:
                 self.session_creation_response_received = True
                 self.session_creation_http_status = status
             self.session_state = "unknown" if self.session_creation_uncertain else "not_created"
             raise
         self.session_creation_response_received = True
-        self.session_creation_http_status = self._last_response_status
+        self.session_creation_http_status = (
+            self.session_creation_http_status or self._last_response_status
+        )
         self.session_state = "created_unvalidated"
         session_id = record.get("id") if isinstance(record, dict) else None
         if isinstance(session_id, str) and SESSION_ID.fullmatch(session_id):
@@ -328,7 +351,7 @@ class ManagedAgentsClient:
         except ManagedAgentsError as exc:
             exc.diagnostics.update(
                 operation="create_session",
-                http_status=exc.diagnostics.get("http_status") or self._last_response_status,
+                http_status=exc.diagnostics.get("http_status") or self.session_creation_http_status,
                 category=(
                     exc.diagnostics.get("category")
                     if exc.diagnostics.get("category") != "managed_agents_error"
@@ -341,7 +364,7 @@ class ManagedAgentsClient:
             if isinstance(session_id, str) and SESSION_ID.fullmatch(session_id):
                 try:
                     self.delete_session(session_id)
-                except ManagedAgentsError as cleanup_error:
+                except Exception as cleanup_error:
                     self.session_deletion_verified = False
                     self.session_state = "unknown"
                     exc.diagnostics.update(
@@ -388,6 +411,8 @@ class ManagedAgentsClient:
         key = idempotency_key or uuid.uuid4().hex
         if not re.fullmatch(r"[A-Za-z0-9_-]{16,128}", key):
             raise ManagedAgentsError("Idempotency key is invalid")
+        if getattr(self, "safety", None) is not None:
+            self.safety.check()
         self._submitted_sessions.add(session_id)
         self.task_submission_attempted = True
         self.task_submission_uncertain = True
@@ -395,6 +420,7 @@ class ManagedAgentsClient:
             "POST",
             f"/v1/agents/sessions/{session_id}/events",
             headers={"Idempotency-Key": key},
+            operation="submit_task",
             body={
                 "events": [
                     {
@@ -435,6 +461,10 @@ class ManagedAgentsClient:
             raise ManagedAgentsError("Idempotency key is invalid")
         path = f"/v1/agents/sessions/{session_id}/events"
         deadline = time.monotonic() + deadline_seconds
+        safety = getattr(self, "safety", None)
+        stream_timeout = (
+            safety.timeout(deadline_seconds) if safety is not None else deadline_seconds
+        )
         seen = 0
         logged_bytes = 0
         pending: list[str] = []
@@ -447,10 +477,13 @@ class ManagedAgentsClient:
                 params={"stream": "true"},
                 headers={"Accept": "text/event-stream"},
                 timeout=httpx.Timeout(
-                    connect=15,
-                    read=deadline_seconds,
-                    write=15,
-                    pool=15,
+                    connect=min(15, stream_timeout),
+                    # The controller watchdog enforces the current absolute
+                    # phase even with no lines. Do not freeze startup's short
+                    # read timeout into the later, separately budgeted task.
+                    read=deadline_seconds if safety is not None else stream_timeout,
+                    write=min(15, stream_timeout),
+                    pool=min(15, stream_timeout),
                 ),
             ) as stream:
                 if stream.is_redirect:
@@ -461,11 +494,15 @@ class ManagedAgentsClient:
                     )
                 if "text/event-stream" not in stream.headers.get("content-type", "").lower():
                     raise ManagedAgentsError("Managed Agents returned a non-SSE event stream")
+                if safety is not None:
+                    safety.check()
                 if on_stream_ready is not None:
                     on_stream_ready()
                 submitted = False
                 for line in stream.iter_lines():
-                    if time.monotonic() > deadline:
+                    if safety is not None:
+                        safety.check()
+                    if safety is None and time.monotonic() > deadline:
                         raise ManagedAgentsError("Managed Agents turn exceeded its deadline")
                     if line.startswith("data:"):
                         data = line[5:].lstrip()
@@ -538,31 +575,9 @@ class ManagedAgentsClient:
             raise ManagedAgentsError("Executor did not connect before the task deadline")
 
     def _sanitize_event(self, event: dict) -> dict:
-        def visit(value, key=""):
-            normalized = re.sub(r"[^a-z]", "", key.lower())
-            if any(
-                marker in normalized
-                for marker in (
-                    "apikey",
-                    "authorization",
-                    "token",
-                    "secret",
-                    "password",
-                    "remoteurl",
-                    "websocketurl",
-                    "signedurl",
-                )
-            ):
-                return "[REDACTED]"
-            if isinstance(value, dict):
-                return {str(k): visit(v, str(k)) for k, v in value.items()}
-            if isinstance(value, list):
-                return [visit(item, key) for item in value]
-            if isinstance(value, str):
-                return value.replace(self._key, "[REDACTED]")
-            return value
-
-        return visit(event)
+        """Sanitize every nested key and value before event handling or retention."""
+        extra = getattr(self, "_additional_sanitization_secrets", ())
+        return contract.sanitize_reference_data(event, secrets=(self._key, *extra))
 
     def cancel_turn(self, session_id: str) -> dict:
         if not SESSION_ID.fullmatch(session_id):

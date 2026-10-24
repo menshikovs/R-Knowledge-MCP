@@ -1,0 +1,12 @@
+{
+  "id": "H04",
+  "title": "Point-in-time quote matching without future leakage",
+  "category": "rolling/non-equi joins, tie-breaking, instants vs time zones, scale",
+  "substitution": "The specification's H04 targets data.table. data.table is not installed in the pinned executor or scorer images (inspected 2026-10-24) and must not be installed during trials, so this task keeps the same as-of semantics with the installed, documented dplyr 1.2.1 join_by()/closest() rolling-join API (any installed approach is accepted).",
+  "source": "Original task from R_Knowledge_MCP_Hard_Benchmark_v1.md (H04), adapted as described in `substitution`. No third-party prompt, solution or verifier is reproduced.",
+  "packages": {"R": "4.5.2", "dplyr": "1.2.1", "tibble": "3.3.1"},
+  "difficulty_hypothesis": "Common errors: strict inequality excluding equal-time quotes, missing staleness bound or wrong boundary, ties by row order instead of quote_seq, nearest-in-absolute-time matching (future leakage), merge()/distinct() reordering or collapsing duplicate trades, filtering NA prices after matching, zero-row type loss, and O(trades x quotes) scans that miss the 100k/30s bound.",
+  "expected_mcp_relevance": "High for API discovery: dplyr::join_by(), closest(), the multiple/relationship arguments and their tie semantics are documented in dplyr Rd available through get_function_docs; without documentation agents often fall back to slow manual scans.",
+  "setup_prerequisites": "Scorer and executor images contain R 4.5.2 with dplyr, tibble, callr and testthat matching configs/renv.lock; no network or package installation.",
+  "checks_documented_in": "verifier/H04.R"
+}

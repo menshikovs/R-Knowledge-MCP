@@ -55,7 +55,7 @@ def test_prompt_configuration_defaults_and_bounds(monkeypatch):
     ):
         monkeypatch.delenv(name, raising=False)
     assert prompt_intelligence_enabled() is True
-    assert prompt_default_target() == "codex"
+    assert prompt_default_target() == "generic"
     assert prompt_default_detail_level() == "standard"
     assert prompt_max_grounding_packages() == 5
     monkeypatch.setenv("PROMPT_INTELLIGENCE_ENABLED", "sometimes")

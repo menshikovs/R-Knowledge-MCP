@@ -1,6 +1,8 @@
 """Bounded async transport with independent fixed repository route policies."""
 
 import asyncio
+import gzip
+import io
 import random
 import re
 from abc import ABC, abstractmethod
@@ -18,6 +20,8 @@ from .errors import KnowledgeError
 
 BASE = "https://cran.r-project.org"
 INDEX = "/src/contrib/PACKAGES"
+GZ_INDEX_SUFFIX = "/PACKAGES.gz"
+MAX_EXPANDED_INDEX = 64 << 20
 CATALOG = "/web/packages/available_packages_by_name.html"
 PACKAGE = re.compile(r"[A-Za-z][A-Za-z0-9.]{0,99}\Z")
 VERSION = re.compile(r"[0-9]+(?:[.-][0-9]+)*\Z")
@@ -26,6 +30,25 @@ OVERSIZED_FAILURE_CAPACITY = 128
 ARCHIVE_ROUTE = re.compile(
     r"/src/contrib/[A-Za-z][A-Za-z0-9.]{0,99}_[0-9]+(?:[.-][0-9]+)*\.tar\.gz\Z"
 )
+
+
+def _gunzip_index(body: bytes, url: str) -> bytes:
+    """Expand a gzip-compressed PACKAGES index with a hard output bound."""
+    try:
+        with gzip.GzipFile(fileobj=io.BytesIO(body)) as stream:
+            expanded = stream.read(MAX_EXPANDED_INDEX + 1)
+    except (OSError, EOFError) as exc:
+        raise KnowledgeError("invalid_source", "Invalid compressed package index", url) from exc
+    if len(expanded) > MAX_EXPANDED_INDEX:
+        raise KnowledgeError("source_too_large", "Expanded package index exceeds limit", url)
+    return expanded
+
+
+def same_content(first, second) -> bool:
+    """True for the same cached artifact or a 304-revalidated copy of its body."""
+    return first is not None and (
+        first is second or (first.body is second.body and first.source_url == second.source_url)
+    )
 
 
 def package_name(value: str) -> str:
@@ -73,7 +96,7 @@ class RepositoryHTTP(ABC):
         self.ttl = cache_ttl(300) if ttl is None else ttl
         self.cache_bytes = configured_cache_bytes() if cache_bytes is None else cache_bytes
         self.request_timeout = positive_float("HTTP_TIMEOUT_SECONDS", 15)
-        self._cache: OrderedDict[str, tuple[float, Artifact]] = OrderedDict()
+        self._cache: OrderedDict[str, tuple[float, Artifact, dict[str, str]]] = OrderedDict()
         self._oversized_failures: OrderedDict[str, tuple[float, str]] = OrderedDict()
         self._bytes = 0
         # Coalesce identical requests without blocking unrelated repository routes.
@@ -106,20 +129,33 @@ class RepositoryHTTP(ABC):
         url = self.base_url + path
         limit = self._response_limit(path)
         async with self._singleflight(path):
+            stale: tuple[Artifact, dict[str, str]] | None = None
             async with self._cache_lock:
                 now = monotonic()
                 if path in self._cache:
-                    expires, item = self._cache[path]
+                    expires, item, validators = self._cache[path]
                     if expires > now:
                         self._cache.move_to_end(path)
                         return item
-                    self._bytes -= len(self._cache.pop(path)[1].body)
+                    # Expired: revalidate with a conditional request. The old body is
+                    # reused only after the server answers 304, never after an error.
+                    self._cache.pop(path)
+                    self._bytes -= len(item.body)
+                    if validators:
+                        stale = (item, validators)
             failed = self._oversized_failures.get(path)
             if failed:
                 if failed[0] > monotonic():
                     self._oversized_failures.move_to_end(path)
                     raise KnowledgeError("source_too_large", failed[1], url, cached=True)
                 self._oversized_failures.pop(path, None)
+            headers = {"Accept-Encoding": "identity"}
+            if stale is not None:
+                if "etag" in stale[1]:
+                    headers["If-None-Match"] = stale[1]["etag"]
+                if "last-modified" in stale[1]:
+                    headers["If-Modified-Since"] = stale[1]["last-modified"]
+            not_modified = False
             async with self._request_slots:
                 try:
                     async with asyncio.timeout(45):
@@ -130,7 +166,7 @@ class RepositoryHTTP(ABC):
                                     url,
                                     follow_redirects=False,
                                     timeout=self.request_timeout,
-                                    headers={"Accept-Encoding": "identity"},
+                                    headers=headers,
                                 ) as response:
                                     if response.status_code == 429:
                                         retry_after = self._retry_after(
@@ -153,6 +189,15 @@ class RepositoryHTTP(ABC):
                                     ):
                                         await asyncio.sleep(0.1 + random.random() * 0.2)
                                         continue
+                                    validators = {
+                                        key: response.headers[key]
+                                        for key in ("etag", "last-modified")
+                                        if key in response.headers
+                                    }
+                                    if response.status_code == 304 and stale is not None:
+                                        not_modified = True
+                                        validators = {**stale[1], **validators}
+                                        break
                                     if response.status_code != 200:
                                         code = (
                                             "not_found"
@@ -184,6 +229,12 @@ class RepositoryHTTP(ABC):
                                     await asyncio.sleep(0.1 + random.random() * 0.2)
                                     continue
                                 raise
+                    if not_modified:
+                        body = stale[0].body
+                    elif path.endswith(GZ_INDEX_SUFFIX):
+                        body = await asyncio.to_thread(_gunzip_index, bytes(chunks), url)
+                    else:
+                        body = bytes(chunks)
                 except (httpx.HTTPError, TimeoutError) as exc:
                     raise KnowledgeError(
                         "source_unavailable", "Repository request failed or timed out", url
@@ -198,14 +249,16 @@ class RepositoryHTTP(ABC):
                         while len(self._oversized_failures) > OVERSIZED_FAILURE_CAPACITY:
                             self._oversized_failures.popitem(last=False)
                     raise
-            item = Artifact(bytes(chunks), url, datetime.now(UTC).isoformat())
+            # A 304 keeps the same body object, so parsed-index caches keyed on content
+            # stay valid, while checked_at records this actual revalidation time.
+            item = Artifact(body, url, datetime.now(UTC).isoformat())
             async with self._cache_lock:
                 if len(item.body) <= self.cache_bytes:
                     while self._cache and (
                         self._bytes + len(item.body) > self.cache_bytes or len(self._cache) >= 32
                     ):
-                        self._bytes -= len(self._cache.popitem(last=False)[1].body)
-                    self._cache[path] = (monotonic() + self.ttl, item)
+                        self._bytes -= len(self._cache.popitem(last=False)[1][1].body)
+                    self._cache[path] = (monotonic() + self.ttl, item, validators)
                     self._bytes += len(item.body)
             return item
 
@@ -237,7 +290,7 @@ class CranHTTP(RepositoryHTTP):
 
     def allowed_path(self, path: str) -> bool:
         return (
-            path in (INDEX, CATALOG)
+            path in (INDEX, INDEX + ".gz", CATALOG)
             or bool(ARCHIVE_ROUTE.fullmatch(path))
             or bool(re.fullmatch(r"/web/packages/[A-Za-z][A-Za-z0-9.]{0,99}/DESCRIPTION", path))
             or bool(re.fullmatch(r"/web/packages/[A-Za-z][A-Za-z0-9.]{0,99}/index\.html", path))
@@ -251,7 +304,7 @@ class BioconductorHTTP(RepositoryHTTP):
         prefix = r"/packages/[0-9]+\.[0-9]+/(?:bioc|data/annotation|data/experiment)"
         return path == "/config.yaml" or bool(
             re.fullmatch(
-                prefix + r"/(?:src/contrib/(?:PACKAGES|[A-Za-z][A-Za-z0-9.]{0,99}_"
+                prefix + r"/(?:src/contrib/(?:PACKAGES(?:\.gz)?|[A-Za-z][A-Za-z0-9.]{0,99}_"
                 r"[0-9]+(?:[.-][0-9]+)*\.tar\.gz)|html/[A-Za-z][A-Za-z0-9.]{0,99}\.html)",
                 path,
             )
@@ -264,6 +317,8 @@ def make_client() -> httpx.AsyncClient:
         trust_env=False,
         follow_redirects=False,
         timeout=timeout,
-        limits=httpx.Limits(max_connections=4, max_keepalive_connections=2),
+        # Each repository route caps itself at 4 concurrent downloads; the extra
+        # headroom keeps GitHub, Context7 and docs requests from waiting on archives.
+        limits=httpx.Limits(max_connections=12, max_keepalive_connections=6),
         headers={"User-Agent": http_user_agent()},
     )

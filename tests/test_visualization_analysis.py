@@ -1,5 +1,10 @@
+import time
+
+import pytest
+
 from cran_knowledge_mcp.errors import KnowledgeError
 from cran_knowledge_mcp.visualization_analysis import (
+    MAX_ARGUMENT_CHARS,
     analyze_ggplot_code,
     analyze_ggplotly_compatibility,
     analyze_ggraph_code,
@@ -89,3 +94,45 @@ def test_static_source_is_never_executed_and_caps_and_schema_validation_hold():
         assert exc.code == "invalid_input"
     else:
         raise AssertionError("invalid Unicode should be rejected")
+
+
+def test_scanner_balances_nested_single_and_double_brackets():
+    calls = scan_calls("f(x[y[1]], z[[i]][[j]], df[idx[1], ])")
+    assert [call.name for call in calls] == ["f"]
+    assert [value for _, value in calls[0].arguments] == ["x[y[1]]", "z[[i]][[j]]", "df[idx[1], ]"]
+
+
+def test_scanner_ignores_delimiters_inside_strings():
+    calls = scan_calls('paste("(", ")]", x)')
+    assert [value for _, value in calls[0].arguments] == ['"("', '")]"', "x"]
+
+
+def test_scanner_reads_raw_strings_without_treating_contents_as_code():
+    calls = scan_calls('f(r"(a"b)", R\'[c(]\', r"--{x}"}--")\nx <- r"(\n)"\ng()')
+    assert [call.name for call in calls] == ["f", "g"]
+    assert [value for _, value in calls[0].arguments] == ['r"(a"b)"', "R'[c(]'", 'r"--{x}"}--"']
+    assert calls[1].line == 4
+
+
+def test_scanner_rejects_malformed_raw_string():
+    with pytest.raises(KnowledgeError) as error:
+        scan_calls('x <- r"abc"')
+    assert error.value.code == "invalid_r_syntax"
+
+
+def test_scanner_is_linear_for_deep_nesting_and_bounds_argument_text():
+    depth = 40_000
+    started = time.perf_counter()
+    calls = scan_calls("f(" * depth + ")" * depth)
+    assert len(calls) == depth
+    assert time.perf_counter() - started < 10
+    assert len(calls[0].arguments[0][1]) <= MAX_ARGUMENT_CHARS + len(" …[truncated]")
+    assert calls[1].parent == "f"
+
+
+def test_aes_scope_comes_from_the_innermost_enclosing_call():
+    result = analyze_ggraph_code(
+        "ggraph(g) + geom_edge_link(mapping = (aes(colour = w))) + "
+        "ggraph::geom_node_point(aes(size = d))"
+    )
+    assert [m["scope"] for m in result["mappings"]] == ["edge", "node"]

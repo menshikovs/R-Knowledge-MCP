@@ -25,6 +25,7 @@ where = ["src"]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 pythonpath = ["src"]
+cache_dir = "pytest-cache/data"
 markers = ["docker: requires an available Docker engine and the frozen R benchmark image"]
 
 [tool.ruff]

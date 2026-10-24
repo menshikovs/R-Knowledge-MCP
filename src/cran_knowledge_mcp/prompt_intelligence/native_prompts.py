@@ -7,7 +7,7 @@ from mcp.types import PromptMessage, TextContent
 from ..errors import KnowledgeError
 from . import PromptIntelligence
 from .composer import CATEGORY_REQUIREMENTS, render_prompt
-from .intent import infer_language, validate_text
+from .intent import validate_text
 from .models import PromptSpecification
 from .quality import SECRET_PATTERNS
 from .templates import TEMPLATE_BY_ID
@@ -60,7 +60,6 @@ def _render(
             "sensitive_input", "Remove credentials before requesting a prompt draft"
         )
     template = TEMPLATE_BY_ID[category]
-    language = infer_language(request, None)
     package_records = [
         {
             "package": name.strip(),
@@ -75,7 +74,7 @@ def _render(
     request_constraints = [line.strip(" -\t") for line in constraints.splitlines() if line.strip()][
         :20
     ]
-    requirement = CATEGORY_REQUIREMENTS[template.task_category][1 if language == "ru" else 0]
+    requirement = CATEGORY_REQUIREMENTS[template.task_category]
     spec = PromptSpecification(
         original_request=request[:8000],
         task_category=template.task_category,
@@ -107,7 +106,7 @@ def _render(
         output_expectations=["Report changes, tests and unresolved limitations."],
         sources=[],
     )
-    return render_prompt(spec, language=language, include_sources=False)
+    return render_prompt(spec, include_sources=False)
 
 
 def register_native_prompts(server) -> None:

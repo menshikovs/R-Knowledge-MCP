@@ -14,6 +14,8 @@ from mcp.types import CallToolResult, TextContent, Tool
 
 from cran_knowledge_mcp.server import create_server
 
+pytestmark = pytest.mark.usefixtures("r01a_offline_guard")
+
 ROOT = Path(__file__).resolve().parents[1] / "benchmarks/codex_r"
 
 
@@ -72,7 +74,8 @@ def test_manifest_real_lock_and_independent_oracles():
 
 async def test_condition_tools_are_actual_public_interfaces(monkeypatch):
     monkeypatch.setenv("PROMPT_INTELLIGENCE_ENABLED", "true")
-    actual = {t.name for t in await create_server().list_tools()}
+    # The benchmark gateway and run_simple pin MCP_TOOLSET=legacy for these conditions.
+    actual = {t.name for t in await create_server(toolset="legacy").list_tools()}
     data = bench.manifest()
     for condition in "BC":
         assert set(data["conditions"][condition]["tools"]) <= actual
@@ -96,6 +99,12 @@ def test_plan_randomized_balanced_and_reproducible():
         bench.plan("default", "high", IMAGE)
     with pytest.raises(ValueError):
         bench.plan(a["model"], "high", "mutable-image-tag")
+
+
+def test_plan_is_independent_of_current_working_directory(monkeypatch):
+    expected = experiment()
+    monkeypatch.chdir(ROOT)
+    assert experiment() == expected
 
 
 def test_prepare_has_only_public_inputs_and_reproducible_fixtures(tmp_path):
