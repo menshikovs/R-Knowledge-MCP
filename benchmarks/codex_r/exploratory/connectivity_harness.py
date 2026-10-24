@@ -2,7 +2,7 @@
 
 This module intentionally has no task submission or Responses API surface. It
 must not be used to run R01-A. Live use requires a separately approved staging
-project and fresh restricted credentials.
+project and separately restricted application/environment credentials.
 """
 
 from __future__ import annotations
@@ -16,12 +16,15 @@ import os
 import re
 import secrets
 import stat
+import subprocess
+import sys
 import threading
 import time
 import uuid
 from collections.abc import Callable, Mapping
 from contextlib import contextmanager
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from itertools import islice
 from pathlib import Path
 from types import MappingProxyType
 from typing import Protocol
@@ -142,7 +145,6 @@ STAGING_AUTHORIZATION_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$")
 SOURCE_COMMIT_SHA = re.compile(r"^[a-f0-9]{40}$")
 F09_ATTEMPT_ID = re.compile(r"^F09-[A-Za-z0-9][A-Za-z0-9_-]{0,95}$")
 SHA256 = re.compile(r"^[a-f0-9]{64}$")
-MAX_STAGING_SPEND_LIMIT_CENTS = 200
 STAGING_AUTHORIZATION_FIELDS = frozenset(
     {
         "schema_version",
@@ -192,7 +194,7 @@ class StagingAuthorizationBinding:
             or type(credential_scope_sha256) is not str
             or not SHA256.fullmatch(credential_scope_sha256)
             or type(limit) is not int
-            or not 0 < limit <= MAX_STAGING_SPEND_LIMIT_CENTS
+            or limit <= 0
         ):
             raise ConnectivityError("staging_authorization_binding_invalid")
         object.__setattr__(self, "attempt_id", attempt_id)
@@ -313,8 +315,8 @@ def parse_unverified_staging_authorization_claims(
 ) -> Mapping[str, object]:
     """Validate bounded authorization claims without granting authority.
 
-    There is no configured trusted issuer or signature verifier. The result is
-    useful only for offline validation; callers must not use it to permit work.
+    This parser authenticates no issuer. The solo workflow separately requires
+    local interactive confirmation; parsing a caller's JSON grants no authority.
     """
     if (
         type(claims) is not dict
@@ -367,7 +369,7 @@ def parse_unverified_staging_authorization_claims(
         or claims["responses_inference_allowed"] is not False
         or type(claims["spend_control_limit_cents"]) is not int
         or claims["spend_control_limit_cents"] != expected_binding.limit
-        or not 0 < claims["spend_control_limit_cents"] <= MAX_STAGING_SPEND_LIMIT_CENTS
+        or claims["spend_control_limit_cents"] <= 0
         or claims["attempt_id"] != expected_binding.attempt_id
         or not F09_ATTEMPT_ID.fullmatch(claims["attempt_id"])
         or claims["configuration_sha256"] != expected_binding.configuration_sha256
@@ -1326,6 +1328,539 @@ class SyntheticStagingAuthorization:
         )
 
 
+SOLO_APPROVAL_TYPE = "f09_solo_operator_manual_approval_not_r01a"
+SOLO_CONFIRMATION = "I ACCEPT BILLING RESPONSIBILITY AND BEST-EFFORT SPEND CONTROL"
+SOLO_SOURCE_FILES = (
+    "connectivity_harness.py",
+    "f09_solo_operator.py",
+    "executor_contract.py",
+    "docker_runtime.py",
+    "egress_proxy.py",
+)
+
+
+def _solo_source_identification(expected_commit: str) -> str:
+    """Identify reviewed local files without executing them or contacting Git remotes."""
+    repository = Path(__file__).resolve().parents[3]
+
+    def git(*arguments):
+        try:
+            result = subprocess.run(
+                ["git", "--no-pager", "-C", str(repository), *arguments],
+                capture_output=True,
+                timeout=5,
+                check=False,
+            )
+            if result.returncode or len(result.stdout) > 2 << 20:
+                raise ValueError
+            return result.stdout
+        except (OSError, ValueError, subprocess.SubprocessError):
+            raise ConnectivityError("solo_source_unverified") from None
+
+    if git("rev-parse", "HEAD").decode("ascii").strip() != expected_commit:
+        raise ConnectivityError("solo_source_mismatch")
+    hashes = {}
+    for name in SOLO_SOURCE_FILES:
+        path = Path(__file__).with_name(name)
+        relative = "benchmarks/codex_r/exploratory/" + name
+        try:
+            if path.is_symlink() or path.stat().st_size > 2 << 20:
+                raise ValueError
+            with path.open("rb") as source:
+                raw = source.read((2 << 20) + 1)
+            if len(raw) > 2 << 20:
+                raise ValueError
+        except (OSError, ValueError):
+            raise ConnectivityError("solo_source_unverified") from None
+        if raw.replace(b"\r\n", b"\n") != git("show", expected_commit + ":" + relative):
+            raise ConnectivityError("solo_source_mismatch")
+        hashes[name] = hashlib.sha256(raw).hexdigest()
+    return _sha256(json.dumps(hashes, sort_keys=True, separators=(",", ":")))
+
+
+def _solo_filesystem(path: Path, mountinfo: str) -> str:
+    matches = []
+    for line in mountinfo.splitlines():
+        before, separator, after = line.partition(" - ")
+        fields = before.split()
+        if separator and len(fields) >= 5 and after.split():
+            mount = fields[4]
+            for escaped, decoded in (("\\040", " "), ("\\011", "\t"), ("\\134", "\\")):
+                mount = mount.replace(escaped, decoded)
+            if path == Path(mount) or Path(mount) in path.parents:
+                matches.append((len(mount), after.split()[0]))
+    return max(matches)[1] if matches else "unknown"
+
+
+def validate_solo_request(request: object) -> dict:
+    """Validate non-secret operator configuration; no credential introspection."""
+    fields = {
+        "schema_version",
+        "source_commit",
+        "project_id",
+        "agent",
+        "create_seconds",
+        "connect_seconds",
+        "cleanup_seconds",
+        "executor_image",
+        "spend_limit_cents",
+        "billing_owner_id",
+        "credential_attestation",
+    }
+    if type(request) is not dict or set(request) != fields:
+        raise ConnectivityError("solo_request_invalid")
+    if (
+        type(request["schema_version"]) is not int
+        or request["schema_version"] != 1
+        or type(request["source_commit"]) is not str
+        or not SOURCE_COMMIT_SHA.fullmatch(request["source_commit"])
+        or type(request["project_id"]) is not str
+        or not PROJECT_ID.fullmatch(request["project_id"])
+        or type(request["executor_image"]) is not str
+        or not re.fullmatch(r"sha256:[a-f0-9]{64}", request["executor_image"])
+        or type(request["billing_owner_id"]) is not str
+        or not STAGING_AUTHORIZATION_ID.fullmatch(request["billing_owner_id"])
+        or contract.sanitize_reference_data(request["billing_owner_id"])
+        != request["billing_owner_id"]
+    ):
+        raise ConnectivityError("solo_request_invalid")
+    _validated_spend_control(SpendControlApproval(request["spend_limit_cents"], "manual", True))
+    connectivity_configuration_sha256(
+        request["agent"],
+        create_seconds=request["create_seconds"],
+        connect_seconds=request["connect_seconds"],
+        cleanup_seconds=request["cleanup_seconds"],
+    )
+    if contract.sanitize_reference_data(request["agent"], redact_urls=True) != request["agent"]:
+        raise ConnectivityError("solo_request_invalid")
+    unverified_credential_scope_sha256(
+        request["credential_attestation"], expected_project_id=request["project_id"]
+    )
+    raw = json.dumps(request, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    if len(raw.encode()) > MAX_STAGING_AUTHORIZATION_RECORD_BYTES // 2:
+        raise ConnectivityError("solo_request_invalid")
+    return json.loads(raw)
+
+
+class SoloOperatorApprovalStore:
+    """One approval per persistent directory, trusting the local operator account.
+
+    Protects against accidental reuse, not malicious code running as that user.
+    Synthetic records cannot be opened as real operator approvals.
+    """
+
+    def __init__(
+        self,
+        state_directory: Path,
+        *,
+        synthetic=False,
+        source_probe=None,
+        now_utc=None,
+        terminal_input=None,
+        terminal_output=None,
+        write=None,
+        fsync=None,
+        read_only=False,
+    ):
+        if (
+            type(synthetic) is not bool
+            or type(read_only) is not bool
+            or (
+                not synthetic
+                and any(
+                    value is not None
+                    for value in (
+                        source_probe,
+                        now_utc,
+                        terminal_input,
+                        terminal_output,
+                        write,
+                        fsync,
+                    )
+                )
+            )
+        ):
+            raise ConnectivityError("solo_test_boundary_rejected")
+        self.synthetic = synthetic
+        self.state_directory = _check_external_private_root(Path(state_directory))
+        self.root = self.state_directory / "f09-solo-operator"
+        self._source_probe = source_probe or _solo_source_identification
+        self._now = now_utc or (lambda: datetime.now(UTC))
+        self._input = terminal_input if terminal_input is not None else sys.stdin
+        self._output = terminal_output if terminal_output is not None else sys.stderr
+        self._write, self._fsync = write or os.write, fsync or os.fsync
+        self._check_directory(self.state_directory)
+        self.read_only = read_only
+        if not read_only:
+            try:
+                self.root.mkdir(mode=0o700)
+                _fsync_directory(self.state_directory, required=True)
+            except FileExistsError:
+                pass
+            except OSError:
+                raise ConnectivityError("solo_state_unavailable", uncertain=True) from None
+        self._check_directory(self.root)
+        self._identity = (self.root.stat().st_dev, self.root.stat().st_ino)
+
+    def _check_directory(self, path):
+        try:
+            if sys.platform != "linux":
+                raise ValueError
+            _check_external_private_root(path)
+            metadata = path.lstat()
+            if (
+                not stat.S_ISDIR(metadata.st_mode)
+                or metadata.st_uid != os.geteuid()
+                or stat.S_IMODE(metadata.st_mode) != 0o700
+            ):
+                raise ValueError
+            if not self.synthetic:
+                with Path("/proc/self/mountinfo").open("rb") as source:
+                    raw = source.read((1 << 20) + 1)
+                if len(raw) > 1 << 20 or _solo_filesystem(path, raw.decode()) not in {
+                    "ext4",
+                    "xfs",
+                    "btrfs",
+                }:
+                    raise ValueError
+        except (OSError, ValueError, DurabilityError):
+            raise ConnectivityError("solo_private_persistent_linux_state_required") from None
+
+    def _check_state(self):
+        self._check_directory(self.state_directory)
+        self._check_directory(self.root)
+        if (self.root.stat().st_dev, self.root.stat().st_ino) != self._identity:
+            raise ConnectivityError("solo_state_replaced", uncertain=True)
+
+    @staticmethod
+    def _bytes(record):
+        return (json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n").encode()
+
+    def _write_new(self, name, record):
+        if self.read_only:
+            raise ConnectivityError("solo_read_only_store")
+        self._check_state()
+        raw = self._bytes(record)
+        descriptor = None
+        try:
+            descriptor = os.open(
+                self.root / name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600
+            )
+            if self._write(descriptor, raw) != len(raw):
+                raise OSError
+            self._fsync(descriptor)
+            _fsync_directory(self.root, required=True)
+            self._check_state()
+        except FileExistsError:
+            raise ConnectivityError("solo_approval_already_used_or_pending") from None
+        except (OSError, DurabilityError):
+            raise ConnectivityError("solo_durability_uncertain", uncertain=True) from None
+        finally:
+            if descriptor is not None:
+                os.close(descriptor)
+
+    def _read(self, name):
+        self._check_state()
+        descriptor = None
+        try:
+            descriptor = os.open(self.root / name, os.O_RDONLY | os.O_NOFOLLOW)
+            metadata = os.fstat(descriptor)
+            if (
+                not stat.S_ISREG(metadata.st_mode)
+                or metadata.st_uid != os.geteuid()
+                or stat.S_IMODE(metadata.st_mode) != 0o600
+                or metadata.st_nlink != 1
+                or metadata.st_size > MAX_STAGING_AUTHORIZATION_RECORD_BYTES
+            ):
+                raise ValueError
+            raw = os.read(descriptor, MAX_STAGING_AUTHORIZATION_RECORD_BYTES + 1)
+            after = (self.root / name).lstat()
+            record = json.loads(raw)
+            if (
+                type(record) is not dict
+                or raw != self._bytes(record)
+                or len(raw) != metadata.st_size
+                or (metadata.st_dev, metadata.st_ino) != (after.st_dev, after.st_ino)
+            ):
+                raise ValueError
+            self._check_state()
+            return record
+        except (OSError, ValueError, TypeError):
+            raise ConnectivityError("solo_record_invalid", uncertain=True) from None
+        finally:
+            if descriptor is not None:
+                os.close(descriptor)
+
+    @staticmethod
+    def _binding(record):
+        request = record["request"]
+        return StagingAuthorizationBinding(
+            record["claims"]["attempt_id"],
+            _sha256(
+                json.dumps(
+                    {"request": request, "source": record["source_files_sha256"]},
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
+            ),
+            unverified_credential_scope_sha256(
+                request["credential_attestation"], expected_project_id=request["project_id"]
+            ),
+            request["spend_limit_cents"],
+        )
+
+    def approve(self, request, *, expires_in_seconds):
+        if self.read_only:
+            raise ConnectivityError("solo_read_only_store")
+        request = validate_solo_request(request)
+        if (
+            type(expires_in_seconds) is not int
+            or not 0 < expires_in_seconds <= MAX_STAGING_AUTHORIZATION_SECONDS
+        ):
+            raise ConnectivityError("solo_expiration_invalid")
+        if not self._input.isatty() or not self._output.isatty():
+            raise ConnectivityError("solo_interactive_terminal_required")
+        source_hash = self._source_probe(request["source_commit"])
+        if type(source_hash) is not str or not SHA256.fullmatch(source_hash):
+            raise ConnectivityError("solo_source_unverified")
+        with _lease_operation_gate(self.root, synthetic=False):
+            if any(path.name != "lease.gate" for path in self.root.iterdir()):
+                raise ConnectivityError("solo_approval_already_used_or_pending")
+            if (self.state_directory / JOURNAL_DIRNAME).exists():
+                raise ConnectivityError("solo_prior_lifecycle_requires_reconciliation")
+            issued = self._now()
+            expiration = issued + timedelta(seconds=expires_in_seconds)
+            attempt = "F09-" + uuid.uuid4().hex
+            authorization_id = uuid.uuid4().hex
+            claims = {
+                "schema_version": 2,
+                "authorization_id": authorization_id,
+                "issuer_id": request["credential_attestation"]["operator_id"],
+                "project_name": "rkmcp-staging",
+                "project_id": request["project_id"],
+                "source_commit": request["source_commit"],
+                "attempt_id": attempt,
+                "issued_at": OfflineStagingAuthorizationStore._timestamp(issued),
+                "expires_at": OfflineStagingAuthorizationStore._timestamp(expiration),
+                "session_count": 1,
+                "task_count": 0,
+                "task_submission_allowed": False,
+                "responses_inference_allowed": False,
+                "spend_control_limit_cents": request["spend_limit_cents"],
+                "billing_owner_id": request["billing_owner_id"],
+                "billing_owner_approval_reference": "manual:" + authorization_id,
+                "billing_owner_acknowledged": True,
+                "billing_risk_acknowledged": True,
+            }
+            record = {
+                "schema_version": 1,
+                "record_type": SOLO_APPROVAL_TYPE,
+                "synthetic": self.synthetic,
+                "request": request,
+                "claims": claims,
+                "source_files_sha256": source_hash,
+                "confirmation_scheme": "interactive_exact_phrase_v1",
+            }
+            binding = self._binding(record)
+            claims["configuration_sha256"] = binding.configuration_sha256
+            claims["credential_scope_sha256"] = binding.credential_scope_sha256
+            summary = {
+                "attempt_id": attempt,
+                "project_id": request["project_id"],
+                "source_commit": request["source_commit"],
+                "configuration_sha256": binding.configuration_sha256,
+                "limit_usd_cents": binding.limit,
+                "expires_at": claims["expires_at"],
+                "scope": "one session, zero tasks, no Responses or inference",
+            }
+            print(json.dumps(summary, sort_keys=True, indent=2), file=self._output)
+            print(
+                "Same-user approval trusts this account; "
+                "spend control is best-effort, not a billing ceiling.",
+                file=self._output,
+            )
+            phrase = f"APPROVE {attempt} {binding.limit} CENTS ONE SESSION ZERO TASKS"
+            try:
+                for expected in (phrase, SOLO_CONFIRMATION):
+                    print("Type exactly: " + expected, file=self._output, flush=True)
+                    if self._input.readline().rstrip("\r\n") != expected:
+                        raise ConnectivityError("solo_confirmation_rejected")
+            except (EOFError, KeyboardInterrupt):
+                raise ConnectivityError("solo_confirmation_rejected") from None
+            parse_unverified_staging_authorization_claims(
+                claims,
+                expected_project_id=request["project_id"],
+                expected_source_commit=request["source_commit"],
+                expected_binding=binding,
+                now_utc=self._now(),
+            )
+            if self._source_probe(request["source_commit"]) != source_hash:
+                raise ConnectivityError("solo_source_mismatch")
+            self._write_new("approval.json", record)
+            return summary
+
+    def validate(self):
+        record = self._read("approval.json")
+        if (
+            set(record)
+            != {
+                "schema_version",
+                "record_type",
+                "synthetic",
+                "request",
+                "claims",
+                "source_files_sha256",
+                "confirmation_scheme",
+            }
+            or type(record["schema_version"]) is not int
+            or record["schema_version"] != 1
+            or record["record_type"] != SOLO_APPROVAL_TYPE
+            or type(record["synthetic"]) is not bool
+            or record["synthetic"] is not self.synthetic
+            or record["confirmation_scheme"] != "interactive_exact_phrase_v1"
+            or type(record["claims"]) is not dict
+            or set(record["claims"]) != STAGING_AUTHORIZATION_FIELDS
+            or type(record["source_files_sha256"]) is not str
+            or not SHA256.fullmatch(record["source_files_sha256"])
+        ):
+            raise ConnectivityError("solo_record_invalid")
+        request = validate_solo_request(record["request"])
+        if self._source_probe(request["source_commit"]) != record["source_files_sha256"]:
+            raise ConnectivityError("solo_source_mismatch")
+        binding = self._binding(record)
+        parse_unverified_staging_authorization_claims(
+            record["claims"],
+            expected_project_id=request["project_id"],
+            expected_source_commit=request["source_commit"],
+            expected_binding=binding,
+            now_utc=self._now(),
+        )
+        return record
+
+    def spend_approval(self):
+        record = self.validate()
+        return SpendControlApproval(
+            record["request"]["spend_limit_cents"],
+            record["claims"]["billing_owner_approval_reference"],
+            True,
+        )
+
+    def consume(self, journal, lease):
+        if self.read_only:
+            raise ConnectivityError("solo_read_only_store")
+        if (
+            type(journal) is not StagingJournal
+            or type(lease) is not StagingLease
+            or journal.synthetic is not self.synthetic
+            or lease.synthetic is not self.synthetic
+            or journal.root.parent != lease.root
+            or lease.root != self.state_directory / JOURNAL_DIRNAME
+            or not lease.acquired
+            or not lease.lock_path.exists()
+        ):
+            raise ConnectivityError("solo_lease_scope_invalid")
+        with _lease_operation_gate(self.root, synthetic=False):
+            record = self.validate()
+            reference = _sha256(record["claims"]["authorization_id"])
+            evidence = {
+                "record_type": "f09_solo_operator_consumption",
+                "schema_version": 1,
+                "synthetic": self.synthetic,
+                "approval_sha256": _sha256(self._bytes(record).decode()),
+            }
+            self._write_new("consumption.started", evidence)
+            intent = journal.append("authorization_consume", "intent", resource_sha256=reference)
+            self._write_new("consumed.json", evidence)
+            journal.append(
+                "authorization_consume",
+                "outcome",
+                intent_seq=intent,
+                resource_sha256=reference,
+                code="consumed",
+            )
+
+    def inspect(self):
+        """Read-only state summary, never an execution or recovery authorization."""
+        self._check_state()
+        entries = list(islice(self.root.iterdir(), 17))
+        names = {path.name for path in entries}
+        state = "empty"
+        known = {"lease.gate", "approval.json", "consumption.started", "consumed.json"}
+        if len(entries) > 16 or names - known:
+            state = "corrupt"
+        elif "consumption.started" in names or "consumed.json" in names:
+            state = "consumed_or_uncertain"
+        elif "approval.json" in names:
+            state = "pending_review"
+        try:
+            records = {name: self._read(name) for name in names & (known - {"lease.gate"})}
+            if "approval.json" in records and (
+                records["approval.json"].get("record_type") != SOLO_APPROVAL_TYPE
+                or records["approval.json"].get("synthetic") is not self.synthetic
+            ):
+                state = "corrupt"
+            if "consumed.json" in records and (
+                "consumption.started" not in records
+                or records["consumed.json"] != records["consumption.started"]
+            ):
+                state = "corrupt"
+        except ConnectivityError:
+            state = "corrupt"
+        return {
+            "state": state,
+            "synthetic": self.synthetic,
+            "live_allowed": False,
+            "cleanup_verified": False,
+            "recovery_authorized": False,
+        }
+
+
+class SoloOperatorAuthorization:
+    """Manual approval binding for the existing lifecycle; live gate remains closed."""
+
+    def __init__(self, store, lease):
+        if type(store) is not SoloOperatorApprovalStore or type(lease) is not StagingLease:
+            raise ConnectivityError("solo_lease_scope_invalid")
+        self.store, self.lease = store, lease
+
+    def validate_request(self, harness):
+        if type(harness.client) is not StagingAgentsClient:
+            raise ConnectivityError("solo_request_mismatch")
+        record = self.store.validate()
+        request = record["request"]
+        actual = connectivity_configuration_sha256(
+            harness.agent_config,
+            create_seconds=harness.create_seconds,
+            connect_seconds=harness.connect_seconds,
+            cleanup_seconds=harness.cleanup_seconds,
+        )
+        expected = connectivity_configuration_sha256(
+            request["agent"],
+            create_seconds=request["create_seconds"],
+            connect_seconds=request["connect_seconds"],
+            cleanup_seconds=request["cleanup_seconds"],
+        )
+        approval = harness.client._spend_control_approval
+        if (
+            type(harness.client) is not StagingAgentsClient
+            or harness.client.synthetic is not self.store.synthetic
+            or harness.journal.synthetic is not self.store.synthetic
+            or harness.lease is not self.lease
+            or actual != expected
+            or harness.client.project_id_hash != _sha256(request["project_id"])
+            or _validated_spend_control(approval)["limit"] != request["spend_limit_cents"]
+            or approval.approval_reference != record["claims"]["billing_owner_approval_reference"]
+        ):
+            raise ConnectivityError("solo_request_mismatch")
+        if type(harness.executor) is DockerExecutorAdapter and (
+            harness.executor.runtime.image_id != request["executor_image"]
+        ):
+            raise ConnectivityError("solo_executor_image_mismatch")
+
+    def consume(self, journal):
+        self.store.consume(journal, self.lease)
+
+
 class StagingAgentsClient:
     """Fixed-route HTTPS client with no task, inference, or arbitrary URL method."""
 
@@ -1351,12 +1886,8 @@ class StagingAgentsClient:
             raise ValueError("Live connectivity forbids injected transports")
         if synthetic and not isinstance(transport, httpx.MockTransport):
             raise ValueError("Synthetic connectivity clients require httpx.MockTransport")
-        if not synthetic and os.environ.get(PROJECT_CONFIRMATION_ENV) != project_id:
-            raise ValueError("Live harness requires explicit staging-project confirmation")
         if not synthetic:
-            # No reviewed provider identity/scope verification adapter exists yet.
-            # Local confirmation alone must never authorize a live request.
-            raise ValueError("Verified staging project and credential scope unavailable")
+            raise ValueError("Live F09 execution is disabled pending solo-operator review")
         self.synthetic = synthetic
         self._key = application_api_key
         self._spend_control_approval = spend_control_approval
@@ -1658,6 +2189,7 @@ class ConnectivityHarness:
         cleanup_seconds=MAX_CLEANUP_SECONDS,
         wall_clock=lambda: datetime.now(UTC).isoformat(),
         synthetic_authorization: SyntheticStagingAuthorization | None = None,
+        operator_authorization: SoloOperatorAuthorization | None = None,
     ):
         if not isinstance(environment_key, str) or not environment_key:
             raise ValueError("A restricted staging environment key is required")
@@ -1688,12 +2220,19 @@ class ConnectivityHarness:
         if not journal.synthetic and type(executor) is not DockerExecutorAdapter:
             raise ValueError("Live connectivity requires the reviewed Docker adapter")
         if not journal.synthetic:
-            raise ValueError("Trusted F09 issuer and provider credential verification unavailable")
+            raise ValueError("Live F09 execution is disabled pending solo-operator review")
         if synthetic_authorization is not None and type(synthetic_authorization) is not (
             SyntheticStagingAuthorization
         ):
             raise ValueError("Only an explicit synthetic authorization rehearsal is supported")
         self.synthetic_authorization = synthetic_authorization
+        if operator_authorization is not None and (
+            type(operator_authorization) is not SoloOperatorAuthorization
+            or synthetic_authorization is not None
+        ):
+            raise ValueError("Supply exactly one concrete F09 approval workflow")
+        self.operator_authorization = operator_authorization
+        self._approval = operator_authorization or synthetic_authorization
         self.agent_config = StagingAgentsClient._validate_agent_config(agent_config)
         self._environment_key = environment_key
         self.clock, self.wall_clock = clock, wall_clock
@@ -1943,13 +2482,13 @@ class ConnectivityHarness:
                 late_state["executor_stop_verified"] = stopped
 
         try:
-            if self.synthetic_authorization is not None:
-                self.synthetic_authorization.validate_request(self)
+            if self._approval is not None:
+                self._approval.validate_request(self)
             self.lease.acquire()
-            if self.synthetic_authorization is not None:
-                self.synthetic_authorization.consume(self.journal)
+            if self._approval is not None:
+                self._approval.consume(self.journal)
                 self._audit["approval_consumption_durable"] = True
-                self.synthetic_authorization.validate_request(self)
+                self._approval.validate_request(self)
         except BaseException:
             if self.lease.acquired:
                 self._audit["failure_code"] = "staging_authorization_failed"
@@ -1962,10 +2501,10 @@ class ConnectivityHarness:
             raise
 
         def _create_session():
-            if self.synthetic_authorization is not None:
+            if self._approval is not None:
                 # Recheck expiration and exact request scope inside the bounded
                 # worker, immediately before the sole session-create boundary.
-                self.synthetic_authorization.validate_request(self)
+                self._approval.validate_request(self)
             return self.client.create_session(self.agent_config, timeout=remaining)
 
         create_deadline = self.clock() + self.create_seconds

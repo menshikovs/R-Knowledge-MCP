@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib.util
+import io
 import json
 import os
 import stat
@@ -1206,7 +1207,7 @@ def test_self_declared_spend_approval_cannot_unlock_live_client(monkeypatch):
 
     for _attempt in range(2):
         with pytest.raises(
-            ValueError, match="Verified staging project and credential scope unavailable"
+            ValueError, match="Live F09 execution is disabled pending solo-operator review"
         ):
             StagingAgentsClient(
                 APP_KEY,
@@ -1271,7 +1272,7 @@ def test_staging_authorization_claims_are_not_provider_verified_authority():
         pytest.param({"spend_control_limit_cents": float("nan")}, id="nan-limit"),
         pytest.param({"spend_control_limit_cents": float("inf")}, id="infinite-limit"),
         pytest.param({"spend_control_limit_cents": 200.0}, id="fractional-limit"),
-        pytest.param({"spend_control_limit_cents": 201}, id="over-limit"),
+        pytest.param({"spend_control_limit_cents": 201}, id="limit-mismatch"),
         pytest.param({"expires_at": "2026-10-23T11:59:59Z"}, id="expired"),
         pytest.param({"expires_at": "not-an-iso-time"}, id="malformed-expiration"),
         pytest.param({"issuer_id": ""}, id="missing-issuer"),
@@ -2587,7 +2588,9 @@ def test_no_production_store_or_live_gate_can_be_unlocked_by_synthetic_roles():
     client.synthetic = False
     client._live_capability = harness_module._LIVE_CLIENT_CAPABILITY
     root = Path("unopened-synthetic-evidence")
-    with pytest.raises(ValueError, match="Trusted F09 issuer and provider"):
+    with pytest.raises(
+        ValueError, match="Live F09 execution is disabled pending solo-operator review"
+    ):
         ConnectivityHarness(
             client=client,
             executor=object.__new__(DockerExecutorAdapter),
@@ -2596,3 +2599,421 @@ def test_no_production_store_or_live_gate_can_be_unlocked_by_synthetic_roles():
             agent_config=AGENT,
             environment_key=ENV_KEY,
         )
+
+
+class _SoloTerminal(io.StringIO):
+    """Synthetic terminal only; real mode rejects injected I/O boundaries."""
+
+    def __init__(self, *, accept=True, tty=True):
+        super().__init__()
+        self.accept, self.tty = accept, tty
+        self.confirmations = []
+
+    def isatty(self):
+        return self.tty
+
+    def readline(self, *_args):
+        expected = self.getvalue().splitlines()[-1].removeprefix("Type exactly: ")
+        self.confirmations.append(expected)
+        return (expected if self.accept else "no") + "\n"
+
+
+def _solo_request(limit=137):
+    return {
+        "schema_version": 1,
+        "source_commit": AUTHORIZATION_TEST_COMMIT,
+        "project_id": "synthetic-staging-project-id",
+        "agent": AGENT,
+        "create_seconds": 10,
+        "connect_seconds": 10,
+        "cleanup_seconds": 5,
+        "executor_image": "sha256:" + "e" * 64,
+        "spend_limit_cents": limit,
+        "billing_owner_id": "synthetic-operator",
+        "credential_attestation": _scope_attestation(reviewer_id="synthetic-operator"),
+    }
+
+
+def _solo_store(tmp_path, *, accept=True, tty=True):
+    state = tmp_path / "solo-state"
+    state.mkdir(mode=0o700)
+    terminal = _SoloTerminal(accept=accept, tty=tty)
+    current = {"now": AUTHORIZATION_TEST_NOW, "source": "f" * 64}
+    store = harness_module.SoloOperatorApprovalStore(
+        state,
+        synthetic=True,
+        source_probe=lambda _commit: current["source"],
+        now_utc=lambda: current["now"],
+        terminal_input=terminal,
+        terminal_output=terminal,
+    )
+    return store, terminal, current
+
+
+def _solo_lifecycle(store, *, on_request=None, stop=True, create_status=200):
+    lease = StagingLease(store.state_directory, synthetic=True)
+    journal = StagingJournal(store.state_directory, synthetic=True)
+    api, calls = _http_client(
+        store.state_directory,
+        [_event("agent.session.environment.connected")],
+        project_id="synthetic-staging-project-id",
+        spend_approval=store.spend_approval(),
+        on_request=on_request,
+        create_status=create_status,
+    )
+    controller = ConnectivityHarness(
+        client=api,
+        executor=FakeExecutor(stop=stop),
+        lease=lease,
+        journal=journal,
+        agent_config=AGENT,
+        environment_key=ENV_KEY,
+        clock=FakeClock(),
+        create_seconds=10,
+        connect_seconds=10,
+        cleanup_seconds=5,
+        operator_authorization=harness_module.SoloOperatorAuthorization(store, lease),
+    )
+    return controller, lease, journal, calls
+
+
+@pytest.mark.parametrize("amount", [1, 137, 201])
+def test_solo_operator_explicit_amount_and_two_confirmations_without_default(tmp_path, amount):
+    store, terminal, _ = _solo_store(tmp_path)
+    summary = store.approve(_solo_request(amount), expires_in_seconds=120)
+    assert summary["limit_usd_cents"] == amount
+    assert summary["attempt_id"].startswith("F09-")
+    assert terminal.confirmations == [
+        f"APPROVE {summary['attempt_id']} {amount} CENTS ONE SESSION ZERO TASKS",
+        harness_module.SOLO_CONFIRMATION,
+    ]
+    assert "not a billing ceiling" in terminal.getvalue()
+    record = store.validate()
+    assert record["synthetic"] is True
+    assert record["record_type"] == harness_module.SOLO_APPROVAL_TYPE
+    assert record["claims"]["session_count"] == 1
+    assert record["claims"]["task_count"] == 0
+    assert record["claims"]["responses_inference_allowed"] is False
+    assert stat.S_IMODE((store.root / "approval.json").stat().st_mode) == 0o600
+    assert stat.S_IMODE(store.root.stat().st_mode) == 0o700
+    with pytest.raises(ConnectivityError, match="connectivity check failed"):
+        store.approve(_solo_request(amount), expires_in_seconds=120)
+
+
+@pytest.mark.parametrize(
+    "amount", [None, True, False, 0, -1, 1.0, 1.5, "137", float("nan"), float("inf")]
+)
+def test_solo_operator_invalid_amount_rejected_before_confirmation(tmp_path, amount):
+    store, terminal, _ = _solo_store(tmp_path)
+    with pytest.raises(ConnectivityError):
+        store.approve(_solo_request(amount), expires_in_seconds=120)
+    assert terminal.confirmations == []
+    assert not (store.root / "approval.json").exists()
+
+
+@pytest.mark.parametrize("case", ["cancel", "not-tty", "bad-expiration", "missing-limit"])
+def test_solo_operator_never_treats_piped_or_incomplete_input_as_approval(tmp_path, case):
+    store, terminal, _ = _solo_store(tmp_path, accept=case != "cancel", tty=case != "not-tty")
+    request = _solo_request()
+    if case == "missing-limit":
+        request.pop("spend_limit_cents")
+    with pytest.raises(ConnectivityError):
+        store.approve(request, expires_in_seconds=901 if case == "bad-expiration" else 120)
+    assert not (store.root / "approval.json").exists()
+    assert not (store.root / "consumption.started").exists()
+    if case != "cancel":
+        assert terminal.confirmations == []
+
+
+def test_solo_operator_real_mode_rejects_injected_approval_and_source_proof():
+    with pytest.raises(ConnectivityError) as raised:
+        harness_module.SoloOperatorApprovalStore(
+            Path("/unopened-solo-state"), source_probe=lambda _commit: "f" * 64
+        )
+    assert raised.value.code == "solo_test_boundary_rejected"
+    native = "1 0 0:1 / / rw - ext4 /dev/root rw\n"
+    for kind in ("9p", "drvfs", "tmpfs", "overlay"):
+        mountinfo = native + f"2 1 0:2 / /state rw - {kind} none rw\n"
+        assert harness_module._solo_filesystem(Path("/state/approval"), mountinfo) == kind
+    assert harness_module._solo_filesystem(Path("/home/operator/state"), native) == "ext4"
+
+
+def test_solo_operator_consumption_precedes_post_and_success_requires_saved_cleanup(tmp_path):
+    store, _, _ = _solo_store(tmp_path)
+    store.approve(_solo_request(), expires_in_seconds=120)
+    observed = []
+
+    def observe(request):
+        if request.method == "POST":
+            assert (store.root / "consumption.started").exists()
+            assert (store.root / "consumed.json").exists()
+            records = list(map(json.loads, journal.path.read_text().splitlines()))
+            assert any(
+                row["operation"] == "authorization_consume" and row["event"] == "outcome"
+                for row in records
+            )
+            observed.append("consumed_before_post")
+
+    controller, lease, journal, calls = _solo_lifecycle(store, on_request=observe)
+    result = controller.run()
+    assert observed == ["consumed_before_post"]
+    assert [call.method for call in calls] == ["POST", "GET", "DELETE"]
+    assert json.loads(calls[0].content)["spend_control"] == {"limit": 137}
+    assert result["approval_consumption_durable"] is True
+    assert result["cleanup_verified"] is True
+    assert result["task_submission_count"] == result["responses_calls"] == 0
+    assert _saved_audit(lease)["cleanup_verified"] is True
+    assert not lease.lock_path.exists()
+
+
+@pytest.mark.parametrize("mismatch", ["source", "expiry", "project", "config", "limit"])
+def test_solo_operator_request_mismatch_fails_before_lease_and_transport(tmp_path, mismatch):
+    store, _, current = _solo_store(tmp_path)
+    store.approve(_solo_request(), expires_in_seconds=120)
+    controller, lease, _, calls = _solo_lifecycle(store)
+    if mismatch == "source":
+        current["source"] = "a" * 64
+    elif mismatch == "expiry":
+        current["now"] += timedelta(seconds=121)
+    elif mismatch == "project":
+        controller.client.project_id_hash = "a" * 64
+    elif mismatch == "config":
+        controller.connect_seconds = 9
+    else:
+        controller.client._spend_control_approval = SpendControlApproval(138, "manual:wrong", True)
+    with pytest.raises(ConnectivityError):
+        controller.run()
+    assert calls == []
+    assert not lease.lock_path.exists()
+    assert not (store.root / "consumption.started").exists()
+
+
+@pytest.mark.parametrize("fault", ["guard-fsync", "journal-intent", "final-write"])
+def test_solo_operator_durability_failure_retains_state_and_lease_without_post(tmp_path, fault):
+    store, _, _ = _solo_store(tmp_path)
+    store.approve(_solo_request(), expires_in_seconds=120)
+    controller, lease, journal, calls = _solo_lifecycle(store)
+    if fault == "guard-fsync":
+        store._fsync = lambda _fd: (_ for _ in ()).throw(OSError("synthetic sync failure"))
+    elif fault == "journal-intent":
+        journal._fsync = lambda _fd: (_ for _ in ()).throw(OSError("synthetic sync failure"))
+    else:
+        writes = []
+
+        def fail_final(descriptor, raw):
+            writes.append(descriptor)
+            return 0 if len(writes) == 2 else os.write(descriptor, raw)
+
+        store._write = fail_final
+    with pytest.raises((ConnectivityError, harness_module.DurabilityError)):
+        controller.run()
+    assert calls == []
+    assert lease.acquired and lease.lock_path.exists()
+    assert (store.root / "consumption.started").exists()
+    assert store.inspect()["live_allowed"] is False
+    assert store.inspect()["cleanup_verified"] is False
+
+
+@pytest.mark.parametrize("case", ["ambiguous-create", "cleanup-unverified"])
+def test_solo_operator_failure_cannot_reuse_approval_or_claim_clean_cleanup(tmp_path, case):
+    store, _, _ = _solo_store(tmp_path)
+    store.approve(_solo_request(), expires_in_seconds=120)
+    controller, lease, _, calls = _solo_lifecycle(
+        store,
+        stop=case != "cleanup-unverified",
+        create_status=500 if case == "ambiguous-create" else 200,
+    )
+    with pytest.raises(ConnectivityError):
+        controller.run()
+    assert len([call for call in calls if call.method == "POST"]) == 1
+    assert (store.root / "consumption.started").exists()
+    assert lease.lock_path.exists()
+    assert _saved_audit(lease)["cleanup_verified"] is False
+    with pytest.raises(ConnectivityError):
+        store.approve(_solo_request(), expires_in_seconds=120)
+
+
+def test_solo_operator_inspection_is_read_only_and_never_grants_recovery(tmp_path):
+    store, _, _ = _solo_store(tmp_path)
+    store.approve(_solo_request(), expires_in_seconds=120)
+    before = {path.name: path.read_bytes() for path in store.root.iterdir()}
+    report = store.inspect()
+    assert report == {
+        "state": "pending_review",
+        "synthetic": True,
+        "live_allowed": False,
+        "cleanup_verified": False,
+        "recovery_authorized": False,
+    }
+    assert {path.name: path.read_bytes() for path in store.root.iterdir()} == before
+    (store.root / "approval.json").write_bytes(b"partial")
+    assert store.inspect()["state"] == "corrupt"
+
+
+def test_solo_operator_subprocess_replay_is_rejected_after_success(tmp_path):
+    store, _, _ = _solo_store(tmp_path)
+    store.approve(_solo_request(), expires_in_seconds=120)
+    controller, _, _, _ = _solo_lifecycle(store)
+    controller.run()
+    child = r"""
+import importlib.util
+from datetime import UTC, datetime
+from pathlib import Path
+import sys
+spec = importlib.util.spec_from_file_location("solo_child", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+state = Path(sys.argv[2])
+store = module.SoloOperatorApprovalStore(state, synthetic=True,
+    source_probe=lambda _commit: "f" * 64,
+    now_utc=lambda: datetime(2026, 10, 23, 12, 0, tzinfo=UTC))
+lease = module.StagingLease(state, synthetic=True)
+lease.acquire()
+journal = module.StagingJournal(state, synthetic=True)
+try:
+    store.consume(journal, lease)
+except module.ConnectivityError as exc:
+    if exc.code != "solo_approval_already_used_or_pending":
+        raise SystemExit(3)
+    print("replay_rejected")
+else:
+    raise SystemExit(2)
+finally:
+    journal.close()
+"""
+    result = subprocess.run(
+        [sys.executable, "-B", "-c", child, harness_module.__file__, str(store.state_directory)],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+        env={"PATH": os.defpath},
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "replay_rejected"
+    assert (store.root / "consumption.started").exists()
+
+
+def test_solo_operator_command_exposes_only_approve_and_inspect():
+    path = ROOT / "benchmarks/codex_r/exploratory/f09_solo_operator.py"
+    result = subprocess.run(
+        [sys.executable, "-B", str(path), "--help"],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert result.returncode == 0
+    assert "approve" in result.stdout and "inspect" in result.stdout
+    assert "run-one" not in result.stdout and "authorize-one" not in result.stdout
+
+
+def test_solo_operator_never_promotes_legacy_or_synthetic_records(tmp_path):
+    store, _, _ = _solo_store(tmp_path)
+    store.approve(_solo_request(), expires_in_seconds=120)
+    path = store.root / "approval.json"
+    record = store._read("approval.json")
+    record["synthetic"] = False  # Deliberately forged fixture; never a real approval.
+    path.write_bytes(store._bytes(record))
+    with pytest.raises(ConnectivityError) as mismatch:
+        store.validate()
+    assert mismatch.value.code == "solo_record_invalid"
+    record["synthetic"] = True
+    record["record_type"] = harness_module.STAGING_AUTHORIZATION_RECORD_TYPE
+    path.write_bytes(store._bytes(record))
+    with pytest.raises(ConnectivityError):
+        store.validate()
+
+
+def test_solo_operator_expiry_during_confirmation_or_after_consumption_blocks_post(tmp_path):
+    store, terminal, current = _solo_store(tmp_path)
+    readline = terminal.readline
+
+    def delayed_reply():
+        current["now"] += timedelta(seconds=121)
+        return readline()
+
+    terminal.readline = delayed_reply
+    with pytest.raises(ConnectivityError):
+        store.approve(_solo_request(), expires_in_seconds=120)
+    assert not (store.root / "approval.json").exists()
+    terminal.readline = readline
+    store.approve(_solo_request(), expires_in_seconds=120)
+    controller, lease, journal, calls = _solo_lifecycle(store)
+    append = journal.append
+
+    def expire_after_consumption(operation, event, **kwargs):
+        sequence = append(operation, event, **kwargs)
+        if operation == "authorization_consume" and event == "outcome":
+            current["now"] += timedelta(seconds=121)
+        return sequence
+
+    journal.append = expire_after_consumption
+    with pytest.raises(ConnectivityError):
+        controller.run()
+    assert calls == []
+    assert (store.root / "consumed.json").exists()
+    assert lease.lock_path.exists()
+
+
+def test_solo_operator_concurrent_lifecycles_can_create_only_one_session(tmp_path):
+    store, _, _ = _solo_store(tmp_path)
+    store.approve(_solo_request(), expires_in_seconds=120)
+    first = _solo_lifecycle(store)
+    second = _solo_lifecycle(store)
+    barrier = threading.Barrier(2)
+
+    def attempt(controller):
+        barrier.wait(timeout=2)
+        try:
+            return controller.run()["cleanup_verified"]
+        except (ConnectivityError, harness_module.DurabilityError):
+            return False
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(attempt, item[0]) for item in (first, second)]
+        results = [future.result(timeout=10) for future in futures]
+    assert sorted(results) == [False, True]
+    assert sum(call.method == "POST" for item in (first, second) for call in item[3]) == 1
+
+
+def test_solo_operator_private_record_and_symlink_checks_are_fail_closed(tmp_path):
+    store, _, _ = _solo_store(tmp_path)
+    store.approve(_solo_request(), expires_in_seconds=120)
+    path = store.root / "approval.json"
+    path.chmod(0o644)
+    with pytest.raises(ConnectivityError):
+        store.validate()
+    path.chmod(0o600)  # Restore only this newly generated synthetic fixture.
+    target = path.with_suffix(".original")
+    path.rename(target)
+    path.symlink_to(target)
+    with pytest.raises(ConnectivityError):
+        store.validate()
+    assert store.inspect()["state"] == "corrupt"
+
+
+def test_solo_operator_cli_inspection_does_not_create_missing_state(tmp_path):
+    state = tmp_path / "missing-store"
+    state.mkdir(mode=0o700)
+    path = ROOT / "benchmarks/codex_r/exploratory/f09_solo_operator.py"
+    result = subprocess.run(
+        [sys.executable, "-B", str(path), "inspect", "--state-dir", str(state)],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert result.returncode == 2
+    assert not list(state.iterdir())
+
+
+def test_solo_operator_rejects_secret_shaped_model_before_confirmation_or_storage(tmp_path):
+    store, terminal, _ = _solo_store(tmp_path)
+    request = _solo_request()
+    request["agent"] = {"model": "sk-synthetic-model-input-must-not-be-stored", "tools": []}
+    with pytest.raises(ConnectivityError) as raised:
+        store.approve(request, expires_in_seconds=120)
+    assert raised.value.code == "solo_request_invalid"
+    assert terminal.getvalue() == ""
+    assert not list(store.root.iterdir())
