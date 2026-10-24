@@ -1996,6 +1996,20 @@ class StagingAgentsClient:
                 if response.is_redirect:
                     raise ConnectivityError("redirect_rejected", uncertain=method == "POST")
                 if not response.is_success:
+                    if method == "POST" and path == "/v1/agents/sessions":
+                        status = response.status_code
+                        if status in {400, 401, 403, 404, 408, 422, 429}:
+                            code = f"session_create_http_{status}"
+                        elif 400 <= status < 500:
+                            code = f"session_create_http_other_4xx_{status}"
+                        elif 500 <= status < 600:
+                            code = f"session_create_http_5xx_{status}"
+                        else:
+                            code = "http_rejected"
+                        raise ConnectivityError(
+                            code,
+                            uncertain=status in {408, 429} or 500 <= status < 600,
+                        )
                     raise ConnectivityError(
                         "http_rejected",
                         uncertain=method == "POST"
@@ -2623,23 +2637,28 @@ class ConnectivityHarness:
                 if isinstance(exc, BoundedCallTimeout):
                     late_create_settled = exc.settled
                 unknown = not isinstance(exc, ConnectivityError) or exc.uncertain
-                self._audit["session_creation_outcome"] = "unknown" if unknown else "not_created"
-                self._audit["failure_code"] = (
-                    "session_create_uncertain" if unknown else getattr(exc, "code", "http_rejected")
+                diagnostic_code = (
+                    exc.code if isinstance(exc, ConnectivityError) else "operation_failed"
                 )
+                self._audit["session_creation_outcome"] = "unknown" if unknown else "not_created"
+                self._audit["failure_code"] = diagnostic_code
                 self._audit["session_deletion_not_required"] = not unknown
                 self._transition("session_unknown" if unknown else "failed")
                 try:
                     self._outcome(
                         "session_create",
                         intent,
-                        "outcome_unknown" if unknown else getattr(exc, "code", "http_rejected"),
+                        (
+                            diagnostic_code
+                            if diagnostic_code.startswith("session_create_http_") or not unknown
+                            else "outcome_unknown"
+                        ),
                     )
                 except DurabilityError:
                     pass
                 if unknown:
                     raise SessionUnknown("session_create_uncertain", state=self.state) from None
-                raise ConnectivityError("session_create_rejected", state=self.state) from None
+                raise ConnectivityError(diagnostic_code, state=self.state) from None
             session_known = True
             self._audit["session_creation_outcome"] = "created"
             self._audit["session_id_sha256"] = _sha256(session["session_id"])

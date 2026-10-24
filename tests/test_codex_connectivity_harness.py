@@ -51,6 +51,17 @@ SYNTHETIC_SPEND_APPROVAL = SpendControlApproval(
     approval_reference="synthetic-only-approval",
     billing_owner_acknowledged=True,
 )
+SESSION_CREATE_HTTP_FAILURES = (
+    (400, "session_create_http_400", "not_created", True),
+    (401, "session_create_http_401", "not_created", True),
+    (403, "session_create_http_403", "not_created", True),
+    (404, "session_create_http_404", "not_created", True),
+    (422, "session_create_http_422", "not_created", True),
+    (409, "session_create_http_other_4xx_409", "not_created", True),
+    (408, "session_create_http_408", "unknown", False),
+    (429, "session_create_http_429", "unknown", False),
+    (500, "session_create_http_5xx_500", "unknown", False),
+)
 AUTHORIZATION_TEST_NOW = datetime(2026, 10, 23, 12, 0, tzinfo=UTC)
 AUTHORIZATION_TEST_COMMIT = "a" * 40
 AUTHORIZATION_TEST_BINDING = harness_module.StagingAuthorizationBinding(
@@ -264,6 +275,7 @@ def _http_client(
     calls=None,
     timeline=None,
     create_status=200,
+    create_error_body=None,
     delete_status=200,
     spend_approval=SYNTHETIC_SPEND_APPROVAL,
     project_id="synthetic-staging-project",
@@ -282,8 +294,16 @@ def _http_client(
             body = json.loads(request.content)
             assert set(body) == {"agent", "environment", "spend_control"}
             assert "input" not in body and "events" not in body
+            assert body["agent"]["model"] == AGENT["model"]
+            assert body["agent"]["tools"] == []
             assert body["environment"]["type"] == "self_hosted"
             assert body["spend_control"] == {"limit": spend_approval.limit}
+            if create_error_body is not None:
+                return httpx.Response(
+                    create_status,
+                    headers={"content-type": "application/json", "x-synthetic-secret": ENV_KEY},
+                    content=create_error_body,
+                )
             return httpx.Response(
                 create_status,
                 json={
@@ -648,6 +668,122 @@ def test_create_rejection_is_distinct_from_ambiguous_creation(tmp_path):
     assert audit["session_deletion_not_required"] is True
     assert audit["cleanup_verified"] is True
     assert not lease.lock_path.exists()
+
+
+@pytest.mark.parametrize(
+    ("status", "expected_code", "expected_outcome"),
+    [(status, code, outcome) for status, code, outcome, _ in SESSION_CREATE_HTTP_FAILURES],
+)
+def test_staging_client_classifies_create_http_status_without_server_text(
+    status, expected_code, expected_outcome
+):
+    hostile_response = json.dumps(
+        {
+            "error": {
+                "message": f"unreviewed server text {APP_KEY}",
+                "access_token": ENV_KEY,
+                "authorization": f"Bearer {APP_KEY}",
+                "url": "https://provider.invalid/path?signature=synthetic-signed-secret",
+            }
+        }
+    ).encode()
+    api, calls = _http_client(
+        Path("."), [], create_status=status, create_error_body=hostile_response
+    )
+    try:
+        with pytest.raises(ConnectivityError) as rejected:
+            api.create_session(AGENT)
+    finally:
+        api.close()
+
+    assert rejected.value.code == expected_code
+    assert rejected.value.uncertain is (expected_outcome == "unknown")
+    assert str(rejected.value) == "Managed Agents connectivity check failed"
+    assert [request.method for request in calls] == ["POST"]
+    assert json.loads(calls[0].content) == {
+        "agent": AGENT,
+        "environment": {"type": "self_hosted", "workspace_directory": "/workspace"},
+        "spend_control": {"limit": SYNTHETIC_SPEND_APPROVAL.limit},
+    }
+    for secret in (APP_KEY, ENV_KEY, "unreviewed server text", "synthetic-signed-secret"):
+        assert secret not in str(rejected.value)
+
+
+@pytest.mark.parametrize(
+    ("status", "expected_code", "expected_outcome", "expected_cleanup"),
+    SESSION_CREATE_HTTP_FAILURES,
+)
+def test_session_create_http_rejections_are_bounded_and_preserve_cleanup_semantics(
+    tmp_path, capsys, status, expected_code, expected_outcome, expected_cleanup
+):
+    hostile_response = json.dumps(
+        {
+            "error": {
+                "message": f"unreviewed server text {APP_KEY}",
+                "access_token": ENV_KEY,
+                "authorization": f"Bearer {APP_KEY}",
+                "url": "https://provider.invalid/path?signature=synthetic-signed-secret",
+            }
+        }
+    ).encode()
+    harness, lease, journal, plan, calls = _authorized_rehearsal(
+        tmp_path,
+        create_status=status,
+        create_error_body=hostile_response,
+    )
+
+    if expected_cleanup:
+        result = harness.run()
+    else:
+        with pytest.raises(ConnectivityError) as raised:
+            harness.run()
+        assert raised.value.code == "session_create_uncertain"
+        assert str(raised.value) == "Managed Agents connectivity check failed"
+        result = _saved_audit(lease)
+
+    assert result["failure_code"] == expected_code
+    assert result["session_creation_outcome"] == expected_outcome
+    assert result["cleanup_verified"] is expected_cleanup
+    assert result["session_deletion_not_required"] is expected_cleanup
+    assert result["session_deletion_verified"] is False
+    assert result["executor_start_attempted"] is False
+    assert harness.executor.starts == 0
+    assert result["task_submission_count"] == result["responses_calls"] == 0
+    assert [request.method for request in calls] == ["POST"]
+    assert lease.lock_path.exists() is (not expected_cleanup)
+
+    claimed = list(plan.store.consumed_root.glob("*.claimed"))
+    consumed = list(plan.store.consumed_root.glob("*.consumed"))
+    assert len(claimed) == len(consumed) == 1
+    rows = [json.loads(line) for line in journal.path.read_text().splitlines()]
+    consume_outcome = next(
+        row
+        for row in rows
+        if row["operation"] == "authorization_consume" and row["event"] == "outcome"
+    )
+    create_intent = next(
+        row for row in rows if row["operation"] == "session_create" and row["event"] == "intent"
+    )
+    create_outcome = next(
+        row for row in rows if row["operation"] == "session_create" and row["event"] == "outcome"
+    )
+    assert consume_outcome["seq"] < create_intent["seq"]
+    assert create_outcome["code"] == expected_code
+
+    evidence = json.dumps({"audit": result, "journal": rows}, sort_keys=True)
+    captured = capsys.readouterr()
+    for secret in (
+        APP_KEY,
+        ENV_KEY,
+        "unreviewed server text",
+        "synthetic-signed-secret",
+        "provider.invalid",
+        "access_token",
+        '"authorization":',
+    ):
+        assert secret not in evidence
+        assert secret not in captured.out
+        assert secret not in captured.err
 
 
 def test_unverified_executor_stop_or_session_delete_prevents_clean_release(tmp_path):
@@ -2230,7 +2366,14 @@ def _scope_attestation(**changes):
     }
 
 
-def _authorized_rehearsal(tmp_path, *, on_request=None, executor=None, create_status=200):
+def _authorized_rehearsal(
+    tmp_path,
+    *,
+    on_request=None,
+    executor=None,
+    create_status=200,
+    create_error_body=None,
+):
     attestation = _scope_attestation()
     binding = harness_module.StagingAuthorizationBinding(
         "F09-synthetic-bound-attempt",
@@ -2272,6 +2415,7 @@ def _authorized_rehearsal(tmp_path, *, on_request=None, executor=None, create_st
         spend_approval=SpendControlApproval(200, "synthetic-billing-approval", True),
         on_request=on_request,
         create_status=create_status,
+        create_error_body=create_error_body,
     )
     harness, lease, journal = _make(
         tmp_path / "lifecycle", api, executor or FakeExecutor(), synthetic_authorization=plan
