@@ -116,10 +116,11 @@ async def test_dashboard_recommendations_are_role_and_metadata_grounded(service,
     assert result["security_maintenance_deployment"]["deployment_considerations"]
     assert result["not_executed"] is True
     assert len(result["sources"]) == 2
+    # Metadata lookups run concurrently first, then dependency lookups for found packages.
     assert calls == [
         ("info", "shiny", False),
-        ("dependencies", "shiny", None),
         ("info", "bslib", False),
+        ("dependencies", "shiny", None),
         ("dependencies", "bslib", None),
     ]
 

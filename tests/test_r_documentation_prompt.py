@@ -5,7 +5,9 @@ EXTENSIONS_URL = "https://cran.r-project.org/doc/manuals/r-release/R-exts.html"
 
 
 class OfflineKnowledge:
-    async def get_package_info(self, package, repository="all", bioc_version=None):
+    async def get_package_info(
+        self, package, repository="all", bioc_version=None, verify_archive=True
+    ):
         return {"results": [], "errors": [], "verification_status": "verified"}
 
     async def search_r_documentation(self, query, manuals=None, limit=5, r_version=None):

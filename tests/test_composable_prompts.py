@@ -62,7 +62,9 @@ class KnowledgeFixture:
     def __init__(self):
         self.package_info_calls = []
 
-    async def get_package_info(self, package, repository="all", bioc_version=None):
+    async def get_package_info(
+        self, package, repository="all", bioc_version=None, verify_archive=True
+    ):
         self.package_info_calls.append(package)
         return {
             "results": [
@@ -98,7 +100,9 @@ class KnowledgeFixture:
 
 
 class UnavailableKnowledge:
-    async def get_package_info(self, package, repository="all", bioc_version=None):
+    async def get_package_info(
+        self, package, repository="all", bioc_version=None, verify_archive=True
+    ):
         raise OSError("fixture outage")
 
 
@@ -369,3 +373,13 @@ async def test_invalid_workflow_context_and_prompt_injection_are_bounded():
         item["code"] for item in result["validation_summary"]["findings"]
     }
     assert result["not_executed"] is True
+
+
+async def test_local_only_composition_reports_grounding_as_not_checked():
+    result = await PromptIntelligence(None).build_r_prompt(
+        "Create ggplot2 charts with dplyr", r_version="4.4"
+    )
+    assert result["packages"] == []
+    assert {item["status"] for item in result["package_resolution"]} == {"not_checked"}
+    assert "package_grounding_not_attempted_without_repository_service" in result["warnings"]
+    assert not any("AttributeError" in warning for warning in result["warnings"])

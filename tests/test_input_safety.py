@@ -104,3 +104,25 @@ def test_enhancement_output_with_credential_is_rejected_before_copying():
         [],
         [],
     )
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        'con <- dbConnect(RPostgres::Postgres(), password = Sys.getenv("PGPASS"))',
+        'password = keyring::key_get("warehouse")',
+        "password = input$password",
+        "token = gargle::token_fetch()",
+        "api_key: Sys.getenv ('API_KEY')",
+    ],
+)
+def test_runtime_secret_lookups_are_not_treated_as_embedded_credentials(value):
+    assert not contains_credential_like_text(value)
+
+
+@pytest.mark.parametrize(
+    "value",
+    ['password = "hunter22"', "password=hunter22", "token: synthetic-token-value"],
+)
+def test_literal_credential_assignments_are_still_detected(value):
+    assert contains_credential_like_text(value)

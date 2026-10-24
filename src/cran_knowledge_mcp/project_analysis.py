@@ -2,6 +2,7 @@
 
 import json
 import re
+from collections import Counter
 from datetime import UTC, date, datetime
 from pathlib import PurePosixPath, PureWindowsPath
 
@@ -175,7 +176,7 @@ def _qmd_chunks(source: str, body_line: int):
         chunks.append({"label": label, "options": options, "closed": closed})
         index += 1
     labels = [c["label"] for c in chunks if isinstance(c["label"], str)]
-    for label in sorted({value for value in labels if labels.count(value) > 1}):
+    for label in sorted(value for value, seen in Counter(labels).items() if seen > 1):
         findings.append(
             {
                 "kind": "duplicate_chunk_label",
@@ -606,7 +607,7 @@ def analyze_shiny_app(source: str | None = None, files: dict[str, str] | None = 
         combined,
     )
     findings = []
-    for item in sorted({value for value in inputs if inputs.count(value) > 1}):
+    for item in sorted(value for value, seen in Counter(inputs).items() if seen > 1):
         findings.append(
             {
                 "kind": "duplicate_ui_input_id",
@@ -651,7 +652,7 @@ def analyze_shiny_app(source: str | None = None, files: dict[str, str] | None = 
                 ),
             }
         )
-    for item in sorted({value for value in output_widgets if output_widgets.count(value) > 1}):
+    for item in sorted(value for value, seen in Counter(output_widgets).items() if seen > 1):
         findings.append(
             {
                 "kind": "duplicate_ui_output_id",

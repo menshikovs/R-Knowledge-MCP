@@ -44,6 +44,14 @@ def context7_api_key() -> str | None:
     return value or None
 
 
+def github_token() -> str | None:
+    """Optional server-side token; raises GitHub API limits from 60 to 5000 requests/hour."""
+    value = os.environ.get("GITHUB_TOKEN", "").strip()
+    if value and (len(value) > 255 or any(ord(char) < 33 for char in value)):
+        raise KnowledgeError("invalid_configuration", "GITHUB_TOKEN must be one printable token")
+    return value or None
+
+
 def http_user_agent() -> str:
     value = os.environ.get(
         "HTTP_USER_AGENT",
@@ -93,4 +101,12 @@ def prompt_default_detail_level() -> str:
             "invalid_configuration",
             "PROMPT_DEFAULT_DETAIL_LEVEL must be concise, standard or comprehensive",
         )
+    return value
+
+
+def mcp_toolset() -> str:
+    """Select the registered tool surface; legacy keeps the original 35 tool names."""
+    value = os.environ.get("MCP_TOOLSET", "consolidated").strip().casefold()
+    if value not in {"consolidated", "legacy"}:
+        raise KnowledgeError("invalid_configuration", "MCP_TOOLSET must be consolidated or legacy")
     return value

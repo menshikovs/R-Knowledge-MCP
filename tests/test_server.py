@@ -4,11 +4,19 @@ import sys
 from pathlib import Path
 
 import httpx
+import pytest
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.shared.memory import create_connected_server_and_client_session
 
 from cran_knowledge_mcp.server import create_http_app, create_server
+
+
+@pytest.fixture(autouse=True)
+def legacy_toolset(monkeypatch):
+    """These contract tests cover the original 35-tool surface kept for MCP_TOOLSET=legacy."""
+    monkeypatch.setenv("MCP_TOOLSET", "legacy")
+
 
 TOOLS = {
     "search_packages",

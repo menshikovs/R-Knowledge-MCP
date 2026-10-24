@@ -270,6 +270,10 @@ async def service():
     def handler(request):
         calls.append(request)
         content = routes.get(request.url.path)
+        plain = request.url.path.removesuffix(".gz")
+        if content is None and request.url.path.endswith("/PACKAGES.gz") and plain in routes:
+            # Like CRAN, serve the compressed index alongside the plain one.
+            content = gzip.compress(routes[plain])
         return httpx.Response(404 if content is None else 200, content=content or b"")
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:

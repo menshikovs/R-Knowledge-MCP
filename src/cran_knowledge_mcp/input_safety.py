@@ -18,6 +18,9 @@ SECRET_PATTERNS = (
         r"client[_ -]?secret|secret[_ -]?key|secret[_ -]?access[_ -]?key|"
         r"password|credential))"
         r"\s*[:=]\s*[\"']?[A-Za-z0-9][A-Za-z0-9._~+/@=-]{3,}"
+        # A call, namespace or field reference (Sys.getenv(), keyring::key_get(),
+        # input$password) reads a secret at runtime instead of embedding it.
+        r"(?![A-Za-z0-9._~+/@=-]|\s*\(|::|\$)"
     ),
     re.compile(r"(?i)\bhttps?://[^\s/@:]+:[^\s/@]+@[^\s/]+"),
     re.compile(

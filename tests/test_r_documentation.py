@@ -327,3 +327,32 @@ def test_search_rejects_unknown_manuals_and_non_integer_limits(index_path):
         provider.search("R data", ["https://example.invalid"])
     with pytest.raises(KnowledgeError, match="limit must"):
         provider.search("R data", limit=True)
+
+
+@pytest.mark.asyncio
+async def test_bm25_ranks_heading_matches_and_reports_ranking(index_path):
+    provider, _, _ = await build_index(index_path)
+    result = provider.search("nested connection", ["r-faq"], limit=3)
+    assert result["ranking"] == "bm25_sqlite_fts5"
+    assert result["results"][0]["heading"] == "Nested topic"
+    assert result["results"][0]["matched_terms"] == ["nested", "connection"]
+    scores = [row["relevance_score"] for row in result["results"]]
+    assert scores == sorted(scores, reverse=True)
+
+
+@pytest.mark.asyncio
+async def test_fts_query_syntax_in_user_text_is_treated_as_words(index_path):
+    provider, _, _ = await build_index(index_path)
+    result = provider.search('import NEAR( "data" OR NOT * ^col:x', ["r-data-import-export"])
+    assert result["status"] == "ok"
+    assert result["results"][0]["heading"] == "Data import"
+
+
+@pytest.mark.asyncio
+async def test_lexical_ranking_is_used_when_fts5_is_unavailable(index_path, monkeypatch):
+    provider, _, _ = await build_index(index_path)
+    monkeypatch.setattr(r_docs._SectionRanker, "build", classmethod(lambda cls, index: None))
+    fresh = RDocumentationProvider(index_path=index_path)
+    result = fresh.search("CSV import read.csv", ["r-data-import-export"], limit=3)
+    assert result["ranking"] == "lexical_term_count"
+    assert result["results"][0]["heading"] == "Data import"

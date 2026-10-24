@@ -15,7 +15,9 @@ CHECKED = "2026-10-22T00:00:00+00:00"
 
 
 class KnowledgeFixture:
-    async def get_package_info(self, package, repository="cran", bioc_version=None):
+    async def get_package_info(
+        self, package, repository="cran", bioc_version=None, verify_archive=True
+    ):
         records = {
             "DESeq2": {
                 "repository": "bioconductor",

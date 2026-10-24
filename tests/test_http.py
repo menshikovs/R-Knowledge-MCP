@@ -1,10 +1,11 @@
 import asyncio
+import gzip
 
 import httpx
 import pytest
 
 from cran_knowledge_mcp.errors import KnowledgeError
-from cran_knowledge_mcp.http import CATALOG, INDEX, CranHTTP
+from cran_knowledge_mcp.http import CATALOG, INDEX, CranHTTP, same_content
 
 
 @pytest.mark.parametrize("status", [301, 302, 404, 429, 500, 503])
@@ -93,7 +94,7 @@ async def test_cache_expiry_and_concurrent_misses():
         source = CranHTTP(client)
         a, b = await asyncio.gather(source.fetch(INDEX), source.fetch(INDEX))
         assert a is b and len(calls) == 1
-        source._cache[INDEX] = (0, a)
+        source._cache[INDEX] = (0, a, {})
         c = await source.fetch(INDEX)
         assert c is not a and len(calls) == 2
 
@@ -204,3 +205,90 @@ async def test_environment_config_applies_to_requests_and_cache(monkeypatch):
         await source.fetch(INDEX)
         assert source.request_timeout == 7.5
         assert source.ttl == 42
+
+
+def expire(source, path):
+    _, item, validators = source._cache[path]
+    source._cache[path] = (0, item, validators)
+
+
+async def test_expired_entry_is_revalidated_and_304_reuses_the_same_body():
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        if request.headers.get("If-None-Match") == '"v1"':
+            return httpx.Response(304, headers={"ETag": '"v1"'})
+        return httpx.Response(
+            200,
+            content=b"index",
+            headers={"ETag": '"v1"', "Last-Modified": "Thu, 23 Oct 2026 10:00:00 GMT"},
+        )
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        source = CranHTTP(client)
+        first = await source.fetch(INDEX)
+        expire(source, INDEX)
+        second = await source.fetch(INDEX)
+    assert calls[1].headers["If-None-Match"] == '"v1"'
+    assert calls[1].headers["If-Modified-Since"] == "Thu, 23 Oct 2026 10:00:00 GMT"
+    assert second is not first and second.body is first.body
+    assert same_content(first, second)
+    assert second.checked_at >= first.checked_at
+
+
+async def test_failed_revalidation_never_serves_stale_content():
+    responses = iter(
+        [httpx.Response(200, content=b"index", headers={"ETag": '"v1"'})]
+        + [httpx.Response(503)] * 2
+    )
+
+    async with httpx.AsyncClient(
+        transport=httpx.MockTransport(lambda request: next(responses))
+    ) as client:
+        source = CranHTTP(client)
+        await source.fetch(INDEX)
+        expire(source, INDEX)
+        with pytest.raises(KnowledgeError) as error:
+            await source.fetch(INDEX)
+    assert error.value.code == "source_unavailable"
+    assert INDEX not in source._cache
+
+
+async def test_compressed_index_is_expanded_with_a_bound(monkeypatch):
+    body = gzip.compress(b"Package: A\nVersion: 1.0\n" * 10)
+
+    async with httpx.AsyncClient(
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, content=body))
+    ) as client:
+        artifact = await CranHTTP(client).fetch(INDEX + ".gz")
+        assert artifact.body.startswith(b"Package: A")
+        assert artifact.source_url.endswith("/src/contrib/PACKAGES.gz")
+        monkeypatch.setattr("cran_knowledge_mcp.http.MAX_EXPANDED_INDEX", 32)
+        with pytest.raises(KnowledgeError) as error:
+            await CranHTTP(client).fetch(INDEX + ".gz")
+    assert error.value.code == "source_too_large"
+
+
+async def test_cran_index_parse_survives_304_with_new_provenance(service):
+    api, _, calls = service
+    cran = await api.provider("cran")
+    records, first = await cran.index()
+    expire(api.http, INDEX + ".gz")
+    validators = api.http._cache[INDEX + ".gz"][2]
+    assert validators == {}  # the fixture sends no ETag, so the index is refetched in full
+    api.http._cache[INDEX + ".gz"] = (0, first, {"etag": '"fixture"'})
+
+    original = api.http.client._transport.handler
+
+    def not_modified(request):
+        calls.append(request)
+        return httpx.Response(304)
+
+    api.http.client._transport.handler = not_modified
+    try:
+        again, second = await cran.index()
+    finally:
+        api.http.client._transport.handler = original
+    assert again is records
+    assert second is not first and second.body is first.body

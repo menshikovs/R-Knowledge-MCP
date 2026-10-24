@@ -34,7 +34,7 @@ async def test_visualization_docs_only_accept_curated_packages(service):
 async def test_visualization_docs_preserve_verified_package_version(service, monkeypatch):
     api, _, _ = service
 
-    async def package_info(package, repository):
+    async def package_info(package, repository, verify_archive=True):
         return {
             "package": package,
             "package_version": "4.1.0",

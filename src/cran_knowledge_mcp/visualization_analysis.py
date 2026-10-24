@@ -5,9 +5,12 @@ draws schema conclusions for identifiers and argument forms it can read simply.
 """
 
 import re
+from collections import Counter
 from dataclasses import dataclass
+from typing import NamedTuple
 
 from .errors import KnowledgeError
+from .native import native
 
 # Human-readable findings are kept intact as structured response strings.
 # ruff: noqa: E501
@@ -15,10 +18,15 @@ from .errors import KnowledgeError
 MAX_SOURCE = 256 << 10
 MAX_SCHEMA_COLUMNS = 100
 MAX_FINDINGS = 100
+MAX_ARGUMENT_CHARS = 2000
+# Nested arguments repeat their parent text; cap the total copied per scan (~4x input).
+MAX_TOTAL_ARGUMENT_CHARS = 1_000_000
 _IDENTIFIER = re.compile(r"[A-Za-z.][A-Za-z0-9._]*\Z")
 _NAME = re.compile(r"[A-Za-z.][A-Za-z0-9._]*\Z")
-_OPEN = {"(": ")", "[": "]", "[[": "]]", "{": "}"}
+# `[[` is two `[` delimiters so that `x[y[1]]` and `x[[1]]` both balance.
+_OPEN = {"(": ")", "[": "]", "{": "}"}
 _CLOSE = {v: k for k, v in _OPEN.items()}
+_RAW_STRING_OPEN = re.compile(r"[rR](['\"])(-*)([(\[{])")
 
 
 @dataclass(frozen=True)
@@ -30,13 +38,15 @@ class Token:
     line: int
 
 
-@dataclass(frozen=True)
-class Call:
+class Call(NamedTuple):
+    """One call site; a NamedTuple so thousands of results are cheap to build."""
+
     name: str
     start: int
     end: int
     line: int
     arguments: tuple[tuple[str | None, str], ...]
+    parent: str | None = None
 
 
 def _input(source):
@@ -69,6 +79,24 @@ def tokenize_r(source: str):
             i = n if stop < 0 else stop
             continue
         start, start_line = i, line
+        if char in "rR" and i + 1 < n and source[i + 1] in "'\"":
+            # R >= 4.0 raw string: r"(...)", R'[...]', r"--{...}--".
+            raw = _RAW_STRING_OPEN.match(source, i)
+            if raw is None:
+                raise KnowledgeError(
+                    "invalid_r_syntax", f"Malformed raw string at line {start_line}"
+                )
+            quote, dashes, bracket = raw.groups()
+            terminator = _OPEN[bracket] + dashes + quote
+            stop = source.find(terminator, raw.end())
+            if stop < 0:
+                raise KnowledgeError(
+                    "invalid_r_syntax", f"Unterminated raw string at line {start_line}"
+                )
+            i = stop + len(terminator)
+            line += source.count("\n", start, i)
+            tokens.append(Token("string", source[raw.end() : stop], start, i, start_line))
+            continue
         if char in "'\"`":
             quote = char
             i += 1
@@ -132,8 +160,6 @@ def tokenize_r(source: str):
                 op
                 for op in (
                     ":::",
-                    "[[",
-                    "]]",
                     "<<-",
                     "->>",
                     "::",
@@ -165,35 +191,50 @@ def tokenize_r(source: str):
     return source, tokens
 
 
-def _matching(tokens, opening):
-    stack = []
-    for index in range(opening, len(tokens)):
-        value = tokens[index].value
-        if value in _OPEN:
-            stack.append(_OPEN[value])
-        elif value in _CLOSE:
-            if not stack or stack[-1] != value:
-                return None
-            stack.pop()
-            if not stack:
-                return index
-    return None
+def _bracket_matches(tokens):
+    """Match every delimiter in one pass; returns {opening index: closing index}."""
+    matches, stack = {}, []
+    for index, token in enumerate(tokens):
+        if token.kind != "punctuation":
+            continue
+        if token.value in _OPEN:
+            stack.append(index)
+        elif token.value in _CLOSE:
+            if not stack or _OPEN[tokens[stack[-1]].value] != token.value:
+                raise KnowledgeError(
+                    "invalid_r_syntax", f"Unmatched {token.value} at line {token.line}"
+                )
+            matches[stack.pop()] = index
+    if stack:
+        token = tokens[stack[-1]]
+        raise KnowledgeError("invalid_r_syntax", f"Unclosed {token.value} at line {token.line}")
+    return matches
 
 
-def _split_arguments(source, tokens, opening, closing):
+def _argument_text(source, start, end, budget):
+    # Bound per-argument and per-scan copies so deeply nested calls stay linear in
+    # memory and time. `budget` is a one-item list of characters still available.
+    limit = min(MAX_ARGUMENT_CHARS, budget[0])
+    budget[0] -= min(end - start, limit)
+    if end - start <= limit:
+        return source[start:end].strip()
+    return source[start : start + limit].strip() + " …[truncated]"
+
+
+def _split_arguments(source, tokens, matches, opening, closing, budget):
     if closing == opening + 1:
         return ()
-    parts, start, stack = [], opening + 1, []
-    for index in range(opening + 1, closing):
-        value = tokens[index].value
-        if value in _OPEN:
-            stack.append(_OPEN[value])
-        elif value in _CLOSE:
-            if stack and stack[-1] == value:
-                stack.pop()
-        elif value == "," and not stack:
+    parts, start, index = [], opening + 1, opening + 1
+    # Skip nested delimiters by their precomputed match, so each call reads only
+    # its own top-level tokens.
+    while index < closing:
+        if index in matches:
+            index = matches[index] + 1
+            continue
+        if tokens[index].kind == "punctuation" and tokens[index].value == ",":
             parts.append((start, index))
             start = index + 1
+        index += 1
     parts.append((start, closing))
     output = []
     for first, last in parts:
@@ -208,33 +249,39 @@ def _split_arguments(source, tokens, opening, closing):
             key = tokens[first].value
             first += 2
         if first < last:
-            output.append((key, source[tokens[first].start : tokens[last - 1].end].strip()))
+            output.append(
+                (key, _argument_text(source, tokens[first].start, tokens[last - 1].end, budget))
+            )
     return tuple(output)
 
 
 def scan_calls(source: str):
-    source, tokens = tokenize_r(source)
-    delimiter_stack = []
-    for token in tokens:
-        if token.value in _OPEN:
-            delimiter_stack.append((token.value, token.line))
-        elif token.value in _CLOSE:
-            if not delimiter_stack or _OPEN[delimiter_stack[-1][0]] != token.value:
-                raise KnowledgeError(
-                    "invalid_r_syntax", f"Unmatched {token.value} at line {token.line}"
-                )
-            delimiter_stack.pop()
-    if delimiter_stack:
-        value, line = delimiter_stack[-1]
-        raise KnowledgeError("invalid_r_syntax", f"Unclosed {value} at line {line}")
+    """Find calls with their top-level arguments; Rust-accelerated when available."""
+    source = _input(source)
+    if native is not None:
+        try:
+            records = native.scan_calls(source)
+        except ValueError as exc:
+            raise KnowledgeError(*exc.args) from None
+        if records is not None:
+            return list(map(Call._make, records))
+        # None: non-ASCII code outside strings needs Python's Unicode character classes.
+    return _scan_calls_python(source)
 
+
+def _scan_calls_python(source: str):
+    source, tokens = tokenize_r(source)
+    matches = _bracket_matches(tokens)
     calls = []
+    budget = [MAX_TOTAL_ARGUMENT_CHARS]
+    open_calls: list[tuple[int, str]] = []  # (closing token index, call name)
     for index, token in enumerate(tokens[:-1]):
-        if token.kind != "identifier" or tokens[index + 1].value != "(":
+        while open_calls and open_calls[-1][0] < index:
+            open_calls.pop()
+        following = tokens[index + 1]
+        if token.kind != "identifier" or following.kind != "punctuation" or following.value != "(":
             continue
-        closing = _matching(tokens, index + 1)
-        if closing is None:
-            continue
+        closing = matches[index + 1]
         name = token.value
         if index >= 2 and tokens[index - 1].value in ("::", ":::"):
             name = f"{tokens[index - 2].value}::{name}"
@@ -244,9 +291,11 @@ def scan_calls(source: str):
                 start=token.start,
                 end=tokens[closing].end,
                 line=token.line,
-                arguments=_split_arguments(source, tokens, index + 1, closing),
+                arguments=_split_arguments(source, tokens, matches, index + 1, closing, budget),
+                parent=open_calls[-1][1] if open_calls else None,
             )
         )
+        open_calls.append((closing, name))
     return calls
 
 
@@ -351,11 +400,7 @@ def _mapping_calls(calls):
     positional_names = ("x", "y", "colour", "fill", "size", "shape", "linetype", "alpha", "group")
     aes_calls = _calls_named(calls, {"aes"})
     for mapping in aes_calls:
-        containers = [
-            call for call in calls if call.start < mapping.start and call.end > mapping.end
-        ]
-        container = min(containers, key=lambda call: call.end - call.start) if containers else None
-        parent = container.name.split("::")[-1] if container else None
+        parent = mapping.parent.split("::")[-1] if mapping.parent else None
         scope = (
             "node"
             if parent and parent.startswith("geom_node_")
@@ -832,7 +877,7 @@ def analyze_knitr_chunks(source, document_type=None):
         )
         index += 1
     labels = [chunk["label"] for chunk in chunks if chunk["label"]]
-    for label in sorted({item for item in labels if labels.count(item) > 1}):
+    for label in sorted(item for item, seen in Counter(labels).items() if seen > 1):
         findings.append(
             {
                 "code": "duplicate_chunk_label",

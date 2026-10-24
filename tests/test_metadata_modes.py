@@ -17,6 +17,9 @@ PACKAGE = "ExamplePkg"
 VERSION = "2.10-1"
 DESCRIPTION_PATH = f"/web/packages/{PACKAGE}/DESCRIPTION"
 ARCHIVE_PATH = f"/src/contrib/{PACKAGE}_{VERSION}.tar.gz"
+INDEX_GZ = INDEX + ".gz"
+# Handlers that only know the plain index: the .gz probe 404s, then PACKAGES.
+PLAIN_INDEX_FALLBACK = [INDEX_GZ, INDEX]
 
 
 async def test_cran_lightweight_description_matches_index_without_fetching_archive(service):
@@ -28,9 +31,9 @@ async def test_cran_lightweight_description_matches_index_without_fetching_archi
     assert result["authors"] == "Test Author"
     assert result["metadata_verification_level"] == "description_version_matched"
     assert result["verification_status"] == "verified"
-    assert [request.url.path for request in calls] == [INDEX, DESCRIPTION_PATH]
+    assert [request.url.path for request in calls] == [INDEX_GZ, DESCRIPTION_PATH]
     assert [source["source_url"].rsplit("/", 1)[-1] for source in result["sources"]] == [
-        "PACKAGES",
+        "PACKAGES.gz",
         "DESCRIPTION",
     ]
 
@@ -40,7 +43,7 @@ async def test_default_cran_info_keeps_deep_archive_verification(service):
     result = await api.get_package_info(PACKAGE)
     assert result["metadata_verification_level"] == "description_version_matched"
     assert result["verification_status"] == "verified"
-    assert [request.url.path for request in calls] == [INDEX, ARCHIVE_PATH]
+    assert [request.url.path for request in calls] == [INDEX_GZ, ARCHIVE_PATH]
 
 
 async def test_lightweight_cran_info_never_opens_an_oversized_archive_stream():
@@ -69,7 +72,7 @@ async def test_lightweight_cran_info_never_opens_an_oversized_archive_stream():
             PACKAGE, verify_archive=False
         )
     assert result["metadata_verification_level"] == "description_version_matched"
-    assert calls == [INDEX, DESCRIPTION_PATH]
+    assert calls == [*PLAIN_INDEX_FALLBACK, DESCRIPTION_PATH]
 
 
 async def test_missing_lightweight_description_returns_explicit_index_partial(service):
@@ -83,7 +86,7 @@ async def test_missing_lightweight_description_returns_explicit_index_partial(se
     assert result["metadata_error"]["source_url"].endswith(DESCRIPTION_PATH)
     assert result["metadata_error"]["attempted_at"]
     assert "description" in result["metadata_fields_missing"]
-    assert [request.url.path for request in calls] == [INDEX, DESCRIPTION_PATH]
+    assert [request.url.path for request in calls] == [INDEX_GZ, DESCRIPTION_PATH]
 
 
 @pytest.mark.parametrize(
@@ -103,7 +106,7 @@ async def test_lightweight_description_mismatch_or_malformed_is_explicit(
     assert result["error"]["code"] == expected_code
     assert result["source_url"].endswith(DESCRIPTION_PATH)
     assert {s["source_url"].rsplit("/", 1)[-1] for s in result["sources"]} == {
-        "PACKAGES",
+        "PACKAGES.gz",
         "DESCRIPTION",
     }
 
@@ -168,14 +171,14 @@ async def test_mocked_cran_transfer_measurements(scenario, payload_size):
     deep = await _measured_cran_metadata(True, payload_size)
     assert lightweight["result"]["metadata_verification_level"] == "description_version_matched"
     assert deep["result"]["metadata_verification_level"] == "description_version_matched"
-    assert lightweight["requests"] == [INDEX, DESCRIPTION_PATH]
-    assert deep["requests"] == [INDEX, ARCHIVE_PATH]
+    assert lightweight["requests"] == [*PLAIN_INDEX_FALLBACK, DESCRIPTION_PATH]
+    assert deep["requests"] == [*PLAIN_INDEX_FALLBACK, ARCHIVE_PATH]
     assert lightweight["bytes"] == len(INDEX_TEXT.encode()) + len(DESCRIPTION.encode())
     assert deep["bytes"] == len(INDEX_TEXT.encode()) + deep["archive_bytes"]
     assert lightweight["bytes"] < deep["bytes"]
     assert lightweight["archive_downloads"] == 0 and deep["archive_downloads"] == 1
-    assert lightweight["request_count"] == deep["request_count"] == 2
-    assert lightweight["cache_hits"] == deep["cache_hits"] == 2
+    assert lightweight["request_count"] == deep["request_count"] == 3
+    assert lightweight["cache_hits"] == deep["cache_hits"] == 3
     assert lightweight["elapsed_seconds"] >= 0 and deep["elapsed_seconds"] >= 0
     assert scenario in {"small", "medium"}
 
@@ -197,7 +200,7 @@ async def test_cran_lightweight_unavailable_description_is_not_misreported():
         )
     assert result["error"]["code"] == "source_unavailable"
     assert result["source_url"].endswith(DESCRIPTION_PATH)
-    assert calls == [INDEX, DESCRIPTION_PATH, DESCRIPTION_PATH]
+    assert calls == [*PLAIN_INDEX_FALLBACK, DESCRIPTION_PATH, DESCRIPTION_PATH]
 
 
 async def test_oversized_archive_error_provenance_is_reported_as_cached(monkeypatch):
@@ -214,6 +217,8 @@ async def test_oversized_archive_error_provenance_is_reported_as_cached(monkeypa
         calls.append(request.url.path)
         if request.url.path == INDEX:
             return httpx.Response(200, content=INDEX_TEXT.encode())
+        if request.url.path == INDEX_GZ:
+            return httpx.Response(404)
         return httpx.Response(200, content=b"x" * 9)
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
@@ -224,7 +229,7 @@ async def test_oversized_archive_error_provenance_is_reported_as_cached(monkeypa
     assert first["source_url"].endswith(ARCHIVE_PATH)
     assert "cached" not in first["error"]
     assert second["error"]["cached"] is True
-    assert calls == [INDEX, ARCHIVE_PATH]
+    assert calls == [*PLAIN_INDEX_FALLBACK, ARCHIVE_PATH]
 
 
 async def test_lightweight_mode_rejects_non_boolean_flag(service):

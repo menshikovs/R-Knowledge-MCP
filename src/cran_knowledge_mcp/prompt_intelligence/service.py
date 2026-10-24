@@ -344,7 +344,9 @@ class PromptIntelligence:
         mapped_release = None
         release_sources: list[PromptSource] = []
         has_bioc = any(item["repository"] == "bioconductor" for item in package_records)
-        if (r_version or bioconductor_release) and (has_bioc or category in BIOC_CATEGORIES):
+        if self.knowledge is None and r_version and (has_bioc or category in BIOC_CATEGORIES):
+            warnings.append("bioconductor_r_mapping_not_attempted_without_repository_service")
+        elif (r_version or bioconductor_release) and (has_bioc or category in BIOC_CATEGORIES):
             try:
                 mapping = (
                     await self.knowledge.get_bioconductor_version(r_version) if r_version else None
@@ -961,6 +963,13 @@ class PromptIntelligence:
         resolution: list[dict[str, Any]] = []
         if not packages:
             return records, resolution, []
+        if self.knowledge is None:
+            # Local-only composition (e.g. native MCP prompts): no lookup was attempted.
+            return (
+                records,
+                [{"package": package, "status": "not_checked"} for package in packages],
+                ["package_grounding_not_attempted_without_repository_service"],
+            )
 
         semaphore = asyncio.Semaphore(3)
 
@@ -968,8 +977,9 @@ class PromptIntelligence:
             async with semaphore:
                 try:
                     async with asyncio.timeout(30):
+                        # Grounding needs identity, version and provenance, not archive contents.
                         all_info = await self.knowledge.get_package_info(
-                            package, "all", bioconductor_release
+                            package, "all", bioconductor_release, verify_archive=False
                         )
                     results = all_info.get("results", [])
                     matches = [

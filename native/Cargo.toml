@@ -1,0 +1,19 @@
+[package]
+name = "cran-knowledge-native"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Optional Rust accelerators for cran-knowledge-mcp; pure-Python code stays the fallback."
+license = "MIT"
+
+[lib]
+name = "cran_knowledge_native"
+crate-type = ["cdylib"]
+
+[dependencies]
+# abi3: one wheel serves every CPython >= 3.11 supported by the main package.
+pyo3 = { version = "0.30", features = ["abi3-py311"] }
+
+[profile.release]
+lto = true
+codegen-units = 1

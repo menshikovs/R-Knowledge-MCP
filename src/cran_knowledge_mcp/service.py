@@ -1,6 +1,7 @@
 """Repository router, provenance envelopes and conservative cross-repository checks."""
 
 import asyncio
+import copy
 import json
 import logging
 import re
@@ -8,7 +9,7 @@ from collections import OrderedDict
 from collections.abc import Awaitable
 from datetime import UTC, datetime
 
-from .config import cache_ttl, context7_api_key
+from .config import cache_ttl, context7_api_key, github_token
 from .diagnostics import awaitable_operation_id, log_internal_failure
 from .errors import KnowledgeError
 from .http import BioconductorHTTP, CranHTTP, package_name, version_parts
@@ -27,6 +28,7 @@ from .project_analysis import (
 from .providers import BioconductorProvider, CranProvider, PackageRepository
 from .providers.bioconductor import CATEGORIES
 from .providers.context7 import Context7Provider
+from .providers.framework_docs import DOCS as FRAMEWORK_DOCS
 from .providers.framework_docs import FrameworkDocsProvider
 from .providers.github_agents import GitHubAgentsProvider
 from .providers.r_documentation import RDocumentationProvider
@@ -46,6 +48,12 @@ from .visualization_analysis import (
     analyze_tidyr_pipeline,
 )
 
+MAX_RESULT_BYTES = 60_000
+# Archive fallback cannot help when the package or request itself is wrong.
+NO_ARCHIVE_RETRY = {"package_not_found", "invalid_input"}
+MIN_TRUNCATED_CHARS = 256
+TRUNCATION_RESERVE = 1024
+TRUNCATION_MARKER = " …[truncated by server output limit]"
 SHINY_PACKAGE_DOCS = {
     name.casefold(): name
     for name in (
@@ -128,6 +136,31 @@ VISUALIZATION_WORKFLOWS = {
 }
 
 
+PACKAGE_SECTIONS = ("metadata", "dependencies", "vignettes", "agent_guidance", "context7")
+_LOCK_OPTIONS = frozenset({"package_versions", "renv_lock"})
+# kind -> (accepted schema names, accepted optional arguments)
+SOURCE_ANALYZERS = {
+    "ggplot": (("data",), _LOCK_OPTIONS),
+    "ggraph": (("nodes", "edges"), _LOCK_OPTIONS),
+    "tidyr": (("input", "expected"), _LOCK_OPTIONS),
+    "ggplotly": ((), _LOCK_OPTIONS),
+    "knitr": ((), _LOCK_OPTIONS | {"document_type"}),
+    "shiny": ((), frozenset({"files", "shiny_version"})),
+    "quarto": ((), frozenset({"project_config", "quarto_version", "r_version", "dependencies"})),
+}
+SCHEMA_ARGUMENTS = {
+    "data": "data_schema",
+    "nodes": "node_schema",
+    "edges": "edge_schema",
+    "input": "input_schema",
+    "expected": "expected_schema",
+}
+R_CONSTRAINT = re.compile(r"\s*R\s*\((>=|<=|==|!=|>|<)\s*([0-9][0-9.-]*)\)\s*")
+# Static explanatory text that compact responses omit; safety flags such as trust,
+# not_executed and verification_status are always kept.
+COMPACT_DROPPED_KEYS = frozenset({"limitations", "verification_notes", "dependency_field_scope"})
+
+
 def failure(exc: KnowledgeError, package=None, repository=None, bioc_version=None):
     return {
         "package": package,
@@ -163,7 +196,9 @@ class KnowledgeService:
         self.releases = BioconductorReleases(self.bioc_http)
         self.providers = providers if providers is not None else {"cran": CranProvider(http)}
         self._bioc: OrderedDict[str, BioconductorProvider] = OrderedDict()
-        self.agents = agents_provider or GitHubAgentsProvider(http.client, ttl=cache_ttl(3600))
+        self.agents = agents_provider or GitHubAgentsProvider(
+            http.client, ttl=cache_ttl(3600), token=github_token()
+        )
         self.context7 = context7_provider or Context7Provider(
             http.client, context7_api_key(), ttl=cache_ttl(21600)
         )
@@ -274,13 +309,19 @@ class KnowledgeService:
     async def _dispatch(self, method, package, repository, bioc_version, **kwargs):
         if repository != "all":
             return await self._one(method, package, repository, bioc_version, **kwargs)
-        results = [
-            await self._one(
-                method, package, name, bioc_version if name == "bioconductor" else None, **kwargs
+        results = await asyncio.gather(
+            *(
+                self._one(
+                    method,
+                    package,
+                    name,
+                    bioc_version if name == "bioconductor" else None,
+                    **kwargs,
+                )
+                for name in ("cran", "bioconductor")
             )
-            for name in ("cran", "bioconductor")
-        ]
-        return self.aggregate(results, package, bioc_version)
+        )
+        return self.aggregate(list(results), package, bioc_version)
 
     @staticmethod
     def aggregate(results, package=None, bioc_version=None):
@@ -389,6 +430,16 @@ class KnowledgeService:
     async def _external_package_metadata(self, package, repository, bioc_version):
         package_name(package)
         provider = await self.provider(repository, bioc_version)
+        if provider.repository == "cran":
+            # CRAN's version-matched DESCRIPTION already carries the URL field.
+            try:
+                info = await provider.get_package_info(package, verify_archive=False)
+            except KnowledgeError as exc:
+                if exc.code in NO_ARCHIVE_RETRY:
+                    raise
+                info = None
+            if info is not None and info.get("verification_status", "verified") == "verified":
+                return provider, self.enrich(info, provider)
         info = await provider.get_package_info(package)
         enriched = self.enrich(info, provider)
         return provider, enriched
@@ -425,6 +476,19 @@ class KnowledgeService:
         """Read one section from the local official R manual index."""
         return await self.r_documentation.aget_section(document_id, section_id, max_chars)
 
+    async def _package_metadata(self, package, repository, bioc_version):
+        """Prefer CRAN's lightweight DESCRIPTION; download the archive only as a fallback."""
+        if repository != "cran":
+            return await self._one("get_package_info", package, repository, bioc_version)
+        info = await self._one(
+            "get_package_info", package, repository, bioc_version, verify_archive=False
+        )
+        if info.get("verification_status") == "verified" or (
+            info.get("error", {}).get("code") in NO_ARCHIVE_RETRY
+        ):
+            return info
+        return await self._one("get_package_info", package, repository, bioc_version)
+
     async def get_package_knowledge(
         self,
         package,
@@ -439,7 +503,7 @@ class KnowledgeService:
                 "Select cran or bioconductor so each knowledge bundle has one package identity",
             )
         provider = await self.provider(repository, bioc_version)
-        info = await self._one("get_package_info", package, repository, bioc_version)
+        info = await self._package_metadata(package, repository, bioc_version)
         dependencies = await self._one("get_dependencies", package, repository, bioc_version)
         sections = {"package_info": info, "dependencies": dependencies}
         if "error" in info:
@@ -538,7 +602,7 @@ class KnowledgeService:
                 "function_owner_mismatch",
                 f"Official Shiny reference identifies {function} as belonging to {owner}",
             )
-        info = await self.get_package_info(canonical, "cran")
+        info = await self.get_package_info(canonical, "cran", verify_archive=False)
         if "error" in info:
             return {"package": canonical, "documentation": info, "verification_status": "failed"}
         actual_version = info["package_version"]
@@ -591,7 +655,7 @@ class KnowledgeService:
         canonical = package.casefold()
         if not isinstance(function, str) or not re.fullmatch(r"[A-Za-z.][A-Za-z0-9._]*", function):
             raise KnowledgeError("invalid_input", "function must be an R function alias")
-        info = await self.get_package_info(canonical, "cran")
+        info = await self.get_package_info(canonical, "cran", verify_archive=False)
         if "error" in info:
             return {
                 "package": canonical,
@@ -717,7 +781,8 @@ class KnowledgeService:
             }
         else:
             lock_versions = {}
-        result = analyzer(source, **schemas)
+        # CPU-bound static analysis must not block the event loop for other requests.
+        result = await asyncio.to_thread(analyzer, source, **schemas)
         requested = package_versions or {}
         if not isinstance(requested, dict) or len(requested) > 12:
             raise KnowledgeError(
@@ -734,7 +799,7 @@ class KnowledgeService:
                 raise KnowledgeError(
                     "unsupported_package", "Only visualization core packages may be version checked"
                 )
-            info = await self.get_package_info(name, "cran")
+            info = await self.get_package_info(name, "cran", verify_archive=False)
             if "error" in info:
                 versions[name] = {"verification_status": "failed", "error": info["error"]}
                 continue
@@ -822,7 +887,11 @@ class KnowledgeService:
         if question is not None and (not isinstance(question, str) or len(question) > 500):
             raise KnowledgeError("invalid_input", "Question must be at most 500 characters")
         docs = await self.framework_docs.get_docs("shiny", topic)
-        analysis = analyze_shiny_source(source=source) if source is not None else None
+        analysis = (
+            await asyncio.to_thread(analyze_shiny_source, source=source)
+            if source is not None
+            else None
+        )
         guidance = {
             "reactivity": (
                 "Reactive sources, expressions and endpoints form a dependency graph. "
@@ -864,7 +933,7 @@ class KnowledgeService:
         }
 
     async def analyze_shiny_app(self, source=None, files=None, shiny_version=None):
-        result = analyze_shiny_source(source=source, files=files)
+        result = await asyncio.to_thread(analyze_shiny_source, source=source, files=files)
         if shiny_version is not None:
             result["client_supplied_shiny_version"] = shiny_version
             result["version_check"] = await self.check_package_version("shiny", shiny_version)
@@ -916,7 +985,9 @@ class KnowledgeService:
                 "invalid_input",
                 "Dependencies must be at most 100 non-empty names of 200 characters",
             )
-        result = analyze_quarto_source(source, project_config, quarto_version)
+        result = await asyncio.to_thread(
+            analyze_quarto_source, source, project_config, quarto_version
+        )
         result["r_version"] = r_version
         result["dependencies_supplied"] = dependencies or []
         result["dependency_analysis"] = "caller_supplied_names_unverified"
@@ -925,10 +996,12 @@ class KnowledgeService:
     async def analyze_quarto_project(
         self, project_config, metadata_config=None, file_manifest=None
     ):
-        return analyze_quarto_config(project_config, metadata_config, file_manifest)
+        return await asyncio.to_thread(
+            analyze_quarto_config, project_config, metadata_config, file_manifest
+        )
 
     async def analyze_r_workspace(self, files):
-        return analyze_workspace_metadata(files)
+        return await asyncio.to_thread(analyze_workspace_metadata, files)
 
     async def get_r_workflow_guidance(
         self, scenario, packages=None, r_version=None, bioc_version=None
@@ -1077,6 +1150,26 @@ class KnowledgeService:
         sources: list[dict] = list(discovery_sources)
         package_checks: list[dict] = []
 
+        # Fetch independent repository lookups concurrently; evaluation below stays ordered.
+        active = [c["package"] for c in candidates if c["package"].casefold() not in excluded]
+        infos = dict(
+            zip(
+                active,
+                await asyncio.gather(
+                    *(self.get_package_info(name, "cran", verify_archive=False) for name in active)
+                ),
+                strict=True,
+            )
+        )
+        found = [name for name in active if "error" not in infos[name]]
+        dependency_infos = dict(
+            zip(
+                found,
+                await asyncio.gather(*(self.get_dependencies(name, "cran") for name in found)),
+                strict=True,
+            )
+        )
+
         for candidate in candidates:
             package = candidate["package"]
             if package.casefold() in excluded:
@@ -1088,7 +1181,7 @@ class KnowledgeService:
                     }
                 )
                 continue
-            info = await self.get_package_info(package, "cran", verify_archive=False)
+            info = infos[package]
             info_sources = info.get("sources", []) if isinstance(info, dict) else []
             if not isinstance(info_sources, list):
                 info_sources = []
@@ -1147,7 +1240,7 @@ class KnowledgeService:
             if package.casefold() in preferred:
                 package_entry["preference_match"] = "user_preferred"
 
-            dep_info = await self.get_dependencies(package, "cran")
+            dep_info = dependency_infos[package]
             dep_sources = dep_info.get("sources", []) if isinstance(dep_info, dict) else []
             if not isinstance(dep_sources, list):
                 dep_sources = []
@@ -1458,6 +1551,374 @@ class KnowledgeService:
             "not_executed": True,
         }
 
+    # Consolidated MCP surface. Each method routes to the existing operations so that
+    # provenance and failure semantics stay identical to the legacy tools.
+
+    async def get_package(
+        self,
+        package,
+        repository="cran",
+        bioc_version=None,
+        include=None,
+        verify_archive=False,
+        resolve_repositories=False,
+        revision=None,
+        question=None,
+    ):
+        include = list(dict.fromkeys(include or ["metadata"]))
+        unknown = set(include) - set(PACKAGE_SECTIONS)
+        if not include or unknown:
+            raise KnowledgeError(
+                "invalid_input", f"include must name sections from: {', '.join(PACKAGE_SECTIONS)}"
+            )
+        if repository == "all" and {"agent_guidance", "context7"} & set(include):
+            raise KnowledgeError(
+                "invalid_input",
+                "agent_guidance and context7 need one repository so the package identity is unique",
+            )
+        if "agent_guidance" in include and not revision:
+            raise KnowledgeError(
+                "invalid_input", "agent_guidance needs revision (a branch, tag or commit ref)"
+            )
+        if "context7" in include and not question:
+            raise KnowledgeError("invalid_input", "context7 needs a concrete question")
+        if revision and "agent_guidance" not in include:
+            raise KnowledgeError("invalid_input", "revision is used only with agent_guidance")
+        if question and "context7" not in include:
+            raise KnowledgeError("invalid_input", "question is used only with context7")
+        package_name(package)
+        operations = {
+            "metadata": lambda: self.get_package_info(
+                package, repository, bioc_version, verify_archive
+            ),
+            "dependencies": lambda: self.get_dependencies(
+                package, repository, bioc_version, resolve_repositories
+            ),
+            "vignettes": lambda: self.get_package_vignettes(package, repository, bioc_version),
+            "agent_guidance": lambda: self.get_package_agent_guidance(
+                package, revision, repository, bioc_version
+            ),
+            "context7": lambda: self.get_context7_docs(package, question, repository, bioc_version),
+        }
+
+        async def section(name):
+            try:
+                return await operations[name]()
+            except KnowledgeError as exc:
+                return failure(exc, package, repository, bioc_version)
+
+        results = dict(zip(include, await asyncio.gather(*map(section, include)), strict=True))
+        errors = [
+            {"section": name, "error": result["error"]}
+            for name, result in results.items()
+            if "error" in result
+        ]
+        failed = [
+            name
+            for name, result in results.items()
+            if result.get("verification_status") == "failed"
+        ]
+        status = (
+            "failed"
+            if len(failed) == len(results)
+            else "partial"
+            if failed or any(r.get("verification_status") == "partial" for r in results.values())
+            else "verified"
+        )
+        sources = _unique_sources(
+            source for result in results.values() for source in result.get("sources", [])
+        )
+        first = next(iter(results.values()))
+        return {
+            "package": package,
+            "repository": repository,
+            "package_version": first.get("package_version"),
+            "bioc_version": first.get("bioc_version", bioc_version),
+            "sections": results,
+            "errors": errors,
+            "source_url": first.get("source_url"),
+            "checked_at": max(
+                (s["checked_at"] for s in sources if s.get("checked_at")), default=None
+            ),
+            "verification_status": status,
+            "sources": sources,
+        }
+
+    async def get_versioned_function_docs(
+        self,
+        package,
+        function,
+        offset=0,
+        repository="cran",
+        bioc_version=None,
+        package_version=None,
+    ):
+        """Return Rd only for the selected version; never substitute the current one."""
+        if package_version is not None:
+            if repository == "all":
+                raise KnowledgeError(
+                    "invalid_input", "package_version needs one repository, not all"
+                )
+            info = await self.get_package_info(package, repository, bioc_version, False)
+            if "error" in info:
+                return info
+            if version_parts(package_version) != version_parts(info["package_version"]):
+                error = KnowledgeError(
+                    "requested_version_unavailable",
+                    "Only the selected repository's current source documentation is available; "
+                    "the requested version was not substituted.",
+                    info.get("source_url"),
+                )
+                return {
+                    **failure(error, package, repository, info.get("bioc_version")),
+                    "requested_package_version": package_version,
+                    "available_package_version": info["package_version"],
+                    "sources": info.get("sources", []),
+                }
+        return await self.get_function_docs(package, function, offset, repository, bioc_version)
+
+    async def check_r_compatibility(
+        self, r_version, package=None, repository="cran", bioc_version=None
+    ):
+        if repository not in ("cran", "bioconductor"):
+            raise KnowledgeError("invalid_input", "repository must be cran or bioconductor")
+        if package is None:
+            if repository != "bioconductor":
+                raise KnowledgeError(
+                    "invalid_input",
+                    "Without package, only the Bioconductor release map can be checked",
+                )
+            return await self.get_bioconductor_version(r_version)
+        if repository == "bioconductor":
+            return await self.check_package_compatibility(package, r_version, bioc_version)
+        if bioc_version is not None:
+            raise KnowledgeError("invalid_input", "bioc_version is only applicable to Bioconductor")
+        return await self.check_cran_compatibility(package, r_version)
+
+    async def check_cran_compatibility(self, package, r_version):
+        """Check the current CRAN record's direct R and dependency constraints."""
+        r_minor(r_version)
+        package_name(package)
+        cran = await self.provider("cran")
+        record, artifact = await cran.current(package)
+        warnings = [
+            "Only the current CRAN version is checked; an older R may need an archived version, "
+            "which this server does not substitute.",
+        ]
+        statuses = []
+        r_constraints = []
+        for token in record.get("Depends", "").split(","):
+            match = R_CONSTRAINT.fullmatch(token)
+            if match:
+                status = r_constraint_status(r_version, *match.groups())
+                statuses.append(status)
+                r_constraints.append({"constraint": token.strip(), "satisfied": status})
+        deps = await self.resolve_dependencies(
+            {k: record.get(k, "") for k in ("Depends", "Imports", "LinkingTo")}
+        )
+        for dep in deps:
+            if dep["resolution"] == "r_runtime":
+                continue
+            if dep["resolution"] != "found":
+                statuses.append(None)
+                warnings.append(
+                    f"Dependency {dep['package']} is not in the CRAN index "
+                    "(it may come from Bioconductor or another repository)"
+                )
+                continue
+            candidate = dep["candidates"][0]
+            if not candidate["constraint_satisfied"]:
+                statuses.append(False)
+                warnings.append(f"Current CRAN dependency does not satisfy {dep['constraint']}")
+            for token in candidate["r_constraints"].split(","):
+                match = R_CONSTRAINT.fullmatch(token)
+                if match:
+                    status = r_constraint_status(r_version, *match.groups())
+                    statuses.append(status)
+                    if status is False:
+                        warnings.append(f"Dependency {dep['package']} requires {token.strip()}")
+        if record.get("NeedsCompilation", "").strip().casefold() == "yes":
+            warnings.append(
+                "Package needs compilation; toolchain and system libraries are unchecked"
+            )
+        if any(status is False for status in statuses):
+            compatibility = "incompatible"
+        elif any(status is None for status in statuses):
+            compatibility = "unknown"
+            warnings.append(
+                "Some constraints could not be decided (unresolved origin, or a patch-level "
+                "requirement for an R minor version)"
+            )
+        else:
+            compatibility = "metadata_compatible"
+        result = self.enrich(
+            {
+                "package": package,
+                "package_version": record["Version"],
+                "latest_cran_version": record["Version"],
+                "sources": [artifact.provenance()],
+                "r_version": r_version,
+                "r_constraints": r_constraints,
+                "resolved_dependencies": deps,
+            },
+            cran,
+        )
+        result.update(
+            compatible={"incompatible": False, "unknown": None}.get(compatibility, True),
+            compatibility_status=compatibility,
+            compatibility_scope=(
+                "Current CRAN record's R constraint and direct required dependencies; "
+                "not a transitive solver or installation test"
+            ),
+            warnings=warnings
+            + ["R/platform/system libraries and the installed environment were not inspected"],
+        )
+        return result
+
+    async def get_framework_docs(
+        self,
+        framework,
+        topic,
+        version=None,
+        question=None,
+        operating_system=None,
+        r_version=None,
+        project_type=None,
+    ):
+        if framework not in ("shiny", "positron", "quarto"):
+            raise KnowledgeError("invalid_input", "framework must be shiny, positron or quarto")
+        positron_only = {
+            "operating_system": operating_system,
+            "r_version": r_version,
+            "project_type": project_type,
+        }
+        misplaced = [
+            name for name, value in positron_only.items() if value and framework != "positron"
+        ]
+        if question and framework != "shiny":
+            misplaced.append("question")
+        if misplaced:
+            raise KnowledgeError(
+                "invalid_input", f"{', '.join(misplaced)} not applicable to {framework}"
+            )
+        if framework == "shiny":
+            if topic not in FRAMEWORK_DOCS["shiny"]:
+                raise KnowledgeError(
+                    "unsupported_topic",
+                    "Unsupported topic; choose one of: "
+                    + ", ".join(sorted(FRAMEWORK_DOCS["shiny"])),
+                )
+            result = await self.explain_shiny_reactivity(topic, question)
+            if version:
+                result["requested_version"] = version
+                result["version_warning"] = (
+                    "Current official Shiny docs are not pinned to the requested version."
+                )
+            return result
+        if framework == "positron":
+            return await self.get_positron_guidance(
+                topic, version, operating_system, r_version, project_type
+            )
+        return await self.get_quarto_docs(topic, version)
+
+    async def get_workflow(
+        self, scenario, packages=None, r_version=None, bioc_version=None, package_versions=None
+    ):
+        if scenario in VISUALIZATION_WORKFLOWS:
+            if packages or r_version or bioc_version:
+                raise KnowledgeError(
+                    "invalid_input",
+                    "Visualization scenarios accept only package_versions",
+                )
+            return await self.get_visualization_workflow(scenario, package_versions)
+        if package_versions:
+            raise KnowledgeError(
+                "invalid_input", "package_versions applies only to visualization scenarios"
+            )
+        return await self.get_r_workflow_guidance(scenario, packages, r_version, bioc_version)
+
+    async def analyze_r_source(
+        self,
+        kind,
+        source=None,
+        files=None,
+        schemas=None,
+        package_versions=None,
+        renv_lock=None,
+        document_type=None,
+        project_config=None,
+        quarto_version=None,
+        r_version=None,
+        dependencies=None,
+        shiny_version=None,
+    ):
+        if kind not in SOURCE_ANALYZERS:
+            raise KnowledgeError(
+                "invalid_input", f"kind must be one of: {', '.join(SOURCE_ANALYZERS)}"
+            )
+        allowed_schemas, allowed_options = SOURCE_ANALYZERS[kind]
+        supplied = {
+            "files": files,
+            "package_versions": package_versions,
+            "renv_lock": renv_lock,
+            "document_type": document_type,
+            "project_config": project_config,
+            "quarto_version": quarto_version,
+            "r_version": r_version,
+            "dependencies": dependencies,
+            "shiny_version": shiny_version,
+        }
+        misplaced = sorted(
+            name
+            for name, value in supplied.items()
+            if value is not None and name not in allowed_options
+        )
+        schemas = schemas or {}
+        if not isinstance(schemas, dict):
+            raise KnowledgeError("invalid_input", "schemas must be a mapping")
+        misplaced += sorted(f"schemas.{name}" for name in set(schemas) - set(allowed_schemas))
+        if misplaced:
+            # Reject rather than silently ignore inputs the selected analyzer cannot use.
+            raise KnowledgeError(
+                "invalid_input", f"Not applicable to kind={kind}: {', '.join(misplaced)}"
+            )
+        if kind != "shiny" and source is None:
+            raise KnowledgeError("invalid_input", f"kind={kind} needs source")
+        if kind == "shiny":
+            return await self.analyze_shiny_app(source, files, shiny_version)
+        if kind == "quarto":
+            return await self.analyze_quarto_document(
+                source, project_config, quarto_version, r_version, dependencies
+            )
+        method = {
+            "ggplot": self.analyze_ggplot_code,
+            "ggraph": self.analyze_ggraph_code,
+            "tidyr": self.analyze_tidyr_pipeline,
+            "ggplotly": self.analyze_ggplotly_compatibility,
+            "knitr": self.analyze_knitr_chunks,
+        }[kind]
+        keyword = {name: schemas.get(name) for name in allowed_schemas}
+        keyword = {SCHEMA_ARGUMENTS[name]: value for name, value in keyword.items()}
+        if kind == "knitr":
+            keyword["document_type"] = document_type
+        return await method(
+            source, **keyword, package_versions=package_versions, renv_lock=renv_lock
+        )
+
+    async def analyze_r_project(self, files, file_manifest=None):
+        result = await self.analyze_r_workspace(files)
+        quarto = None
+        if isinstance(files, dict) and "_quarto.yml" in files:
+            manifest = sorted(set(files) | set(file_manifest or []))
+            quarto = await self.analyze_quarto_project(
+                files["_quarto.yml"], files.get("_metadata.yml"), manifest
+            )
+        elif file_manifest:
+            raise KnowledgeError(
+                "invalid_input", "file_manifest is used only when _quarto.yml is supplied"
+            )
+        return {**result, "quarto_project": quarto}
+
     async def check_package_version(self, package, installed_version):
         provider = await self.provider("cran")
         return self.enrich(
@@ -1472,8 +1933,9 @@ class KnowledgeService:
         )
         return result
 
-    async def resolve_dependencies(self, dependencies, bioc):
-        bioc_records, _ = await bioc.index()
+    async def resolve_dependencies(self, dependencies, bioc=None):
+        """Resolve direct dependency origins in CRAN and an optional Bioconductor release."""
+        bioc_records = (await bioc.index())[0] if bioc is not None else {}
         cran = await self.provider("cran")
         cran_records, cran_source = await cran.index()
         runtime = {
@@ -1503,7 +1965,10 @@ class KnowledgeService:
                     raise KnowledgeError("invalid_source", "Unsupported dependency constraint")
                 name, operator, required = match.groups()
                 candidates = []
-                for records, repository in ((cran_records, "cran"), (bioc_records, "bioconductor")):
+                for records, repository in (
+                    (cran_records, "cran"),
+                    (bioc_records, "bioconductor"),
+                ):
                     if name not in records:
                         continue
                     record = records[name]
@@ -1636,18 +2101,123 @@ def satisfies(version, operator, required):
     }[operator]
 
 
-async def bounded(operation: Awaitable[dict], **context) -> dict:
-    """Keep a future transport or integration free of implementation-specific exceptions."""
-    import json
+def r_constraint_status(r_version, operator, required):
+    """Decide an `R (op version)` bound; None when an R minor series straddles it."""
+    actual = [int(part) for part in r_version.split(".")]
+    expected = [int(part) for part in re.split(r"[.-]", required)]
+    if len(actual) == 2 and len(expected) >= 3 and expected[:2] == actual:
+        # "4.1" means some 4.1.x release; only bounds at patch 0 are decidable.
+        if all(part == 0 for part in expected[2:]):
+            return {">=": True, "<": False}.get(operator)
+        return None
+    return satisfies(r_version, operator, required)
 
+
+def _unique_sources(sources):
+    unique, seen = [], set()
+    for source in sources:
+        if not isinstance(source, dict):
+            continue
+        key = (source.get("source_url"), source.get("checked_at"))
+        if key not in seen:
+            seen.add(key)
+            unique.append(source)
+    return unique
+
+
+def compact_result(result: dict) -> dict:
+    """Drop repeated static notes and hoist nested source lists into one deduplicated list.
+
+    Nested items keep their own source_url/checked_at; full mode returns everything.
+    """
+    hoisted = []
+
+    def walk(value, depth):
+        if isinstance(value, dict):
+            output = {}
+            for key, item in value.items():
+                if key in COMPACT_DROPPED_KEYS:
+                    continue
+                if key == "sources" and depth > 0 and isinstance(item, list):
+                    hoisted.extend(item)
+                    continue
+                output[key] = walk(item, depth + 1)
+            return output
+        if isinstance(value, list):
+            return [walk(item, depth + 1) for item in value]
+        return value
+
+    compacted = walk(result, 0)
+    if hoisted or "sources" in compacted:
+        compacted["sources"] = _unique_sources([*compacted.get("sources", []), *hoisted])
+    compacted["response_mode"] = "compact"
+    return compacted
+
+
+def _encoded_size(value) -> int:
+    return len(json.dumps(value, ensure_ascii=False).encode())
+
+
+def _long_strings(value, path=""):
+    """Yield (container, key, path) for string leaves that can be shortened."""
+    items = value.items() if isinstance(value, dict) else enumerate(value)
+    for key, item in items:
+        item_path = f"{path}[{key}]" if isinstance(value, list) else f"{path}.{key}".lstrip(".")
+        if isinstance(item, str):
+            if len(item) > MIN_TRUNCATED_CHARS:
+                yield value, key, item_path
+        elif isinstance(item, (dict, list)):
+            yield from _long_strings(item, item_path)
+
+
+def fit_result(result: dict, limit: int = MAX_RESULT_BYTES) -> dict:
+    """Shorten the longest text fields to fit the output limit, recording every cut.
+
+    Identity, version, status and provenance fields are short and stay intact; when
+    shortening text cannot fit the limit the caller still gets response_too_large.
+    """
+    size = _encoded_size(result)
+    if size <= limit:
+        return result
+    if not isinstance(result, dict):
+        raise KnowledgeError(
+            "response_too_large", f"Result exceeds {limit} bytes; narrow the query"
+        )
+    result = copy.deepcopy(result)
+    candidates = sorted(_long_strings(result), key=lambda e: len(e[0][e[1]]), reverse=True)
+    truncated_fields = []
+    for container, key, path in candidates:
+        if size <= limit:
+            break
+        text = container[key]
+        # Every removed character saves at least one encoded byte.
+        keep = max(MIN_TRUNCATED_CHARS, len(text) - (size - limit) - TRUNCATION_RESERVE)
+        container[key] = text[:keep] + TRUNCATION_MARKER
+        truncated_fields.append(
+            {"field": path, "original_characters": len(text), "returned_characters": keep}
+        )
+        result["output_truncation"] = {
+            "truncated": True,
+            "limit_bytes": limit,
+            "fields": truncated_fields,
+            "note": "Text was shortened by the server output limit; it was not summarized.",
+        }
+        size = _encoded_size(result)
+    if size > limit:
+        raise KnowledgeError(
+            "response_too_large", f"Result exceeds {limit} bytes; narrow the query"
+        )
+    return result
+
+
+async def bounded(operation: Awaitable[dict], compact: bool = False, **context) -> dict:
+    """Keep a future transport or integration free of implementation-specific exceptions."""
     try:
         async with asyncio.timeout(60):
             result = await operation
-        if len(json.dumps(result, ensure_ascii=False).encode()) > 60_000:
-            raise KnowledgeError(
-                "response_too_large", "Result exceeds 60000 bytes; narrow the query"
-            )
-        return result
+        if compact and isinstance(result, dict):
+            result = compact_result(result)
+        return fit_result(result)
     except TimeoutError:
         error = KnowledgeError("timeout", "Tool deadline exceeded")
     except UnicodeError:

@@ -13,3 +13,5 @@ dist/
 pytest-cache-files-*/
 .playwright-mcp/
 .venv-wsl
+native/target/
+tests/.r-doc-index-*.json

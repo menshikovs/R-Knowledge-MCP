@@ -270,3 +270,42 @@ async def test_context7_not_found_and_api_errors_are_not_fabricated():
                 "pkg", "1.2", "https://github.com/owner/pkg", "usage", "cran", None
             )
         await client.aclose()
+
+
+async def test_github_token_is_sent_only_as_header_and_never_returned():
+    token = "synthetic-github-token-value"
+    seen = []
+
+    def handler(request):
+        seen.append(request)
+        if request.url.path == "/repos/owner/pkg":
+            return response({"full_name": "owner/pkg"})
+        if request.url.path == "/repos/owner/pkg/commits/main":
+            return response({"sha": SHA})
+        return response({"truncated": False, "tree": []})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        result = await GitHubAgentsProvider(client, token=token).get_package_agent_guidance(
+            "pkg", "1.0", "https://github.com/owner/pkg", "main", "cran", None
+        )
+    assert result["status"] == "verified_absent"
+    assert all(request.headers["Authorization"] == f"Bearer {token}" for request in seen)
+    assert all(token not in str(request.url) for request in seen)
+    assert token not in str(result)
+
+
+async def test_github_without_token_sends_no_authorization_and_explains_rate_limit():
+    seen = []
+
+    def handler(request):
+        seen.append(request)
+        return response({"message": "limit"}, 403, {"X-RateLimit-Remaining": "0"})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        with pytest.raises(KnowledgeError) as error:
+            await GitHubAgentsProvider(client).get_package_agent_guidance(
+                "pkg", "1.0", "https://github.com/owner/pkg", "main", "cran", None
+            )
+    assert error.value.code == "rate_limited"
+    assert "GITHUB_TOKEN" in str(error.value)
+    assert "Authorization" not in seen[0].headers

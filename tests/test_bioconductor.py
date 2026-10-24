@@ -1,5 +1,7 @@
 """Real package names with deliberately synthetic versions; no live network."""
 
+import gzip
+
 import httpx
 import pytest
 from conftest import archive
@@ -84,6 +86,11 @@ async def bioc_service():
     def handler(request):
         calls.append(request)
         content = routes.get((request.url.host, request.url.path))
+        plain = (request.url.host, request.url.path.removesuffix(".gz"))
+        if content is None and request.url.path.endswith("/PACKAGES.gz") and plain in routes:
+            # Like the official mirrors, serve the compressed index next to the plain one.
+            content = routes[plain]
+            content = content if isinstance(content, int) else gzip.compress(content)
         if isinstance(content, int):
             return httpx.Response(content)
         return httpx.Response(404 if content is None else 200, content=content or b"")
@@ -196,21 +203,15 @@ async def test_lightweight_bioconductor_metadata_uses_selected_category_index(
 async def test_large_bioconductor_index_metadata_avoids_archive_transfer(bioc_service):
     api, routes, calls = bioc_service
     result = await api.get_package_info("scRNAseq", "bioconductor", "release", verify_archive=False)
-    transferred = sum(
-        len(routes[(request.url.host, request.url.path)])
-        for request in calls
-        if isinstance(routes.get((request.url.host, request.url.path)), bytes)
-    )
     assert result["category"] == "experiment"
     assert result["metadata_verification_level"] == "index_verified"
-    assert len(calls) == 4  # config plus the three release-scoped category indexes
-    expected = [
+    assert len(calls) == 4  # config plus the three release-scoped compressed category indexes
+    assert {(request.url.host, request.url.path) for request in calls} == {
         ("bioconductor.org", "/config.yaml"),
-        ("bioconductor.org", "/packages/9.40/bioc/src/contrib/PACKAGES"),
-        ("bioconductor.org", "/packages/9.40/data/annotation/src/contrib/PACKAGES"),
-        ("bioconductor.org", "/packages/9.40/data/experiment/src/contrib/PACKAGES"),
-    ]
-    assert transferred == sum(len(routes[key]) for key in expected)
+        ("bioconductor.org", "/packages/9.40/bioc/src/contrib/PACKAGES.gz"),
+        ("bioconductor.org", "/packages/9.40/data/annotation/src/contrib/PACKAGES.gz"),
+        ("bioconductor.org", "/packages/9.40/data/experiment/src/contrib/PACKAGES.gz"),
+    }
     assert not any(request.url.path.endswith(".tar.gz") for request in calls)
 
 
@@ -251,7 +252,9 @@ async def test_unavailable_official_sources_explicit(bioc_service, path):
     result = await api.get_dependencies("DESeq2", "bioconductor")
     assert result["error"]["code"] == "source_unavailable"
     assert result["verification_status"] == "failed"
-    assert result["source_url"] == "https://bioconductor.org" + path
+    # Category indexes are fetched as PACKAGES.gz; the failure names that route.
+    suffix = ".gz" if path.endswith("/PACKAGES") else ""
+    assert result["source_url"] == "https://bioconductor.org" + path + suffix
 
 
 async def test_vignettes_only_official_pinned_links(bioc_service):
@@ -317,7 +320,8 @@ async def test_bioconductor_mcp_protocol_and_selector_schema(bioc_service):
     from cran_knowledge_mcp.server import create_server
 
     api, _, _ = bioc_service
-    async with create_connected_server_and_client_session(create_server(service=api)) as session:
+    server = create_server(service=api, toolset="legacy")
+    async with create_connected_server_and_client_session(server) as session:
         tools = (await session.list_tools()).tools
         search = next(t for t in tools if t.name == "search_packages")
         assert search.inputSchema["properties"]["repository"]["enum"] == [

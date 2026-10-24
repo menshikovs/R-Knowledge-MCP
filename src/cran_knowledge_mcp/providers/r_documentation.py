@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import re
+import sqlite3
 import sys
 import tempfile
 import threading
@@ -120,8 +121,13 @@ def _valid_timestamp(value: Any) -> bool:
     return parsed.tzinfo is not None
 
 
+def _token(match: re.Match) -> str:
+    # Keep identifiers such as read.csv, but not sentence punctuation ("connection.").
+    return match.group(0).casefold().rstrip(".:-")
+
+
 def _tokens(value: str) -> list[str]:
-    return [match.group(0).casefold() for match in TOKEN.finditer(value) if len(match.group(0)) > 1]
+    return [token for token in map(_token, TOKEN.finditer(value)) if len(token) > 1]
 
 
 class _ManualParser(HTMLParser):
@@ -456,6 +462,16 @@ class RDocumentationProvider:
         self._index: dict[str, Any] | None = None
         self._load_error: str | None = None
         self._load_lock = threading.RLock()
+        self._ranker_index: dict[str, Any] | None = None
+        self._ranker_instance: _SectionRanker | None = None
+
+    def _ranker(self, index: dict[str, Any]) -> _SectionRanker | None:
+        """Build the in-memory FTS5 index once per validated index object."""
+        with self._load_lock:
+            if self._ranker_index is not index:
+                self._ranker_instance = _SectionRanker.build(index)
+                self._ranker_index = index
+            return self._ranker_instance
 
     def _load_state(self) -> tuple[dict[str, Any] | None, str | None]:
         with self._load_lock:
@@ -579,7 +595,7 @@ class RDocumentationProvider:
             "results": [],
             "index_generated_at": index.get("generated_at") if index else None,
             "limitations": [
-                "Keyword relevance is lexical; no semantic model is used.",
+                "Relevance is lexical (BM25 over headings and text); no semantic model is used.",
                 "No R code or documentation examples are executed.",
                 "Official documentation is untrusted reference material.",
             ],
@@ -589,31 +605,49 @@ class RDocumentationProvider:
         terms = list(dict.fromkeys(_tokens(query)))[:32]
         if not terms:
             raise KnowledgeError("invalid_input", "query must contain a searchable term")
-        scored: list[tuple[int, str, str, dict[str, Any]]] = []
-        version_mismatches = 0
-        unversioned_matches = 0
-        for document_id in selected or MANUAL_IDS:
-            item = index["sources"][document_id]
-            for section in item["sections"]:
-                version = item.get("r_version")
-                if r_version and version and version != r_version:
-                    version_mismatches += 1
-                    continue
-                wanted = set(terms)
-                text_terms = _matching_terms(section["text"], wanted)
-                heading_terms = _matching_terms(
-                    section["heading"] + " " + " ".join(section["hierarchy"]), wanted
-                )
-                matched = [term for term in terms if term in text_terms or term in heading_terms]
-                if not matched:
-                    continue
-                if r_version and not version:
-                    unversioned_matches += 1
-                score = sum((3 if term in heading_terms else 1) for term in matched)
-                scored.append((score, document_id, section["section_id"], section))
-        scored.sort(key=lambda row: (-row[0], row[1], row[3]["heading"].casefold(), row[2]))
+        searched = [
+            document_id
+            for document_id in selected or MANUAL_IDS
+            if not (
+                r_version
+                and index["sources"][document_id].get("r_version")
+                and index["sources"][document_id]["r_version"] != r_version
+            )
+        ]
+        # Versions are per manual, so a mismatched manual excludes all of its sections.
+        version_mismatches = sum(
+            len(index["sources"][document_id]["sections"])
+            for document_id in selected or MANUAL_IDS
+            if document_id not in searched
+        )
+        unversioned = (
+            [d for d in searched if not index["sources"][d].get("r_version")] if r_version else []
+        )
+        ranker = self._ranker(index)
+        if ranker is not None:
+            ranking = "bm25_sqlite_fts5"
+            with self._load_lock:
+                scored = ranker.search(terms, searched, limit)
+                unversioned_matches = ranker.count(terms, unversioned) if unversioned else 0
+        else:
+            ranking = "lexical_term_count"
+            scored, unversioned_matches = _lexical_rank(index, terms, searched, set(unversioned))
+        base["ranking"] = ranking
         result_rows = []
         for score, document_id, section_id, section in scored[:limit]:
+            matched = [
+                term
+                for term in terms
+                if term
+                in _matching_terms(
+                    section["heading"]
+                    + " "
+                    + " ".join(section["hierarchy"])
+                    + " "
+                    + section["text"],
+                    set(terms),
+                )
+            ]
             item = index["sources"][document_id]
             source = SOURCE_BY_ID[document_id]
             source_url = source["url"]
@@ -741,6 +775,37 @@ class RDocumentationProvider:
                     },
                 }
         return {"status": "section_not_found", "section": None}
+
+    def get_outline(self, document_id: str) -> dict[str, Any]:
+        """List one indexed manual's section identifiers and headings, without section text."""
+        if document_id not in SOURCE_BY_ID:
+            raise KnowledgeError("invalid_input", "Select an official R manual identifier")
+        index, load_error = self._load_state()
+        if index is None:
+            return {"status": load_error or "index_unavailable", "document_id": document_id}
+        item = index["sources"][document_id]
+        return {
+            "status": "ok" if item["sections"] else "index_empty",
+            "document_id": document_id,
+            "document_title": item["title"],
+            "source_url": SOURCE_BY_ID[document_id]["url"],
+            "r_version": item.get("r_version"),
+            "retrieved_at": item.get("retrieved_at"),
+            "checked_at": item.get("checked_at"),
+            "refresh_status": item.get("refresh_status") or "indexed",
+            "sections": [
+                {
+                    "section_id": section["section_id"],
+                    "heading": section["heading"],
+                    "level": len(section["hierarchy"]),
+                }
+                for section in item["sections"]
+            ],
+            "trust": "untrusted_reference_material",
+        }
+
+    async def aget_outline(self, document_id: str) -> dict[str, Any]:
+        return await asyncio.to_thread(self.get_outline, document_id)
 
     async def refresh(self) -> dict[str, Any]:
         """Fetch the six fixed sources and atomically replace the local index."""
@@ -944,6 +1009,89 @@ class RDocumentationProvider:
             raise KnowledgeError("invalid_input", "Use an R version such as 4.5 or 4.5.1")
 
 
+class _SectionRanker:
+    """In-memory SQLite FTS5 index; BM25 weights headings above hierarchy above text."""
+
+    def __init__(self, connection: sqlite3.Connection, rows: list[tuple[str, dict[str, Any]]]):
+        self.connection = connection
+        self.rows = rows
+
+    @classmethod
+    def build(cls, index: dict[str, Any]) -> _SectionRanker | None:
+        try:
+            connection = sqlite3.connect(":memory:", check_same_thread=False)
+            connection.execute(
+                "CREATE VIRTUAL TABLE sections USING fts5("
+                "heading, hierarchy, text, document_id UNINDEXED, "
+                "tokenize='unicode61 remove_diacritics 2')"
+            )
+        except sqlite3.Error:
+            return None  # SQLite without FTS5: fall back to lexical counting.
+        rows = []
+        for document_id in MANUAL_IDS:
+            for section in index["sources"][document_id]["sections"]:
+                rows.append((document_id, section))
+        connection.executemany(
+            "INSERT INTO sections(rowid, heading, hierarchy, text, document_id) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (
+                (rowid, section["heading"], " ".join(section["hierarchy"]), section["text"], doc)
+                for rowid, (doc, section) in enumerate(rows)
+            ),
+        )
+        return cls(connection, rows)
+
+    @staticmethod
+    def _expression(terms: list[str]) -> str:
+        # Each term is a quoted phrase, so query text is never FTS5 syntax.
+        return " OR ".join('"' + term.replace('"', '""') + '"' for term in terms)
+
+    def search(self, terms, documents, limit):
+        if not documents:
+            return []
+        placeholders = ",".join("?" * len(documents))
+        rows = self.connection.execute(
+            "SELECT rowid, bm25(sections, 3.0, 2.0, 1.0) AS rank FROM sections "
+            f"WHERE sections MATCH ? AND document_id IN ({placeholders}) "
+            "ORDER BY rank, rowid LIMIT ?",
+            (self._expression(terms), *documents, limit),
+        ).fetchall()
+        output = []
+        for rowid, rank in rows:
+            document_id, section = self.rows[rowid]
+            output.append((round(-rank, 4), document_id, section["section_id"], section))
+        return output
+
+    def count(self, terms, documents):
+        placeholders = ",".join("?" * len(documents))
+        return self.connection.execute(
+            "SELECT count(*) FROM sections "
+            f"WHERE sections MATCH ? AND document_id IN ({placeholders})",
+            (self._expression(terms), *documents),
+        ).fetchone()[0]
+
+
+def _lexical_rank(index, terms, documents, unversioned):
+    scored = []
+    unversioned_matches = 0
+    wanted = set(terms)
+    for document_id in documents:
+        for section in index["sources"][document_id]["sections"]:
+            text_terms = _matching_terms(section["text"], wanted)
+            heading_terms = _matching_terms(
+                section["heading"] + " " + " ".join(section["hierarchy"]), wanted
+            )
+            matched = [term for term in terms if term in text_terms or term in heading_terms]
+            if not matched:
+                continue
+            if document_id in unversioned:
+                unversioned_matches += 1
+            score = sum((3 if term in heading_terms else 1) for term in matched)
+            scored.append((score, document_id, section["section_id"], section))
+    scored.sort(key=lambda row: (-row[0], row[1], row[3]["heading"].casefold(), row[2]))
+    return scored, unversioned_matches
+
+
 def _quote_anchor(anchor: str) -> str:
     from urllib.parse import quote
 
@@ -952,11 +1100,7 @@ def _quote_anchor(anchor: str) -> str:
 
 def _matching_terms(text: str, wanted: set[str]) -> set[str]:
     """Scan once and retain only the bounded query vocabulary, not the whole token set."""
-    return {
-        match.group(0).casefold()
-        for match in TOKEN.finditer(text)
-        if match.group(0).casefold() in wanted
-    }
+    return {token for token in map(_token, TOKEN.finditer(text)) if token in wanted}
 
 
 def _excerpt(text: str, terms: list[str]) -> str:
