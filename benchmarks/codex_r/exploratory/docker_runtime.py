@@ -13,6 +13,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import threading
 import time
@@ -42,6 +43,7 @@ IMAGE_ID = re.compile(r"^sha256:[a-f0-9]{64}$")
 AGENT_IMAGE_ID = re.compile(r"^sha256:[a-f0-9]{64}$")
 CODEX_VERSION = "0.163.0"
 FROZEN_R_IMAGE_ID = "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+F09_DOCKER_SOCKET = "unix:///var/run/docker.sock"
 PROBE_SCRIPT = r"""set -eu
 fail() { echo "probe failed: $1" >&2; exit 20; }
 [ "$(id -u)" = 65534 ] || fail unprivileged_uid
@@ -279,6 +281,8 @@ def _executor_child_environment(
 
 class DockerCandidateRuntime:
     """Create and audit one disposable networkless R01-A candidate container."""
+
+    RESOURCE_SCOPE = "R01-A"
 
     def __init__(self, image_id: str, docker: str | None = None, *, command_runner=None):
         if not IMAGE_ID.fullmatch(image_id):
@@ -847,7 +851,7 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
         candidate_layers = json.loads(rootfs)
         if candidate_layers[: len(base_layers)] != base_layers:
             raise DockerRuntimeError("Candidate image does not preserve the frozen R image layers")
-        version_name = f"rkmcp-version-R01-A-{uuid.uuid4().hex[:16]}"
+        version_name = f"rkmcp-version-{self.RESOURCE_SCOPE}-{uuid.uuid4().hex[:16]}"
         try:
             version = (
                 self._docker(
@@ -1043,7 +1047,7 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
             image = self.verify_candidate_image()
             phase = "build_container_args"
             proxy_url = f"http://{ipaddress.ip_address(proxy_ip)}:3128"
-            name = f"rkmcp-probe-R01-A-{uuid.uuid4().hex[:16]}"
+            name = f"rkmcp-probe-{self.RESOURCE_SCOPE}-{uuid.uuid4().hex[:16]}"
             argv = self._create_args(
                 name,
                 Path(workspace_info["path"]),
@@ -1206,6 +1210,204 @@ class CodexCandidateRuntime(DockerCandidateRuntime):
         return listed.returncode == 0 and not listed.stdout.strip()
 
 
+class F09ConnectivityRuntime(CodexCandidateRuntime):
+    """Pinned Codex executor runtime for the zero-task F09 connectivity check."""
+
+    RESOURCE_SCOPE = "F09"
+
+    def __init__(self, image_id: str, workspace_root: Path, docker: str | None = None):
+        super().__init__(image_id, docker)
+        self.workspace_root = Path(workspace_root).resolve(strict=False)
+
+    def _run_command(self, argv, *, timeout=20, env=None):
+        if env is None:
+            env = _operator_environment(os.environ)
+        command = [argv[0], "--host", F09_DOCKER_SOCKET, *argv[1:]]
+        return super()._run_command(command, timeout=timeout, env=env)
+
+    def _validate_workspace(self, workspace: Path) -> dict:
+        try:
+            resolved = Path(workspace).resolve(strict=True)
+            if (
+                Path(workspace).is_symlink()
+                or resolved.parent != self.workspace_root
+                or resolved.is_relative_to(REPO.resolve())
+                or not resolved.is_dir()
+                or resolved.stat().st_uid != os.geteuid()
+                or stat.S_IMODE(resolved.stat().st_mode) & 0o007
+                or any(resolved.iterdir())
+                or any(char in str(resolved) for char in (",", "\n", "\r"))
+            ):
+                raise ValueError
+            acl = _read_f09_workspace_acl(resolved, _operator_environment(os.environ))
+            if set(line for line in acl.splitlines() if line) != {
+                "user::rwx",
+                "user:65534:rwx",
+                "group::---",
+                "mask::rwx",
+                "other::---",
+            }:
+                raise ValueError
+        except (OSError, ValueError, DockerRuntimeError):
+            raise DockerRuntimeError(
+                "F09 workspace must be empty and have only the reviewed UID ACL"
+            ) from None
+        return {"path": str(resolved), "files": []}
+
+    def verify_candidate_image(self) -> dict:
+        version = self._docker("version", "--format", "{{.Client.Version}}|{{.Server.Version}}")
+        if not version.stdout.strip():
+            raise DockerRuntimeError("Docker client and server are unavailable")
+        info = self._docker("info", "--format", "{{.OSType}}|{{.Architecture}}")
+        if not info.stdout.decode("ascii", "replace").strip().startswith("linux|"):
+            raise DockerRuntimeError("F09 executor requires a Linux container engine")
+        inspected = (
+            self._docker(
+                "image",
+                "inspect",
+                "--format",
+                "{{.Id}}|{{.Config.User}}|{{.Config.WorkingDir}}|"
+                "{{json .Config.Entrypoint}}|{{json .RootFS.Layers}}",
+                self.image_id,
+            )
+            .stdout.decode("utf-8", "replace")
+            .strip()
+        )
+        try:
+            image_id, user, workdir, entrypoint, rootfs = inspected.split("|", 4)
+            layers = json.loads(rootfs)
+            base = self._docker(
+                "image", "inspect", "--format", "{{json .RootFS.Layers}}", FROZEN_R_IMAGE_ID
+            ).stdout
+            base_layers = json.loads(base)
+        except (ValueError, json.JSONDecodeError):
+            raise DockerRuntimeError("F09 executor image metadata is invalid") from None
+        if (
+            image_id != self.image_id
+            or user != "65534:65534"
+            or workdir != "/candidate"
+            or json.loads(entrypoint) != ["/opt/codex/bin/codex"]
+            or layers[: len(base_layers)] != base_layers
+        ):
+            raise DockerRuntimeError(
+                "F09 executor image differs from the reviewed immutable policy"
+            )
+        return {"image_id": image_id, "user": user, "workdir": workdir}
+
+    def grant_workspace_access(self, workspace: Path) -> None:
+        if _run_f09_acl("-m", "u:65534:rwx", workspace) is not True:
+            raise DockerRuntimeError("F09 workspace ACL grant failed")
+        self._validate_workspace(workspace)
+
+    def revoke_workspace_access(
+        self, workspace: Path, *, timeout: float, deadline: float | None = None
+    ) -> bool:
+        if timeout <= 0:
+            return False
+        absolute_deadline = deadline if deadline is not None else time.monotonic() + timeout
+        try:
+            resolved = Path(workspace).resolve(strict=True)
+            if Path(workspace).is_symlink() or resolved.parent != self.workspace_root:
+                return False
+            remaining = min(timeout, absolute_deadline - time.monotonic())
+            if remaining <= 0:
+                return False
+            result = _run_f09_acl("-x", "u:65534", resolved, timeout=remaining)
+            if result is not True:
+                return False
+            remaining = absolute_deadline - time.monotonic()
+            if remaining <= 0:
+                return False
+            acl = _read_f09_workspace_acl(
+                resolved, _operator_environment(os.environ), timeout=min(5, remaining)
+            )
+            acl_lines = {line for line in acl.splitlines() if line}
+            if acl_lines != {"user::rwx", "group::---", "other::---"} or any(resolved.iterdir()):
+                return False
+            if time.monotonic() >= absolute_deadline:
+                return False
+            resolved.rmdir()
+            _fsync_f09_directory(resolved.parent)
+            return time.monotonic() <= absolute_deadline
+        except (OSError, DockerRuntimeError):
+            return False
+
+
+def _operator_environment(environment: dict[str, str]) -> dict[str, str]:
+    docker_control = {
+        "DOCKER_HOST",
+        "DOCKER_CONTEXT",
+        "DOCKER_TLS_VERIFY",
+        "DOCKER_CERT_PATH",
+        "DOCKER_CONFIG",
+        "DOCKER_API_VERSION",
+        "HTTP_PROXY",
+        "HTTPS_PROXY",
+        "ALL_PROXY",
+        "NO_PROXY",
+    }
+    return {
+        key: value
+        for key, value in environment.items()
+        if key.upper()
+        not in {
+            "OPENAI_API_KEY",
+            "OPENAI_EXECUTOR_API_KEY",
+            "AZURE_OPENAI_API_KEY",
+            "CODEX_API_KEY",
+        }
+        and key.upper() not in docker_control
+        and not re.search(r"(?i)(TOKEN|SECRET|PASSWORD|CREDENTIAL)", key)
+    }
+
+
+def _read_f09_workspace_acl(workspace: Path, env: dict[str, str], *, timeout=5) -> str:
+    getfacl = shutil.which("getfacl")
+    if not getfacl:
+        raise DockerRuntimeError("F09 workspace ACL inspection is unavailable")
+    try:
+        result = subprocess.run(
+            [getfacl, "-cp", "--", str(workspace)],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            timeout=timeout,
+            check=False,
+            env=env,
+        )
+    except (OSError, subprocess.SubprocessError):
+        raise DockerRuntimeError("F09 workspace ACL inspection failed") from None
+    if result.returncode != 0 or len(result.stdout) > 8192:
+        raise DockerRuntimeError("F09 workspace ACL inspection failed")
+    return result.stdout.decode("ascii", "strict")
+
+
+def _run_f09_acl(action: str, entry: str, workspace: Path, *, timeout=5) -> bool:
+    setfacl = shutil.which("setfacl")
+    if not setfacl:
+        raise DockerRuntimeError("F09 workspace ACL management is unavailable")
+    env = _operator_environment(os.environ)
+    try:
+        result = subprocess.run(
+            [setfacl, action, entry, "--", str(Path(workspace))],
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            timeout=timeout,
+            check=False,
+            env=env,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return result.returncode == 0 and len(result.stdout) + len(result.stderr) <= 8192
+
+
+def _fsync_f09_directory(path: Path) -> None:
+    descriptor = os.open(path, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
 class RestrictedEgressNetwork:
     """A two-network Docker topology with a fixed-host CONNECT-only gateway.
 
@@ -1214,17 +1416,21 @@ class RestrictedEgressNetwork:
     documented Agents API and executor relay destinations.
     """
 
-    NAME = re.compile(r"^rkmcp-(?:candidate|egress)-R01-A-[a-f0-9]{12}$")
+    NAME = re.compile(r"^rkmcp-(?:candidate|egress)-(?:R01-A|F09)-[a-f0-9]{12}$")
     PYTHON_BASE_ID = "sha256:cce12316475d7d56d605f76e1d811d0dc4e7227f2d4afd29951521264f504ff8"
 
-    def __init__(self, docker: str | None = None):
+    def __init__(self, docker: str | None = None, *, resource_scope="R01-A", command_env=None):
+        if resource_scope not in {"R01-A", "F09"}:
+            raise DockerRuntimeError("Docker resource scope is not allowlisted")
         self.docker = docker or shutil.which("docker")
         if not self.docker:
             raise DockerRuntimeError("Docker CLI was not found")
         suffix = uuid.uuid4().hex[:12]
-        self.internal_network = f"rkmcp-candidate-R01-A-{suffix}"
-        self.egress_network = f"rkmcp-egress-R01-A-{suffix}"
-        self.proxy_container = f"rkmcp-egress-R01-A-{suffix}"
+        self.resource_scope = resource_scope
+        self.command_env = command_env
+        self.internal_network = f"rkmcp-candidate-{resource_scope}-{suffix}"
+        self.egress_network = f"rkmcp-egress-{resource_scope}-{suffix}"
+        self.proxy_container = f"rkmcp-egress-{resource_scope}-{suffix}"
         self.proxy_image = f"rkmcp-egress-proxy:{suffix}"
         self.proxy_image_id: str | None = None
         self.started = False
@@ -1234,11 +1440,17 @@ class RestrictedEgressNetwork:
     def _run(self, *args: str, timeout: int = 20) -> subprocess.CompletedProcess:
         safety = getattr(self, "safety", None)
         result = _bounded_run(
-            [self.docker, *args], timeout=safety.timeout(timeout) if safety else timeout
+            self._docker_command(*args),
+            timeout=safety.timeout(timeout) if safety else timeout,
+            env=self.command_env,
         )
         if result.returncode != 0:
             raise DockerRuntimeError("Docker rejected the restricted egress topology")
         return result
+
+    def _docker_command(self, *args: str) -> list[str]:
+        host = ["--host", F09_DOCKER_SOCKET] if self.resource_scope == "F09" else []
+        return [self.docker, *host, *args]
 
     def start(self) -> dict:
         """Build and start the reviewed proxy; fail closed on any policy mismatch."""
@@ -1259,8 +1471,7 @@ class RestrictedEgressNetwork:
         if base != self.PYTHON_BASE_ID:
             raise DockerRuntimeError("Pinned egress proxy Python image is unavailable")
         build = _bounded_run(
-            [
-                self.docker,
+            self._docker_command(
                 "build",
                 "--pull=false",
                 "--tag",
@@ -1268,8 +1479,9 @@ class RestrictedEgressNetwork:
                 "--file",
                 str(ROOT / "runtime" / "egress.Dockerfile"),
                 str(REPO),
-            ],
+            ),
             timeout=self.safety.timeout(120) if getattr(self, "safety", None) else 120,
+            env=self.command_env,
         )
         if build.returncode != 0:
             raise DockerRuntimeError("Could not build the restricted egress proxy image")
@@ -1363,7 +1575,7 @@ class RestrictedEgressNetwork:
     def _create_network(self, name: str, *, internal: bool) -> None:
         if not self.NAME.fullmatch(name):
             raise DockerRuntimeError("Generated Docker network name is invalid")
-        args = [self.docker, "network", "create", "--driver", "bridge"]
+        args = self._docker_command("network", "create", "--driver", "bridge")
         if internal:
             args.extend(
                 [
@@ -1373,7 +1585,7 @@ class RestrictedEgressNetwork:
                 ]
             )
         args.append(name)
-        result = _bounded_run(args)
+        result = _bounded_run(args, env=self.command_env)
         if result.returncode != 0:
             raise DockerRuntimeError("Docker could not create the isolated egress networks")
         self._created_networks.append(name)
@@ -1452,16 +1664,18 @@ class RestrictedEgressNetwork:
         success = True
         if self._created_container:
             stopped = _bounded_run(
-                [self.docker, "rm", "--force", self.proxy_container],
+                self._docker_command("rm", "--force", self.proxy_container),
                 timeout=self.safety.timeout(20) if getattr(self, "safety", None) else 20,
+                env=self.command_env,
             )
             success = stopped.returncode == 0 and success
             if stopped.returncode == 0:
                 self._created_container = False
         for name in reversed(self._created_networks):
             removed = _bounded_run(
-                [self.docker, "network", "rm", name],
+                self._docker_command("network", "rm", name),
                 timeout=self.safety.timeout(20) if getattr(self, "safety", None) else 20,
+                env=self.command_env,
             )
             success = removed.returncode == 0 and success
             if removed.returncode == 0:

@@ -1207,7 +1207,7 @@ def test_self_declared_spend_approval_cannot_unlock_live_client(monkeypatch):
 
     for _attempt in range(2):
         with pytest.raises(
-            ValueError, match="Live F09 execution is disabled pending solo-operator review"
+            ValueError, match="Live F09 client requires the solo-operator authorization entry point"
         ):
             StagingAgentsClient(
                 APP_KEY,
@@ -2166,14 +2166,16 @@ def test_late_topology_start_cannot_begin_executor_start():
     assert calls == ["cleanup"]
 
 
-def test_live_harness_rejects_unreviewed_executor():
+def test_live_harness_rejects_missing_solo_operator_entry_point():
     from types import SimpleNamespace
 
     root = Path("synthetic-scope")
     concrete_client = object.__new__(StagingAgentsClient)
     concrete_client.synthetic = False
     concrete_client._live_capability = harness_module._LIVE_CLIENT_CAPABILITY
-    with pytest.raises(ValueError, match="reviewed Docker adapter"):
+    with pytest.raises(
+        ValueError, match="Live connectivity requires the F09 solo-operator entry point"
+    ):
         ConnectivityHarness(
             client=concrete_client,
             executor=FakeExecutor(),
@@ -2589,7 +2591,7 @@ def test_no_production_store_or_live_gate_can_be_unlocked_by_synthetic_roles():
     client._live_capability = harness_module._LIVE_CLIENT_CAPABILITY
     root = Path("unopened-synthetic-evidence")
     with pytest.raises(
-        ValueError, match="Live F09 execution is disabled pending solo-operator review"
+        ValueError, match="Live connectivity requires the F09 solo-operator entry point"
     ):
         ConnectivityHarness(
             client=client,
@@ -2894,7 +2896,7 @@ finally:
     assert (store.root / "consumption.started").exists()
 
 
-def test_solo_operator_command_exposes_only_approve_and_inspect():
+def test_solo_operator_command_exposes_approve_inspect_and_scoped_run():
     path = ROOT / "benchmarks/codex_r/exploratory/f09_solo_operator.py"
     result = subprocess.run(
         [sys.executable, "-B", str(path), "--help"],
@@ -2904,8 +2906,320 @@ def test_solo_operator_command_exposes_only_approve_and_inspect():
         check=False,
     )
     assert result.returncode == 0
-    assert "approve" in result.stdout and "inspect" in result.stdout
+    assert "approve" in result.stdout and "inspect" in result.stdout and "run" in result.stdout
     assert "run-one" not in result.stdout and "authorize-one" not in result.stdout
+
+
+def _solo_cli_module():
+    path = ROOT / "benchmarks/codex_r/exploratory/f09_solo_operator.py"
+    spec = importlib.util.spec_from_file_location("codex_f09_solo_operator", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    # Keep exact class identity with the synthetic harness imported by this module.
+    module.harness = harness_module
+    return module
+
+
+def _approve_cli_store(tmp_path):
+    store, _, current = _solo_store(tmp_path)
+    store.approve(_solo_request(), expires_in_seconds=120)
+    return store, current
+
+
+def test_solo_operator_run_cli_synthetic_end_to_end_consumes_once_and_cleans(tmp_path, capsys):
+    cli = _solo_cli_module()
+    store, _ = _approve_cli_store(tmp_path)
+    terminal = _SoloTerminal()
+    captured = {}
+
+    def components(**kwargs):
+        client, calls = _http_client(
+            store.state_directory,
+            [_event("agent.session.environment.connected")],
+            project_id="synthetic-staging-project-id",
+            spend_approval=store.spend_approval(),
+        )
+        captured.update(kwargs)
+        captured["calls"] = calls
+        return client, FakeExecutor()
+
+    result_code = cli.main(
+        ["run", "--state-dir", str(store.state_directory)],
+        _store_factory=lambda _path, **_kwargs: store,
+        _test_components=components,
+        _test_input=terminal,
+        _test_output=terminal,
+    )
+    captured_output = capsys.readouterr()
+    methods = [request.method for request in captured["calls"]]
+    assert methods == ["POST", "GET", "DELETE"]
+    body = json.loads(captured["calls"][0].content)
+    assert body["spend_control"] == {"limit": 137}
+    assert "input" not in body and set(body) == {"agent", "environment", "spend_control"}
+    assert result_code == 0
+    assert captured_output.out == ""
+    assert APP_KEY not in captured_output.err and ENV_KEY not in captured_output.err
+    result = json.loads(captured_output.err)
+    assert result["cleanup_verified"] is True
+    assert result["task_submission_count"] == result["responses_calls"] == 0
+    assert result["approval_consumption_durable"] is True
+    assert (store.root / "consumption.started").exists()
+    assert (store.root / "consumed.json").exists()
+    assert _saved_audit(captured["lease"])["cleanup_verified"] is True
+    assert not captured["lease"].lock_path.exists()
+    assert terminal.confirmations == [
+        f"RUN F09 {store.validate()['claims']['attempt_id']} 137 CENTS ONE SESSION ZERO TASKS",
+        harness_module.SOLO_CONFIRMATION,
+    ]
+
+
+@pytest.mark.parametrize("case", ["missing", "expired", "replayed", "source-mismatch"])
+def test_solo_operator_run_cli_rejects_missing_expired_replayed_or_changed_approval(tmp_path, case):
+    cli = _solo_cli_module()
+    if case == "missing":
+        store, _, _ = _solo_store(tmp_path)
+    else:
+        store, current = _approve_cli_store(tmp_path)
+        if case == "expired":
+            current["now"] += timedelta(seconds=121)
+        elif case == "source-mismatch":
+            current["source"] = "9" * 64
+        elif case == "replayed":
+            first_terminal = _SoloTerminal()
+
+            def components(**_kwargs):
+                client, _calls = _http_client(
+                    store.state_directory,
+                    [_event("agent.session.environment.connected")],
+                    project_id="synthetic-staging-project-id",
+                    spend_approval=store.spend_approval(),
+                )
+                return client, FakeExecutor()
+
+            cli._execute_approved(
+                store,
+                terminal_input=first_terminal,
+                terminal_output=first_terminal,
+                synthetic_components=components,
+            )
+    terminal = _SoloTerminal()
+    calls = []
+
+    def unexpected_components(**_kwargs):
+        calls.append("constructed")
+        raise AssertionError("Rejected approval must stop before client construction")
+
+    with pytest.raises(ConnectivityError):
+        cli._execute_approved(
+            store,
+            terminal_input=terminal,
+            terminal_output=terminal,
+            synthetic_components=unexpected_components,
+        )
+    assert calls == []
+    assert terminal.confirmations == []
+
+
+@pytest.mark.parametrize("mismatch", ["project", "spend"])
+def test_solo_operator_run_cli_rejects_mismatched_client_before_transport(tmp_path, mismatch):
+    cli = _solo_cli_module()
+    store, _ = _approve_cli_store(tmp_path)
+    terminal = _SoloTerminal()
+    calls = []
+
+    def mismatched_components(**_kwargs):
+        client, requests = _http_client(
+            store.state_directory,
+            [_event("agent.session.environment.connected")],
+            project_id=(
+                "wrong-synthetic-project"
+                if mismatch == "project"
+                else "synthetic-staging-project-id"
+            ),
+            spend_approval=SpendControlApproval(138, "manual:synthetic-mismatch", True)
+            if mismatch == "spend"
+            else store.spend_approval(),
+        )
+        calls.extend(requests)
+        return client, FakeExecutor()
+
+    with pytest.raises(ConnectivityError):
+        cli._execute_approved(
+            store,
+            terminal_input=terminal,
+            terminal_output=terminal,
+            synthetic_components=mismatched_components,
+        )
+    assert calls == []
+    assert (store.root / "consumption.started").exists() is False
+
+
+def test_solo_operator_run_cli_ambiguous_create_is_never_retried(tmp_path):
+    cli = _solo_cli_module()
+    store, _ = _approve_cli_store(tmp_path)
+    terminal = _SoloTerminal()
+    captured = {}
+
+    def ambiguous_components(**kwargs):
+        client, calls = _http_client(
+            store.state_directory,
+            [],
+            project_id="synthetic-staging-project-id",
+            spend_approval=store.spend_approval(),
+            create_status=500,
+        )
+        captured.update(kwargs)
+        captured["calls"] = calls
+        return client, FakeExecutor()
+
+    with pytest.raises(ConnectivityError):
+        cli._execute_approved(
+            store,
+            terminal_input=terminal,
+            terminal_output=terminal,
+            synthetic_components=ambiguous_components,
+        )
+    assert [request.method for request in captured["calls"]] == ["POST"]
+    assert store.inspect()["state"] == "consumed_or_uncertain"
+    assert captured["lease"].lock_path.exists()
+    assert _saved_audit(captured["lease"])["cleanup_verified"] is False
+
+
+def test_solo_operator_live_credentials_fail_closed_without_echoing_values():
+    cli = _solo_cli_module()
+    for environment in (
+        {},
+        {"OPENAI_API_KEY": "synthetic-secret-a"},
+        {
+            "OPENAI_API_KEY": "synthetic-secret-a",
+            "OPENAI_EXECUTOR_API_KEY": "synthetic-secret-a",
+        },
+        {
+            "OPENAI_API_KEY": "synthetic-secret-a\nforged-header",
+            "OPENAI_EXECUTOR_API_KEY": "synthetic-secret-b",
+        },
+        {
+            "OPENAI_API_KEY": "a" * 4097,
+            "OPENAI_EXECUTOR_API_KEY": "synthetic-secret-b",
+        },
+    ):
+        with pytest.raises(ConnectivityError) as raised:
+            cli._live_credentials(environment)
+        assert raised.value.code == "solo_credentials_unavailable"
+        assert "synthetic-secret-a" not in str(raised.value)
+
+
+def test_f09_docker_boundaries_force_local_socket_and_drop_context_overrides():
+    path = ROOT / "benchmarks/codex_r/exploratory/docker_runtime.py"
+    spec = importlib.util.spec_from_file_location("codex_f09_docker_runtime", path)
+    assert spec is not None and spec.loader is not None
+    runtime_module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runtime_module)
+
+    topology = object.__new__(runtime_module.RestrictedEgressNetwork)
+    topology.docker = "/usr/bin/docker"
+    topology.resource_scope = "F09"
+    assert topology._docker_command("network", "create") == [
+        "/usr/bin/docker",
+        "--host",
+        "unix:///var/run/docker.sock",
+        "network",
+        "create",
+    ]
+    safe = runtime_module._operator_environment(
+        {
+            "PATH": "/usr/bin",
+            "DOCKER_HOST": "tcp://synthetic-remote:2375",
+            "DOCKER_CONTEXT": "synthetic-remote",
+            "DOCKER_CONFIG": "/synthetic/config",
+            "OPENAI_API_KEY": "synthetic-app-secret",
+            "OPENAI_EXECUTOR_API_KEY": "synthetic-executor-secret",
+            "HTTP_PROXY": "http://synthetic-proxy.invalid",
+        }
+    )
+    assert safe == {"PATH": "/usr/bin"}
+
+
+@pytest.mark.parametrize("failure", ["connection", "executor-start", "cleanup", "audit"])
+def test_solo_operator_run_cli_failure_paths_never_report_success(tmp_path, monkeypatch, failure):
+    cli = _solo_cli_module()
+    store, _ = _approve_cli_store(tmp_path)
+    terminal = _SoloTerminal()
+    captured = {}
+    events = (
+        [_event("agent.session.environment.failed")]
+        if failure == "connection"
+        else [_event("agent.session.environment.connected")]
+    )
+
+    def components(**kwargs):
+        client, calls = _http_client(
+            store.state_directory,
+            events,
+            project_id="synthetic-staging-project-id",
+            spend_approval=store.spend_approval(),
+        )
+        captured.update(kwargs)
+        captured["calls"] = calls
+        executor = FakeExecutor(
+            start_exception=(
+                ConnectivityError("synthetic_executor_start_failure")
+                if failure == "executor-start"
+                else None
+            ),
+            stop=failure != "cleanup",
+        )
+        captured["executor"] = executor
+        return client, executor
+
+    if failure == "audit":
+        monkeypatch.setattr(
+            harness_module.ConnectivityHarness,
+            "_persist_audit",
+            lambda _controller: (_ for _ in ()).throw(OSError("synthetic audit write failure")),
+        )
+
+    with pytest.raises(ConnectivityError):
+        cli._execute_approved(
+            store,
+            terminal_input=terminal,
+            terminal_output=terminal,
+            synthetic_components=components,
+        )
+    assert [request.method for request in captured["calls"]].count("POST") == 1
+    assert captured["lease"].acquired is (failure != "connection")
+    assert (store.root / "consumed.json").exists()
+    if failure == "audit":
+        assert not list(captured["lease"].root.glob("run-*/connectivity-audit.json"))
+    else:
+        audit = _saved_audit(captured["lease"])
+        assert audit["cleanup_verified"] is (failure == "connection")
+
+
+@pytest.mark.parametrize("failure", ["wrong-commit", "modified-source"])
+def test_solo_operator_source_identification_rejects_wrong_commit_or_modified_file(
+    monkeypatch, failure
+):
+    calls = []
+
+    def fake_git(argv, **_kwargs):
+        operation = argv[-2]
+        calls.append(operation)
+        if operation == "rev-parse":
+            value = ("b" if failure == "wrong-commit" else "a") * 40
+            return subprocess.CompletedProcess(argv, 0, stdout=value.encode())
+        return subprocess.CompletedProcess(argv, 0, stdout=b"synthetically different source")
+
+    monkeypatch.setattr(harness_module.subprocess, "run", fake_git)
+    expected = "a" * 40
+    with pytest.raises(ConnectivityError) as rejected:
+        harness_module._solo_source_identification(expected)
+    assert rejected.value.code == "solo_source_mismatch"
+    if failure == "wrong-commit":
+        assert calls == ["rev-parse"]
+    else:
+        assert calls == ["rev-parse", "show"]
 
 
 def test_solo_operator_never_promotes_legacy_or_synthetic_records(tmp_path):

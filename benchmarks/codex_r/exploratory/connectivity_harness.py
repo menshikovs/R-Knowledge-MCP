@@ -102,6 +102,7 @@ STATE_TRANSITIONS = {
 ALLOWED_OPERATIONS = frozenset(
     {
         "authorization_consume",
+        "executor_preflight",
         "session_create",
         "stream_open",
         "executor_start",
@@ -1331,11 +1332,13 @@ class SyntheticStagingAuthorization:
 SOLO_APPROVAL_TYPE = "f09_solo_operator_manual_approval_not_r01a"
 SOLO_CONFIRMATION = "I ACCEPT BILLING RESPONSIBILITY AND BEST-EFFORT SPEND CONTROL"
 SOLO_SOURCE_FILES = (
-    "connectivity_harness.py",
-    "f09_solo_operator.py",
-    "executor_contract.py",
-    "docker_runtime.py",
-    "egress_proxy.py",
+    "benchmarks/codex_r/exploratory/connectivity_harness.py",
+    "benchmarks/codex_r/exploratory/f09_solo_operator.py",
+    "benchmarks/codex_r/exploratory/executor_contract.py",
+    "benchmarks/codex_r/exploratory/docker_runtime.py",
+    "benchmarks/codex_r/exploratory/egress_proxy.py",
+    "benchmarks/codex_r/runtime/egress.Dockerfile",
+    "pyproject.toml",
 )
 
 
@@ -1360,9 +1363,8 @@ def _solo_source_identification(expected_commit: str) -> str:
     if git("rev-parse", "HEAD").decode("ascii").strip() != expected_commit:
         raise ConnectivityError("solo_source_mismatch")
     hashes = {}
-    for name in SOLO_SOURCE_FILES:
-        path = Path(__file__).with_name(name)
-        relative = "benchmarks/codex_r/exploratory/" + name
+    for relative in SOLO_SOURCE_FILES:
+        path = repository / relative
         try:
             if path.is_symlink() or path.stat().st_size > 2 << 20:
                 raise ValueError
@@ -1374,7 +1376,7 @@ def _solo_source_identification(expected_commit: str) -> str:
             raise ConnectivityError("solo_source_unverified") from None
         if raw.replace(b"\r\n", b"\n") != git("show", expected_commit + ":" + relative):
             raise ConnectivityError("solo_source_mismatch")
-        hashes[name] = hashlib.sha256(raw).hexdigest()
+        hashes[relative] = hashlib.sha256(raw).hexdigest()
     return _sha256(json.dumps(hashes, sort_keys=True, separators=(",", ":")))
 
 
@@ -1852,13 +1854,37 @@ class SoloOperatorAuthorization:
             or approval.approval_reference != record["claims"]["billing_owner_approval_reference"]
         ):
             raise ConnectivityError("solo_request_mismatch")
-        if type(harness.executor) is DockerExecutorAdapter and (
-            harness.executor.runtime.image_id != request["executor_image"]
-        ):
-            raise ConnectivityError("solo_executor_image_mismatch")
+        if self.store.synthetic:
+            if isinstance(harness.executor, F09DockerExecutorAdapter):
+                raise ConnectivityError("solo_synthetic_executor_rejected")
+        else:
+            if (
+                type(harness.executor) is not F09DockerExecutorAdapter
+                or type(harness.executor.runtime).__name__ != "F09ConnectivityRuntime"
+                or harness.executor.topology.resource_scope != "F09"
+                or harness.executor.runtime.image_id != request["executor_image"]
+                or harness.executor.workspace.parent
+                != self.store.state_directory / "f09-workspaces"
+                or harness.executor.workspace.name != record["claims"]["attempt_id"]
+                or harness.client._operator_authorization is not self
+            ):
+                raise ConnectivityError("solo_runtime_configuration_mismatch")
 
     def consume(self, journal):
         self.store.consume(journal, self.lease)
+
+    def create_client(self, application_api_key: str) -> StagingAgentsClient:
+        if self.store.synthetic:
+            raise ConnectivityError("solo_synthetic_approval_rejected")
+        record = self.store.validate()
+        request = record["request"]
+        return StagingAgentsClient(
+            application_api_key,
+            project_id=request["project_id"],
+            spend_control_approval=self.store.spend_approval(),
+            operator_authorization=self,
+            _live_capability=_LIVE_CLIENT_CAPABILITY,
+        )
 
 
 class StagingAgentsClient:
@@ -1873,6 +1899,8 @@ class StagingAgentsClient:
         transport: httpx.BaseTransport | None = None,
         timeout: float = 15.0,
         synthetic: bool = False,
+        operator_authorization: SoloOperatorAuthorization | None = None,
+        _live_capability=None,
     ):
         if not isinstance(application_api_key, str) or not application_api_key.strip():
             raise ValueError("A staging application key is required")
@@ -1886,9 +1914,15 @@ class StagingAgentsClient:
             raise ValueError("Live connectivity forbids injected transports")
         if synthetic and not isinstance(transport, httpx.MockTransport):
             raise ValueError("Synthetic connectivity clients require httpx.MockTransport")
-        if not synthetic:
-            raise ValueError("Live F09 execution is disabled pending solo-operator review")
+        if not synthetic and (
+            type(operator_authorization) is not SoloOperatorAuthorization
+            or operator_authorization.store.synthetic
+            or _live_capability is not _LIVE_CLIENT_CAPABILITY
+        ):
+            raise ValueError("Live F09 client requires the solo-operator authorization entry point")
         self.synthetic = synthetic
+        self._operator_authorization = operator_authorization
+        self._live_harness = None
         self._key = application_api_key
         self._spend_control_approval = spend_control_approval
         self.project_id_hash = _sha256(project_id)
@@ -1907,6 +1941,7 @@ class StagingAgentsClient:
         )
 
     def _json(self, method: str, path: str, *, body: dict | None = None, timeout=None) -> dict:
+        self._require_live_call({"POST": "create", "DELETE": "delete"}.get(method, "stream"))
         allowed = (
             (method == "POST" and path == "/v1/agents/sessions")
             or (
@@ -1999,6 +2034,7 @@ class StagingAgentsClient:
     def create_session(
         self, agent_config: dict, *, workspace_directory="/workspace", timeout: float | None = None
     ) -> dict:
+        self._require_live_call("create")
         spend_control = _validated_spend_control(self._spend_control_approval)
         agent = self._validate_agent_config(agent_config)
         if workspace_directory != "/workspace":
@@ -2036,6 +2072,7 @@ class StagingAgentsClient:
         }
 
     def open_event_stream(self, session_id: str, *, timeout: float):
+        self._require_live_call("stream")
         if not SESSION_ID.fullmatch(session_id) or not 0 < timeout <= MAX_CONNECT_SECONDS:
             raise ConnectivityError("stream_parameters_invalid")
         path = f"/v1/agents/sessions/{session_id}/events"
@@ -2152,6 +2189,7 @@ class StagingAgentsClient:
             raise ConnectivityError("stream_truncated")
 
     def delete_session(self, session_id: str, *, timeout: float | None = None) -> bool:
+        self._require_live_call("delete")
         if not SESSION_ID.fullmatch(session_id):
             raise ConnectivityError("session_id_invalid")
         if timeout is not None and not 0 < timeout <= MAX_CLEANUP_SECONDS:
@@ -2163,6 +2201,36 @@ class StagingAgentsClient:
 
     def close(self) -> None:
         self._client.close()
+
+    def _require_live_call(self, operation: str) -> None:
+        if self.synthetic:
+            return
+        harness = self._live_harness
+        authorization = self._operator_authorization
+        if (
+            type(authorization) is not SoloOperatorAuthorization
+            or harness is None
+            or harness.operator_authorization is not authorization
+            or not harness.lease.acquired
+            or harness._audit["approval_consumption_durable"] is not True
+        ):
+            raise ConnectivityError("solo_live_call_gate_rejected")
+        allowed_states = {
+            "create": {"create_intent"},
+            "stream": {"session_created", "stream_open"},
+            "delete": {
+                "session_unknown",
+                "failed",
+                "timed_out",
+                "stop_executor",
+                "executor_stopped",
+                "executor_stop_unverified",
+                "delete_intent",
+                "cleanup_unverified",
+            },
+        }
+        if harness.state not in allowed_states.get(operation, set()):
+            raise ConnectivityError("solo_live_call_state_rejected")
 
 
 class Executor(Protocol):
@@ -2217,10 +2285,6 @@ class ConnectivityHarness:
             or getattr(client, "_live_capability", None) is not _LIVE_CLIENT_CAPABILITY
         ):
             raise ValueError("Live connectivity requires the concrete reviewed client")
-        if not journal.synthetic and type(executor) is not DockerExecutorAdapter:
-            raise ValueError("Live connectivity requires the reviewed Docker adapter")
-        if not journal.synthetic:
-            raise ValueError("Live F09 execution is disabled pending solo-operator review")
         if synthetic_authorization is not None and type(synthetic_authorization) is not (
             SyntheticStagingAuthorization
         ):
@@ -2233,6 +2297,13 @@ class ConnectivityHarness:
             raise ValueError("Supply exactly one concrete F09 approval workflow")
         self.operator_authorization = operator_authorization
         self._approval = operator_authorization or synthetic_authorization
+        if not journal.synthetic and (
+            type(executor) is not F09DockerExecutorAdapter
+            or type(operator_authorization) is not SoloOperatorAuthorization
+            or operator_authorization.store.synthetic
+            or client._operator_authorization is not operator_authorization
+        ):
+            raise ValueError("Live connectivity requires the F09 solo-operator entry point")
         self.agent_config = StagingAgentsClient._validate_agent_config(agent_config)
         self._environment_key = environment_key
         self.clock, self.wall_clock = clock, wall_clock
@@ -2263,9 +2334,14 @@ class ConnectivityHarness:
             # Preserve this categorical boolean through the shared sanitizer;
             # credential-shaped field names deliberately redact their values.
             "approval_consumption_durable": False,
+            "executor_preflight_verified": False,
             "failure_code": None,
             "transitions": [],
         }
+        if not journal.synthetic:
+            operator_authorization.validate_request(self)
+            client._live_harness = self
+            executor._live_harness = self
 
     def _transition(self, state: str) -> None:
         if state not in ALLOWED_STATES or state not in STATE_TRANSITIONS.get(self.state, set()):
@@ -2358,6 +2434,7 @@ class ConnectivityHarness:
         }
         late_create_settled = None
         late_executor_settled = None
+        failure_operation = "staging_authorization_failed"
 
         def _remaining_cleanup():
             if not cleanup_ready.is_set():
@@ -2374,7 +2451,7 @@ class ConnectivityHarness:
             remaining = _remaining_cleanup()
             if remaining <= 0:
                 return False
-            if type(self.executor) is DockerExecutorAdapter:
+            if isinstance(self.executor, DockerExecutorAdapter):
                 return self.executor.stop_verified(
                     container_identity,
                     timeout=remaining,
@@ -2443,7 +2520,7 @@ class ConnectivityHarness:
             cleanup_ready.wait()
             remaining = _remaining_cleanup()
             identity = late_id
-            if identity is None and type(self.executor) is DockerExecutorAdapter:
+            if identity is None and isinstance(self.executor, DockerExecutorAdapter):
                 identity = self.executor._pending_container_id
             resource_hash = _sha256(identity) if isinstance(identity, str) and identity else None
             try:
@@ -2452,7 +2529,7 @@ class ConnectivityHarness:
                 return
             stopped = False
             if remaining > 0 and (
-                resource_hash is not None or type(self.executor) is DockerExecutorAdapter
+                resource_hash is not None or isinstance(self.executor, DockerExecutorAdapter)
             ):
                 try:
                     stopped = (
@@ -2489,9 +2566,24 @@ class ConnectivityHarness:
                 self._approval.consume(self.journal)
                 self._audit["approval_consumption_durable"] = True
                 self._approval.validate_request(self)
+            if type(self.executor) is F09DockerExecutorAdapter:
+                failure_operation = "executor_preflight_failed"
+                preflight_intent = self._intent("executor_preflight")
+                try:
+                    self.executor.preflight()
+                except BaseException:
+                    self._outcome("executor_preflight", preflight_intent, "preflight_failed")
+                    raise
+                self._outcome("executor_preflight", preflight_intent)
+                self._audit["executor_preflight_verified"] = True
         except BaseException:
             if self.lease.acquired:
-                self._audit["failure_code"] = "staging_authorization_failed"
+                if type(self.executor) is F09DockerExecutorAdapter:
+                    try:
+                        self.executor.abort_preflight()
+                    except BaseException:
+                        pass
+                self._audit["failure_code"] = failure_operation
                 try:
                     self._persist_audit()
                 except BaseException:
@@ -2585,7 +2677,7 @@ class ConnectivityHarness:
                         late_cleanup=_late_executor_stop,
                         late_cleanup_on_error=(
                             (lambda: _late_executor_stop(None))
-                            if type(self.executor) is DockerExecutorAdapter
+                            if isinstance(self.executor, DockerExecutorAdapter)
                             else None
                         ),
                     )
@@ -2696,7 +2788,7 @@ class ConnectivityHarness:
                         timeout=_remaining_cleanup(),
                         **(
                             {"deadline": self._cleanup_real_deadline}
-                            if type(self.executor) is DockerExecutorAdapter
+                            if isinstance(self.executor, DockerExecutorAdapter)
                             else {}
                         ),
                     ),
@@ -2704,9 +2796,8 @@ class ConnectivityHarness:
                 )
             elif late_executor_settled is not None:
                 self._audit["executor_termination_verified"] = late_state["executor_stop_verified"]
-            elif (
-                self._audit["executor_start_attempted"]
-                and type(self.executor) is DockerExecutorAdapter
+            elif self._audit["executor_start_attempted"] and isinstance(
+                self.executor, DockerExecutorAdapter
             ):
                 self._audit["executor_termination_verified"] = self._cleanup_effect(
                     "executor_stop",
@@ -2719,6 +2810,18 @@ class ConnectivityHarness:
                         _sha256(self.executor._pending_container_id)
                         if self.executor._pending_container_id
                         else None
+                    ),
+                )
+            elif (
+                type(self.executor) is F09DockerExecutorAdapter
+                and self._audit["executor_preflight_verified"]
+            ):
+                self._audit["executor_termination_verified"] = self._cleanup_effect(
+                    "executor_stop",
+                    lambda: self.executor.stop_verified(
+                        None,
+                        timeout=_remaining_cleanup(),
+                        deadline=self._cleanup_real_deadline,
                     ),
                 )
             else:
@@ -2887,6 +2990,103 @@ class DockerExecutorAdapter:
         if terminated:
             self._pending_container_id = None
         return terminated and topology_removed
+
+
+class F09DockerExecutorAdapter(DockerExecutorAdapter):
+    """F09-only executor adapter with an empty workspace and revocable ACL."""
+
+    def __init__(self, runtime, topology, workspace: Path):
+        if (
+            type(runtime).__name__ != "F09ConnectivityRuntime"
+            or getattr(runtime, "RESOURCE_SCOPE", None) != "F09"
+            or getattr(topology, "resource_scope", None) != "F09"
+        ):
+            raise ConnectivityError("solo_runtime_configuration_mismatch")
+        super().__init__(runtime, topology, Path(workspace), "")
+        self._workspace_created = False
+        self._preflight_verified = False
+        self._start_attempted = False
+        self._live_harness = None
+
+    def preflight(self) -> None:
+        harness = self._live_harness
+        if (
+            harness is None
+            or harness.state != "preflight"
+            or harness._audit["approval_consumption_durable"] is not True
+            or self._preflight_verified
+        ):
+            raise ConnectivityError("solo_executor_preflight_gate_rejected")
+        self.runtime.verify_candidate_image()
+        _ensure_private_directory(self.workspace.parent, synthetic=False)
+        if self.workspace.exists() or self.workspace.is_symlink():
+            raise ConnectivityError("solo_workspace_already_exists")
+        try:
+            self.workspace.mkdir(mode=0o700)
+            _fsync_directory(self.workspace.parent, required=True)
+            self._workspace_created = True
+            self.runtime.grant_workspace_access(self.workspace)
+            self._preflight_verified = True
+        except BaseException:
+            self.runtime.revoke_workspace_access(self.workspace, timeout=5)
+            raise
+
+    def abort_preflight(self) -> bool:
+        if self._start_attempted:
+            return False
+        if not self._workspace_created:
+            return True
+        result = self.runtime.revoke_workspace_access(self.workspace, timeout=5)
+        if result:
+            self._workspace_created = False
+            self._preflight_verified = False
+        return result
+
+    def start(self, session: dict, *, environment_key: str, timeout: float) -> str:
+        harness = self._live_harness
+        if (
+            harness is None
+            or harness.state != "executor_start_intent"
+            or harness._audit["approval_consumption_durable"] is not True
+            or not self._preflight_verified
+            or not isinstance(session, dict)
+            or harness._audit["session_id_sha256"] != _sha256(session.get("session_id", ""))
+            or harness._audit["environment_id_sha256"] != _sha256(session.get("environment_id", ""))
+        ):
+            raise ConnectivityError("solo_executor_start_gate_rejected")
+        self._start_attempted = True
+        return super().start(session, environment_key=environment_key, timeout=timeout)
+
+    def stop_verified(self, container_id: str | None, *, timeout: float, deadline=None) -> bool:
+        harness = self._live_harness
+        if (
+            harness is None
+            or harness.state
+            not in {
+                "stop_executor",
+                "executor_stopped",
+                "executor_stop_unverified",
+                "delete_intent",
+                "cleanup_unverified",
+            }
+            or harness._audit["approval_consumption_durable"] is not True
+        ):
+            return False
+        if not self._workspace_created:
+            return False
+        if not self._start_attempted and container_id is None:
+            return self.runtime.revoke_workspace_access(
+                self.workspace, timeout=timeout, deadline=deadline
+            )
+        if not super().stop_verified(container_id, timeout=timeout, deadline=deadline):
+            return False
+        if deadline is not None:
+            timeout = min(timeout, deadline - time.monotonic())
+        if timeout <= 0:
+            return False
+        return self.runtime.revoke_workspace_access(
+            self.workspace, timeout=timeout, deadline=deadline
+        )
 
 
 def inspect_staging_journal(path: Path) -> dict:

@@ -1,20 +1,28 @@
 # F09 solo-operator workflow
 
-Date: 2026-10-24. Starting HEAD: `c316b486b432cf58d4ccdd1787fa8298c6593113`.
-These changes are uncommitted. No real approval was issued or consumed.
+Date: 2026-10-24. Prior implementation baseline: `6268b23`.
+This entry-point update is uncommitted. No real approval was issued or consumed.
 
-**READY FOR SEPARATE LIVE AUTHORIZATION REVIEW.** This is offline workflow
-readiness, not permission to connect. Both live gates remain unconditional
-rejections. F09 live and R01-A remain **NO-GO**.
+**READY FOR SEPARATE LIVE AUTHORIZATION REVIEW**, after the operator verifies
+the updated offline suite in Ubuntu WSL2 and reviews this entry point. This is
+not permission to connect. The `run` command can create one paid session when
+an existing valid approval and both credentials are present. F09 live and
+R01-A remain **NO-GO** until separate decisions.
 
 ## Implementation and trust
 
 `connectivity_harness.py` adds `SoloOperatorApprovalStore` and
 `SoloOperatorAuthorization`, reusing the existing lease, journal, bounded
-lifecycle, sanitizer and audit writer. `f09_solo_operator.py` exposes only
-`approve` and read-only `inspect`; there is no execution command. Existing
-synthetic capability fixtures remain separate and cannot become manual approval
-records. The checklist and regression module cover the new workflow.
+lifecycle, sanitizer and audit writer. `f09_solo_operator.py` exposes
+`approve`, read-only `inspect`, and the narrowly scoped `run` command. `run`
+accepts only the existing real manual-approval record, requires a second exact
+interactive scope and billing-risk confirmation, and refuses synthetic approval
+stores. The concrete live client has only fixed session create, event stream,
+and session delete routes. It has no task-submission or Responses interface.
+The runtime is F09-scoped, verifies the immutable executor image before the
+session-create request, uses an empty per-attempt workspace, and strips the
+application key from Docker CLI child environments. The checklist and
+regression module cover the workflow.
 
 The trusted principal is the local operator account. There is no second Unix
 identity, privileged helper, broker, daemon or signing infrastructure. A malicious
@@ -31,10 +39,11 @@ Only explicitly synthetic tests use ephemeral Linux temporary state.
 ## Future operator procedure — do not execute as part of this task
 
 1. Review and later commit the implementation after operator verification.
-   Approval verifies the full HEAD SHA and the committed content of the harness,
-   CLI, executor contract, Docker runtime and egress proxy. Modified executable
-   files or an uncommitted CLI reject approval. These checks do not attest the
-   installed Python dependencies or the running Docker image.
+Approval verifies the full HEAD SHA and committed content of the harness, CLI,
+executor contract, Docker runtime, egress proxy, egress Dockerfile and
+`pyproject.toml`. Modified executable/configuration files reject approval.
+These checks do not attest the installed Python environment or the immutable
+executor image contents beyond runtime inspection.
 2. Verify the existing `rkmcp-staging` project and separately restricted keys in
    the dashboard: matching organization, project and intended owner; application
    Agents read/write only; environment connection only; no Responses permission.
@@ -47,7 +56,10 @@ Only explicitly synthetic tests use ephemeral Linux temporary state.
    fixed 200-cent approval. Review deadlines, immutable executor image ID and the
    restricted egress policy. Create a fresh persistent native Linux private state
    directory only after review, for example under the operator's Linux home.
-   Do not reuse R01-A state or approvals.
+   Live preflight requires a local Docker daemon at `/var/run/docker.sock` and
+   the `getfacl`/`setfacl` tools. The runtime forces that Unix socket and removes
+   Docker context/remote-host overrides from child environments; another
+   endpoint fails closed. Do not reuse R01-A state or approvals.
 4. Prepare a non-secret request JSON with exactly these fields:
 
    - `schema_version`: integer 1.
@@ -69,7 +81,13 @@ Only explicitly synthetic tests use ephemeral Linux temporary state.
      `matching_organization_project_owner_confirmed` equal to true; `reviewed_at`
      equal to the actual canonical UTC timestamp. These are attestations, not
      proof that runtime credentials have those identities or permissions.
-5. After separate live authorization review, the future local command is:
+5. The approval source check requires the reviewed full commit to be `HEAD` and
+   every executable/configuration input listed above to match that commit. The
+   current uncommitted implementation cannot be approved. After code review,
+   operator verification and a later local commit, prepare the request against
+   that exact committed source. The following command is local and offline. It
+   records an approval only; it does not create a session. Run it only after
+   review, with a real terminal:
 
    ```sh
    .venv-wsl/bin/python -B benchmarks/codex_r/exploratory/f09_solo_operator.py \
@@ -84,6 +102,33 @@ Only explicitly synthetic tests use ephemeral Linux temporary state.
    `I ACCEPT BILLING RESPONSIBILITY AND BEST-EFFORT SPEND CONTROL`.
    EOF, cancellation, mismatch, expiry or uncertain persistence rejects approval.
    This records a local decision only; it cannot create a session.
+
+6. To execute later, set the two existing credential variables in the current
+   shell without displaying their values. They must be distinct, printable
+   ASCII header values under the size cap, and free of whitespace/control
+   characters. This is only syntax checking; the harness cannot confirm that
+   either value is valid or has the attested provider scope. Do not put
+   either value in a command argument, request file, Docker image, or log. For
+   example, use `read -r -s OPENAI_API_KEY`, then export it; repeat for
+   `OPENAI_EXECUTOR_API_KEY`. After the run, use `unset` for both names. Verify
+   the dashboard attestation and billing approval again before doing so.
+
+7. The following is the **LIVE / POTENTIALLY PAID** command. It requires a TTY,
+   repeats the exact attempt/limit/scope confirmation and billing-risk
+   acknowledgment, and consumes the approval before any Docker operation or
+   session-create request:
+
+   ```sh
+   .venv-wsl/bin/python -B benchmarks/codex_r/exploratory/f09_solo_operator.py \
+     run --state-dir <private-native-state>
+   ```
+
+   It has no project, amount, image, route, task, or retry override. It performs
+   at most one session-create POST, observes the matching environment-connected
+   event, stops the executor, removes the restricted topology, deletes the
+   session, persists the sanitized audit, and releases the lease only after
+   verified cleanup. A failed or ambiguous run consumes the approval; do not
+   rerun it or remove state markers.
 
 ## Single use, cleanup and uncertainty
 
@@ -121,14 +166,16 @@ is operator-reported and unverified here; it is neither a budget nor authorizati
 Keep the old 200-cent proposal pending unless explicitly selected and confirmed
 again. Reconcile actual provider billing after any separately approved check.
 
-Before execution, separately review the small live entry point and consumption
-integration, actual immutable image/egress configuration, credential-loading
-boundary and operator attestation policy. The current client and harness still
-reject live construction. No live TLS/WSS compatibility has been demonstrated.
-No approval issued now could authorize R01-A; that benchmark needs its own
-separate decision, budget and authorization.
+Before any execution, review the final code and test evidence, verify the exact
+committed source and image, and re-attest project/key ownership and permissions.
+Runtime key identity remains an operator dashboard attestation, not
+provider-authenticated verification. No live TLS/WSS compatibility has been
+demonstrated. The provider spend limit is best-effort and is not a guaranteed
+billing ceiling; even a zero-task session may incur charges. No F09 approval can
+authorize R01-A; that benchmark needs its own separate decision, budget and
+authorization.
 
-## Offline verification observed in Ubuntu WSL2
+## Prior approval-only baseline verification
 
 - Focused solo-operator tests: **38 passed, 143 deselected, 0 failed, 0 skipped**,
   one existing configuration warning, 3.46 seconds.
@@ -136,17 +183,32 @@ separate decision, budget and authorization.
   configuration warning, 8.73 seconds. This includes the earlier 143 cases.
 - All approvals, credentials, HTTP and executor effects were synthetic. The
   warning is the existing unknown `cache_dir` option with cacheprovider disabled.
-- Ruff check and Ruff format check on all three changed Python files: PASS.
+- Ruff check and Ruff format check on the then-changed Python files: PASS.
   `git diff --check`: PASS. New files also have no trailing whitespace or
-  detected replacement/encoding markers. Earlier Windows sandbox failures and
-  previous 143-test results do not substitute for the Ubuntu results above.
+  detected replacement/encoding markers. These results predate the `run`
+  command and do not verify this entry-point update.
+
+## Offline verification of the run entry point
+
+Observed in Ubuntu WSL2 on 2026-10-24:
+
+- Full synthetic F09 module: **197 passed, 0 failed**, one non-blocking
+  `cache_dir` pytest configuration warning.
+- Ruff check: PASS. Ruff format check: PASS. `git diff --check`: PASS.
+- Tests used only synthetic state, `httpx.MockTransport`, fake executors and
+  injected Git boundaries. No Docker, external network, OpenAI API, session,
+  inference, approval issuance or authorization consumption occurred.
+- This result does not establish live TLS/WSS compatibility, runtime credential
+  identity, or provider billing behavior. The source update remains uncommitted;
+  source-bound approval rejects it until a reviewed committed version exists.
 
 The final added regression also rejects a credential-shaped model identifier
 before confirmation or storage. Its first run rejected the value correctly but
 the test checked generic exception text instead of the diagnostic code. After
 correcting that assertion, the focused and full results above completed.
 
-Equivalent offline commands from the repository in Ubuntu:
+The following commands are **OFFLINE ONLY** and create no session. Re-run them
+after this entry-point change from the repository in Ubuntu:
 
 ```sh
 test_root=$(mktemp -d /tmp/f09-solo-focused-XXXXXX)
@@ -162,8 +224,10 @@ PYTHONDONTWRITEBYTECODE=1 .venv-wsl/bin/python -m pytest \
   --basetemp="$test_root/pytest-tmp"
 
 ruff check benchmarks/codex_r/exploratory/connectivity_harness.py \
+  benchmarks/codex_r/exploratory/docker_runtime.py \
   benchmarks/codex_r/exploratory/f09_solo_operator.py tests/test_codex_connectivity_harness.py
 ruff format --check benchmarks/codex_r/exploratory/connectivity_harness.py \
+  benchmarks/codex_r/exploratory/docker_runtime.py \
   benchmarks/codex_r/exploratory/f09_solo_operator.py tests/test_codex_connectivity_harness.py
 git diff --check
 ```
