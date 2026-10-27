@@ -15,3 +15,10 @@ pytest-cache-files-*/
 .venv-wsl
 native/target/
 tests/.r-doc-index-*.json
+
+# Internal security reviews and benchmark artifacts
+/docs/ARCHITECTURE_AUDIT.md
+/docs/INTEGRATION_AUDIT.md
+/docs/reviews/
+/docs/CODEX_MCP_BENCHMARK.md
+/docs/TERMR_DOGFOODING_REPORT*.md
