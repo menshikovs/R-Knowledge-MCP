@@ -1,0 +1,9 @@
+{
+  "request": {"packages": "ggplot2", "from": "2024-01-10", "to": "2024-01-13"},
+  "response": [
+    {"package": "ggplot2", "date": "2024-01-10", "count": 12},
+    {"package": "ggplot2", "date": "2024-01-11", "count": 0},
+    {"package": "ggplot2", "date": "2024-01-12", "count": null},
+    {"package": "ggplot2", "date": "2024-01-13", "count": 28}
+  ]
+}

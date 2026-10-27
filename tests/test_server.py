@@ -425,15 +425,20 @@ async def test_stdio_subprocess_initialize_and_error():
         cwd=str(root),
         env={**os.environ, "PYTHONPATH": str(root / "src")},
     )
-    async with stdio_client(params) as (read, write):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            assert {tool.name for tool in (await session.list_tools()).tools} == TOOLS
-            assert {prompt.name for prompt in (await session.list_prompts()).prompts} == PROMPTS
-            result = await session.call_tool("get_dependencies", {"package": "../bad"})
-            assert result.isError is True
-            assert json.loads(result.content[0].text)["error"]["code"] == "invalid_input"
-            result = await session.call_tool(
-                "analyze_shiny_app", {"source": "shinyApp(ui, server)"}
-            )
-            assert result.isError is False
+    try:
+        async with stdio_client(params) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                assert {tool.name for tool in (await session.list_tools()).tools} == TOOLS
+                assert {prompt.name for prompt in (await session.list_prompts()).prompts} == PROMPTS
+                result = await session.call_tool("get_dependencies", {"package": "../bad"})
+                assert result.isError is True
+                assert json.loads(result.content[0].text)["error"]["code"] == "invalid_input"
+                result = await session.call_tool(
+                    "analyze_shiny_app", {"source": "shinyApp(ui, server)"}
+                )
+                assert result.isError is False
+    except PermissionError as exc:
+        if os.name == "nt" and getattr(exc, "winerror", None) == 5:
+            pytest.skip("The Windows sandbox denies the named pipe required by stdio subprocesses")
+        raise

@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "bioconductor-3.22-2026-10-25",
+  "captured_at_utc": "2026-10-25T10:47:27Z",
+  "sources": [
+    "https://bioconductor.org/about/release-announcements/",
+    "https://bioconductor.org/news/bioc_3_22_release/",
+    "https://bioconductor.org/news/bioc_3_2_release/",
+    "https://bioconductor.org/packages/3.22/bioc/html/DESeq2.html",
+    "https://bioconductor.org/packages/3.22/bioc/html/Biobase.html",
+    "https://bioconductor.org/packages/3.22/bioc/html/SummarizedExperiment.html",
+    "https://bioconductor.org/packages/3.22/bioc/html/GenomicRanges.html",
+    "https://bioconductor.org/packages/3.22/bioc/manuals/SummarizedExperiment/man/SummarizedExperiment.pdf",
+    "https://cran.r-project.org/web/packages/ggplot2/DESCRIPTION",
+    "https://ggplot2.tidyverse.org/news/index.html"
+  ],
+  "facts": {
+    "bioconductor_3.22": {"r_major_minor": "4.5", "release_date": "2025-10-30"},
+    "R_runtime": "4.5.2",
+    "packages": {
+      "DESeq2": {"version": "1.50.2", "repository": "Bioconductor 3.22", "depends": ["S4Vectors >= 0.23.18", "IRanges", "GenomicRanges", "SummarizedExperiment >= 1.1.6"], "imports": ["BiocGenerics >= 0.7.5", "Biobase", "BiocParallel", "matrixStats", "locfit", "ggplot2 >= 3.4.0", "Rcpp >= 0.11.0", "MatrixGenerics"]},
+      "Biobase": {"version": "2.70.0", "repository": "Bioconductor 3.22"},
+      "SummarizedExperiment": {"version": "1.40.0", "repository": "Bioconductor 3.22"},
+      "GenomicRanges": {"version": "1.62.0", "repository": "Bioconductor 3.22"},
+      "ggplot2": {"version": "4.0.3", "repository": "CRAN"},
+      "BiocGenerics": {"version": "0.56.0", "repository": "Bioconductor 3.22"}
+    },
+    "api_change": {
+      "function": "makeSummarizedExperimentFromExpressionSet",
+      "old_namespace": "GenomicRanges",
+      "new_namespace": "SummarizedExperiment",
+      "evidence": "Bioconductor 3.2 release announcement says SummarizedExperiment functionality moved from GenomicRanges to the new SummarizedExperiment package; the official SummarizedExperiment reference manual documents the function."
+    }
+  },
+  "sha256_note": "SHA-256 of this snapshot and linked benchmark metadata are recorded in E-source-snapshot.sha256. Original HTML/PACKAGES payload hashes were not available from the browsing capture; this file is a normalized fact snapshot, not a byte-for-byte archive."
+}

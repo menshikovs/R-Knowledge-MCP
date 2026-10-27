@@ -13,6 +13,7 @@ TOOLS = {
     "search_packages",
     "get_package",
     "get_function_docs",
+    "list_package_functions",
     "check_package_version",
     "check_r_compatibility",
     "search_r_documentation",

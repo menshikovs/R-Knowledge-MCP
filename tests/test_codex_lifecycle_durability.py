@@ -10,6 +10,7 @@ import threading
 from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import httpx
 import pytest
@@ -267,6 +268,7 @@ def execute(
     )
     context = {
         "trial_id": "R01-A",
+        "attempt_id": fixtures.SYNTHETIC_ATTEMPT_ID,
         "expected_tools": [],
         "model": "gpt-6-luna",
         "reasoning_effort": "medium",
@@ -274,11 +276,18 @@ def execute(
         "workspace": str(workspace),
     }
     try:
-        record = control.run_one(
-            context=context,
-            authorization={"synthetic": True, "authorization_id": "a" * 32},
-            state_directory=tmp_path / "state",
-        )
+        # The journal identity is intentionally closed. Keep every other approval
+        # and spend-control check in the synthetic controller fixture active.
+        with patch.object(
+            lifecycle,
+            "_approved_session_spend_limit",
+            side_effect=fixtures.synthetic_spend_control_limit,
+        ):
+            record = control.run_one(
+                context=context,
+                authorization=fixtures.synthetic_authorization(),
+                state_directory=tmp_path / "state",
+            )
     except lifecycle.LifecycleError as exc:
         record = exc.audit_record
     finally:

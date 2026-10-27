@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "benchmark": "r-knowledge-tool-value-v1",
+  "environment": {
+    "r": "4.5.2",
+    "lockfile": "configs/renv.lock"
+  },
+  "protocol": {
+    "artifact_bytes": 65536,
+    "score_seconds": 60
+  },
+  "configurations": {
+    "consolidated-v1": {
+      "status": "historical",
+      "toolset": "consolidated",
+      "description": "15-tool consolidated surface; docs_not_found carries only the message and source URL.",
+      "docs_not_found_hints": false,
+      "telemetry_schema_version": null,
+      "d_scorer": "d-recommendation-1 (exact URL equality; the version was not recorded in the run files)",
+      "runs": ["20261025T083653Z-ca1d5503"],
+      "note": "Results of these runs are never modified; D01 is rescored separately by the current scorer."
+    },
+    "consolidated-v1.1": {
+      "status": "current",
+      "toolset": "consolidated",
+      "description": "Same 15 tools and descriptions; docs_not_found adds alias_count, available_aliases (30 or fewer) or closest_aliases (10).",
+      "docs_not_found_hints": true,
+      "telemetry_schema_version": "1.0",
+      "d_scorer": "d-recommendation-2",
+      "runs": []
+    },
+    "consolidated-v2": {
+      "status": "opt_in",
+      "toolset": "consolidated",
+      "description": "Same MCP tools; public D/E output contracts, dimensioned knowledge-pilot-v2 scoring, and safe MCP observation projections v2.",
+      "docs_not_found_hints": true,
+      "telemetry_schema_version": "1.0 plus mcp-observations 2.0",
+      "d_scorer": "knowledge-pilot-v2",
+      "e_scorer": "knowledge-pilot-v2 for JSON tasks; existing R verifier for E02/E03",
+      "runs": []
+    }
+  },
+  "tasks": [
+    {"id":"B01","block":"B","spec":"tasks/B01.md","metadata":"metadata/B01.json","public_files":[{"source":"fixtures/B01.csv","target":"data/ledger.csv"}],"starter":"starters/B01.R","verifier":"verifier/B01.R","packages":{"dplyr":"1.2.1"},"artifacts":["solution.R"],"checks":5,"score_seconds":60},
+    {"id":"B02","block":"B","spec":"tasks/B02.md","metadata":"metadata/B02.json","public_files":[{"source":"fixtures/B02.csv","target":"data/device_events.csv"}],"starter":"starters/B02.R","verifier":"verifier/B02.R","packages":{"dplyr":"1.2.1","tidyr":"1.3.2"},"artifacts":["solution.R"],"checks":5,"score_seconds":60},
+    {"id":"B03","block":"B","spec":"tasks/B03.md","metadata":"metadata/B03.json","public_files":[{"source":"fixtures/B03.csv","target":"data/invoice_lines.csv"}],"starter":"starters/B03.R","verifier":"verifier/B03.R","packages":{"dplyr":"1.2.1"},"artifacts":["solution.R"],"checks":5,"score_seconds":60},
+    {"id":"C01","block":"C","spec":"tasks/C01.md","metadata":"metadata/C01.json","public_files":[{"source":"fixtures/C01.json","target":"data/promo_fixture.json"}],"starter":"starters/C01.R","verifier":"verifier/C01.R","packages":{"dplyr":"1.2.1"},"artifacts":["solution.R"],"checks":5,"score_seconds":60},
+    {"id":"C02","block":"C","spec":"tasks/C02.md","metadata":"metadata/C02.json","public_files":[{"source":"fixtures/C02.csv","target":"data/measurements.csv"}],"starter":"starters/C02.R","verifier":"verifier/C02.R","packages":{"tidyr":"1.3.2","dplyr":"1.2.1"},"artifacts":["solution.R"],"checks":5,"score_seconds":60},
+    {"id":"C03","block":"C","spec":"tasks/C03.md","metadata":"metadata/C03.json","public_files":[{"source":"fixtures/C03.csv","target":"data/euro_amounts.csv"}],"starter":"starters/C03.R","verifier":"verifier/C03.R","packages":{"readr":"2.2.0"},"artifacts":["solution.R"],"checks":5,"score_seconds":60},
+    {"id":"C04","block":"C","spec":"tasks/C04.md","metadata":"metadata/C04.json","public_files":[],"starter":"starters/C04.R","verifier":"verifier/C04.R","packages":{},"reference_package":{"name":"cranlogs","version":"2.1.1"},"artifacts":["solution.R"],"checks":9,"score_seconds":60,"negative_controls":["wrong_when_all.R","wrong_date_range.R","wrong_global_claim.R"]},
+    {"id":"C05","block":"C","spec":"tasks/C05.md","metadata":"metadata/C05.json","public_files":[],"verifier":"verifier/C05.R","packages":{},"reference_package":{"name":"cranlogs","version":"2.1.1"},"artifacts":["solution.R"],"checks":7,"score_seconds":60,"negative_controls":["wrong_when_all.R","wrong_start_date.R","wrong_global_claim.R"]},
+    {"id":"D01","block":"D","spec":"tasks/D01.md","metadata":"metadata/D01.json","public_files":[],"packages":{},"artifacts":["answer.json"],"checks":4,"score_seconds":10},
+    {"id":"D02","block":"D","spec":"tasks/D02.md","metadata":"metadata/D02.json","public_files":[],"packages":{},"artifacts":["answer.json"],"checks":4,"score_seconds":10},
+    {"id":"D03","block":"D","spec":"tasks/D03.md","metadata":"metadata/D03.json","public_files":[],"packages":{},"artifacts":["answer.json"],"checks":4,"score_seconds":10},
+    {"id":"E01","block":"E","scorer":"json","spec":"tasks/E01.md","metadata":"metadata/E01.json","public_files":[{"source":"fixtures/E01-renv.lock","target":"renv.lock"}],"packages":{},"artifacts":["answer.json"],"checks":6,"score_seconds":10,"negative_controls":["wrong_release.json","wrong_sources.json","wrong_nonminimal.json","wrong_graph.json"]},
+    {"id":"E02","block":"E","scorer":"r","spec":"tasks/E02.md","metadata":"metadata/E02.json","public_files":[{"source":"fixtures/E02-counts.csv","target":"data/counts.csv"},{"source":"fixtures/E02-samples.csv","target":"data/samples.csv"}],"packages":{},"required_packages":{"DESeq2":"1.50.2","SummarizedExperiment":"1.40.0"},"artifacts":["solution.R"],"checks":5,"score_seconds":60,"verifier":"verifier/E02.R","starter":"starters/E02.R","negative_controls":["wrong_design.R","wrong_counts.R"]},
+    {"id":"E03","block":"E","scorer":"r","spec":"tasks/E03.md","metadata":"metadata/E03.json","public_files":[],"packages":{},"required_packages":{"Biobase":"2.70.0","SummarizedExperiment":"1.40.0","GenomicRanges":"1.62.0"},"artifacts":["solution.R"],"checks":4,"score_seconds":60,"verifier":"verifier/E03.R","starter":"starters/E03.R","negative_controls":["wrong_namespace.R","wrong_output.R"]},
+    {"id":"E04","block":"E","scorer":"json","spec":"tasks/E04.md","metadata":"metadata/E04.json","public_files":[],"packages":{},"artifacts":["answer.json"],"checks":5,"score_seconds":10,"negative_controls":["wrong_repositories.json","wrong_edges.json","wrong_install.json"]},
+    {"id":"E05","block":"E","scorer":"json","spec":"tasks/E05.md","metadata":"metadata/E05.json","public_files":[],"packages":{},"artifacts":["answer.json"],"checks":5,"score_seconds":10,"negative_controls":["wrong_all_compatible.json","wrong_all_incompatible.json","wrong_unverified.json"]}
+  ]
+}

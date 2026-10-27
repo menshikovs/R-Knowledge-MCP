@@ -1,0 +1,23 @@
+{
+  "id": "C05",
+  "environment": {"r": "4.5.2", "packages": {}},
+  "reference_package": {"name": "cranlogs", "version": "2.1.1"},
+  "checked_at_utc": "2026-10-25T00:00:00Z",
+  "sources": [
+    {
+      "url": "https://cran.r-project.org/web/packages/cranlogs/cranlogs.pdf",
+      "kind": "official_cran_reference_manual",
+      "package": "cranlogs",
+      "version": "2.1.1",
+      "topic": "cran_downloads interval arguments, return columns, and mirror scope"
+    },
+    {
+      "url": "https://github.com/r-hub/cranlogs.app",
+      "kind": "official_api_documentation",
+      "package": "cranlogs.app",
+      "version": "API documentation checked 2026-10-25",
+      "topic": "RStudio CRAN mirror download-log start date and mirror-only scope"
+    }
+  ],
+  "input_description": "Private deterministic API-response fixtures; no live HTTP is used."
+}

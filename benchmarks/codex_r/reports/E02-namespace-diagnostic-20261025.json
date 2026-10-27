@@ -1,0 +1,7 @@
+{
+  "api_calls": 0,
+  "network": "none",
+  "returncode": 0,
+  "stdout": "1.50.2",
+  "stderr": "BEFORE_NAMESPACE\nWarning: stack imbalance in 'invisible', 2 then 4\nAFTER_NAMESPACE\n"
+}

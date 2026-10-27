@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "audit_version": "1.0.0",
+  "source_specifications_imported": 148,
+  "specifications_by_suite": {
+    "beginner": 20,
+    "ggplot": 41,
+    "ecosystem": 37,
+    "ecosystem_addon": 25,
+    "anova": 15,
+    "hard_blueprint": 10
+  },
+  "mapped_to_existing_hard_suite": 3,
+  "pending_spec_only": 145,
+  "new_r_tasks_implemented_in_this_change": 0,
+  "new_r_tasks_offline_validated_in_this_change": 0,
+  "existing_legacy_r_tasks": 12,
+  "existing_hard_tasks_with_recorded_offline_validation_not_replayed": 3,
+  "gross_inventory_if_all_source_specs_are_implemented_plus_legacy_r_tasks": 160,
+  "semantic_deduplication_against_r01_r12_complete": false,
+  "verified_unique_inventory": null,
+  "minimum_additional_unique_tasks_for_240_if_all_inventory_is_distinct": 80,
+  "existing_pilot_environment": {
+    "r": "4.5.2",
+    "bioconductor": "3.22",
+    "lockfile": "configs/renv.lock",
+    "ggplot2": "4.0.3"
+  },
+  "r_execution_allowed_by_repository_instructions": false
+}

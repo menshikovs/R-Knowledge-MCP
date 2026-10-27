@@ -1,0 +1,1 @@
+{"cases":{"release_322_r452":"incompatible","release_322_r443":"incompatible","unlisted_package_version":"incompatible"},"rationale":"Any unknown or old package combination is incompatible by default.","sources":["https://bioconductor.org/about/release-announcements/"]}

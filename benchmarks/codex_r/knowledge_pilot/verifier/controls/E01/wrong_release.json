@@ -1,0 +1,1 @@
+{"classification":"compatible","r_version":"4.4.3","bioconductor":"3.22","packages":{"DESeq2":{"version":"1.50.2","repository":"Bioconductor 3.22"},"ggplot2":{"version":"4.0.3","repository":"CRAN"}},"changed_fields":[],"rationale":"All selected packages should work and this release combination is fine.","sources":["https://bioconductor.org/about/release-announcements/"]}

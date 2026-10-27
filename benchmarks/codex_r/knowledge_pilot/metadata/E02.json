@@ -1,0 +1,53 @@
+{
+  "id": "E02",
+  "environment": {
+    "r": "4.5.2",
+    "packages": {}
+  },
+  "reference_packages": {
+    "DESeq2": "1.50.2",
+    "SummarizedExperiment": "1.40.0"
+  },
+  "bioconductor": "3.22",
+  "checked_at_utc": "2026-10-25T10:47:27Z",
+  "sources": [
+    {
+      "url": "https://bioconductor.org/packages/3.22/bioc/html/DESeq2.html",
+      "version": "1.50.2"
+    },
+    {
+      "url": "https://bioconductor.org/packages/3.22/bioc/html/SummarizedExperiment.html",
+      "version": "1.40.0"
+    },
+    {
+      "url": "https://bioconductor.org/packages/3.22/bioc/vignettes/DESeq2/inst/doc/DESeq2.html",
+      "kind": "official_workflow_documentation"
+    }
+  ],
+  "snapshot": "metadata/E-source-snapshot.json",
+  "fixture_provenance": {
+    "generator": "generate_E02_fixture.R",
+    "generator_sha256": "cfaddaa81ab5ca16809c859fbb92fbb2b48243fafe4885170c6c88a3945b2477",
+    "generator_r": "4.5.2",
+    "seed": 20261025,
+    "rng": [
+      "Mersenne-Twister",
+      "Inversion",
+      "Rejection"
+    ],
+    "distribution": "negative binomial: variance = mu + dispersion * mu^2",
+    "genes": 500,
+    "samples": 6,
+    "groups": {
+      "control": 3,
+      "treatment": 3
+    },
+    "known_upregulated": "gene_1..gene_10: 4-fold",
+    "known_downregulated": "gene_11..gene_20: 0.25-fold",
+    "counts_sha256": "f34b1c2edfc505407e8119a9d71e6b491cb82e3e252ea865b8917eb58010473c",
+    "samples_sha256": "1dc982d53f33599b549c93a13237addb9730dae2e1812bc5896fda44547234ba",
+    "replaces_counts_sha256": "d6fae6436e9f7b218786d5b7fb4f321eb3aa02e320bd469e4d283059b259b450",
+    "reason": "Original 20 near-deterministic rows drove all gene-wise dispersions to the lower boundary, preventing the standard DESeq2 dispersion trend fit.",
+    "generated_at_utc": "2026-10-25T13:09:55Z"
+  }
+}

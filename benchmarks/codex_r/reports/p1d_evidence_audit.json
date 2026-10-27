@@ -1,0 +1,298 @@
+{
+  "report": "p1d_evidence_audit",
+  "schema_version": 1,
+  "historical_runs": {
+    "enabled": {
+      "run_id": "20261027T080622Z-16d73779",
+      "trial_id": "D01-B-1",
+      "condition": "enabled",
+      "configuration": {
+        "model": "gpt-6-luna",
+        "effort": "medium",
+        "instructions": "standard",
+        "mode": "with-mcp",
+        "function_discovery_policy": "enabled",
+        "registered_tool_count": 16,
+        "registered_tools": [
+          "analyze_r_project",
+          "analyze_r_source",
+          "build_r_prompt",
+          "check_package_version",
+          "check_r_compatibility",
+          "get_framework_docs",
+          "get_function_docs",
+          "get_package",
+          "get_r_documentation_section",
+          "get_r_prompt_context",
+          "get_r_workflow_guidance",
+          "list_package_functions",
+          "recommend_technology_stack",
+          "search_packages",
+          "search_r_documentation",
+          "validate_r_prompt"
+        ],
+        "policy_allowed_tools": [
+          "analyze_r_project",
+          "analyze_r_source",
+          "check_package_version",
+          "check_r_compatibility",
+          "get_framework_docs",
+          "get_function_docs",
+          "get_package",
+          "get_r_documentation_section",
+          "get_r_workflow_guidance",
+          "list_package_functions",
+          "recommend_technology_stack",
+          "search_packages",
+          "search_r_documentation"
+        ],
+        "remote_discovery_status": "unknown",
+        "remote_discovered_tools": null,
+        "session_config_echo_status": "not_recorded_in_schema_1.0"
+      },
+      "status": "scored",
+      "score": {
+        "passed": 2,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs"
+        ]
+      },
+      "mcp_calls": {
+        "client_observed": 0,
+        "client_by_tool": {},
+        "server_observed": 0,
+        "server_by_tool": {},
+        "server_list_tools_requests": 1,
+        "canonical_count": 0,
+        "raw_lifecycle_observations": {
+          "mcp.tool.started": 0,
+          "mcp.tool.completed": 0,
+          "mcp.tool.failed": 0
+        },
+        "raw_lifecycle_by_source": {
+          "agent_stream": {
+            "mcp.tool.started": 0,
+            "mcp.tool.completed": 0,
+            "mcp.tool.failed": 0
+          },
+          "mcp_server": {
+            "mcp.tool.started": 0,
+            "mcp.tool.completed": 0,
+            "mcp.tool.failed": 0
+          }
+        },
+        "correlation_confidence": "not_applicable_no_server_calls",
+        "errors_by_code": {}
+      },
+      "agent_items_completed_by_type": {
+        "reasoning": 14,
+        "message": 4,
+        "command_execution": 6
+      },
+      "answer_claims": [
+        {
+          "package": "termr",
+          "stated_version": "0.1.0",
+          "source_url": "https://cran.r-project.org/package=termr",
+          "source_url_present": true,
+          "documentation_url": "https://cran.r-project.org/web/packages/termr/termr.pdf",
+          "documentation_url_present": true,
+          "feature_ids": [
+            "reactive_terminal_ui",
+            "headless_app_tests",
+            "keyboard_single_multi_select",
+            "stable_return_values"
+          ],
+          "caveat_ids": [
+            "real_terminal_required",
+            "some_apis_experimental",
+            "menu_focused"
+          ],
+          "pinned_version": "1.0.1",
+          "reference_version_match": false,
+          "reference_source_url": "https://cran.r-project.org/package=termr",
+          "reference_documentation_url": "https://stat.ethz.ch/CRAN/web/packages/termr/refman/termr.html",
+          "source_identity_matches_reference": true,
+          "documentation_identity_matches_reference": false,
+          "observed_tool_versions_for_package": [],
+          "evidence_consistency": "insufficient_observability",
+          "citations": [
+            {
+              "role": "source",
+              "url_present_in_final_answer": true,
+              "url": "https://cran.r-project.org/package=termr",
+              "matching_source_access_observed": false,
+              "source_access_status": "source_access_observability_unknown"
+            },
+            {
+              "role": "documentation",
+              "url_present_in_final_answer": true,
+              "url": "https://cran.r-project.org/web/packages/termr/termr.pdf",
+              "matching_source_access_observed": false,
+              "source_access_status": "source_access_observability_unknown"
+            }
+          ]
+        }
+      ],
+      "observed_agent_evidence_count": 0,
+      "telemetry_schema_versions": [
+        "1.0"
+      ]
+    },
+    "disabled": {
+      "run_id": "20261027T080923Z-f0bf06a8",
+      "trial_id": "D01-B-1",
+      "condition": "disabled",
+      "configuration": {
+        "model": "gpt-6-luna",
+        "effort": "medium",
+        "instructions": "standard",
+        "mode": "with-mcp",
+        "function_discovery_policy": "disabled",
+        "registered_tool_count": 16,
+        "registered_tools": [
+          "analyze_r_project",
+          "analyze_r_source",
+          "build_r_prompt",
+          "check_package_version",
+          "check_r_compatibility",
+          "get_framework_docs",
+          "get_function_docs",
+          "get_package",
+          "get_r_documentation_section",
+          "get_r_prompt_context",
+          "get_r_workflow_guidance",
+          "list_package_functions",
+          "recommend_technology_stack",
+          "search_packages",
+          "search_r_documentation",
+          "validate_r_prompt"
+        ],
+        "policy_allowed_tools": [
+          "analyze_r_project",
+          "analyze_r_source",
+          "check_package_version",
+          "check_r_compatibility",
+          "get_framework_docs",
+          "get_function_docs",
+          "get_package",
+          "get_r_documentation_section",
+          "get_r_workflow_guidance",
+          "recommend_technology_stack",
+          "search_packages",
+          "search_r_documentation"
+        ],
+        "remote_discovery_status": "unknown",
+        "remote_discovered_tools": null,
+        "session_config_echo_status": "not_recorded_in_schema_1.0"
+      },
+      "status": "scored",
+      "score": {
+        "passed": 4,
+        "total": 4,
+        "failed_checks": []
+      },
+      "mcp_calls": {
+        "client_observed": 15,
+        "client_by_tool": {
+          "get_function_docs": 6,
+          "get_package": 7,
+          "search_packages": 2
+        },
+        "server_observed": 15,
+        "server_by_tool": {
+          "get_function_docs": 6,
+          "get_package": 7,
+          "search_packages": 2
+        },
+        "server_list_tools_requests": 1,
+        "canonical_count": 15,
+        "raw_lifecycle_observations": {
+          "mcp.tool.started": 15,
+          "mcp.tool.completed": 22,
+          "mcp.tool.failed": 8
+        },
+        "raw_lifecycle_by_source": {
+          "agent_stream": {
+            "mcp.tool.started": 15,
+            "mcp.tool.completed": 11,
+            "mcp.tool.failed": 4
+          },
+          "mcp_server": {
+            "mcp.tool.started": 0,
+            "mcp.tool.completed": 11,
+            "mcp.tool.failed": 4
+          }
+        },
+        "correlation_confidence": "ordinal_unconfirmed",
+        "errors_by_code": {
+          "docs_not_found": 1,
+          "not_configured": 2,
+          "requested_version_unavailable": 1
+        }
+      },
+      "agent_items_completed_by_type": {
+        "message": 5,
+        "command_execution": 4,
+        "reasoning": 20,
+        "mcp_call": 15
+      },
+      "answer_claims": [
+        {
+          "package": "climenu",
+          "stated_version": "0.2.0",
+          "source_url": "https://cran.r-project.org/src/contrib/climenu_0.2.0.tar.gz",
+          "source_url_present": true,
+          "documentation_url": "https://cran.r-project.org/web/packages/climenu/climenu.pdf",
+          "documentation_url_present": true,
+          "feature_ids": [
+            "keyboard_single_multi_select",
+            "stable_return_values"
+          ],
+          "caveat_ids": [
+            "menu_focused"
+          ],
+          "pinned_version": "0.2.0",
+          "reference_version_match": true,
+          "reference_source_url": "https://cran.r-project.org/package=climenu",
+          "reference_documentation_url": "https://cran.r-project.org/web/packages/climenu/climenu.pdf",
+          "source_identity_matches_reference": false,
+          "documentation_identity_matches_reference": true,
+          "observed_tool_versions_for_package": [],
+          "evidence_consistency": "insufficient_observability",
+          "citations": [
+            {
+              "role": "source",
+              "url_present_in_final_answer": true,
+              "url": "https://cran.r-project.org/src/contrib/climenu_0.2.0.tar.gz",
+              "matching_source_access_observed": false,
+              "source_access_status": "source_access_observability_unknown"
+            },
+            {
+              "role": "documentation",
+              "url_present_in_final_answer": true,
+              "url": "https://cran.r-project.org/web/packages/climenu/climenu.pdf",
+              "matching_source_access_observed": false,
+              "source_access_status": "source_access_observability_unknown"
+            }
+          ]
+        }
+      ],
+      "observed_agent_evidence_count": 0,
+      "telemetry_schema_versions": [
+        "1.0"
+      ]
+    }
+  },
+  "comparison": {
+    "registered_tool_catalogs_match": true,
+    "allowed_tool_difference": [
+      "list_package_functions"
+    ],
+    "control_only_allowed_tools": [],
+    "matching_model_effort_instructions": true,
+    "causal_conclusion": "not_supported_by_one_trial_per_condition"
+  }
+}

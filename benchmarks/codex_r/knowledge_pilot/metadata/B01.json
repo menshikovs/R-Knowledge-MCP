@@ -1,0 +1,1 @@
+{"id":"B01","environment":{"r":"4.5.2","packages":{"dplyr":"1.2.1"}},"checked_at_utc":"2026-10-25T07:27:05Z","sources":[{"url":"https://cran.r-project.org/web/packages/dplyr/dplyr.pdf","kind":"official_package_documentation","package":"dplyr","version":"1.2.1"}],"input_description":"Synthetic fixed ledger fixture; SHA-256 is exported as public_inputs by the runner."}

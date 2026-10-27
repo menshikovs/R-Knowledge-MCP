@@ -3,3 +3,7 @@ artifacts/
 results/
 *.html
 .quarto/
+analytics.duckdb
+analytics.duckdb.wal
+reports/full-offline-readiness-*/experiment.json
+launcher/logs/

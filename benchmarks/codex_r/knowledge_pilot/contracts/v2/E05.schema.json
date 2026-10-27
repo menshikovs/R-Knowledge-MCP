@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/r-knowledge-mcp/knowledge-pilot-v2/E05.schema.json",
+  "title": "E05 compatibility classification answer",
+  "type": "object", "additionalProperties": false,
+  "required": ["cases", "positive_package", "rationale", "sources"],
+  "properties": {
+    "cases": {"oneOf": [
+      {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string", "enum": ["compatible", "incompatible", "unverified"]}},
+      {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["id", "classification"], "properties": {"id": {"type": "string"}, "classification": {"type": "string", "enum": ["compatible", "incompatible", "unverified"]}, "evidence": {"type": "array", "items": {"type": "string"}}}}}
+    ]},
+    "positive_package": {"oneOf": [
+      {"type": "object", "additionalProperties": false, "required": ["name", "version"], "properties": {"name": {"type": "string"}, "version": {"type": "string"}}},
+      {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9.]*@[0-9]+(?:\\.[0-9A-Za-z-]+)*$"}
+    ]},
+    "rationale": {"type": "string", "minLength": 30},
+    "sources": {"type": "array", "minItems": 1, "items": {"oneOf": [{"type": "string", "format": "uri"}, {"type": "object", "additionalProperties": false, "required": ["url"], "properties": {"url": {"type": "string", "format": "uri"}, "claim": {"type": "string"}}}]}}
+  }
+}

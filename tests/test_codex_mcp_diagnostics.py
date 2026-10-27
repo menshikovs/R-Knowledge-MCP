@@ -1,5 +1,6 @@
 """Regression tests for MCP registration, reachability and call accounting in run_simple."""
 
+import csv
 import json
 import logging
 import shutil
@@ -13,6 +14,8 @@ import pytest
 from benchmarks.codex_r import run_simple as simple
 from benchmarks.codex_r.hard import suite as hard
 
+NL = chr(10)
+BAD_ALIAS = "bad" + NL + "TELEMETRY forged" + chr(27) + "[31m"
 SERVER_LOG = (
     "INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest\n"
     "INFO:cran_knowledge_mcp.server:Tool call: get_function_docs\n"
@@ -41,6 +44,7 @@ def test_mcp_usage_counts_codex_shaped_calls_once_and_keeps_all_item_types():
     assert usage == {
         "calls": 1,
         "tool_names": ["get_function_docs"],
+        "calls_by_tool": {"get_function_docs": 1},
         "tool_search_calls": 1,
         "item_types": {"tool_search_call": 1, "mcp_tool_call": 1, "command_execution": 1},
     }
@@ -63,6 +67,7 @@ def test_mcp_usage_recognizes_calls_by_server_label_and_ignores_listing():
     ]
     usage = simple.mcp_usage(events)
     assert usage["calls"] == 2 and usage["tool_names"] == ["get_package", "x"]
+    assert usage["calls_by_tool"] == {"get_package": 1, "x": 1}
 
 
 def test_server_audit_parses_list_and_call_requests():
@@ -77,6 +82,8 @@ class _Signals:
     """run_trial arms SIGALRM (Linux runner); stub it so the test runs on any OS."""
 
     SIGALRM = 14
+    SIGINT = 2
+    SIG_IGN = 1
 
     @staticmethod
     def signal(signum, handler):
@@ -175,6 +182,8 @@ async def test_server_accepts_same_origin_and_logs_tool_names(monkeypatch, caplo
     from cran_knowledge_mcp.server import create_http_app
 
     monkeypatch.setenv("MCP_TOOLSET", "consolidated")
+    monkeypatch.setenv("RKMCP_BENCH_RUN_ID", "telemetry-run")
+    monkeypatch.setenv("RKMCP_BENCH_TRIAL_ID", "telemetry-local-regression")
     app = create_http_app(["r-knowledge-mcp:8000"])
     headers = {
         "Host": "r-knowledge-mcp:8000",
@@ -217,6 +226,260 @@ async def test_server_accepts_same_origin_and_logs_tool_names(monkeypatch, caplo
     assert called.status_code == 200
     assert "Tool call: analyze_r_source" in caplog.text
     assert "ggplot(d)" not in caplog.text
+    telemetry_lines = [
+        line.split(simple.MCP_TELEMETRY_PREFIX, 1)[1]
+        for line in caplog.text.splitlines()
+        if simple.MCP_TELEMETRY_PREFIX in line
+    ]
+    assert len(telemetry_lines) == 1
+    telemetry = json.loads(telemetry_lines[0])
+    expected_request_bytes = len(
+        json.dumps(
+            {
+                "name": call["params"]["name"],
+                "arguments": call["params"]["arguments"],
+            },
+            ensure_ascii=False,
+            separators=(",", ":"),
+        ).encode()
+    )
+    assert telemetry["run_id"] == "telemetry-run"
+    assert telemetry["trial_id"] == "telemetry-local-regression"
+    assert telemetry["tool_name"] == "analyze_r_source" and telemetry["call_number"] == 1
+    assert telemetry["status"] == "ok" and telemetry["request_bytes"] == expected_request_bytes
+    assert telemetry["response_bytes"] > 0 and telemetry["duration_ms"] >= 0
+    assert telemetry["response_tokens_estimate"] == (telemetry["response_bytes"] + 3) // 4
+    assert telemetry["error_code"] is None and telemetry["truncated"] is False
+
+
+async def test_server_telemetry_records_repeated_error_and_truncated_calls(monkeypatch, caplog):
+    from cran_knowledge_mcp.server import create_http_app
+    from cran_knowledge_mcp.service import KnowledgeService
+
+    async def large_analysis(*args, **kwargs):
+        return {"description": "large-response-marker " + ("x" * 100_000)}
+
+    monkeypatch.setattr(KnowledgeService, "analyze_r_source", large_analysis)
+    monkeypatch.setenv("MCP_TOOLSET", "consolidated")
+    monkeypatch.setenv("RKMCP_BENCH_RUN_ID", "large-run")
+    monkeypatch.setenv("RKMCP_BENCH_TRIAL_ID", "B02-B-1")
+    app = create_http_app(["r-knowledge-mcp:8000"])
+    headers = {
+        "Host": "r-knowledge-mcp:8000",
+        "Accept": "application/json, text/event-stream",
+        "MCP-Protocol-Version": "2025-06-18",
+    }
+    caplog.set_level(logging.INFO, logger="cran_knowledge_mcp.server")
+
+    async def call_tool(client, request_id, arguments):
+        return await client.post(
+            "/mcp",
+            headers=headers,
+            json={
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "method": "tools/call",
+                "params": {"name": "analyze_r_source", "arguments": arguments},
+            },
+        )
+
+    async with app.router.lifespan_context(app):
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://r-knowledge-mcp:8000"
+        ) as client:
+            failed = await call_tool(client, 1, {"kind": "secret-invalid-kind"})
+            large = await call_tool(client, 2, {"kind": "ggplot", "source": "source-secret-marker"})
+
+    assert failed.status_code == large.status_code == 200
+    assert failed.json()["result"]["isError"] is True
+    assert large.json()["result"]["isError"] is False
+    assert large.json()["result"]["structuredContent"]["output_truncation"]["truncated"] is True
+    assert "secret-invalid-kind" not in caplog.text
+    assert "source-secret-marker" not in caplog.text
+    assert "large-response-marker" not in caplog.text
+
+    telemetry_lines = [
+        line.split(simple.MCP_TELEMETRY_PREFIX, 1)[1]
+        for line in caplog.text.splitlines()
+        if simple.MCP_TELEMETRY_PREFIX in line
+    ]
+    raw_events = [json.loads(line) for line in telemetry_lines]
+    assert [event["call_number"] for event in raw_events] == [1, 2]
+    assert raw_events[0]["status"] == "error" and raw_events[0]["error_code"] == "invalid_input"
+    assert raw_events[0]["response_bytes"] > 0 and raw_events[0]["truncated"] is False
+    assert raw_events[1]["status"] == "ok" and raw_events[1]["truncated"] is True
+    assert raw_events[1]["response_bytes"] > 50_000
+
+    server_log = "\n".join(caplog.messages)
+    parsed = simple.parse_mcp_call_telemetry(server_log, "large-run", "B02-B-1")
+    assert [call["call_number"] for call in parsed["calls"]] == [1, 2]
+    assert parsed["aggregates_by_tool"][0]["call_count"] == 2
+    assert parsed["aggregates_by_tool"][0]["error_calls"] == 1
+    assert parsed["aggregates_by_tool"][0]["truncated_calls"] == 1
+    assert parsed["aggregates_by_tool"][0]["any_truncation_calls"] == 1
+    # The mocked response is clipped by the output budget, not paginated.
+    assert parsed["aggregates_by_tool"][0]["output_budget_truncated_calls"] == 1
+    assert parsed["aggregates_by_tool"][0]["page_truncated_calls"] == 0
+
+    audit_log = (
+        "Processing request of type CallToolRequest\n"
+        "Processing request of type CallToolRequest\n" + server_log
+    )
+    audit = simple.mcp_server_audit(audit_log)
+    client_usage = simple.mcp_usage(
+        [
+            {
+                "type": "agent.session.turn.item.done",
+                "item": {
+                    "type": "mcp_tool_call",
+                    "server": "r_knowledge",
+                    "tool": "analyze_r_source",
+                },
+            },
+            {
+                "type": "agent.session.turn.item.done",
+                "item": {
+                    "type": "mcp_tool_call",
+                    "server": "r_knowledge",
+                    "tool": "analyze_r_source",
+                },
+            },
+        ]
+    )
+    assert simple.reconcile_mcp_telemetry(client_usage, audit, parsed)["status"] == "matched"
+
+
+def _telemetry_events(caplog):
+    return [
+        json.loads(line.split(simple.MCP_TELEMETRY_PREFIX, 1)[1])
+        for line in caplog.text.splitlines()
+        if simple.MCP_TELEMETRY_PREFIX in line
+    ]
+
+
+async def _call_tools(service, calls):
+    from mcp.shared.memory import create_connected_server_and_client_session
+
+    from cran_knowledge_mcp.server import create_server
+
+    async with create_connected_server_and_client_session(
+        create_server(service=service)
+    ) as session:
+        return [await session.call_tool(name, arguments) for name, arguments in calls]
+
+
+async def test_telemetry_reports_nested_get_package_error_codes(service, monkeypatch, caplog):
+    monkeypatch.setenv("MCP_TOOLSET", "consolidated")
+    monkeypatch.setenv("RKMCP_BENCH_RUN_ID", "nested-run")
+    monkeypatch.setenv("RKMCP_BENCH_TRIAL_ID", "D01-B-1")
+    caplog.set_level(logging.INFO, logger="cran_knowledge_mcp.server")
+    api, _, _ = service
+    missing, docs = await _call_tools(
+        api,
+        [
+            ("get_package", {"package": "MissingPkg"}),
+            ("get_function_docs", {"package": "ExamplePkg", "function": "private-alias-name"}),
+        ],
+    )
+
+    # get_package keeps the code inside errors[].error; get_function_docs at the top level.
+    assert missing.isError is True and "error" not in missing.structuredContent
+    assert missing.structuredContent["errors"][0]["error"]["code"] == "package_not_found"
+    assert docs.isError is True and docs.structuredContent["error"]["code"] == "docs_not_found"
+
+    events = _telemetry_events(caplog)
+    assert [event["status"] for event in events] == ["error", "error"]
+    assert events[0]["error_code"] == "package_not_found"
+    assert events[0]["error_codes"] == ["package_not_found"]
+    assert events[1]["error_code"] == "docs_not_found"
+    assert events[1]["error_codes"] == ["docs_not_found"]
+    parsed = simple.parse_mcp_call_telemetry(NL.join(caplog.messages), "nested-run", "D01-B-1")
+    assert [call["error_code"] for call in parsed["calls"]] == [
+        "package_not_found",
+        "docs_not_found",
+    ]
+    assert parsed["calls"][0]["error_codes"] == ["package_not_found"]
+
+
+def test_telemetry_error_codes_merge_top_level_and_nested_without_duplicates():
+    from cran_knowledge_mcp.server import _telemetry_error_codes
+
+    assert _telemetry_error_codes(None) == [] and _telemetry_error_codes({"error": "x"}) == []
+    assert _telemetry_error_codes(
+        {
+            "error": {"code": "partial_failure"},
+            "errors": [
+                {"error": {"code": "package_not_found"}},
+                {"error": {"code": "package_not_found"}},
+                {"error": {"code": "Bad Code"}},
+                {"section": "x"},
+                {"error": {"code": "timeout"}},
+            ],
+        }
+    ) == ["partial_failure", "package_not_found", "timeout"]
+    many = {"errors": [{"error": {"code": f"code_{index}"}} for index in range(40)]}
+    assert len(_telemetry_error_codes(many)) == 8
+
+
+async def test_telemetry_tracks_repeats_and_keeps_bounded_discovery_fields(
+    service, monkeypatch, caplog
+):
+    monkeypatch.setenv("MCP_TOOLSET", "consolidated")
+    monkeypatch.setenv("RKMCP_BENCH_RUN_ID", "repeat-run")
+    monkeypatch.setenv("RKMCP_BENCH_TRIAL_ID", "D01-B-1")
+    monkeypatch.delenv("RKMCP_DIAGNOSTIC_FUNCTION_ALIASES", raising=False)
+    caplog.set_level(logging.INFO, logger="cran_knowledge_mcp.server")
+    api, _, _ = service
+    same = ("get_function_docs", {"package": "ExamplePkg", "function": "guess_one"})
+    other = ("get_function_docs", {"package": "ExamplePkg", "function": "guess_two"})
+    await _call_tools(api, [same, same, other, same])
+
+    events = _telemetry_events(caplog)
+    assert [event["repeat_count"] for event in events] == [0, 1, 0, 2]
+    fingerprints = [event["argument_fingerprint"] for event in events]
+    assert fingerprints[0] == fingerprints[1] == fingerprints[3] != fingerprints[2]
+    assert all(len(value) == 12 for value in fingerprints)
+    assert events[0]["discovery_request"]["function"] == "guess_one"
+    assert events[2]["discovery_request"]["function"] == "guess_two"
+    assert "private_source" not in caplog.text
+    assert all("diagnostic_function_alias" not in event for event in events)
+    parsed = simple.parse_mcp_call_telemetry(NL.join(caplog.messages), "repeat-run", "D01-B-1")
+    assert [call["repeat_count"] for call in parsed["calls"]] == [0, 1, 0, 2]
+    assert parsed["calls"][0]["argument_fingerprint"] == fingerprints[0]
+
+
+async def test_telemetry_fingerprints_differ_between_server_processes(service, monkeypatch, caplog):
+    monkeypatch.setenv("MCP_TOOLSET", "consolidated")
+    caplog.set_level(logging.INFO, logger="cran_knowledge_mcp.server")
+    api, _, _ = service
+    call = ("get_function_docs", {"package": "ExamplePkg", "function": "guess_one"})
+    await _call_tools(api, [call])
+    await _call_tools(api, [call])
+    first, second = _telemetry_events(caplog)
+    assert first["argument_fingerprint"] != second["argument_fingerprint"]
+
+
+async def test_opt_in_alias_diagnostics_are_sanitized_and_bounded(service, monkeypatch, caplog):
+    monkeypatch.setenv("MCP_TOOLSET", "consolidated")
+    monkeypatch.setenv("RKMCP_DIAGNOSTIC_FUNCTION_ALIASES", "1")
+    caplog.set_level(logging.INFO, logger="cran_knowledge_mcp.server")
+    api, _, _ = service
+    await _call_tools(
+        api,
+        [
+            (
+                "get_function_docs",
+                {"package": "ExamplePkg", "function": BAD_ALIAS + "z" * 200},
+            ),
+            ("get_package", {"package": "MissingPkg"}),
+        ],
+    )
+    docs_event, package_event = _telemetry_events(caplog)
+    alias = docs_event["diagnostic_function_alias"]
+    assert alias.startswith("bad?TELEMETRY?forged?") and len(alias) == 64
+    assert all(32 < ord(char) < 127 for char in alias)
+    assert "diagnostic_function_alias" not in package_event  # only get_function_docs aliases
+    assert "bad" + NL + "TELEMETRY" not in caplog.text
 
 
 # HTTP/1.0 avoids chunked transfer encoding, so each response body is one JSON line.
@@ -421,13 +684,41 @@ def test_separate_mcp_smoke_reuses_runner_without_hidden_scoring(tmp_path, monke
     assert "score" not in seen
     assert record["score"] is None and record["fully_correct"] is None
     assert record["suite"] == "mcp-smoke"
-    expected = "smoke_transport_observed" if traffic == "complete" else "smoke_transport_missing"
+    expected = "smoke_transport_missing" if traffic == "list_only" else "smoke_transport_observed"
     assert record["status"] == expected
     assert record["session_deleted"] is True
     assert (record["smoke_transport_checks"]["tool_search_observed"]) is (traffic == "complete")
     assert not (tmp_path / "standard/mcp-smoke-B-1/artifacts").exists()
     saved = json.loads((tmp_path / "standard/mcp-smoke-B-1/events.json").read_text())
-    assert saved == events
+    assert saved == simple.redact_mcp_events(events)
+
+
+def test_smoke_passes_with_audited_mcp_call_without_tool_search(tmp_path, monkeypatch):
+    events = [
+        EVENTS[0],
+        {
+            "type": "agent.session.turn.item.done",
+            "item": {
+                **CALL,
+                "arguments": {"package": "dplyr", "function": "closest"},
+            },
+        },
+        EVENTS[-1],
+    ]
+    _, record = _hard_trial(
+        tmp_path,
+        monkeypatch,
+        "standard",
+        simple.MCP_SMOKE_TASK,
+        events,
+        SERVER_LOG,
+    )
+
+    assert record["mcp_usage"]["calls"] == 1
+    assert record["mcp_usage"]["tool_search_calls"] == 0
+    assert record["mcp_server_audit"]["call_tool_requests"] == 1
+    assert record["status"] == "smoke_transport_observed"
+    assert record["smoke_transport_checks"]["tool_search_observed"] is False
 
 
 def test_smoke_command_selector_is_accepted_without_api_requests(tmp_path, monkeypatch):
@@ -474,18 +765,33 @@ def test_diagnostic_variant_changes_only_the_agent_instructions(tmp_path, monkey
 
 
 def test_results_csv_reports_discovery_and_server_columns(tmp_path):
-    record = {
-        "trial": "H04-B-1-diagnostic",
-        "instructions": "diagnostic",
-        "mcp_usage": {"calls": 2, "tool_names": ["get_function_docs"], "tool_search_calls": 1},
-        "mcp_server_audit": {"list_tools_requests": 1, "call_tool_requests": 2},
-        "score": {"passed": 17, "total": 17},
-    }
-    simple.save_results(tmp_path, [record])
-    row = (tmp_path / "results.csv").read_text(encoding="utf-8").splitlines()
-    header = row[0].split(",")
-    values = dict(zip(header, row[1].split(","), strict=False))
-    assert values["instructions"] == "diagnostic"
-    assert values["tool_search_calls"] == "1"
-    assert values["server_list_tools"] == "1" and values["server_tool_calls"] == "2"
-    assert values["mcp_calls"] == "2" and values["mcp_tool_names"] == "get_function_docs"
+    records = [
+        {
+            "trial": "H04-B-1-diagnostic",
+            "instructions": "diagnostic",
+            "mcp_usage": {
+                "calls": 2,
+                "tool_names": ["get_function_docs"],
+                "tool_search_calls": 1,
+            },
+            "mcp_server_audit": {"list_tools_requests": 1, "call_tool_requests": 2},
+            "score": {"passed": 17, "total": 17},
+        },
+        {
+            "trial": "zero-discovery",
+            "mcp_usage": {"calls": 1, "tool_search_calls": 0},
+        },
+        {"trial": "discovery-unavailable", "mcp_usage": {"calls": 1}},
+    ]
+    simple.save_results(tmp_path, records)
+    with (tmp_path / "results.csv").open(newline="", encoding="utf-8") as stream:
+        rows = {row["trial"]: row for row in csv.DictReader(stream)}
+
+    assert rows["H04-B-1-diagnostic"]["instructions"] == "diagnostic"
+    assert rows["H04-B-1-diagnostic"]["tool_search_calls"] == "1"
+    assert rows["zero-discovery"]["tool_search_calls"] == "0"
+    assert rows["discovery-unavailable"]["tool_search_calls"] == ""
+    assert rows["H04-B-1-diagnostic"]["server_list_tools"] == "1"
+    assert rows["H04-B-1-diagnostic"]["server_tool_calls"] == "2"
+    assert rows["H04-B-1-diagnostic"]["mcp_calls"] == "2"
+    assert rows["H04-B-1-diagnostic"]["mcp_tool_names"] == "get_function_docs"

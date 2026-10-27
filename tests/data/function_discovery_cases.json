@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "package": "DiscoveryPkg",
+  "version": "1.0.0",
+  "cases": [
+    {
+      "id": "explicit",
+      "namespace": "export(select, undocumented)\n",
+      "rd": {
+        "selection.Rd": "\\name{selection}\n\\alias{select}\n\\alias{choose}\n\\title{Synthetic selection}\n"
+      },
+      "exports": [
+        "select",
+        "undocumented"
+      ],
+      "aliases": [
+        "choose",
+        "select"
+      ],
+      "namespace_status": "verified",
+      "rd_status": "verified"
+    },
+    {
+      "id": "methods_reexport",
+      "namespace": "export(delegated)\nimportFrom(OtherPkg, delegated, import_only)\nS3method(print, Widget)\nexportClasses(Widget)\nexportMethods(show)\n",
+      "rd": {
+        "methods.Rd": "\\name{methods}\n\\alias{print.Widget}\n\\alias{show}\n\\title{Synthetic methods}\n"
+      },
+      "exports": [
+        "Widget",
+        "delegated",
+        "show"
+      ],
+      "aliases": [
+        "print.Widget",
+        "show"
+      ],
+      "namespace_status": "verified",
+      "rd_status": "verified"
+    },
+    {
+      "id": "pattern",
+      "namespace": "export(explicit)\nexportPattern(\"^auto\")\n",
+      "rd": {},
+      "exports": [
+        "explicit"
+      ],
+      "aliases": [],
+      "namespace_status": "partial",
+      "rd_status": "verified"
+    },
+    {
+      "id": "dynamic",
+      "namespace": "if (TRUE) { export(secret) }\nexport(real)\nx <- export(assigned)\n",
+      "rd": {
+        "real.Rd": "\\name{real}\n\\alias{real}\n"
+      },
+      "exports": [
+        "real"
+      ],
+      "aliases": [
+        "real"
+      ],
+      "namespace_status": "partial",
+      "rd_status": "verified"
+    },
+    {
+      "id": "malformed_namespace",
+      "namespace": "export(broken\n",
+      "rd": {
+        "topic.Rd": "\\name{topic}\n\\alias{documented}\n"
+      },
+      "exports": [],
+      "aliases": [
+        "documented"
+      ],
+      "namespace_status": "partial",
+      "rd_status": "verified"
+    },
+    {
+      "id": "overlap",
+      "namespace": "export(shared)\n",
+      "rd": {
+        "a.Rd": "\\name{a}\n\\alias{shared}\n",
+        "b.Rd": "\\name{b}\n\\alias{shared}\n"
+      },
+      "exports": [
+        "shared"
+      ],
+      "aliases": [
+        "shared"
+      ],
+      "namespace_status": "verified",
+      "rd_status": "verified"
+    },
+    {
+      "id": "malformed_rd",
+      "namespace": "export(ok)\n",
+      "rd": {
+        "bad.Rd": "\\name{bad}\n\\alias{ok}\n\\description{unclosed"
+      },
+      "exports": [
+        "ok"
+      ],
+      "aliases": [
+        "ok"
+      ],
+      "namespace_status": "verified",
+      "rd_status": "partial"
+    },
+    {
+      "id": "unicode",
+      "namespace": "export(\"données\")\n",
+      "rd": {
+        "unicode.Rd": "\\name{unicode}\n\\alias{données}\n"
+      },
+      "exports": [
+        "données"
+      ],
+      "aliases": [
+        "données"
+      ],
+      "namespace_status": "verified",
+      "rd_status": "verified"
+    },
+    {
+      "id": "missing_namespace",
+      "namespace": null,
+      "rd": {},
+      "exports": [],
+      "aliases": [],
+      "namespace_status": "unavailable",
+      "rd_status": "verified"
+    }
+  ]
+}

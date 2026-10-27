@@ -13,6 +13,7 @@ dependencies = ["mcp>=1.30,<2", "httpx>=0.28,<1", "PyYAML>=6,<7"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10", "pytest-asyncio>=0.24,<2", "ruff>=0.11,<1"]
+analytics = ["duckdb>=1.4,<2", "streamlit>=1.55,<2", "pandas>=2.2,<4"]
 
 [project.scripts]
 cran-knowledge-mcp = "cran_knowledge_mcp.server:main"
@@ -31,7 +32,7 @@ markers = ["docker: requires an available Docker engine and the frozen R benchma
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-extend-exclude = [".venv", "upstream", ".test-tmp"]
+extend-exclude = [".venv", "upstream", ".test-tmp", ".pytest-windows-tmp"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]

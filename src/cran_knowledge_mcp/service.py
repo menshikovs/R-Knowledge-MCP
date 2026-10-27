@@ -177,6 +177,7 @@ def failure(exc: KnowledgeError, package=None, repository=None, bioc_version=Non
             "source_url": exc.source_url,
             "attempted_at": datetime.now(UTC).isoformat(),
             **({"cached": True} if exc.cached else {}),
+            **exc.details,
         },
     }
 
@@ -423,6 +424,34 @@ class KnowledgeService:
         return await self._dispatch(
             "get_function_docs", package, repository, bioc_version, function=function, offset=offset
         )
+
+    async def list_package_functions(
+        self,
+        package,
+        repository="cran",
+        bioc_version=None,
+        package_version=None,
+        query=None,
+        limit=20,
+        offset=0,
+        snapshot=None,
+    ):
+        if repository not in ("cran", "bioconductor"):
+            raise KnowledgeError("invalid_input", "Discovery requires one repository")
+        result = await self._one(
+            "list_package_functions",
+            package,
+            repository,
+            bioc_version,
+            query=query,
+            limit=limit,
+            offset=offset,
+            package_version=package_version,
+            snapshot=snapshot,
+        )
+        if _encoded_size(result) > 20 << 10:
+            raise KnowledgeError("response_too_large", "Narrow discovery query or reduce limit")
+        return result
 
     async def get_package_vignettes(self, package, repository="cran", bioc_version=None):
         return await self._dispatch("get_package_vignettes", package, repository, bioc_version)
@@ -1675,7 +1704,27 @@ class KnowledgeService:
                     "available_package_version": info["package_version"],
                     "sources": info.get("sources", []),
                 }
-        return await self.get_function_docs(package, function, offset, repository, bioc_version)
+        result = await self.get_function_docs(package, function, offset, repository, bioc_version)
+        resolved = result.get("package_version") or result.get("error", {}).get(
+            "resolved_package_version"
+        )
+        if package_version is not None and resolved is not None:
+            if version_parts(package_version) != version_parts(resolved):
+                error = KnowledgeError(
+                    "requested_version_unavailable",
+                    "Package version changed during resolution.",
+                    result.get("source_url"),
+                    related_sources=result.get("sources", []),
+                    details={
+                        "requested_package_version": package_version,
+                        "available_package_version": resolved,
+                    },
+                )
+                return failure(error, package, repository, result.get("bioc_version"))
+        if result.get("error", {}).get("code") == "docs_not_found":
+            result["requested_package_version"] = package_version
+            result["error"]["requested_package_version"] = package_version
+        return result
 
     async def check_r_compatibility(
         self, r_version, package=None, repository="cran", bioc_version=None

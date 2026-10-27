@@ -1,0 +1,34 @@
+{
+  "scorer_image": "sha256:a4e959f2ed9af8141ecec5d95d727880fd5dfc325efc19cb55032d6d34899161",
+  "api_calls": 0,
+  "network": "none",
+  "seconds": 39.05,
+  "tasks": {
+    "E02": {
+      "reference": {
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong_design": {
+        "passed": 4,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": "reference_level_and_sign"
+      },
+      "wrong_counts": {
+        "passed": 0,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "workflow_returns_a_result",
+          "result_has_requested_columns",
+          "all_genes_present",
+          "count_container_and_samples",
+          "reference_level_and_sign"
+        ]
+      }
+    }
+  }
+}

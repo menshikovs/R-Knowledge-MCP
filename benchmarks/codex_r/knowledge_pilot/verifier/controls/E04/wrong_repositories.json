@@ -1,0 +1,1 @@
+{"r_version":"4.5.2","bioconductor":"3.22","packages":{"DESeq2":"CRAN","ggplot2":"Bioconductor","BiocGenerics":"CRAN"},"versions":{"DESeq2":"1.50.2"},"dependency_edges":[],"install_strategy":["install.packages('DESeq2')"],"rationale":"The repositories are interchangeable for all packages.","sources":["https://bioconductor.org/packages/3.22/bioc/html/DESeq2.html"]}

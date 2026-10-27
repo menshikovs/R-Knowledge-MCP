@@ -8,6 +8,7 @@ import re
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from contextlib import asynccontextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from time import monotonic
@@ -30,6 +31,18 @@ OVERSIZED_FAILURE_CAPACITY = 128
 ARCHIVE_ROUTE = re.compile(
     r"/src/contrib/[A-Za-z][A-Za-z0-9.]{0,99}_[0-9]+(?:[.-][0-9]+)*\.tar\.gz\Z"
 )
+
+
+# Per-call fetch accounting. The telemetry wrapper installs a dict for one tool call;
+# outside instrumented calls it is None and counting costs nothing.
+FETCH_STATS: ContextVar[dict[str, int] | None] = ContextVar("fetch_stats", default=None)
+
+
+def _count_fetch(outcome: str) -> None:
+    """Record a "hit" (answered from the TTL cache) or "network" (upstream request)."""
+    stats = FETCH_STATS.get()
+    if stats is not None:
+        stats[outcome] = stats.get(outcome, 0) + 1
 
 
 def _gunzip_index(body: bytes, url: str) -> bytes:
@@ -136,6 +149,7 @@ class RepositoryHTTP(ABC):
                     expires, item, validators = self._cache[path]
                     if expires > now:
                         self._cache.move_to_end(path)
+                        _count_fetch("hit")
                         return item
                     # Expired: revalidate with a conditional request. The old body is
                     # reused only after the server answers 304, never after an error.
@@ -147,6 +161,7 @@ class RepositoryHTTP(ABC):
             if failed:
                 if failed[0] > monotonic():
                     self._oversized_failures.move_to_end(path)
+                    _count_fetch("hit")
                     raise KnowledgeError("source_too_large", failed[1], url, cached=True)
                 self._oversized_failures.pop(path, None)
             headers = {"Accept-Encoding": "identity"}
@@ -156,6 +171,7 @@ class RepositoryHTTP(ABC):
                 if "last-modified" in stale[1]:
                     headers["If-Modified-Since"] = stale[1]["last-modified"]
             not_modified = False
+            _count_fetch("network")
             async with self._request_slots:
                 try:
                     async with asyncio.timeout(45):

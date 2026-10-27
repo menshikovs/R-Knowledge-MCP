@@ -19,7 +19,11 @@ def test_session_request_uses_selected_effort_without_spend_control(effort, with
         assert "spend_control" not in body
         assert body["agent"]["model"] == "gpt-6-luna"
         assert body["agent"]["reasoning"] == {"effort": effort}
-        assert bool(body["agent"]["tools"]) is with_mcp
+        expected_tools = simple.suite_for("D01")[2] if with_mcp else []
+        if with_mcp:
+            assert body["agent"]["tools"][0]["allowed_tools"] == expected_tools
+        else:
+            assert body["agent"]["tools"] == []
         assert "executor-test-key" not in request.content.decode()
         return httpx.Response(
             200,
@@ -38,7 +42,74 @@ def test_session_request_uses_selected_effort_without_spend_control(effort, with
         "application-test-key", "executor-test-key", transport=httpx.MockTransport(respond)
     )
     try:
-        assert client.create_simple_session(effort, with_mcp)["session_id"] == "sess_test"
+        assert (
+            client.create_simple_session(
+                effort,
+                with_mcp,
+                allowed_tools=simple.suite_for("D01")[2],
+            )["session_id"]
+            == "sess_test"
+        )
+        assert client.session_config_status == "response_echo_observed"
+        assert client.returned_agent_tool_names == (simple.suite_for("D01")[2] if with_mcp else [])
+        assert client.session_config_match is True
+    finally:
+        client.close()
+
+
+def test_session_configuration_echo_stays_unknown_when_api_omits_tools():
+    client = simple.SimpleClient(
+        "application-test-key",
+        "executor-test-key",
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(
+                200,
+                json={
+                    "id": "sess_test",
+                    "agent": {"model": "gpt-6-luna", "reasoning": {"effort": "medium"}},
+                    "environment": {
+                        "type": "self_hosted",
+                        "id": "env_test",
+                        "remote_url": "https://api.openai.com/v1/agents/api",
+                    },
+                },
+            )
+        ),
+    )
+    try:
+        client.create_simple_session("medium", True, simple.suite_for("D01")[2])
+        assert client.session_config_status == "response_echo_unavailable"
+        assert client.returned_agent_tool_names is None
+        assert client.session_config_match is None
+    finally:
+        client.close()
+
+
+def test_session_tool_echo_match_ignores_order():
+    def respond(request):
+        body = json.loads(request.content)
+        echo = body["agent"]["tools"][0]
+        echo["allowed_tools"] = list(reversed(echo["allowed_tools"]))
+        return httpx.Response(
+            200,
+            json={
+                "id": "sess_test",
+                "agent": body["agent"],
+                "environment": {
+                    "type": "self_hosted",
+                    "id": "env_test",
+                    "remote_url": "https://api.openai.com/v1/agents/api",
+                },
+            },
+        )
+
+    client = simple.SimpleClient(
+        "application-test-key", "executor-test-key", transport=httpx.MockTransport(respond)
+    )
+    try:
+        client.create_simple_session("medium", True, simple.suite_for("D01")[2])
+        assert client.session_config_status == "response_echo_observed"
+        assert client.session_config_match is True
     finally:
         client.close()
 

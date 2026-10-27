@@ -1,0 +1,33 @@
+{
+  "codex-r-benchmark:pilot-bioc": {
+    "r": "4.5.2",
+    "packages": {
+      "BiocVersion": "3.22.0",
+      "DESeq2": "1.50.2",
+      "SummarizedExperiment": "1.40.0",
+      "Biobase": "2.70.0",
+      "GenomicRanges": "1.62.0"
+    },
+    "cran_lock_unchanged": true,
+    "library_packages": 112,
+    "hidden_paths_absent": true
+  },
+  "rkmcp-codex-runtime:codex-0.163.0-bioc": {
+    "r": "4.5.2",
+    "packages": {
+      "BiocVersion": "3.22.0",
+      "DESeq2": "1.50.2",
+      "SummarizedExperiment": "1.40.0",
+      "Biobase": "2.70.0",
+      "GenomicRanges": "1.62.0"
+    },
+    "cran_lock_unchanged": true,
+    "library_packages": 112,
+    "hidden_paths_absent": true
+  },
+  "executor_contract": {
+    "codex_version": "codex-cli 0.163.0",
+    "environment_id_flag": true,
+    "remote_flag": true
+  }
+}

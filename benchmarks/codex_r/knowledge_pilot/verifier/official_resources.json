@@ -1,0 +1,399 @@
+{
+  "schema_version": 1,
+  "purpose": "Offline allowlist for the D scorer; official CRAN resources only.",
+  "generated_by": "benchmarks/codex_r/freeze_official_resources.py",
+  "verified_at_utc": "2026-10-25T08:56:01Z",
+  "tasks": {
+    "D01": {
+      "termr": {
+        "resource_version": "1.0.1",
+        "description_version": "1.0.1",
+        "resources": [
+          {
+            "kind": "source",
+            "form": "package_redirect",
+            "url": "https://cran.r-project.org/package=termr",
+            "http_status": 303,
+            "redirect_to": "https://cran.r-project.org/web/packages/termr/index.html"
+          },
+          {
+            "kind": "source",
+            "form": "package_page",
+            "url": "https://cran.r-project.org/web/packages/termr/index.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "source",
+            "form": "source_archive",
+            "url": "https://cran.r-project.org/src/contrib/termr_1.0.1.tar.gz",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://cran.r-project.org/web/packages/termr/termr.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://cran.r-project.org/web/packages/termr/refman/termr.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/termr/termr.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/termr/refman/termr.html",
+            "http_status": 200,
+            "redirect_to": null
+          }
+        ]
+      },
+      "climenu": {
+        "resource_version": "0.2.0",
+        "description_version": "0.2.0",
+        "resources": [
+          {
+            "kind": "source",
+            "form": "package_redirect",
+            "url": "https://cran.r-project.org/package=climenu",
+            "http_status": 303,
+            "redirect_to": "https://cran.r-project.org/web/packages/climenu/index.html"
+          },
+          {
+            "kind": "source",
+            "form": "package_page",
+            "url": "https://cran.r-project.org/web/packages/climenu/index.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "source",
+            "form": "source_archive",
+            "url": "https://cran.r-project.org/src/contrib/climenu_0.2.0.tar.gz",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://cran.r-project.org/web/packages/climenu/climenu.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://cran.r-project.org/web/packages/climenu/refman/climenu.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/climenu/climenu.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/climenu/refman/climenu.html",
+            "http_status": 200,
+            "redirect_to": null
+          }
+        ]
+      }
+    },
+    "D02": {
+      "httptest2": {
+        "resource_version": "1.2.2",
+        "description_version": "1.2.2",
+        "resources": [
+          {
+            "kind": "source",
+            "form": "package_redirect",
+            "url": "https://cran.r-project.org/package=httptest2",
+            "http_status": 303,
+            "redirect_to": "https://cran.r-project.org/web/packages/httptest2/index.html"
+          },
+          {
+            "kind": "source",
+            "form": "package_page",
+            "url": "https://cran.r-project.org/web/packages/httptest2/index.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "source",
+            "form": "source_archive",
+            "url": "https://cran.r-project.org/src/contrib/httptest2_1.2.2.tar.gz",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://cran.r-project.org/web/packages/httptest2/httptest2.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://cran.r-project.org/web/packages/httptest2/refman/httptest2.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/httptest2/httptest2.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/httptest2/refman/httptest2.html",
+            "http_status": 200,
+            "redirect_to": null
+          }
+        ]
+      },
+      "webmockr": {
+        "resource_version": "2.2.0",
+        "description_version": "2.2.0",
+        "resources": [
+          {
+            "kind": "source",
+            "form": "package_redirect",
+            "url": "https://cran.r-project.org/package=webmockr",
+            "http_status": 303,
+            "redirect_to": "https://cran.r-project.org/web/packages/webmockr/index.html"
+          },
+          {
+            "kind": "source",
+            "form": "package_page",
+            "url": "https://cran.r-project.org/web/packages/webmockr/index.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "source",
+            "form": "source_archive",
+            "url": "https://cran.r-project.org/src/contrib/webmockr_2.2.0.tar.gz",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://cran.r-project.org/web/packages/webmockr/webmockr.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://cran.r-project.org/web/packages/webmockr/refman/webmockr.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/webmockr/webmockr.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/webmockr/refman/webmockr.html",
+            "http_status": 200,
+            "redirect_to": null
+          }
+        ]
+      },
+      "webfakes": {
+        "resource_version": "1.5.0",
+        "description_version": "1.5.0",
+        "resources": [
+          {
+            "kind": "source",
+            "form": "package_redirect",
+            "url": "https://cran.r-project.org/package=webfakes",
+            "http_status": 303,
+            "redirect_to": "https://cran.r-project.org/web/packages/webfakes/index.html"
+          },
+          {
+            "kind": "source",
+            "form": "package_page",
+            "url": "https://cran.r-project.org/web/packages/webfakes/index.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "source",
+            "form": "source_archive",
+            "url": "https://cran.r-project.org/src/contrib/webfakes_1.5.0.tar.gz",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://cran.r-project.org/web/packages/webfakes/webfakes.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://cran.r-project.org/web/packages/webfakes/refman/webfakes.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/webfakes/webfakes.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/webfakes/refman/webfakes.html",
+            "http_status": 200,
+            "redirect_to": null
+          }
+        ]
+      }
+    },
+    "D03": {
+      "validate": {
+        "resource_version": "1.1.7",
+        "description_version": "1.1.7",
+        "resources": [
+          {
+            "kind": "source",
+            "form": "package_redirect",
+            "url": "https://cran.r-project.org/package=validate",
+            "http_status": 303,
+            "redirect_to": "https://cran.r-project.org/web/packages/validate/index.html"
+          },
+          {
+            "kind": "source",
+            "form": "package_page",
+            "url": "https://cran.r-project.org/web/packages/validate/index.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "source",
+            "form": "source_archive",
+            "url": "https://cran.r-project.org/src/contrib/validate_1.1.7.tar.gz",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://cran.r-project.org/web/packages/validate/validate.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://cran.r-project.org/web/packages/validate/refman/validate.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/validate/validate.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/validate/refman/validate.html",
+            "http_status": 200,
+            "redirect_to": null
+          }
+        ]
+      },
+      "pointblank": {
+        "resource_version": "0.12.4",
+        "description_version": "0.12.4",
+        "resources": [
+          {
+            "kind": "source",
+            "form": "package_redirect",
+            "url": "https://cran.r-project.org/package=pointblank",
+            "http_status": 303,
+            "redirect_to": "https://cran.r-project.org/web/packages/pointblank/index.html"
+          },
+          {
+            "kind": "source",
+            "form": "package_page",
+            "url": "https://cran.r-project.org/web/packages/pointblank/index.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "source",
+            "form": "source_archive",
+            "url": "https://cran.r-project.org/src/contrib/pointblank_0.12.4.tar.gz",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://cran.r-project.org/web/packages/pointblank/pointblank.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://cran.r-project.org/web/packages/pointblank/refman/pointblank.html",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_pdf",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/pointblank/pointblank.pdf",
+            "http_status": 200,
+            "redirect_to": null
+          },
+          {
+            "kind": "documentation",
+            "form": "reference_html",
+            "url": "https://stat.ethz.ch/CRAN/web/packages/pointblank/refman/pointblank.html",
+            "http_status": 200,
+            "redirect_to": null
+          }
+        ]
+      }
+    }
+  }
+}

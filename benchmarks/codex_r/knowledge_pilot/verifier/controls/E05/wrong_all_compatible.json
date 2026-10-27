@@ -1,0 +1,1 @@
+{"cases":{"release_322_r452":"compatible","release_322_r443":"compatible","unlisted_package_version":"compatible"},"rationale":"Bioconductor generally supports all R releases and package versions.","sources":["https://bioconductor.org/about/release-announcements/"]}

@@ -1,0 +1,51 @@
+{
+  "audit_type": "offline_d01_review",
+  "created_date": "2026-10-25",
+  "network_or_model_calls": 0,
+  "runs": {
+    "previous": "20261025T083653Z-ca1d5503",
+    "new": "20261025T100740Z-9746f577"
+  },
+  "d01_b": {
+    "recorded_score": "3/4",
+    "failed_check": "official_source_and_docs",
+    "package_version": "termr 1.0.1",
+    "source_url": "https://cran.r-project.org/src/contrib/termr_1.0.1.tar.gz",
+    "documentation_url": "https://cran.r-project.org/web/packages/termr/index.html",
+    "index_page_frozen_kind": "source",
+    "index_page_frozen_form": "package_page",
+    "decision": "rejection_is_consistent_with_source_documentation_distinction",
+    "scorer_changed": false,
+    "offline_rescore_needed": false
+  },
+  "truncation": {
+    "new_run_get_function_docs_calls": [10, 20],
+    "output_budget_truncated_calls": 0,
+    "page_truncated_calls": 2,
+    "legacy_combined_truncated_calls": 2,
+    "is_counting_defect": false,
+    "aggregation_names_clarified": true
+  },
+  "comparison": {
+    "mcp_calls": {"previous": 55, "new": 23},
+    "mcp_errors": {"previous": 41, "new": 9},
+    "get_function_docs_errors": {"previous": 39, "new": 8},
+    "successful_calls": {"previous": 14, "new": 14},
+    "request_bytes": {"previous": 8358, "new": 3325},
+    "response_bytes": {"previous": 153198, "new": 120833},
+    "response_token_estimate_not_billed": {"previous": 38334, "new": 30216},
+    "server_tool_duration_ms": {"previous": 34783.592, "new": 2541.514},
+    "trial_duration_seconds": {"previous": 158.323, "new": 66.714},
+    "api_usage": "unavailable",
+    "cost": "unavailable",
+    "causal_claim": false,
+    "limitation": "one variable-model trial per run and configurations differ"
+  },
+  "verification": {
+    "scorer_and_telemetry_tests": "89 passed",
+    "focused_regression_tests": "3 passed",
+    "ruff_check": "passed",
+    "ruff_format_check": "passed",
+    "saved_run_directories_modified": false
+  }
+}

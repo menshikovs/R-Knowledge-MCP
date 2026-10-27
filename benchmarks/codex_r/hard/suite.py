@@ -234,7 +234,9 @@ def score(task_id, artifacts, image, *, executor=bench.execute_container):
             "total": total,
             "fully_correct": status == "scored" and passed == total,
             "reason": record.get("reason"),
-            "failed_checks": record.get("failed_checks") or [],
+            "failed_checks": [record["failed_checks"]]
+            if isinstance(record.get("failed_checks"), str)
+            else record.get("failed_checks") or [],
             "details": record.get("details") or [],
             "environment": record.get("environment"),
             "artifacts": hashes,

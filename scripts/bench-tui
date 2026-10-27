@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Terminal launcher for the benchmark runner (termr front end). Run it from WSL, in
+# the shell that exports OPENAI_API_KEY and OPENAI_EXECUTOR_API_KEY.
+set -euo pipefail
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+exec Rscript "$root/benchmarks/codex_r/launcher/run.R" "$@"

@@ -1,0 +1,93 @@
+{
+  "report_type": "d-rescore",
+  "scorer_version": "d-recommendation-2",
+  "source_run": "20261025T083653Z-ca1d5503",
+  "source_files_modified": false,
+  "network_used": false,
+  "docker_used": false,
+  "original_scorer": "not recorded in the run files; compared source_url and documentation_url with one curated string per package (exact equality)",
+  "candidates_sha256": "ac3cd759957ee5e910732e986be6bd3ed59d0b41288571b30204f64cee4c5727",
+  "official_resources_sha256": "eaee963abb3c876dbae62b723109c83a27649a2eae4b28d08f016f1d69b8bf7f",
+  "official_resources_verified_at_utc": "2026-10-25T08:56:01Z",
+  "generated_at_utc": "2026-10-25T08:58:30Z",
+  "trials": [
+    {
+      "trial_id": "D01-A-1",
+      "task": "D01",
+      "mode": "without-mcp",
+      "answer": {
+        "package": "termr",
+        "version": "0.1.0",
+        "source_url": "https://cran.r-project.org/src/contrib/termr_0.1.0.tar.gz",
+        "documentation_url": "https://cran.r-project.org/web/packages/termr/termr.pdf"
+      },
+      "answer_sha256": "5478c75e70d4742fa95ad21484c4689295bbe05d88934870c3c5e5a1f44b4d4d",
+      "answer_matches_original_record": true,
+      "original": {
+        "passed": 2,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs"
+        ],
+        "details": [
+          "answer_shape: pass",
+          "accepted_package_and_version: fail",
+          "official_source_and_docs: fail",
+          "documented_fit_and_limits: pass"
+        ]
+      },
+      "rescored": {
+        "passed": 2,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs"
+        ],
+        "details": [
+          "answer_shape: pass",
+          "accepted_package_and_version: fail",
+          "official_source_and_docs: fail",
+          "documented_fit_and_limits: pass"
+        ]
+      }
+    },
+    {
+      "trial_id": "D01-B-1",
+      "task": "D01",
+      "mode": "with-mcp",
+      "answer": {
+        "package": "climenu",
+        "version": "0.2.0",
+        "source_url": "https://cran.r-project.org/src/contrib/climenu_0.2.0.tar.gz",
+        "documentation_url": "https://cran.r-project.org/web/packages/climenu/refman/climenu.html"
+      },
+      "answer_sha256": "023ed1954c0f94b94875fa4caa70f1e9c9330860aea10f36b93b94ee6778c94e",
+      "answer_matches_original_record": true,
+      "original": {
+        "passed": 3,
+        "total": 4,
+        "failed_checks": [
+          "official_source_and_docs"
+        ],
+        "details": [
+          "answer_shape: pass",
+          "accepted_package_and_version: pass",
+          "official_source_and_docs: fail",
+          "documented_fit_and_limits: pass"
+        ]
+      },
+      "rescored": {
+        "passed": 4,
+        "total": 4,
+        "failed_checks": [],
+        "details": [
+          "answer_shape: pass",
+          "accepted_package_and_version: pass",
+          "official_source_and_docs: pass",
+          "documented_fit_and_limits: pass"
+        ]
+      }
+    }
+  ]
+}

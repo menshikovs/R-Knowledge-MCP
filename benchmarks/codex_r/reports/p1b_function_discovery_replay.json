@@ -1,0 +1,583 @@
+{
+  "schema_version": 1,
+  "run_id": "20261026T104750Z-f78eabf1",
+  "historical_files_modified": false,
+  "model_calls": 0,
+  "network_requests": 0,
+  "total_requests": 59,
+  "requests_with_identity": 42,
+  "evaluated_requests": 0,
+  "real_source_requests_evaluated": 0,
+  "excluded_missing_identity": 17,
+  "excluded_missing_source_fixture": 42,
+  "source_fixtures_available": 0,
+  "source_errors": 0,
+  "version_mismatches": 0,
+  "false_verified_assertions": null,
+  "historical_metrics": null,
+  "limitations": [
+    "A fuzzy suggestion alone is never counted as prevented docs_not_found.",
+    "Baseline already returned verified available_aliases/closest_aliases.",
+    "Task reference scope does not reconstruct B1 resolved source version.",
+    "Synthetic fixture measurements are not historical B1 improvements.",
+    "No agent behavior or final answer improvement is measured by retrieval replay."
+  ],
+  "outcomes": [
+    {
+      "trial_id": "b1-discovery-D03-R1-control",
+      "call_number": "10",
+      "argument_fingerprint": "e10d9a06ffb1",
+      "package": "validate",
+      "requested_name": "violations",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.1.7",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D03-R1-treatment",
+      "call_number": "5",
+      "argument_fingerprint": "719e45ca5743",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-treatment",
+      "call_number": "4",
+      "argument_fingerprint": "032231fedb5f",
+      "package": "termr",
+      "requested_name": "new_app",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "task_reference"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-treatment",
+      "call_number": "5",
+      "argument_fingerprint": "a17a39c03469",
+      "package": "termr",
+      "requested_name": "termr_app",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "task_reference"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-treatment",
+      "call_number": "6",
+      "argument_fingerprint": "7d6ba92285b4",
+      "package": "termr",
+      "requested_name": "select_input",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "task_reference"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-treatment",
+      "call_number": "7",
+      "argument_fingerprint": "dc1b123964ac",
+      "package": "termr",
+      "requested_name": "select",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "task_reference"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-treatment",
+      "call_number": "8",
+      "argument_fingerprint": "7be7d550362f",
+      "package": "termr",
+      "requested_name": "choice",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "task_reference"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-treatment",
+      "call_number": "10",
+      "argument_fingerprint": "601dbaf91867",
+      "package": "termr",
+      "requested_name": "menu",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "task_reference"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-treatment",
+      "call_number": "11",
+      "argument_fingerprint": "0da79fc31847",
+      "package": "climenu",
+      "requested_name": "climenu",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "0.2.0",
+      "version_basis": "task_reference"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-treatment",
+      "call_number": "12",
+      "argument_fingerprint": "31ce27bc4d1f",
+      "package": "climenu",
+      "requested_name": "choose",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "0.2.0",
+      "version_basis": "task_reference"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-control",
+      "call_number": "7",
+      "argument_fingerprint": "c2bfbf070fbb",
+      "package": "climenu",
+      "requested_name": "select_menu",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "0.2.0",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-control",
+      "call_number": "8",
+      "argument_fingerprint": "8dbee0b8f887",
+      "package": "climenu",
+      "requested_name": "multi_select_menu",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "0.2.0",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-control",
+      "call_number": "10",
+      "argument_fingerprint": "59978bfaa9f1",
+      "package": "climenu",
+      "requested_name": "multi_menu",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "0.2.0",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-control",
+      "call_number": "11",
+      "argument_fingerprint": "b1c196e3dac1",
+      "package": "climenu",
+      "requested_name": "single_select",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "0.2.0",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-control",
+      "call_number": "12",
+      "argument_fingerprint": "9d43125a3787",
+      "package": "climenu",
+      "requested_name": "multiple_select",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "0.2.0",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-control",
+      "call_number": "13",
+      "argument_fingerprint": "1385f6f6d7f4",
+      "package": "climenu",
+      "requested_name": "climenu",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "0.2.0",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-control",
+      "call_number": "14",
+      "argument_fingerprint": "123ed8e7d5ec",
+      "package": "climenu",
+      "requested_name": "climenu_menu",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "0.2.0",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-control",
+      "call_number": "15",
+      "argument_fingerprint": "8dec29336902",
+      "package": "climenu",
+      "requested_name": "choose_menu",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "0.2.0",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-control",
+      "call_number": "16",
+      "argument_fingerprint": "30b4e19c5d72",
+      "package": "climenu",
+      "requested_name": "single_menu",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "0.2.0",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-control",
+      "call_number": "17",
+      "argument_fingerprint": "2e3d719865db",
+      "package": "climenu",
+      "requested_name": "multiple_menu",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "0.2.0",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D03-R2-treatment",
+      "call_number": "5",
+      "argument_fingerprint": "3f007012952a",
+      "package": "validate",
+      "requested_name": "violations",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.1.7",
+      "version_basis": "task_reference"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "3",
+      "argument_fingerprint": "91bbcd5099ce",
+      "package": "termr",
+      "requested_name": "select_menu",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "4",
+      "argument_fingerprint": "edff9fded467",
+      "package": "termr",
+      "requested_name": "menu_select",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "5",
+      "argument_fingerprint": "0468b4541718",
+      "package": "termr",
+      "requested_name": "select",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "6",
+      "argument_fingerprint": "898dc205a64d",
+      "package": "termr",
+      "requested_name": "select_input",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "7",
+      "argument_fingerprint": "453c1ea6e80c",
+      "package": "termr",
+      "requested_name": "menu",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "8",
+      "argument_fingerprint": "7d5b626baf85",
+      "package": "termr",
+      "requested_name": "choice_list",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "9",
+      "argument_fingerprint": "e811f3e4ae13",
+      "package": "termr",
+      "requested_name": "run_app",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "10",
+      "argument_fingerprint": "67fcf9920af7",
+      "package": "termr",
+      "requested_name": "select_list",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "11",
+      "argument_fingerprint": "9faf45530d46",
+      "package": "termr",
+      "requested_name": "new_app",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "12",
+      "argument_fingerprint": "b6f6bc42b6e6",
+      "package": "termr",
+      "requested_name": "key_select",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "22",
+      "argument_fingerprint": "3dfb405a4cca",
+      "package": "termr",
+      "requested_name": "list_view",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "23",
+      "argument_fingerprint": "a397ad63c150",
+      "package": "termr",
+      "requested_name": "menu_screen",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "24",
+      "argument_fingerprint": "cfea876cc19b",
+      "package": "termr",
+      "requested_name": "checkbox_set",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "26",
+      "argument_fingerprint": "cf858774046e",
+      "package": "termr",
+      "requested_name": "checkbox_group",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "27",
+      "argument_fingerprint": "9f2008148764",
+      "package": "termr",
+      "requested_name": "check_box_group",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "28",
+      "argument_fingerprint": "861f07f0b3d1",
+      "package": "termr",
+      "requested_name": "check_box",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "29",
+      "argument_fingerprint": "b870e3dbc6b7",
+      "package": "termr",
+      "requested_name": "check_list",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "30",
+      "argument_fingerprint": "f42f857ec348",
+      "package": "termr",
+      "requested_name": "checklist",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "31",
+      "argument_fingerprint": "5a408045c585",
+      "package": "termr",
+      "requested_name": "multi_select",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "32",
+      "argument_fingerprint": "215050c7c6eb",
+      "package": "termr",
+      "requested_name": "multiselect",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "33",
+      "argument_fingerprint": "3bdd8bde6b91",
+      "package": "termr",
+      "requested_name": "select_many",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "call_number": "34",
+      "argument_fingerprint": "32abfb622d8e",
+      "package": "termr",
+      "requested_name": "selection_list",
+      "status": "excluded_missing_source_fixture",
+      "package_version": "1.0.1",
+      "version_basis": "requested"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "7",
+      "argument_fingerprint": "7dbb1beda1df",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "9",
+      "argument_fingerprint": "0c32946dbda4",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "10",
+      "argument_fingerprint": "c8b9a138976d",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "11",
+      "argument_fingerprint": "e52eb129ea2b",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "12",
+      "argument_fingerprint": "c1b7152f1dd9",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "13",
+      "argument_fingerprint": "b4fe575694e1",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "16",
+      "argument_fingerprint": "a69494e54d41",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "17",
+      "argument_fingerprint": "703361de24de",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "18",
+      "argument_fingerprint": "e388291fb60e",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "19",
+      "argument_fingerprint": "19de729617ce",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "22",
+      "argument_fingerprint": "174b565c4600",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "23",
+      "argument_fingerprint": "4cfc1c74dbeb",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "27",
+      "argument_fingerprint": "f857f45581c0",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "28",
+      "argument_fingerprint": "82cf276c5c5a",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "29",
+      "argument_fingerprint": "406704417358",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "call_number": "30",
+      "argument_fingerprint": "0fdca0fee814",
+      "package": "",
+      "requested_name": "",
+      "status": "excluded_missing_identity"
+    }
+  ]
+}

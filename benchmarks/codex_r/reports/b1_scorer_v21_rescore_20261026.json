@@ -1,0 +1,3193 @@
+{
+  "report_type": "d-rescore",
+  "report_version": "1.0",
+  "source_run": "20261026T104750Z-f78eabf1",
+  "generated_at_utc": "2026-10-26T12:06:35Z",
+  "source_results_sha256": "8dab038ca58f683c377e5684546a864cd01748c3e35c60f775af644b1b4e02e0",
+  "source_experiment_sha256": "77f7313561f82f742ba578d239cf50df79473fc7b9b1233a11b2797495f0dfba",
+  "source_comparison_sha256": "6d12face9e7158e0ead8a992c71f2db59271590d05a4deecb37220bc38e9ec97",
+  "scorer": {
+    "version": "knowledge-pilot-v2.1",
+    "evaluator_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+    "contracts_sha256": "6f71b49432c09c2e948aeb9c6d48a48deb89a19aac6b2b4bf1f7a57ea06dbb0d",
+    "claim_evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+    "claim_evidence_version": "knowledge-pilot-claims-v2.1"
+  },
+  "frozen_basis_verified": true,
+  "source_files_preserved": true,
+  "original_results_modified": false,
+  "original_answers_modified": false,
+  "experiment_metadata_modified": false,
+  "trials": [
+    {
+      "trial_id": "b1-discovery-D03-R1-control",
+      "condition": "control",
+      "task": "D03",
+      "original_scorer_version": "knowledge-pilot-v2",
+      "rescored_scorer_version": "knowledge-pilot-v2.1",
+      "original_scorer_sha256": "c484d398b2fce86bc75a49649080508169ffb3ab762e2db0999bfe90a2322b3d",
+      "rescored_scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "original_status": "unsupported_for_automatic_scoring",
+      "rescored_status": "unsupported_for_automatic_scoring",
+      "original_score": {
+        "status": "unsupported_for_automatic_scoring",
+        "scorer_version": "knowledge-pilot-v2",
+        "task_id": "D03",
+        "passed": null,
+        "total": null,
+        "fully_correct": null,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "pass",
+            "passed": 3,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "pass",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "unsupported",
+            "passed": 0,
+            "total": 1,
+            "checks": {
+              "candidate_claims_in_frozen_evidence": "fail"
+            }
+          }
+        },
+        "unsupported_claims_present": true,
+        "artifacts": {
+          "answer.json": "2389c0b253e7bdae86998e89256be74486b6eb476c03dde079915dcd8cd2b17a"
+        }
+      },
+      "rescored": {
+        "status": "unsupported_for_automatic_scoring",
+        "scorer_version": "knowledge-pilot-v2.1",
+        "task_id": "D03",
+        "reason": "unsupported_claims_unknown",
+        "passed": null,
+        "total": null,
+        "fully_correct": null,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "pass",
+            "passed": 3,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "pass",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "unknown",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "all_asserted_claims_supported": "unknown",
+              "required_claims_present": "pass"
+            },
+            "supported_claims": [
+              "features:declarative_rules",
+              "features:pipeline_validation",
+              "features:row_level_failure_reports",
+              "caveats:broader_validation_framework"
+            ],
+            "unknown_claims": [
+              "features:cross_record_rules"
+            ],
+            "contradicted_claims": [],
+            "required_missing": [],
+            "required_claims": [
+              "features:declarative_rules",
+              "features:pipeline_validation",
+              "features:row_level_failure_reports",
+              "caveats:broader_validation_framework"
+            ]
+          }
+        },
+        "claim_audit": {
+          "required": [
+            "features:declarative_rules",
+            "features:pipeline_validation",
+            "features:row_level_failure_reports",
+            "caveats:broader_validation_framework"
+          ],
+          "supported": [
+            "features:declarative_rules",
+            "features:pipeline_validation",
+            "features:row_level_failure_reports",
+            "caveats:broader_validation_framework"
+          ],
+          "unknown": [
+            "features:cross_record_rules"
+          ],
+          "contradicted": [],
+          "required_missing": [],
+          "status": "unknown"
+        },
+        "unsupported_claims_present": true,
+        "artifacts": {
+          "answer.json": "2389c0b253e7bdae86998e89256be74486b6eb476c03dde079915dcd8cd2b17a"
+        },
+        "provenance": {
+          "scorer_version": "knowledge-pilot-v2.1",
+          "evaluator_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+          "contracts_sha256": "6f71b49432c09c2e948aeb9c6d48a48deb89a19aac6b2b4bf1f7a57ea06dbb0d",
+          "claim_evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+          "claim_evidence_version": "knowledge-pilot-claims-v2.1",
+          "basis": {
+            "candidate_facts": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/candidates.json",
+              "sha256": "ac3cd759957ee5e910732e986be6bd3ed59d0b41288571b30204f64cee4c5727"
+            },
+            "official_resource_inventory": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/official_resources.json",
+              "sha256": "eaee963abb3c876dbae62b723109c83a27649a2eae4b28d08f016f1d69b8bf7f"
+            },
+            "task_metadata": {
+              "D01": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D01.json",
+                "sha256": "86ac0a4c6f2efd5c005373978a3e02a1782a050105063066a34155347aa92b60",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              },
+              "D03": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D03.json",
+                "sha256": "be20f9c48b4e1017f6eee0b238e81f53392efb4ae773d021660b9d8333d0973e",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              }
+            },
+            "source_document_bodies_preserved": false,
+            "source_urls_are_references_only": true
+          }
+        }
+      },
+      "original_fully_correct": null,
+      "evidence_status": "unknown",
+      "unknown_claims": [
+        "features:cross_record_rules"
+      ],
+      "unsupported_claims": [],
+      "contradicted_claims": [],
+      "changed_checks": [
+        {
+          "dimension": "unsupported_claims",
+          "check": "all_asserted_claims_supported",
+          "original": null,
+          "rescored": "unknown"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "candidate_claims_in_frozen_evidence",
+          "original": "fail",
+          "rescored": null
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "required_claims_present",
+          "original": null,
+          "rescored": "pass"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "$dimension_status",
+          "original": "unsupported",
+          "rescored": "unknown"
+        }
+      ],
+      "reason_for_change": "Additional claim IDs are now explicitly unknown from retained offline evidence. Automatic scoring abstains; no unsupported claim is upgraded to supported.",
+      "artifact_name": "answer.json",
+      "artifact_sha256": "2389c0b253e7bdae86998e89256be74486b6eb476c03dde079915dcd8cd2b17a",
+      "answer_sha256": "2389c0b253e7bdae86998e89256be74486b6eb476c03dde079915dcd8cd2b17a",
+      "answer_matches_original_record": true,
+      "evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+      "original_error_summary": {
+        "primary_error": {
+          "origin": "candidate",
+          "category": "r_runtime",
+          "reason_code": "R_RUNTIME_ERROR",
+          "source_code": "unsupported_for_automatic_scoring",
+          "severity": "fatal"
+        },
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 1
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      },
+      "rescored_error_summary": {
+        "primary_error": {
+          "origin": "scorer",
+          "category": "evidence_insufficiency",
+          "reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+          "source_code": "unsupported_claims_unknown",
+          "severity": "recoverable"
+        },
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 1
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      }
+    },
+    {
+      "trial_id": "b1-discovery-D03-R1-treatment",
+      "condition": "treatment",
+      "task": "D03",
+      "original_scorer_version": "knowledge-pilot-v2",
+      "rescored_scorer_version": "knowledge-pilot-v2.1",
+      "original_scorer_sha256": "c484d398b2fce86bc75a49649080508169ffb3ab762e2db0999bfe90a2322b3d",
+      "rescored_scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "original_status": "unsupported_for_automatic_scoring",
+      "rescored_status": "unsupported_for_automatic_scoring",
+      "original_score": {
+        "status": "unsupported_for_automatic_scoring",
+        "scorer_version": "knowledge-pilot-v2",
+        "task_id": "D03",
+        "passed": null,
+        "total": null,
+        "fully_correct": null,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "pass",
+            "passed": 3,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "pass",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "unsupported",
+            "passed": 0,
+            "total": 1,
+            "checks": {
+              "candidate_claims_in_frozen_evidence": "fail"
+            }
+          }
+        },
+        "unsupported_claims_present": true,
+        "artifacts": {
+          "answer.json": "a31521f44e5bbadf0e36fff28ad8484b0258c8099d6fa2824800a58010cbdf01"
+        }
+      },
+      "rescored": {
+        "status": "unsupported_for_automatic_scoring",
+        "scorer_version": "knowledge-pilot-v2.1",
+        "task_id": "D03",
+        "reason": "unsupported_claims_unknown",
+        "passed": null,
+        "total": null,
+        "fully_correct": null,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "pass",
+            "passed": 3,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "pass",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "unknown",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "all_asserted_claims_supported": "unknown",
+              "required_claims_present": "pass"
+            },
+            "supported_claims": [
+              "features:declarative_rules",
+              "features:pipeline_validation",
+              "features:row_level_failure_reports",
+              "caveats:broader_validation_framework"
+            ],
+            "unknown_claims": [
+              "features:cross_record_rules"
+            ],
+            "contradicted_claims": [],
+            "required_missing": [],
+            "required_claims": [
+              "features:declarative_rules",
+              "features:pipeline_validation",
+              "features:row_level_failure_reports",
+              "caveats:broader_validation_framework"
+            ]
+          }
+        },
+        "claim_audit": {
+          "required": [
+            "features:declarative_rules",
+            "features:pipeline_validation",
+            "features:row_level_failure_reports",
+            "caveats:broader_validation_framework"
+          ],
+          "supported": [
+            "features:declarative_rules",
+            "features:pipeline_validation",
+            "features:row_level_failure_reports",
+            "caveats:broader_validation_framework"
+          ],
+          "unknown": [
+            "features:cross_record_rules"
+          ],
+          "contradicted": [],
+          "required_missing": [],
+          "status": "unknown"
+        },
+        "unsupported_claims_present": true,
+        "artifacts": {
+          "answer.json": "a31521f44e5bbadf0e36fff28ad8484b0258c8099d6fa2824800a58010cbdf01"
+        },
+        "provenance": {
+          "scorer_version": "knowledge-pilot-v2.1",
+          "evaluator_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+          "contracts_sha256": "6f71b49432c09c2e948aeb9c6d48a48deb89a19aac6b2b4bf1f7a57ea06dbb0d",
+          "claim_evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+          "claim_evidence_version": "knowledge-pilot-claims-v2.1",
+          "basis": {
+            "candidate_facts": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/candidates.json",
+              "sha256": "ac3cd759957ee5e910732e986be6bd3ed59d0b41288571b30204f64cee4c5727"
+            },
+            "official_resource_inventory": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/official_resources.json",
+              "sha256": "eaee963abb3c876dbae62b723109c83a27649a2eae4b28d08f016f1d69b8bf7f"
+            },
+            "task_metadata": {
+              "D01": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D01.json",
+                "sha256": "86ac0a4c6f2efd5c005373978a3e02a1782a050105063066a34155347aa92b60",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              },
+              "D03": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D03.json",
+                "sha256": "be20f9c48b4e1017f6eee0b238e81f53392efb4ae773d021660b9d8333d0973e",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              }
+            },
+            "source_document_bodies_preserved": false,
+            "source_urls_are_references_only": true
+          }
+        }
+      },
+      "original_fully_correct": null,
+      "evidence_status": "unknown",
+      "unknown_claims": [
+        "features:cross_record_rules"
+      ],
+      "unsupported_claims": [],
+      "contradicted_claims": [],
+      "changed_checks": [
+        {
+          "dimension": "unsupported_claims",
+          "check": "all_asserted_claims_supported",
+          "original": null,
+          "rescored": "unknown"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "candidate_claims_in_frozen_evidence",
+          "original": "fail",
+          "rescored": null
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "required_claims_present",
+          "original": null,
+          "rescored": "pass"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "$dimension_status",
+          "original": "unsupported",
+          "rescored": "unknown"
+        }
+      ],
+      "reason_for_change": "Additional claim IDs are now explicitly unknown from retained offline evidence. Automatic scoring abstains; no unsupported claim is upgraded to supported.",
+      "artifact_name": "answer.json",
+      "artifact_sha256": "a31521f44e5bbadf0e36fff28ad8484b0258c8099d6fa2824800a58010cbdf01",
+      "answer_sha256": "a31521f44e5bbadf0e36fff28ad8484b0258c8099d6fa2824800a58010cbdf01",
+      "answer_matches_original_record": true,
+      "evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+      "original_error_summary": {
+        "primary_error": {
+          "origin": "candidate",
+          "category": "r_runtime",
+          "reason_code": "R_RUNTIME_ERROR",
+          "source_code": "unsupported_for_automatic_scoring",
+          "severity": "fatal"
+        },
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "invalid_request",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "invalid_input",
+            "severity": "recoverable",
+            "count": 1
+          },
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 1
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      },
+      "rescored_error_summary": {
+        "primary_error": {
+          "origin": "scorer",
+          "category": "evidence_insufficiency",
+          "reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+          "source_code": "unsupported_claims_unknown",
+          "severity": "recoverable"
+        },
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "invalid_request",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "invalid_input",
+            "severity": "recoverable",
+            "count": 1
+          },
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 1
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      }
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-treatment",
+      "condition": "treatment",
+      "task": "D01",
+      "original_scorer_version": "knowledge-pilot-v2",
+      "rescored_scorer_version": "knowledge-pilot-v2.1",
+      "original_scorer_sha256": "6a4a40ffe9fe21f2dd72b17ff08a228d4f58a81c7b279a7418d5f218bbf16c9c",
+      "rescored_scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "original_status": "scored",
+      "rescored_status": "scored",
+      "original_score": {
+        "status": "scored",
+        "scorer_version": "knowledge-pilot-v2",
+        "task_id": "D01",
+        "passed": null,
+        "total": null,
+        "fully_correct": true,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "pass",
+            "passed": 3,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "pass",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "candidate_claims_in_frozen_evidence": "pass"
+            }
+          }
+        },
+        "unsupported_claims_present": false,
+        "artifacts": {
+          "answer.json": "019373abe7a7a684a33b44c03733a11967ea1584ae32b66e56fbbef932006cf8"
+        }
+      },
+      "rescored": {
+        "status": "scored",
+        "scorer_version": "knowledge-pilot-v2.1",
+        "task_id": "D01",
+        "reason": null,
+        "passed": null,
+        "total": null,
+        "fully_correct": true,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "pass",
+            "passed": 3,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "pass",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "all_asserted_claims_supported": "pass",
+              "required_claims_present": "pass"
+            },
+            "supported_claims": [
+              "features:keyboard_single_multi_select",
+              "features:stable_return_values",
+              "caveats:menu_focused"
+            ],
+            "unknown_claims": [],
+            "contradicted_claims": [],
+            "required_missing": [],
+            "required_claims": [
+              "features:keyboard_single_multi_select",
+              "features:stable_return_values",
+              "caveats:menu_focused"
+            ]
+          }
+        },
+        "claim_audit": {
+          "required": [
+            "features:keyboard_single_multi_select",
+            "features:stable_return_values",
+            "caveats:menu_focused"
+          ],
+          "supported": [
+            "features:keyboard_single_multi_select",
+            "features:stable_return_values",
+            "caveats:menu_focused"
+          ],
+          "unknown": [],
+          "contradicted": [],
+          "required_missing": [],
+          "status": "supported"
+        },
+        "unsupported_claims_present": false,
+        "artifacts": {
+          "answer.json": "019373abe7a7a684a33b44c03733a11967ea1584ae32b66e56fbbef932006cf8"
+        },
+        "provenance": {
+          "scorer_version": "knowledge-pilot-v2.1",
+          "evaluator_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+          "contracts_sha256": "6f71b49432c09c2e948aeb9c6d48a48deb89a19aac6b2b4bf1f7a57ea06dbb0d",
+          "claim_evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+          "claim_evidence_version": "knowledge-pilot-claims-v2.1",
+          "basis": {
+            "candidate_facts": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/candidates.json",
+              "sha256": "ac3cd759957ee5e910732e986be6bd3ed59d0b41288571b30204f64cee4c5727"
+            },
+            "official_resource_inventory": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/official_resources.json",
+              "sha256": "eaee963abb3c876dbae62b723109c83a27649a2eae4b28d08f016f1d69b8bf7f"
+            },
+            "task_metadata": {
+              "D01": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D01.json",
+                "sha256": "86ac0a4c6f2efd5c005373978a3e02a1782a050105063066a34155347aa92b60",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              },
+              "D03": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D03.json",
+                "sha256": "be20f9c48b4e1017f6eee0b238e81f53392efb4ae773d021660b9d8333d0973e",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              }
+            },
+            "source_document_bodies_preserved": false,
+            "source_urls_are_references_only": true
+          }
+        }
+      },
+      "original_fully_correct": true,
+      "evidence_status": "supported",
+      "unknown_claims": [],
+      "unsupported_claims": [],
+      "contradicted_claims": [],
+      "changed_checks": [
+        {
+          "dimension": "unsupported_claims",
+          "check": "all_asserted_claims_supported",
+          "original": null,
+          "rescored": "pass"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "candidate_claims_in_frozen_evidence",
+          "original": "pass",
+          "rescored": null
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "required_claims_present",
+          "original": null,
+          "rescored": "pass"
+        }
+      ],
+      "reason_for_change": "The versioned claim registry and scorer checks were applied; see changed_checks.",
+      "artifact_name": "answer.json",
+      "artifact_sha256": "019373abe7a7a684a33b44c03733a11967ea1584ae32b66e56fbbef932006cf8",
+      "answer_sha256": "019373abe7a7a684a33b44c03733a11967ea1584ae32b66e56fbbef932006cf8",
+      "answer_matches_original_record": true,
+      "evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+      "original_error_summary": {
+        "primary_error": null,
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 8
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      },
+      "rescored_error_summary": {
+        "primary_error": null,
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 8
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      }
+    },
+    {
+      "trial_id": "b1-discovery-D01-R1-control",
+      "condition": "control",
+      "task": "D01",
+      "original_scorer_version": "knowledge-pilot-v2",
+      "rescored_scorer_version": "knowledge-pilot-v2.1",
+      "original_scorer_sha256": "6a4a40ffe9fe21f2dd72b17ff08a228d4f58a81c7b279a7418d5f218bbf16c9c",
+      "rescored_scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "original_status": "scored",
+      "rescored_status": "scored",
+      "original_score": {
+        "status": "scored",
+        "scorer_version": "knowledge-pilot-v2",
+        "task_id": "D01",
+        "passed": null,
+        "total": null,
+        "fully_correct": true,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "pass",
+            "passed": 3,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "pass",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "candidate_claims_in_frozen_evidence": "pass"
+            }
+          }
+        },
+        "unsupported_claims_present": false,
+        "artifacts": {
+          "answer.json": "de978f23b4442394d2713c5ba23e76ceab5288f47e91e917b53c2ab92fdc2003"
+        }
+      },
+      "rescored": {
+        "status": "scored",
+        "scorer_version": "knowledge-pilot-v2.1",
+        "task_id": "D01",
+        "reason": null,
+        "passed": null,
+        "total": null,
+        "fully_correct": true,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "pass",
+            "passed": 3,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "pass",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "all_asserted_claims_supported": "pass",
+              "required_claims_present": "pass"
+            },
+            "supported_claims": [
+              "features:keyboard_single_multi_select",
+              "features:stable_return_values",
+              "caveats:menu_focused"
+            ],
+            "unknown_claims": [],
+            "contradicted_claims": [],
+            "required_missing": [],
+            "required_claims": [
+              "features:keyboard_single_multi_select",
+              "features:stable_return_values",
+              "caveats:menu_focused"
+            ]
+          }
+        },
+        "claim_audit": {
+          "required": [
+            "features:keyboard_single_multi_select",
+            "features:stable_return_values",
+            "caveats:menu_focused"
+          ],
+          "supported": [
+            "features:keyboard_single_multi_select",
+            "features:stable_return_values",
+            "caveats:menu_focused"
+          ],
+          "unknown": [],
+          "contradicted": [],
+          "required_missing": [],
+          "status": "supported"
+        },
+        "unsupported_claims_present": false,
+        "artifacts": {
+          "answer.json": "de978f23b4442394d2713c5ba23e76ceab5288f47e91e917b53c2ab92fdc2003"
+        },
+        "provenance": {
+          "scorer_version": "knowledge-pilot-v2.1",
+          "evaluator_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+          "contracts_sha256": "6f71b49432c09c2e948aeb9c6d48a48deb89a19aac6b2b4bf1f7a57ea06dbb0d",
+          "claim_evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+          "claim_evidence_version": "knowledge-pilot-claims-v2.1",
+          "basis": {
+            "candidate_facts": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/candidates.json",
+              "sha256": "ac3cd759957ee5e910732e986be6bd3ed59d0b41288571b30204f64cee4c5727"
+            },
+            "official_resource_inventory": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/official_resources.json",
+              "sha256": "eaee963abb3c876dbae62b723109c83a27649a2eae4b28d08f016f1d69b8bf7f"
+            },
+            "task_metadata": {
+              "D01": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D01.json",
+                "sha256": "86ac0a4c6f2efd5c005373978a3e02a1782a050105063066a34155347aa92b60",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              },
+              "D03": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D03.json",
+                "sha256": "be20f9c48b4e1017f6eee0b238e81f53392efb4ae773d021660b9d8333d0973e",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              }
+            },
+            "source_document_bodies_preserved": false,
+            "source_urls_are_references_only": true
+          }
+        }
+      },
+      "original_fully_correct": true,
+      "evidence_status": "supported",
+      "unknown_claims": [],
+      "unsupported_claims": [],
+      "contradicted_claims": [],
+      "changed_checks": [
+        {
+          "dimension": "unsupported_claims",
+          "check": "all_asserted_claims_supported",
+          "original": null,
+          "rescored": "pass"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "candidate_claims_in_frozen_evidence",
+          "original": "pass",
+          "rescored": null
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "required_claims_present",
+          "original": null,
+          "rescored": "pass"
+        }
+      ],
+      "reason_for_change": "The versioned claim registry and scorer checks were applied; see changed_checks.",
+      "artifact_name": "answer.json",
+      "artifact_sha256": "de978f23b4442394d2713c5ba23e76ceab5288f47e91e917b53c2ab92fdc2003",
+      "answer_sha256": "de978f23b4442394d2713c5ba23e76ceab5288f47e91e917b53c2ab92fdc2003",
+      "answer_matches_original_record": true,
+      "evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+      "original_error_summary": {
+        "primary_error": null,
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "unknown",
+            "category": "unclassified",
+            "reason_code": "UNCLASSIFIED_ERROR",
+            "source_code": "not_configured",
+            "severity": "recoverable",
+            "count": 1
+          },
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 10
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      },
+      "rescored_error_summary": {
+        "primary_error": null,
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "unknown",
+            "category": "unclassified",
+            "reason_code": "UNCLASSIFIED_ERROR",
+            "source_code": "not_configured",
+            "severity": "recoverable",
+            "count": 1
+          },
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 10
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      }
+    },
+    {
+      "trial_id": "b1-discovery-C01-R1-control",
+      "condition": "control",
+      "task": "C01",
+      "original_scorer_version": "legacy",
+      "rescored_scorer_version": "legacy",
+      "original_scorer_sha256": "409e7d5b1a2e38ace8034be96a9a1ccb00af5d5a2ae964ea4b3af3f04f489da2",
+      "rescored_scorer_sha256": null,
+      "original_status": "scored",
+      "rescored_status": "legacy_retained",
+      "original_score": {
+        "status": "scored",
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "reason": null,
+        "failed_checks": [],
+        "details": [],
+        "environment": {
+          "r": "4.5.2",
+          "packages": {
+            "dplyr": "1.2.1"
+          }
+        },
+        "artifacts": {
+          "solution.R": "682c461028ab3df9d87442d777828b8e0661db7a30788700c40e5a9cd2711638"
+        }
+      },
+      "rescored": null,
+      "original_fully_correct": true,
+      "evidence_status": "legacy_retained",
+      "unknown_claims": [],
+      "unsupported_claims": [],
+      "contradicted_claims": [],
+      "changed_checks": [],
+      "reason_for_change": "C01 remains on its original legacy scorer; the D-task V2.1 contract was not applied.",
+      "artifact_name": "solution.R",
+      "artifact_sha256": "682c461028ab3df9d87442d777828b8e0661db7a30788700c40e5a9cd2711638",
+      "answer_sha256": null,
+      "answer_matches_original_record": true,
+      "evidence_sha256": null,
+      "original_error_summary": {
+        "primary_error": null,
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [],
+        "order_basis": "pipeline_stage_order"
+      },
+      "rescored_error_summary": {
+        "primary_error": null,
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [],
+        "order_basis": "pipeline_stage_order"
+      }
+    },
+    {
+      "trial_id": "b1-discovery-C01-R1-treatment",
+      "condition": "treatment",
+      "task": "C01",
+      "original_scorer_version": "legacy",
+      "rescored_scorer_version": "legacy",
+      "original_scorer_sha256": "409e7d5b1a2e38ace8034be96a9a1ccb00af5d5a2ae964ea4b3af3f04f489da2",
+      "rescored_scorer_sha256": null,
+      "original_status": "scored",
+      "rescored_status": "legacy_retained",
+      "original_score": {
+        "status": "scored",
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "reason": null,
+        "failed_checks": [],
+        "details": [],
+        "environment": {
+          "r": "4.5.2",
+          "packages": {
+            "dplyr": "1.2.1"
+          }
+        },
+        "artifacts": {
+          "solution.R": "c508a837fe0ddad5540d65ca9b8099a90c6b9660575084351123090045a13130"
+        }
+      },
+      "rescored": null,
+      "original_fully_correct": true,
+      "evidence_status": "legacy_retained",
+      "unknown_claims": [],
+      "unsupported_claims": [],
+      "contradicted_claims": [],
+      "changed_checks": [],
+      "reason_for_change": "C01 remains on its original legacy scorer; the D-task V2.1 contract was not applied.",
+      "artifact_name": "solution.R",
+      "artifact_sha256": "c508a837fe0ddad5540d65ca9b8099a90c6b9660575084351123090045a13130",
+      "answer_sha256": null,
+      "answer_matches_original_record": true,
+      "evidence_sha256": null,
+      "original_error_summary": {
+        "primary_error": null,
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [],
+        "order_basis": "pipeline_stage_order"
+      },
+      "rescored_error_summary": {
+        "primary_error": null,
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [],
+        "order_basis": "pipeline_stage_order"
+      }
+    },
+    {
+      "trial_id": "b1-discovery-D03-R2-treatment",
+      "condition": "treatment",
+      "task": "D03",
+      "original_scorer_version": "knowledge-pilot-v2",
+      "rescored_scorer_version": "knowledge-pilot-v2.1",
+      "original_scorer_sha256": "c484d398b2fce86bc75a49649080508169ffb3ab762e2db0999bfe90a2322b3d",
+      "rescored_scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "original_status": "unsupported_for_automatic_scoring",
+      "rescored_status": "unsupported_for_automatic_scoring",
+      "original_score": {
+        "status": "unsupported_for_automatic_scoring",
+        "scorer_version": "knowledge-pilot-v2",
+        "task_id": "D03",
+        "passed": null,
+        "total": null,
+        "fully_correct": null,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "pass",
+            "passed": 3,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "pass",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "unsupported",
+            "passed": 0,
+            "total": 1,
+            "checks": {
+              "candidate_claims_in_frozen_evidence": "fail"
+            }
+          }
+        },
+        "unsupported_claims_present": true,
+        "artifacts": {
+          "answer.json": "10ca56022c605e4506664e48a3b8f80f9e0a19bd6136d80ee963abc989feb117"
+        }
+      },
+      "rescored": {
+        "status": "unsupported_for_automatic_scoring",
+        "scorer_version": "knowledge-pilot-v2.1",
+        "task_id": "D03",
+        "reason": "unsupported_claims_unknown",
+        "passed": null,
+        "total": null,
+        "fully_correct": null,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "pass",
+            "passed": 3,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "pass",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "unknown",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "all_asserted_claims_supported": "unknown",
+              "required_claims_present": "pass"
+            },
+            "supported_claims": [
+              "features:declarative_rules",
+              "features:pipeline_validation",
+              "features:row_level_failure_reports",
+              "caveats:broader_validation_framework"
+            ],
+            "unknown_claims": [
+              "features:cross_record_rules"
+            ],
+            "contradicted_claims": [],
+            "required_missing": [],
+            "required_claims": [
+              "features:declarative_rules",
+              "features:pipeline_validation",
+              "features:row_level_failure_reports",
+              "caveats:broader_validation_framework"
+            ]
+          }
+        },
+        "claim_audit": {
+          "required": [
+            "features:declarative_rules",
+            "features:pipeline_validation",
+            "features:row_level_failure_reports",
+            "caveats:broader_validation_framework"
+          ],
+          "supported": [
+            "features:declarative_rules",
+            "features:pipeline_validation",
+            "features:row_level_failure_reports",
+            "caveats:broader_validation_framework"
+          ],
+          "unknown": [
+            "features:cross_record_rules"
+          ],
+          "contradicted": [],
+          "required_missing": [],
+          "status": "unknown"
+        },
+        "unsupported_claims_present": true,
+        "artifacts": {
+          "answer.json": "10ca56022c605e4506664e48a3b8f80f9e0a19bd6136d80ee963abc989feb117"
+        },
+        "provenance": {
+          "scorer_version": "knowledge-pilot-v2.1",
+          "evaluator_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+          "contracts_sha256": "6f71b49432c09c2e948aeb9c6d48a48deb89a19aac6b2b4bf1f7a57ea06dbb0d",
+          "claim_evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+          "claim_evidence_version": "knowledge-pilot-claims-v2.1",
+          "basis": {
+            "candidate_facts": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/candidates.json",
+              "sha256": "ac3cd759957ee5e910732e986be6bd3ed59d0b41288571b30204f64cee4c5727"
+            },
+            "official_resource_inventory": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/official_resources.json",
+              "sha256": "eaee963abb3c876dbae62b723109c83a27649a2eae4b28d08f016f1d69b8bf7f"
+            },
+            "task_metadata": {
+              "D01": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D01.json",
+                "sha256": "86ac0a4c6f2efd5c005373978a3e02a1782a050105063066a34155347aa92b60",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              },
+              "D03": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D03.json",
+                "sha256": "be20f9c48b4e1017f6eee0b238e81f53392efb4ae773d021660b9d8333d0973e",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              }
+            },
+            "source_document_bodies_preserved": false,
+            "source_urls_are_references_only": true
+          }
+        }
+      },
+      "original_fully_correct": null,
+      "evidence_status": "unknown",
+      "unknown_claims": [
+        "features:cross_record_rules"
+      ],
+      "unsupported_claims": [],
+      "contradicted_claims": [],
+      "changed_checks": [
+        {
+          "dimension": "unsupported_claims",
+          "check": "all_asserted_claims_supported",
+          "original": null,
+          "rescored": "unknown"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "candidate_claims_in_frozen_evidence",
+          "original": "fail",
+          "rescored": null
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "required_claims_present",
+          "original": null,
+          "rescored": "pass"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "$dimension_status",
+          "original": "unsupported",
+          "rescored": "unknown"
+        }
+      ],
+      "reason_for_change": "Additional claim IDs are now explicitly unknown from retained offline evidence. Automatic scoring abstains; no unsupported claim is upgraded to supported.",
+      "artifact_name": "answer.json",
+      "artifact_sha256": "10ca56022c605e4506664e48a3b8f80f9e0a19bd6136d80ee963abc989feb117",
+      "answer_sha256": "10ca56022c605e4506664e48a3b8f80f9e0a19bd6136d80ee963abc989feb117",
+      "answer_matches_original_record": true,
+      "evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+      "original_error_summary": {
+        "primary_error": {
+          "origin": "candidate",
+          "category": "r_runtime",
+          "reason_code": "R_RUNTIME_ERROR",
+          "source_code": "unsupported_for_automatic_scoring",
+          "severity": "fatal"
+        },
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 1
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      },
+      "rescored_error_summary": {
+        "primary_error": {
+          "origin": "scorer",
+          "category": "evidence_insufficiency",
+          "reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+          "source_code": "unsupported_claims_unknown",
+          "severity": "recoverable"
+        },
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 1
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      }
+    },
+    {
+      "trial_id": "b1-discovery-D03-R2-control",
+      "condition": "control",
+      "task": "D03",
+      "original_scorer_version": "knowledge-pilot-v2",
+      "rescored_scorer_version": "knowledge-pilot-v2.1",
+      "original_scorer_sha256": "c484d398b2fce86bc75a49649080508169ffb3ab762e2db0999bfe90a2322b3d",
+      "rescored_scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "original_status": "unsupported_for_automatic_scoring",
+      "rescored_status": "unsupported_for_automatic_scoring",
+      "original_score": {
+        "status": "unsupported_for_automatic_scoring",
+        "scorer_version": "knowledge-pilot-v2",
+        "task_id": "D03",
+        "passed": null,
+        "total": null,
+        "fully_correct": null,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "pass",
+            "passed": 3,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "pass",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "unsupported",
+            "passed": 0,
+            "total": 1,
+            "checks": {
+              "candidate_claims_in_frozen_evidence": "fail"
+            }
+          }
+        },
+        "unsupported_claims_present": true,
+        "artifacts": {
+          "answer.json": "932cef04d00b2f5efe7febfb51cde15655129bf42d47ca4ad5721537f8b678bf"
+        }
+      },
+      "rescored": {
+        "status": "unsupported_for_automatic_scoring",
+        "scorer_version": "knowledge-pilot-v2.1",
+        "task_id": "D03",
+        "reason": "unsupported_claims_unknown",
+        "passed": null,
+        "total": null,
+        "fully_correct": null,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "pass",
+            "passed": 3,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "pass",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "unknown",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "all_asserted_claims_supported": "unknown",
+              "required_claims_present": "pass"
+            },
+            "supported_claims": [
+              "features:declarative_rules",
+              "features:pipeline_validation",
+              "features:row_level_failure_reports",
+              "caveats:broader_validation_framework"
+            ],
+            "unknown_claims": [
+              "features:cross_record_rules"
+            ],
+            "contradicted_claims": [],
+            "required_missing": [],
+            "required_claims": [
+              "features:declarative_rules",
+              "features:pipeline_validation",
+              "features:row_level_failure_reports",
+              "caveats:broader_validation_framework"
+            ]
+          }
+        },
+        "claim_audit": {
+          "required": [
+            "features:declarative_rules",
+            "features:pipeline_validation",
+            "features:row_level_failure_reports",
+            "caveats:broader_validation_framework"
+          ],
+          "supported": [
+            "features:declarative_rules",
+            "features:pipeline_validation",
+            "features:row_level_failure_reports",
+            "caveats:broader_validation_framework"
+          ],
+          "unknown": [
+            "features:cross_record_rules"
+          ],
+          "contradicted": [],
+          "required_missing": [],
+          "status": "unknown"
+        },
+        "unsupported_claims_present": true,
+        "artifacts": {
+          "answer.json": "932cef04d00b2f5efe7febfb51cde15655129bf42d47ca4ad5721537f8b678bf"
+        },
+        "provenance": {
+          "scorer_version": "knowledge-pilot-v2.1",
+          "evaluator_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+          "contracts_sha256": "6f71b49432c09c2e948aeb9c6d48a48deb89a19aac6b2b4bf1f7a57ea06dbb0d",
+          "claim_evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+          "claim_evidence_version": "knowledge-pilot-claims-v2.1",
+          "basis": {
+            "candidate_facts": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/candidates.json",
+              "sha256": "ac3cd759957ee5e910732e986be6bd3ed59d0b41288571b30204f64cee4c5727"
+            },
+            "official_resource_inventory": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/official_resources.json",
+              "sha256": "eaee963abb3c876dbae62b723109c83a27649a2eae4b28d08f016f1d69b8bf7f"
+            },
+            "task_metadata": {
+              "D01": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D01.json",
+                "sha256": "86ac0a4c6f2efd5c005373978a3e02a1782a050105063066a34155347aa92b60",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              },
+              "D03": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D03.json",
+                "sha256": "be20f9c48b4e1017f6eee0b238e81f53392efb4ae773d021660b9d8333d0973e",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              }
+            },
+            "source_document_bodies_preserved": false,
+            "source_urls_are_references_only": true
+          }
+        }
+      },
+      "original_fully_correct": null,
+      "evidence_status": "unknown",
+      "unknown_claims": [
+        "features:cross_record_rules"
+      ],
+      "unsupported_claims": [],
+      "contradicted_claims": [],
+      "changed_checks": [
+        {
+          "dimension": "unsupported_claims",
+          "check": "all_asserted_claims_supported",
+          "original": null,
+          "rescored": "unknown"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "candidate_claims_in_frozen_evidence",
+          "original": "fail",
+          "rescored": null
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "required_claims_present",
+          "original": null,
+          "rescored": "pass"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "$dimension_status",
+          "original": "unsupported",
+          "rescored": "unknown"
+        }
+      ],
+      "reason_for_change": "Additional claim IDs are now explicitly unknown from retained offline evidence. Automatic scoring abstains; no unsupported claim is upgraded to supported.",
+      "artifact_name": "answer.json",
+      "artifact_sha256": "932cef04d00b2f5efe7febfb51cde15655129bf42d47ca4ad5721537f8b678bf",
+      "answer_sha256": "932cef04d00b2f5efe7febfb51cde15655129bf42d47ca4ad5721537f8b678bf",
+      "answer_matches_original_record": true,
+      "evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+      "original_error_summary": {
+        "primary_error": {
+          "origin": "mcp_server",
+          "category": "upstream",
+          "reason_code": "MCP_PROVIDER_ERROR",
+          "source_code": "source_unavailable",
+          "severity": "fatal",
+          "count": 1
+        },
+        "subsequent_errors": [
+          {
+            "origin": "candidate",
+            "category": "r_runtime",
+            "reason_code": "R_RUNTIME_ERROR",
+            "source_code": "unsupported_for_automatic_scoring",
+            "severity": "fatal"
+          }
+        ],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "partial_result",
+            "reason_code": "MCP_PARTIAL_RESULT",
+            "source_code": "verification_partial",
+            "severity": "recoverable",
+            "count": 1
+          },
+          {
+            "origin": "mcp_server",
+            "category": "upstream",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "source_unavailable",
+            "severity": "recoverable",
+            "count": 1
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      },
+      "rescored_error_summary": {
+        "primary_error": {
+          "origin": "scorer",
+          "category": "evidence_insufficiency",
+          "reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+          "source_code": "unsupported_claims_unknown",
+          "severity": "recoverable"
+        },
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "partial_result",
+            "reason_code": "MCP_PARTIAL_RESULT",
+            "source_code": "verification_partial",
+            "severity": "recoverable",
+            "count": 1
+          },
+          {
+            "origin": "mcp_server",
+            "category": "upstream",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "source_unavailable",
+            "severity": "recoverable",
+            "count": 1
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      }
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "condition": "control",
+      "task": "D01",
+      "original_scorer_version": "knowledge-pilot-v2",
+      "rescored_scorer_version": "knowledge-pilot-v2.1",
+      "original_scorer_sha256": "6a4a40ffe9fe21f2dd72b17ff08a228d4f58a81c7b279a7418d5f218bbf16c9c",
+      "rescored_scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "original_status": "unsupported_for_automatic_scoring",
+      "rescored_status": "unsupported_for_automatic_scoring",
+      "original_score": {
+        "status": "unsupported_for_automatic_scoring",
+        "scorer_version": "knowledge-pilot-v2",
+        "task_id": "D01",
+        "passed": null,
+        "total": null,
+        "fully_correct": false,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "fail",
+            "passed": 3,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "fail",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "fail",
+            "passed": 2,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "fail",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "unsupported",
+            "passed": 0,
+            "total": 1,
+            "checks": {
+              "candidate_claims_in_frozen_evidence": "fail"
+            }
+          }
+        },
+        "unsupported_claims_present": true,
+        "artifacts": {
+          "answer.json": "64dcca8c5911558cd58291f7a48a1cd2550f4d6b1e0bd16d7e87ff8266b6751a"
+        }
+      },
+      "rescored": {
+        "status": "unsupported_for_automatic_scoring",
+        "scorer_version": "knowledge-pilot-v2.1",
+        "task_id": "D01",
+        "reason": "unsupported_claims_unknown",
+        "passed": null,
+        "total": null,
+        "fully_correct": null,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "fail",
+            "passed": 3,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "fail",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "fail",
+            "passed": 2,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "fail",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "fail",
+            "passed": 0,
+            "total": 1,
+            "checks": {
+              "all_asserted_claims_supported": "unknown",
+              "required_claims_present": "fail"
+            },
+            "supported_claims": [
+              "features:headless_app_tests",
+              "features:reactive_terminal_ui",
+              "features:stable_return_values",
+              "caveats:real_terminal_required"
+            ],
+            "unknown_claims": [
+              "features:keyboard_single_multi_select"
+            ],
+            "contradicted_claims": [],
+            "required_missing": [
+              "caveats:some_apis_experimental"
+            ],
+            "required_claims": [
+              "features:headless_app_tests",
+              "features:reactive_terminal_ui",
+              "features:stable_return_values",
+              "caveats:real_terminal_required",
+              "caveats:some_apis_experimental"
+            ]
+          }
+        },
+        "claim_audit": {
+          "required": [
+            "features:headless_app_tests",
+            "features:reactive_terminal_ui",
+            "features:stable_return_values",
+            "caveats:real_terminal_required",
+            "caveats:some_apis_experimental"
+          ],
+          "supported": [
+            "features:headless_app_tests",
+            "features:reactive_terminal_ui",
+            "features:stable_return_values",
+            "caveats:real_terminal_required"
+          ],
+          "unknown": [
+            "features:keyboard_single_multi_select"
+          ],
+          "contradicted": [],
+          "required_missing": [
+            "caveats:some_apis_experimental"
+          ],
+          "status": "unknown"
+        },
+        "unsupported_claims_present": true,
+        "artifacts": {
+          "answer.json": "64dcca8c5911558cd58291f7a48a1cd2550f4d6b1e0bd16d7e87ff8266b6751a"
+        },
+        "provenance": {
+          "scorer_version": "knowledge-pilot-v2.1",
+          "evaluator_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+          "contracts_sha256": "6f71b49432c09c2e948aeb9c6d48a48deb89a19aac6b2b4bf1f7a57ea06dbb0d",
+          "claim_evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+          "claim_evidence_version": "knowledge-pilot-claims-v2.1",
+          "basis": {
+            "candidate_facts": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/candidates.json",
+              "sha256": "ac3cd759957ee5e910732e986be6bd3ed59d0b41288571b30204f64cee4c5727"
+            },
+            "official_resource_inventory": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/official_resources.json",
+              "sha256": "eaee963abb3c876dbae62b723109c83a27649a2eae4b28d08f016f1d69b8bf7f"
+            },
+            "task_metadata": {
+              "D01": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D01.json",
+                "sha256": "86ac0a4c6f2efd5c005373978a3e02a1782a050105063066a34155347aa92b60",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              },
+              "D03": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D03.json",
+                "sha256": "be20f9c48b4e1017f6eee0b238e81f53392efb4ae773d021660b9d8333d0973e",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              }
+            },
+            "source_document_bodies_preserved": false,
+            "source_urls_are_references_only": true
+          }
+        }
+      },
+      "original_fully_correct": false,
+      "evidence_status": "unknown",
+      "unknown_claims": [
+        "features:keyboard_single_multi_select"
+      ],
+      "unsupported_claims": [],
+      "contradicted_claims": [],
+      "changed_checks": [
+        {
+          "dimension": "unsupported_claims",
+          "check": "all_asserted_claims_supported",
+          "original": null,
+          "rescored": "unknown"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "candidate_claims_in_frozen_evidence",
+          "original": "fail",
+          "rescored": null
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "required_claims_present",
+          "original": null,
+          "rescored": "fail"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "$dimension_status",
+          "original": "unsupported",
+          "rescored": "fail"
+        }
+      ],
+      "reason_for_change": "Additional claim IDs are now explicitly unknown from retained offline evidence. Automatic scoring abstains; no unsupported claim is upgraded to supported.",
+      "artifact_name": "answer.json",
+      "artifact_sha256": "64dcca8c5911558cd58291f7a48a1cd2550f4d6b1e0bd16d7e87ff8266b6751a",
+      "answer_sha256": "64dcca8c5911558cd58291f7a48a1cd2550f4d6b1e0bd16d7e87ff8266b6751a",
+      "answer_matches_original_record": true,
+      "evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+      "original_error_summary": {
+        "primary_error": {
+          "origin": "candidate",
+          "category": "r_runtime",
+          "reason_code": "R_RUNTIME_ERROR",
+          "source_code": "unsupported_for_automatic_scoring",
+          "severity": "fatal"
+        },
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 22
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      },
+      "rescored_error_summary": {
+        "primary_error": {
+          "origin": "scorer",
+          "category": "evidence_insufficiency",
+          "reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+          "source_code": "unsupported_claims_unknown",
+          "severity": "recoverable"
+        },
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 22
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      }
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "condition": "treatment",
+      "task": "D01",
+      "original_scorer_version": "knowledge-pilot-v2",
+      "rescored_scorer_version": "knowledge-pilot-v2.1",
+      "original_scorer_sha256": "6a4a40ffe9fe21f2dd72b17ff08a228d4f58a81c7b279a7418d5f218bbf16c9c",
+      "rescored_scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "original_status": "unsupported_for_automatic_scoring",
+      "rescored_status": "unsupported_for_automatic_scoring",
+      "original_score": {
+        "status": "unsupported_for_automatic_scoring",
+        "scorer_version": "knowledge-pilot-v2",
+        "task_id": "D01",
+        "passed": null,
+        "total": null,
+        "fully_correct": false,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "fail",
+            "passed": 2,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "fail",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "unsupported",
+            "passed": 0,
+            "total": 1,
+            "checks": {
+              "candidate_claims_in_frozen_evidence": "fail"
+            }
+          }
+        },
+        "unsupported_claims_present": true,
+        "artifacts": {
+          "answer.json": "d4974ccc4b77f9444faefd096b50dea4f907bd4abaa7474100dc2e406b78a481"
+        }
+      },
+      "rescored": {
+        "status": "unsupported_for_automatic_scoring",
+        "scorer_version": "knowledge-pilot-v2.1",
+        "task_id": "D01",
+        "reason": "unsupported_claims_unknown",
+        "passed": null,
+        "total": null,
+        "fully_correct": null,
+        "overall_score": null,
+        "dimensions": {
+          "schema_validity": {
+            "status": "pass",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "public_contract": "pass"
+            }
+          },
+          "factual_correctness": {
+            "status": "pass",
+            "passed": 4,
+            "total": 4,
+            "checks": {
+              "r_version": "pass",
+              "documented_features": "pass",
+              "documented_limits": "pass",
+              "rationale_present": "pass"
+            }
+          },
+          "version_repository_identity": {
+            "status": "pass",
+            "passed": 2,
+            "total": 2,
+            "checks": {
+              "package_version": "pass",
+              "repository": "pass"
+            }
+          },
+          "dependency_correctness": {
+            "status": "not_applicable",
+            "passed": null,
+            "total": null,
+            "checks": {}
+          },
+          "source_quality": {
+            "status": "fail",
+            "passed": 2,
+            "total": 3,
+            "checks": {
+              "official_source_url": "pass",
+              "official_documentation_url": "fail",
+              "source_shapes_are_official": "pass"
+            }
+          },
+          "unsupported_claims": {
+            "status": "unknown",
+            "passed": 1,
+            "total": 1,
+            "checks": {
+              "all_asserted_claims_supported": "unknown",
+              "required_claims_present": "pass"
+            },
+            "supported_claims": [
+              "features:headless_app_tests",
+              "features:reactive_terminal_ui",
+              "features:stable_return_values",
+              "caveats:real_terminal_required",
+              "caveats:some_apis_experimental"
+            ],
+            "unknown_claims": [
+              "features:keyboard_single_multi_select"
+            ],
+            "contradicted_claims": [],
+            "required_missing": [],
+            "required_claims": [
+              "features:headless_app_tests",
+              "features:reactive_terminal_ui",
+              "features:stable_return_values",
+              "caveats:real_terminal_required",
+              "caveats:some_apis_experimental"
+            ]
+          }
+        },
+        "claim_audit": {
+          "required": [
+            "features:headless_app_tests",
+            "features:reactive_terminal_ui",
+            "features:stable_return_values",
+            "caveats:real_terminal_required",
+            "caveats:some_apis_experimental"
+          ],
+          "supported": [
+            "features:headless_app_tests",
+            "features:reactive_terminal_ui",
+            "features:stable_return_values",
+            "caveats:real_terminal_required",
+            "caveats:some_apis_experimental"
+          ],
+          "unknown": [
+            "features:keyboard_single_multi_select"
+          ],
+          "contradicted": [],
+          "required_missing": [],
+          "status": "unknown"
+        },
+        "unsupported_claims_present": true,
+        "artifacts": {
+          "answer.json": "d4974ccc4b77f9444faefd096b50dea4f907bd4abaa7474100dc2e406b78a481"
+        },
+        "provenance": {
+          "scorer_version": "knowledge-pilot-v2.1",
+          "evaluator_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+          "contracts_sha256": "6f71b49432c09c2e948aeb9c6d48a48deb89a19aac6b2b4bf1f7a57ea06dbb0d",
+          "claim_evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+          "claim_evidence_version": "knowledge-pilot-claims-v2.1",
+          "basis": {
+            "candidate_facts": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/candidates.json",
+              "sha256": "ac3cd759957ee5e910732e986be6bd3ed59d0b41288571b30204f64cee4c5727"
+            },
+            "official_resource_inventory": {
+              "path": "benchmarks/codex_r/knowledge_pilot/verifier/official_resources.json",
+              "sha256": "eaee963abb3c876dbae62b723109c83a27649a2eae4b28d08f016f1d69b8bf7f"
+            },
+            "task_metadata": {
+              "D01": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D01.json",
+                "sha256": "86ac0a4c6f2efd5c005373978a3e02a1782a050105063066a34155347aa92b60",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              },
+              "D03": {
+                "path": "benchmarks/codex_r/knowledge_pilot/metadata/D03.json",
+                "sha256": "be20f9c48b4e1017f6eee0b238e81f53392efb4ae773d021660b9d8333d0973e",
+                "checked_at_utc": "2026-10-25T07:27:05Z"
+              }
+            },
+            "source_document_bodies_preserved": false,
+            "source_urls_are_references_only": true
+          }
+        }
+      },
+      "original_fully_correct": false,
+      "evidence_status": "unknown",
+      "unknown_claims": [
+        "features:keyboard_single_multi_select"
+      ],
+      "unsupported_claims": [],
+      "contradicted_claims": [],
+      "changed_checks": [
+        {
+          "dimension": "unsupported_claims",
+          "check": "all_asserted_claims_supported",
+          "original": null,
+          "rescored": "unknown"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "candidate_claims_in_frozen_evidence",
+          "original": "fail",
+          "rescored": null
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "required_claims_present",
+          "original": null,
+          "rescored": "pass"
+        },
+        {
+          "dimension": "unsupported_claims",
+          "check": "$dimension_status",
+          "original": "unsupported",
+          "rescored": "unknown"
+        }
+      ],
+      "reason_for_change": "Additional claim IDs are now explicitly unknown from retained offline evidence. Automatic scoring abstains; no unsupported claim is upgraded to supported.",
+      "artifact_name": "answer.json",
+      "artifact_sha256": "d4974ccc4b77f9444faefd096b50dea4f907bd4abaa7474100dc2e406b78a481",
+      "answer_sha256": "d4974ccc4b77f9444faefd096b50dea4f907bd4abaa7474100dc2e406b78a481",
+      "answer_matches_original_record": true,
+      "evidence_sha256": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+      "original_error_summary": {
+        "primary_error": {
+          "origin": "candidate",
+          "category": "r_runtime",
+          "reason_code": "R_RUNTIME_ERROR",
+          "source_code": "unsupported_for_automatic_scoring",
+          "severity": "fatal"
+        },
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 16
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      },
+      "rescored_error_summary": {
+        "primary_error": {
+          "origin": "scorer",
+          "category": "evidence_insufficiency",
+          "reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+          "source_code": "unsupported_claims_unknown",
+          "severity": "recoverable"
+        },
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [
+          {
+            "origin": "mcp_server",
+            "category": "not_found",
+            "reason_code": "MCP_PROVIDER_ERROR",
+            "source_code": "docs_not_found",
+            "severity": "recoverable",
+            "count": 16
+          }
+        ],
+        "order_basis": "pipeline_stage_order"
+      }
+    },
+    {
+      "trial_id": "b1-discovery-C01-R2-treatment",
+      "condition": "treatment",
+      "task": "C01",
+      "original_scorer_version": "legacy",
+      "rescored_scorer_version": "legacy",
+      "original_scorer_sha256": "409e7d5b1a2e38ace8034be96a9a1ccb00af5d5a2ae964ea4b3af3f04f489da2",
+      "rescored_scorer_sha256": null,
+      "original_status": "scored",
+      "rescored_status": "legacy_retained",
+      "original_score": {
+        "status": "scored",
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "reason": null,
+        "failed_checks": [],
+        "details": [],
+        "environment": {
+          "r": "4.5.2",
+          "packages": {
+            "dplyr": "1.2.1"
+          }
+        },
+        "artifacts": {
+          "solution.R": "c42b24b6b448aeed8ea8b8e94d0d7ad53ecd10e7669498fbb7caf8e7d1578dd8"
+        }
+      },
+      "rescored": null,
+      "original_fully_correct": true,
+      "evidence_status": "legacy_retained",
+      "unknown_claims": [],
+      "unsupported_claims": [],
+      "contradicted_claims": [],
+      "changed_checks": [],
+      "reason_for_change": "C01 remains on its original legacy scorer; the D-task V2.1 contract was not applied.",
+      "artifact_name": "solution.R",
+      "artifact_sha256": "c42b24b6b448aeed8ea8b8e94d0d7ad53ecd10e7669498fbb7caf8e7d1578dd8",
+      "answer_sha256": null,
+      "answer_matches_original_record": true,
+      "evidence_sha256": null,
+      "original_error_summary": {
+        "primary_error": null,
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [],
+        "order_basis": "pipeline_stage_order"
+      },
+      "rescored_error_summary": {
+        "primary_error": null,
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [],
+        "order_basis": "pipeline_stage_order"
+      }
+    },
+    {
+      "trial_id": "b1-discovery-C01-R2-control",
+      "condition": "control",
+      "task": "C01",
+      "original_scorer_version": "legacy",
+      "rescored_scorer_version": "legacy",
+      "original_scorer_sha256": "409e7d5b1a2e38ace8034be96a9a1ccb00af5d5a2ae964ea4b3af3f04f489da2",
+      "rescored_scorer_sha256": null,
+      "original_status": "scored",
+      "rescored_status": "legacy_retained",
+      "original_score": {
+        "status": "scored",
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "reason": null,
+        "failed_checks": [],
+        "details": [],
+        "environment": {
+          "r": "4.5.2",
+          "packages": {
+            "dplyr": "1.2.1"
+          }
+        },
+        "artifacts": {
+          "solution.R": "af8d38ac244dcbe390800dca6c10ce37bec4e5a693f63c37ee8929995f12a181"
+        }
+      },
+      "rescored": null,
+      "original_fully_correct": true,
+      "evidence_status": "legacy_retained",
+      "unknown_claims": [],
+      "unsupported_claims": [],
+      "contradicted_claims": [],
+      "changed_checks": [],
+      "reason_for_change": "C01 remains on its original legacy scorer; the D-task V2.1 contract was not applied.",
+      "artifact_name": "solution.R",
+      "artifact_sha256": "af8d38ac244dcbe390800dca6c10ce37bec4e5a693f63c37ee8929995f12a181",
+      "answer_sha256": null,
+      "answer_matches_original_record": true,
+      "evidence_sha256": null,
+      "original_error_summary": {
+        "primary_error": null,
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [],
+        "order_basis": "pipeline_stage_order"
+      },
+      "rescored_error_summary": {
+        "primary_error": null,
+        "subsequent_errors": [],
+        "cleanup_errors": [],
+        "mcp_errors": [],
+        "order_basis": "pipeline_stage_order"
+      }
+    }
+  ],
+  "comparison": {
+    "experiment_id": "b1-discovery",
+    "experiment_version": "1.0",
+    "run_id": "20261026T104750Z-f78eabf1",
+    "planned_pairs": 6,
+    "scored_pairs": 3,
+    "condition_description_digests": {
+      "control": {
+        "server_description_sha256": "0ceb02c16f46b1d46df369bc463b0bcfde9d3fca6746ddeb7e1f8a0fa0225ae9",
+        "advertised_interface_sha256_by_task": {
+          "D03": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "D01": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "C01": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c"
+        }
+      },
+      "treatment": {
+        "server_description_sha256": "38c484d5235894d1c4b21bd925d369e6bc3f28123ee10da59c393d99a836b0c6",
+        "advertised_interface_sha256_by_task": {
+          "D03": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "D01": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "C01": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c"
+        }
+      }
+    },
+    "pairs": [
+      {
+        "task": "C01",
+        "repetition": 1,
+        "control_execution_order": 5,
+        "treatment_execution_order": 6,
+        "score_comparable": true,
+        "comparison_metric": "check_fraction",
+        "comparability_reason": null,
+        "delta_checks": 0,
+        "delta_score": 0.0,
+        "control": {
+          "trial_id": "b1-discovery-C01-R1-control",
+          "status": "scored",
+          "error_type": null,
+          "primary_error_reason_code": null,
+          "primary_error_origin": null,
+          "primary_error_category": null,
+          "primary_error_source_code": null,
+          "primary_error": null,
+          "scorer_identity": "legacy",
+          "score": {
+            "passed": 5,
+            "total": 5,
+            "fully_correct": true
+          },
+          "mcp_calls": 0,
+          "mcp_called": false,
+          "mcp_calls_by_tool": {},
+          "tool_search_calls": 0,
+          "server_list_tools": 1,
+          "application_errors": 0,
+          "docs_not_found": 0,
+          "exact_repeats": 0,
+          "duration_seconds": 60.812,
+          "usage": null,
+          "cost": null,
+          "server_description_sha256": "0ceb02c16f46b1d46df369bc463b0bcfde9d3fca6746ddeb7e1f8a0fa0225ae9",
+          "advertised_interface_sha256": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "advertised_toolset_sha256": "6b1450c102db56f6ac938b9660ca2527060ef911428f14c9aa61da6e07f83200",
+          "tool_schemas_sha256": "9cce322b4ad59ce37c54529455eecfe9b0ae9d3f5ab4f848584e588958a202f2",
+          "individual_tool_descriptions_sha256": "fa11360fbfadc56997f1a87098d3866b12fef8d9097a5bf38e3d0a2c0f981d59"
+        },
+        "treatment": {
+          "trial_id": "b1-discovery-C01-R1-treatment",
+          "status": "scored",
+          "error_type": null,
+          "primary_error_reason_code": null,
+          "primary_error_origin": null,
+          "primary_error_category": null,
+          "primary_error_source_code": null,
+          "primary_error": null,
+          "scorer_identity": "legacy",
+          "score": {
+            "passed": 5,
+            "total": 5,
+            "fully_correct": true
+          },
+          "mcp_calls": 0,
+          "mcp_called": false,
+          "mcp_calls_by_tool": {},
+          "tool_search_calls": 0,
+          "server_list_tools": 1,
+          "application_errors": 0,
+          "docs_not_found": 0,
+          "exact_repeats": 0,
+          "duration_seconds": 63.254,
+          "usage": null,
+          "cost": null,
+          "server_description_sha256": "38c484d5235894d1c4b21bd925d369e6bc3f28123ee10da59c393d99a836b0c6",
+          "advertised_interface_sha256": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "advertised_toolset_sha256": "6b1450c102db56f6ac938b9660ca2527060ef911428f14c9aa61da6e07f83200",
+          "tool_schemas_sha256": "9cce322b4ad59ce37c54529455eecfe9b0ae9d3f5ab4f848584e588958a202f2",
+          "individual_tool_descriptions_sha256": "fa11360fbfadc56997f1a87098d3866b12fef8d9097a5bf38e3d0a2c0f981d59"
+        },
+        "original_score_comparable": true
+      },
+      {
+        "task": "C01",
+        "repetition": 2,
+        "control_execution_order": 12,
+        "treatment_execution_order": 11,
+        "score_comparable": true,
+        "comparison_metric": "check_fraction",
+        "comparability_reason": null,
+        "delta_checks": 0,
+        "delta_score": 0.0,
+        "control": {
+          "trial_id": "b1-discovery-C01-R2-control",
+          "status": "scored",
+          "error_type": null,
+          "primary_error_reason_code": null,
+          "primary_error_origin": null,
+          "primary_error_category": null,
+          "primary_error_source_code": null,
+          "primary_error": null,
+          "scorer_identity": "legacy",
+          "score": {
+            "passed": 5,
+            "total": 5,
+            "fully_correct": true
+          },
+          "mcp_calls": 0,
+          "mcp_called": false,
+          "mcp_calls_by_tool": {},
+          "tool_search_calls": 0,
+          "server_list_tools": 1,
+          "application_errors": 0,
+          "docs_not_found": 0,
+          "exact_repeats": 0,
+          "duration_seconds": 53.715,
+          "usage": null,
+          "cost": null,
+          "server_description_sha256": "0ceb02c16f46b1d46df369bc463b0bcfde9d3fca6746ddeb7e1f8a0fa0225ae9",
+          "advertised_interface_sha256": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "advertised_toolset_sha256": "6b1450c102db56f6ac938b9660ca2527060ef911428f14c9aa61da6e07f83200",
+          "tool_schemas_sha256": "9cce322b4ad59ce37c54529455eecfe9b0ae9d3f5ab4f848584e588958a202f2",
+          "individual_tool_descriptions_sha256": "fa11360fbfadc56997f1a87098d3866b12fef8d9097a5bf38e3d0a2c0f981d59"
+        },
+        "treatment": {
+          "trial_id": "b1-discovery-C01-R2-treatment",
+          "status": "scored",
+          "error_type": null,
+          "primary_error_reason_code": null,
+          "primary_error_origin": null,
+          "primary_error_category": null,
+          "primary_error_source_code": null,
+          "primary_error": null,
+          "scorer_identity": "legacy",
+          "score": {
+            "passed": 5,
+            "total": 5,
+            "fully_correct": true
+          },
+          "mcp_calls": 0,
+          "mcp_called": false,
+          "mcp_calls_by_tool": {},
+          "tool_search_calls": 0,
+          "server_list_tools": 1,
+          "application_errors": 0,
+          "docs_not_found": 0,
+          "exact_repeats": 0,
+          "duration_seconds": 48.946,
+          "usage": null,
+          "cost": null,
+          "server_description_sha256": "38c484d5235894d1c4b21bd925d369e6bc3f28123ee10da59c393d99a836b0c6",
+          "advertised_interface_sha256": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "advertised_toolset_sha256": "6b1450c102db56f6ac938b9660ca2527060ef911428f14c9aa61da6e07f83200",
+          "tool_schemas_sha256": "9cce322b4ad59ce37c54529455eecfe9b0ae9d3f5ab4f848584e588958a202f2",
+          "individual_tool_descriptions_sha256": "fa11360fbfadc56997f1a87098d3866b12fef8d9097a5bf38e3d0a2c0f981d59"
+        },
+        "original_score_comparable": true
+      },
+      {
+        "task": "D01",
+        "repetition": 1,
+        "control_execution_order": 4,
+        "treatment_execution_order": 3,
+        "score_comparable": true,
+        "comparison_metric": "fully_correct",
+        "comparability_reason": null,
+        "delta_checks": null,
+        "delta_score": 0.0,
+        "control": {
+          "trial_id": "b1-discovery-D01-R1-control",
+          "status": "scored",
+          "error_type": null,
+          "primary_error_reason_code": null,
+          "primary_error_origin": null,
+          "primary_error_category": null,
+          "primary_error_source_code": null,
+          "primary_error": null,
+          "scorer_identity": "knowledge-pilot-v2.1",
+          "score": {
+            "passed": null,
+            "total": null,
+            "fully_correct": true
+          },
+          "mcp_calls": 19,
+          "mcp_called": true,
+          "mcp_calls_by_tool": {
+            "get_function_docs": 13,
+            "get_package": 3,
+            "search_packages": 3
+          },
+          "tool_search_calls": 0,
+          "server_list_tools": 1,
+          "application_errors": 11,
+          "docs_not_found": 10,
+          "exact_repeats": 0,
+          "duration_seconds": 129.431,
+          "usage": null,
+          "cost": null,
+          "server_description_sha256": "0ceb02c16f46b1d46df369bc463b0bcfde9d3fca6746ddeb7e1f8a0fa0225ae9",
+          "advertised_interface_sha256": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "advertised_toolset_sha256": "6b1450c102db56f6ac938b9660ca2527060ef911428f14c9aa61da6e07f83200",
+          "tool_schemas_sha256": "9cce322b4ad59ce37c54529455eecfe9b0ae9d3f5ab4f848584e588958a202f2",
+          "individual_tool_descriptions_sha256": "fa11360fbfadc56997f1a87098d3866b12fef8d9097a5bf38e3d0a2c0f981d59"
+        },
+        "treatment": {
+          "trial_id": "b1-discovery-D01-R1-treatment",
+          "status": "scored",
+          "error_type": null,
+          "primary_error_reason_code": null,
+          "primary_error_origin": null,
+          "primary_error_category": null,
+          "primary_error_source_code": null,
+          "primary_error": null,
+          "scorer_identity": "knowledge-pilot-v2.1",
+          "score": {
+            "passed": null,
+            "total": null,
+            "fully_correct": true
+          },
+          "mcp_calls": 18,
+          "mcp_called": true,
+          "mcp_calls_by_tool": {
+            "get_function_docs": 14,
+            "get_package": 2,
+            "search_packages": 2
+          },
+          "tool_search_calls": 0,
+          "server_list_tools": 1,
+          "application_errors": 8,
+          "docs_not_found": 8,
+          "exact_repeats": 0,
+          "duration_seconds": 127.627,
+          "usage": null,
+          "cost": null,
+          "server_description_sha256": "38c484d5235894d1c4b21bd925d369e6bc3f28123ee10da59c393d99a836b0c6",
+          "advertised_interface_sha256": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "advertised_toolset_sha256": "6b1450c102db56f6ac938b9660ca2527060ef911428f14c9aa61da6e07f83200",
+          "tool_schemas_sha256": "9cce322b4ad59ce37c54529455eecfe9b0ae9d3f5ab4f848584e588958a202f2",
+          "individual_tool_descriptions_sha256": "fa11360fbfadc56997f1a87098d3866b12fef8d9097a5bf38e3d0a2c0f981d59"
+        },
+        "original_score_comparable": false
+      },
+      {
+        "task": "D01",
+        "repetition": 2,
+        "control_execution_order": 9,
+        "treatment_execution_order": 10,
+        "score_comparable": false,
+        "comparison_metric": null,
+        "comparability_reason": "missing_or_incompatible_scored_outcomes",
+        "delta_checks": null,
+        "delta_score": null,
+        "control": {
+          "trial_id": "b1-discovery-D01-R2-control",
+          "status": "unsupported_for_automatic_scoring",
+          "error_type": null,
+          "primary_error_reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+          "primary_error_origin": "scorer",
+          "primary_error_category": "evidence_insufficiency",
+          "primary_error_source_code": "unsupported_claims_unknown",
+          "primary_error": {
+            "origin": "scorer",
+            "category": "evidence_insufficiency",
+            "reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+            "source_code": "unsupported_claims_unknown",
+            "severity": "recoverable"
+          },
+          "scorer_identity": "knowledge-pilot-v2.1",
+          "score": {
+            "passed": null,
+            "total": null,
+            "fully_correct": null
+          },
+          "mcp_calls": 36,
+          "mcp_called": true,
+          "mcp_calls_by_tool": {
+            "get_function_docs": 34,
+            "get_package": 1,
+            "search_packages": 1
+          },
+          "tool_search_calls": 0,
+          "server_list_tools": 1,
+          "application_errors": 22,
+          "docs_not_found": 22,
+          "exact_repeats": 0,
+          "duration_seconds": 137.363,
+          "usage": null,
+          "cost": null,
+          "server_description_sha256": "0ceb02c16f46b1d46df369bc463b0bcfde9d3fca6746ddeb7e1f8a0fa0225ae9",
+          "advertised_interface_sha256": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "advertised_toolset_sha256": "6b1450c102db56f6ac938b9660ca2527060ef911428f14c9aa61da6e07f83200",
+          "tool_schemas_sha256": "9cce322b4ad59ce37c54529455eecfe9b0ae9d3f5ab4f848584e588958a202f2",
+          "individual_tool_descriptions_sha256": "fa11360fbfadc56997f1a87098d3866b12fef8d9097a5bf38e3d0a2c0f981d59"
+        },
+        "treatment": {
+          "trial_id": "b1-discovery-D01-R2-treatment",
+          "status": "unsupported_for_automatic_scoring",
+          "error_type": null,
+          "primary_error_reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+          "primary_error_origin": "scorer",
+          "primary_error_category": "evidence_insufficiency",
+          "primary_error_source_code": "unsupported_claims_unknown",
+          "primary_error": {
+            "origin": "scorer",
+            "category": "evidence_insufficiency",
+            "reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+            "source_code": "unsupported_claims_unknown",
+            "severity": "recoverable"
+          },
+          "scorer_identity": "knowledge-pilot-v2.1",
+          "score": {
+            "passed": null,
+            "total": null,
+            "fully_correct": null
+          },
+          "mcp_calls": 32,
+          "mcp_called": true,
+          "mcp_calls_by_tool": {
+            "get_function_docs": 27,
+            "get_package": 1,
+            "search_packages": 3,
+            "search_r_documentation": 1
+          },
+          "tool_search_calls": 0,
+          "server_list_tools": 1,
+          "application_errors": 16,
+          "docs_not_found": 16,
+          "exact_repeats": 1,
+          "duration_seconds": 131.146,
+          "usage": null,
+          "cost": null,
+          "server_description_sha256": "38c484d5235894d1c4b21bd925d369e6bc3f28123ee10da59c393d99a836b0c6",
+          "advertised_interface_sha256": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "advertised_toolset_sha256": "6b1450c102db56f6ac938b9660ca2527060ef911428f14c9aa61da6e07f83200",
+          "tool_schemas_sha256": "9cce322b4ad59ce37c54529455eecfe9b0ae9d3f5ab4f848584e588958a202f2",
+          "individual_tool_descriptions_sha256": "fa11360fbfadc56997f1a87098d3866b12fef8d9097a5bf38e3d0a2c0f981d59"
+        },
+        "original_score_comparable": false
+      },
+      {
+        "task": "D03",
+        "repetition": 1,
+        "control_execution_order": 1,
+        "treatment_execution_order": 2,
+        "score_comparable": false,
+        "comparison_metric": null,
+        "comparability_reason": "missing_or_incompatible_scored_outcomes",
+        "delta_checks": null,
+        "delta_score": null,
+        "control": {
+          "trial_id": "b1-discovery-D03-R1-control",
+          "status": "unsupported_for_automatic_scoring",
+          "error_type": null,
+          "primary_error_reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+          "primary_error_origin": "scorer",
+          "primary_error_category": "evidence_insufficiency",
+          "primary_error_source_code": "unsupported_claims_unknown",
+          "primary_error": {
+            "origin": "scorer",
+            "category": "evidence_insufficiency",
+            "reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+            "source_code": "unsupported_claims_unknown",
+            "severity": "recoverable"
+          },
+          "scorer_identity": "knowledge-pilot-v2.1",
+          "score": {
+            "passed": null,
+            "total": null,
+            "fully_correct": null
+          },
+          "mcp_calls": 16,
+          "mcp_called": true,
+          "mcp_calls_by_tool": {
+            "get_function_docs": 13,
+            "get_package": 3
+          },
+          "tool_search_calls": 0,
+          "server_list_tools": 1,
+          "application_errors": 1,
+          "docs_not_found": 1,
+          "exact_repeats": 3,
+          "duration_seconds": 132.735,
+          "usage": null,
+          "cost": null,
+          "server_description_sha256": "0ceb02c16f46b1d46df369bc463b0bcfde9d3fca6746ddeb7e1f8a0fa0225ae9",
+          "advertised_interface_sha256": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "advertised_toolset_sha256": "6b1450c102db56f6ac938b9660ca2527060ef911428f14c9aa61da6e07f83200",
+          "tool_schemas_sha256": "9cce322b4ad59ce37c54529455eecfe9b0ae9d3f5ab4f848584e588958a202f2",
+          "individual_tool_descriptions_sha256": "fa11360fbfadc56997f1a87098d3866b12fef8d9097a5bf38e3d0a2c0f981d59"
+        },
+        "treatment": {
+          "trial_id": "b1-discovery-D03-R1-treatment",
+          "status": "unsupported_for_automatic_scoring",
+          "error_type": null,
+          "primary_error_reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+          "primary_error_origin": "scorer",
+          "primary_error_category": "evidence_insufficiency",
+          "primary_error_source_code": "unsupported_claims_unknown",
+          "primary_error": {
+            "origin": "scorer",
+            "category": "evidence_insufficiency",
+            "reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+            "source_code": "unsupported_claims_unknown",
+            "severity": "recoverable"
+          },
+          "scorer_identity": "knowledge-pilot-v2.1",
+          "score": {
+            "passed": null,
+            "total": null,
+            "fully_correct": null
+          },
+          "mcp_calls": 16,
+          "mcp_called": true,
+          "mcp_calls_by_tool": {
+            "get_function_docs": 13,
+            "get_package": 2,
+            "search_r_documentation": 1
+          },
+          "tool_search_calls": 0,
+          "server_list_tools": 1,
+          "application_errors": 2,
+          "docs_not_found": 1,
+          "exact_repeats": 4,
+          "duration_seconds": 114.583,
+          "usage": null,
+          "cost": null,
+          "server_description_sha256": "38c484d5235894d1c4b21bd925d369e6bc3f28123ee10da59c393d99a836b0c6",
+          "advertised_interface_sha256": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "advertised_toolset_sha256": "6b1450c102db56f6ac938b9660ca2527060ef911428f14c9aa61da6e07f83200",
+          "tool_schemas_sha256": "9cce322b4ad59ce37c54529455eecfe9b0ae9d3f5ab4f848584e588958a202f2",
+          "individual_tool_descriptions_sha256": "fa11360fbfadc56997f1a87098d3866b12fef8d9097a5bf38e3d0a2c0f981d59"
+        },
+        "original_score_comparable": false
+      },
+      {
+        "task": "D03",
+        "repetition": 2,
+        "control_execution_order": 8,
+        "treatment_execution_order": 7,
+        "score_comparable": false,
+        "comparison_metric": null,
+        "comparability_reason": "missing_or_incompatible_scored_outcomes",
+        "delta_checks": null,
+        "delta_score": null,
+        "control": {
+          "trial_id": "b1-discovery-D03-R2-control",
+          "status": "unsupported_for_automatic_scoring",
+          "error_type": null,
+          "primary_error_reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+          "primary_error_origin": "scorer",
+          "primary_error_category": "evidence_insufficiency",
+          "primary_error_source_code": "unsupported_claims_unknown",
+          "primary_error": {
+            "origin": "scorer",
+            "category": "evidence_insufficiency",
+            "reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+            "source_code": "unsupported_claims_unknown",
+            "severity": "recoverable"
+          },
+          "scorer_identity": "knowledge-pilot-v2.1",
+          "score": {
+            "passed": null,
+            "total": null,
+            "fully_correct": null
+          },
+          "mcp_calls": 9,
+          "mcp_called": true,
+          "mcp_calls_by_tool": {
+            "get_function_docs": 7,
+            "get_package": 2
+          },
+          "tool_search_calls": 0,
+          "server_list_tools": 1,
+          "application_errors": 0,
+          "docs_not_found": 0,
+          "exact_repeats": 0,
+          "duration_seconds": 192.136,
+          "usage": null,
+          "cost": null,
+          "server_description_sha256": "0ceb02c16f46b1d46df369bc463b0bcfde9d3fca6746ddeb7e1f8a0fa0225ae9",
+          "advertised_interface_sha256": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "advertised_toolset_sha256": "6b1450c102db56f6ac938b9660ca2527060ef911428f14c9aa61da6e07f83200",
+          "tool_schemas_sha256": "9cce322b4ad59ce37c54529455eecfe9b0ae9d3f5ab4f848584e588958a202f2",
+          "individual_tool_descriptions_sha256": "fa11360fbfadc56997f1a87098d3866b12fef8d9097a5bf38e3d0a2c0f981d59"
+        },
+        "treatment": {
+          "trial_id": "b1-discovery-D03-R2-treatment",
+          "status": "unsupported_for_automatic_scoring",
+          "error_type": null,
+          "primary_error_reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+          "primary_error_origin": "scorer",
+          "primary_error_category": "evidence_insufficiency",
+          "primary_error_source_code": "unsupported_claims_unknown",
+          "primary_error": {
+            "origin": "scorer",
+            "category": "evidence_insufficiency",
+            "reason_code": "SCORER_UNSUPPORTED_CLAIMS",
+            "source_code": "unsupported_claims_unknown",
+            "severity": "recoverable"
+          },
+          "scorer_identity": "knowledge-pilot-v2.1",
+          "score": {
+            "passed": null,
+            "total": null,
+            "fully_correct": null
+          },
+          "mcp_calls": 13,
+          "mcp_called": true,
+          "mcp_calls_by_tool": {
+            "get_function_docs": 11,
+            "get_package": 2
+          },
+          "tool_search_calls": 0,
+          "server_list_tools": 1,
+          "application_errors": 1,
+          "docs_not_found": 1,
+          "exact_repeats": 0,
+          "duration_seconds": 116.334,
+          "usage": null,
+          "cost": null,
+          "server_description_sha256": "38c484d5235894d1c4b21bd925d369e6bc3f28123ee10da59c393d99a836b0c6",
+          "advertised_interface_sha256": "520faeb172f3dae44bc2c106f68da585a87fe1d126998bc1e36d2f3a3df0644c",
+          "advertised_toolset_sha256": "6b1450c102db56f6ac938b9660ca2527060ef911428f14c9aa61da6e07f83200",
+          "tool_schemas_sha256": "9cce322b4ad59ce37c54529455eecfe9b0ae9d3f5ab4f848584e588958a202f2",
+          "individual_tool_descriptions_sha256": "fa11360fbfadc56997f1a87098d3866b12fef8d9097a5bf38e3d0a2c0f981d59"
+        },
+        "original_score_comparable": false
+      }
+    ],
+    "score_pooling": "within_task_and_scorer_only",
+    "original_scored_pairs": 2
+  }
+}

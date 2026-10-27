@@ -110,3 +110,11 @@ def mcp_toolset() -> str:
     if value not in {"consolidated", "legacy"}:
         raise KnowledgeError("invalid_configuration", "MCP_TOOLSET must be consolidated or legacy")
     return value
+
+
+def function_discovery_enabled() -> bool:
+    """Disable only the additive tool for a controlled experiment."""
+    raw = os.environ.get("FUNCTION_DISCOVERY_ENABLED", "true").strip().casefold()
+    if raw not in {"true", "false", "1", "0", "yes", "no"}:
+        raise KnowledgeError("invalid_configuration", "FUNCTION_DISCOVERY_ENABLED must be boolean")
+    return raw in {"true", "1", "yes"}

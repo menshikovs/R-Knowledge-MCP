@@ -8,9 +8,18 @@ from collections import OrderedDict
 from urllib.parse import urljoin, urlsplit
 
 from ..errors import KnowledgeError
+from ..function_discovery import build_discovery_index, snapshot_id, validate_request
 from ..http import Artifact, RepositoryHTTP, package_name, same_content, version_parts
 from ..native import native
-from ..parsers import PackagePageParser, aliases, dcf, decode, description_text, source_files
+from ..parsers import (
+    PackagePageParser,
+    alias_hints,
+    aliases,
+    dcf,
+    decode,
+    description_text,
+    source_files,
+)
 
 PARSED_SOURCE_CAPACITY = 8
 PARSED_SOURCE_BYTES = 48 << 20
@@ -110,6 +119,7 @@ class SourceRepository(ABC):
     def __init__(self, http: RepositoryHTTP):
         self.http = http
         self._parse_lock = asyncio.Lock()
+        self._discovery_lock = asyncio.Lock()
         self._index_lock = asyncio.Lock()
         self._index_artifact: Artifact | None = None
         self._index_records: dict[str, dict[str, str]] = {}
@@ -154,9 +164,27 @@ class SourceRepository(ABC):
             "metadata": metadata,
             "files": files,
             "aliases": None,
+            "discovery": None,
+            "digest": None,
             "size": size,
         }
         self._parsed_bytes += size
+
+    async def _verified_cached_source(self, artifact, record):
+        entry = self._cached_source(artifact)
+        expected = record.get("MD5sum")
+        if entry is not None and expected and entry.get("verified_md5") != expected:
+            actual = await asyncio.to_thread(
+                lambda: hashlib.md5(artifact.body, usedforsecurity=False).hexdigest()
+            )
+            if actual != expected:
+                raise KnowledgeError(
+                    "checksum_mismatch",
+                    "Archive checksum differs from repository index",
+                    artifact.source_url,
+                )
+            entry["verified_md5"] = actual
+        return entry
 
     async def current(self, package: str) -> tuple[dict[str, str], Artifact]:
         package_name(package)
@@ -174,12 +202,12 @@ class SourceRepository(ABC):
         record, index = await self.current(package)
         version = record["Version"]
         artifact = await self.http.fetch(self.archive_path(package, version))
-        cached = self._cached_source(artifact)
+        cached = await self._verified_cached_source(artifact, record)
         if cached is not None:
             return cached["metadata"], cached["files"], artifact, index
         # Parsing is bounded and off the event loop; only one expanded archive at a time.
         async with self._parse_lock:
-            cached = self._cached_source(artifact)
+            cached = await self._verified_cached_source(artifact, record)
             if cached is not None:
                 return cached["metadata"], cached["files"], artifact, index
             if record.get("MD5sum"):
@@ -222,6 +250,94 @@ class SourceRepository(ABC):
         if entry is not None:
             entry["aliases"] = index
         return index
+
+    async def _discovery_index(self, package, metadata, files, artifact):
+        async with self._discovery_lock:
+            entry = self._cached_source(artifact)
+            if entry is not None and entry["discovery"] is not None:
+                return entry["discovery"], entry["digest"]
+            discovery = await asyncio.to_thread(build_discovery_index, package, metadata, files)
+            digest = await asyncio.to_thread(lambda: hashlib.sha256(artifact.body).hexdigest())
+            entry = self._cached_source(artifact)
+            if (
+                entry is not None
+                and entry["size"] + discovery.estimated_bytes <= PARSED_SOURCE_BYTES
+            ):
+                while self._parsed_bytes + discovery.estimated_bytes > PARSED_SOURCE_BYTES:
+                    _, removed = self._parsed.popitem(last=False)
+                    self._parsed_bytes -= removed["size"]
+                # The current entry was most recently used and fits by itself.
+                entry["discovery"], entry["digest"] = discovery, digest
+                entry["size"] += discovery.estimated_bytes
+                self._parsed_bytes += discovery.estimated_bytes
+            return discovery, digest
+
+    async def list_package_functions(
+        self, package, query=None, limit=20, offset=0, package_version=None, snapshot=None
+    ):
+        validate_request(query, limit, offset, snapshot)
+        if package_version is not None:
+            version_parts(package_version)
+            record, index = await self.current(package)
+            if package_version != record["Version"]:
+                raise KnowledgeError(
+                    "requested_version_unavailable",
+                    "Only the selected repository version is available; "
+                    "no version was substituted.",
+                    index.source_url,
+                    related_sources=[index.provenance()],
+                    details={
+                        "requested_package_version": package_version,
+                        "available_package_version": record["Version"],
+                    },
+                )
+        metadata, files, artifact, index = await self.source(package)
+        sources = [index.provenance(), artifact.provenance()]
+        if package_version is not None and package_version != metadata["Version"]:
+            raise KnowledgeError(
+                "requested_version_unavailable",
+                "Package version changed during resolution.",
+                artifact.source_url,
+                related_sources=sources,
+                details={
+                    "requested_package_version": package_version,
+                    "available_package_version": metadata["Version"],
+                },
+            )
+        discovery, digest = await self._discovery_index(package, metadata, files, artifact)
+        identity = {
+            "package": package,
+            "repository": self.repository,
+            "package_version": metadata["Version"],
+            "bioc_version": self.bioc_version,
+            "channel": getattr(getattr(self, "release", None), "channel", None),
+        }
+        token = snapshot_id(identity, digest, query)
+        if snapshot is not None and snapshot != token:
+            raise KnowledgeError(
+                "source_identity_drift",
+                "Source identity or query changed; restart pagination from offset zero.",
+                artifact.source_url,
+                related_sources=sources,
+                details={"resolved_package_version": metadata["Version"], "snapshot": token},
+            )
+        result = await asyncio.to_thread(discovery.page, package, query, limit, offset)
+        result.update(
+            **identity,
+            snapshot=token,
+            archive_sha256=digest,
+            verification_status="verified"
+            if discovery.namespace_status == discovery.rd_status == "verified"
+            else "partial",
+            source_verification_level="archive_checksum_verified"
+            if self._index_records.get(package, {}).get("MD5sum")
+            else "description_version_matched",
+            version_scope="latest_cran"
+            if self.repository == "cran"
+            else "selected_bioconductor_release",
+            sources=sources,
+        )
+        return result
 
     @staticmethod
     def package_metadata(
@@ -289,10 +405,34 @@ class SourceRepository(ABC):
             for name in alias_index.get(function, [])
         ]
         if not matches:
+            hints = await asyncio.to_thread(alias_hints, function, alias_index)
+            try:
+                discovery, _ = await self._discovery_index(package, metadata, files, artifact)
+                suggestions = await asyncio.to_thread(discovery.suggestions, function, package)
+                discovery_status = {
+                    "namespace": discovery.namespace_status,
+                    "rd": discovery.rd_status,
+                }
+            except KnowledgeError as exc:
+                suggestions, discovery_status = [], {"status": "unavailable", "code": exc.code}
             raise KnowledgeError(
                 "docs_not_found",
                 "No literal Rd alias found in this package version",
                 artifact.source_url,
+                related_sources=[index.provenance(), artifact.provenance()],
+                details={
+                    **hints,
+                    "requested_package": package,
+                    "requested_function": function,
+                    "resolved_package_version": metadata["Version"],
+                    "source_checked_at": artifact.checked_at,
+                    "repository": self.repository,
+                    "bioc_version": self.bioc_version,
+                    "lookup_stage": "literal_rd_alias",
+                    "suggestions": suggestions,
+                    "discovery_status": discovery_status,
+                    "callability": "not_checked",
+                },
             )
         if len(matches) != 1:
             raise KnowledgeError(

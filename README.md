@@ -59,7 +59,7 @@ or provide a hosted endpoint. Codex configuration follows
 
 ## Tools and repository selection
 
-The default surface (`MCP_TOOLSET=consolidated`) has 15 tools. Every parameter has
+The default surface (`MCP_TOOLSET=consolidated`) has 16 tools. Every parameter has
 a schema description, every tool has a title and `readOnlyHint=true`, and
 `openWorldHint` is false only for tools that never contact an upstream service.
 `MCP_TOOLSET=legacy` restores the original 35 tools unchanged (used by the Codex
@@ -69,6 +69,7 @@ benchmark conditions); resources and prompts are registered in both modes.
 | --- | --- | --- | --- |
 | `search_packages` | `query`, `repository="cran"`, `bioc_version`, `limit`, `offset` | Ranked name/title search; every term must match | same name |
 | `get_package` | `package`, `include=["metadata"]`, `repository`, `bioc_version`, `verify_archive=false`, `resolve_repositories`, `revision`, `question` | One call returns any of: metadata, dependencies, vignettes, agent_guidance (needs `revision`), context7 (needs `question`); each section keeps its own provenance and failure | `get_package_info`, `get_dependencies`, `get_package_vignettes`, `get_package_agent_guidance`, `get_context7_docs`, `get_package_knowledge` |
+| `list_package_functions` | `package`, `repository`, `package_version`, `bioc_version`, `query`, `limit`, `offset`, `snapshot` | Source-backed exports, Rd aliases/topics and methods; explicit coverage, stable snapshot paging; runtime callability is not checked | new |
 | `get_function_docs` | `package`, `function`, `offset`, `repository`, `bioc_version`, optional `package_version` | Raw Rd from the verified current source archive; a different requested version is an explicit error | `get_function_docs`, `get_shiny_docs`, `get_visualization_docs` |
 | `check_package_version` | `package`, `installed_version` | Compare a client-supplied version with latest CRAN | same name |
 | `check_r_compatibility` | `r_version`, optional `package`, `repository="cran"`, `bioc_version` | CRAN or Bioconductor R and direct dependency constraints; without `package` (Bioconductor) the official R/release map | `get_bioconductor_version`, `check_package_compatibility` (CRAN check is new) |
@@ -82,6 +83,11 @@ benchmark conditions); resources and prompts are registered in both modes.
 | `build_r_prompt` | `request`, `mode="build"` or `"improve"`, prompt options | Build a prompt, or improve an existing one verbatim | `build_r_prompt`, `improve_r_prompt` |
 | `validate_r_prompt` | `prompt_text` | Heuristic structural checklist | same name |
 | `get_r_prompt_context` | `packages`, R/Bioconductor versions | Verified package context for prompt grounding | same name |
+
+For proactive discovery, version pinning, matching, diagnostics and Python/Rust behavior,
+see [Verified function discovery](docs/FUNCTION_DISCOVERY.md). Set
+`FUNCTION_DISCOVERY_ENABLED=false` to disable only the additive discovery tool
+for a controlled comparison; existing tools and server instructions stay identical.
 
 Tools that return repository data accept `verbosity="compact"` (default) or
 `"full"`. Compact responses omit repeated static notes (`limitations`,
@@ -286,7 +292,7 @@ Prompt settings include `PROMPT_INTELLIGENCE_ENABLED`,
 `PROMPT_MAX_INPUT_CHARS`, `PROMPT_MAX_OUTPUT_CHARS`,
 `PROMPT_MAX_GROUNDING_PACKAGES`, `PROMPT_DEFAULT_TARGET`, and
 `PROMPT_DEFAULT_DETAIL_LEVEL`. See the prompt guide for bounds and meanings.
-`MCP_TOOLSET` selects `consolidated` (default, 15 tools) or `legacy` (the original
+`MCP_TOOLSET` selects `consolidated` (default, 16 tools) or `legacy` (the original
 35). `GITHUB_TOKEN` is optional; it raises the GitHub API limit for AGENTS.md
 lookups from 60 to 5,000 requests per hour, is sent only as an `Authorization`
 header to `api.github.com`, and never appears in URLs, logs or results.
@@ -410,7 +416,9 @@ pytest
 ```
 
 Optional Rust accelerators live in `native/` (PyO3, abi3 wheel for CPython
-3.11+). They speed up R source scanning (5–9x on 250 KiB inputs) and package
+3.11+). The same scanner also accelerates conservative NAMESPACE discovery through the
+shared Python semantic layer. No additional native parser/network policy is required.
+They speed up R source scanning (5–9x on 250 KiB inputs) and package
 search ranking (about 12x on 22k packages). The pure-Python code remains the
 reference: without the extension everything works identically, and
 `tests/test_native_parity.py` compares both implementations on generated inputs

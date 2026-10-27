@@ -1,0 +1,31 @@
+{
+  "status": "scored",
+  "passed": 0,
+  "total": 5,
+  "fully_correct": false,
+  "reason": null,
+  "failed_checks": [
+    "workflow_returns_a_result",
+    "result_has_requested_columns",
+    "all_genes_present",
+    "count_container_and_samples",
+    "reference_level_and_sign"
+  ],
+  "details": [
+    "workflow_returns_a_result: candidate call failed: all gene-wise dispersion estimates are within 2 orders of magnitude\n  from the minimum value, and so the standard curve fitting techniques will not work.\n  One can instead use the gene-wise estimates as final estimates:\n  dds <- estimateDispersionsGeneEst(dds)\n  dispersions(dds) <- mcols(dds)$dispGe",
+    "result_has_requested_columns: candidate call failed: all gene-wise dispersion estimates are within 2 orders of magnitude\n  from the minimum value, and so the standard curve fitting techniques will not work.\n  One can instead use the gene-wise estimates as final estimates:\n  dds <- estimateDispersionsGeneEst(dds)\n  dispersions(dds) <- mcols(dds)$dispGe",
+    "all_genes_present: candidate call failed: all gene-wise dispersion estimates are within 2 orders of magnitude\n  from the minimum value, and so the standard curve fitting techniques will not work.\n  One can instead use the gene-wise estimates as final estimates:\n  dds <- estimateDispersionsGeneEst(dds)\n  dispersions(dds) <- mcols(dds)$dispGe",
+    "count_container_and_samples: candidate call failed: all gene-wise dispersion estimates are within 2 orders of magnitude\n  from the minimum value, and so the standard curve fitting techniques will not work.\n  One can instead use the gene-wise estimates as final estimates:\n  dds <- estimateDispersionsGeneEst(dds)\n  dispersions(dds) <- mcols(dds)$dispGe",
+    "reference_level_and_sign: candidate call failed: all gene-wise dispersion estimates are within 2 orders of magnitude\n  from the minimum value, and so the standard curve fitting techniques will not work.\n  One can instead use the gene-wise estimates as final estimates:\n  dds <- estimateDispersionsGeneEst(dds)\n  dispersions(dds) <- mcols(dds)$dispGe"
+  ],
+  "environment": {
+    "r": "4.5.2",
+    "packages": {
+      "DESeq2": "1.50.2",
+      "SummarizedExperiment": "1.40.0"
+    }
+  },
+  "artifacts": {
+    "solution.R": "a4da84f1cc568105444085a7898b251aa7ebc4a2d78394e837736e1ad5a511ce"
+  }
+}

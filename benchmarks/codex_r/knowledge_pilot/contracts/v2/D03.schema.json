@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/r-knowledge-mcp/knowledge-pilot-v2/D03.schema.json",
+  "title": "D03 recommendation answer",
+  "type": "object", "additionalProperties": false,
+  "required": ["r_version", "rationale", "recommendations"],
+  "properties": {
+    "r_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$"},
+    "rationale": {"type": "string", "minLength": 40},
+    "recommendations": {"type": "array", "minItems": 1, "maxItems": 1, "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["package", "version", "source_url", "documentation_url", "feature_ids", "caveat_ids"],
+      "properties": {
+        "package": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9.]{0,99}$"},
+        "version": {"type": "string", "pattern": "^[0-9]+(?:[.-][0-9A-Za-z]+)*$"},
+        "source_url": {"type": "string", "format": "uri"},
+        "documentation_url": {"type": "string", "format": "uri"},
+        "feature_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "enum": ["declarative_rules", "cross_record_rules", "pipeline_validation", "row_level_failure_reports"]}},
+        "caveat_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "enum": ["lightweight_rule_engine", "broader_validation_framework"]}}
+      }
+    }}
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "evidence_version": "knowledge-pilot-claims-v2.1",
+  "scope": "D01 and D03 candidate claim classifications for offline scoring",
+  "classification_policy": {
+    "required": "Required by the frozen task candidate facts; asserted claims are source-backed by the local curated fact registry.",
+    "supported": "Supported by the local curated fact registry, whether or not required for the task.",
+    "unknown": "The retained offline evidence does not confirm or contradict the claim.",
+    "contradicted": "Contradicted by retained offline evidence. No contradiction is recorded unless local evidence states it explicitly."
+  },
+  "basis": {
+    "candidate_facts": {
+      "path": "benchmarks/codex_r/knowledge_pilot/verifier/candidates.json",
+      "sha256": "ac3cd759957ee5e910732e986be6bd3ed59d0b41288571b30204f64cee4c5727"
+    },
+    "official_resource_inventory": {
+      "path": "benchmarks/codex_r/knowledge_pilot/verifier/official_resources.json",
+      "sha256": "eaee963abb3c876dbae62b723109c83a27649a2eae4b28d08f016f1d69b8bf7f"
+    },
+    "task_metadata": {
+      "D01": {
+        "path": "benchmarks/codex_r/knowledge_pilot/metadata/D01.json",
+        "sha256": "86ac0a4c6f2efd5c005373978a3e02a1782a050105063066a34155347aa92b60",
+        "checked_at_utc": "2026-10-25T07:27:05Z"
+      },
+      "D03": {
+        "path": "benchmarks/codex_r/knowledge_pilot/metadata/D03.json",
+        "sha256": "be20f9c48b4e1017f6eee0b238e81f53392efb4ae773d021660b9d8333d0973e",
+        "checked_at_utc": "2026-10-25T07:27:05Z"
+      }
+    },
+    "source_document_bodies_preserved": false,
+    "source_urls_are_references_only": true
+  },
+  "tasks": {
+    "D01": {
+      "feature_ids": ["reactive_terminal_ui", "headless_app_tests", "keyboard_single_multi_select", "stable_return_values"],
+      "caveat_ids": ["real_terminal_required", "some_apis_experimental", "menu_focused"],
+      "packages": {
+        "termr": {
+          "version": "1.0.1",
+          "required_features": ["reactive_terminal_ui", "headless_app_tests", "stable_return_values"],
+          "supported_features": ["reactive_terminal_ui", "headless_app_tests", "stable_return_values"],
+          "unknown_features": ["keyboard_single_multi_select"],
+          "contradicted_features": [],
+          "required_caveats": ["real_terminal_required", "some_apis_experimental"],
+          "supported_caveats": ["real_terminal_required", "some_apis_experimental"],
+          "unknown_caveats": ["menu_focused"],
+          "contradicted_caveats": [],
+          "source_urls": ["https://stat.ethz.ch/CRAN/web/packages/termr/refman/termr.html"],
+          "documentation_snapshot_sha256": null
+        },
+        "climenu": {
+          "version": "0.2.0",
+          "required_features": ["keyboard_single_multi_select", "stable_return_values"],
+          "supported_features": ["keyboard_single_multi_select", "stable_return_values"],
+          "unknown_features": ["reactive_terminal_ui", "headless_app_tests"],
+          "contradicted_features": [],
+          "required_caveats": ["menu_focused"],
+          "supported_caveats": ["menu_focused"],
+          "unknown_caveats": ["real_terminal_required", "some_apis_experimental"],
+          "contradicted_caveats": [],
+          "source_urls": ["https://cran.r-project.org/web/packages/climenu/climenu.pdf"],
+          "documentation_snapshot_sha256": null
+        }
+      }
+    },
+    "D03": {
+      "feature_ids": ["declarative_rules", "cross_record_rules", "pipeline_validation", "row_level_failure_reports"],
+      "caveat_ids": ["lightweight_rule_engine", "broader_validation_framework"],
+      "packages": {
+        "validate": {
+          "version": "1.1.7",
+          "required_features": ["declarative_rules", "cross_record_rules", "row_level_failure_reports"],
+          "supported_features": ["declarative_rules", "cross_record_rules", "row_level_failure_reports"],
+          "unknown_features": ["pipeline_validation"],
+          "contradicted_features": [],
+          "required_caveats": ["lightweight_rule_engine"],
+          "supported_caveats": ["lightweight_rule_engine"],
+          "unknown_caveats": ["broader_validation_framework"],
+          "contradicted_caveats": [],
+          "source_urls": ["https://cran.r-project.org/web/packages/validate/validate.pdf"],
+          "documentation_snapshot_sha256": null
+        },
+        "pointblank": {
+          "version": "0.12.4",
+          "required_features": ["declarative_rules", "pipeline_validation", "row_level_failure_reports"],
+          "supported_features": ["declarative_rules", "pipeline_validation", "row_level_failure_reports"],
+          "unknown_features": ["cross_record_rules"],
+          "contradicted_features": [],
+          "required_caveats": ["broader_validation_framework"],
+          "supported_caveats": ["broader_validation_framework"],
+          "unknown_caveats": ["lightweight_rule_engine"],
+          "contradicted_caveats": [],
+          "source_urls": ["https://cran.r-project.org/web/packages/pointblank/pointblank.pdf"],
+          "documentation_snapshot_sha256": null
+        }
+      }
+    }
+  }
+}

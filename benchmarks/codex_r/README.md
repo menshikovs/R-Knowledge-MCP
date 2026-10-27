@@ -1,5 +1,17 @@
 # Independent Codex / R pilot
 
+## Local analytics (no API calls)
+
+Saved experiments can be imported into a derived DuckDB database and explored
+in a local read-only Streamlit dashboard. Source results remain unchanged.
+See [analytics/README.md](analytics/README.md) for installation, schema, import,
+rebuild, historical examples and the five dashboard views.
+
+```sh
+.venv-wsl/bin/python -m benchmarks.codex_r.analytics.import_results
+.venv-wsl/bin/python -m benchmarks.codex_r.analytics.dashboard
+```
+
 ## Simple R01 runner (Ubuntu WSL2)
 
 Run from the repository root, in the terminal that already exports
@@ -23,7 +35,9 @@ Use `--effort high` for high reasoning. The model is always `gpt-6-luna`.
 `--repetitions 2` repeats both modes; `--tasks all` selects all 12 existing tasks.
 Each attempt has a fresh OpenAI session and disposable Docker workspace. The
 session is deleted and the executor removed before the existing scorer runs.
-A failure stops the run after saving its reason; there are no automatic reruns.
+An ordinary task or scorer failure is saved and the runner continues to the next
+assignment. It does not retry the failed task. An interruption or unconfirmed
+resource cleanup stops the run.
 
 This command reuses the installed Python environment and existing images:
 `rkmcp-codex-runtime:codex-0.163.0`, `codex-r-benchmark:pilot`, and
@@ -39,6 +53,44 @@ API usage and API cost when available. Missing usage/cost remains null. These
 are best-effort API measurements, not a final bill. Missing credentials also
 produce CSV/JSON with `startup_error`; that is not a completed model trial.
 
+## B1 single-run MCP discovery experiment
+
+`--experiment b1-discovery` creates one run ID with 12 paired trials: Control and
+Treatment for D03, D01 and C01, each repeated twice. The plan balances which
+condition runs first across the six task/repetition pairs. A run can be resumed
+with `--resume RUN_DIRECTORY`; completed trials are not replayed, and the saved
+plan keeps the condition order.
+
+Control retains the current server-level MCP description. Treatment describes
+how the read-only tools can check CRAN/Bioconductor metadata, release and version
+facts, compatibility, and official function documentation. Both conditions use
+the same MCP tools, schemas and individual tool descriptions. The existing
+Codex 0.163.0 client receives MCP `InitializeResult.instructions` as its MCP
+namespace description; this does not require MCP use and does not change common
+agent instructions. Results save description, toolset, schema, individual tool
+description and advertised-interface SHA-256 digests for both variants.
+
+Run this once from the repository root in WSL with the existing images. The
+command starts no B2 sessions:
+
+```sh
+.venv-wsl/bin/python -m benchmarks.codex_r.run_simple \
+  --effort medium --experiment b1-discovery \
+  --tasks D03 D01 C01 --repetitions 2 \
+  --knowledge-pilot-scorer knowledge-pilot-v2 \
+  --executor-image rkmcp-codex-runtime:codex-0.163.0-bioc \
+  --scorer-image codex-r-benchmark:pilot-bioc \
+  --mcp-image cran-knowledge-mcp:shiny-quarto
+```
+
+The runner writes `b1_comparison.json` incrementally, including missing and
+failed pairs. Import the completed run with the existing analytics importer.
+D01 and D03 use the knowledge-pilot-v2 scorer; C01 uses its supported legacy
+scorer. The summary and Dashboard compare scores only within each task/scorer
+pair and do not pool those score scales. MCP calls, `docs_not_found`, repeats,
+duration, observed token usage and cost remain condition-specific. Missing
+measurements stay null.
+
 Scoring uses the durable artifact export. R02's observed `summarize_sales.R`
 filename is accepted only inside the validated workspace root and exported as
 `solution.R`; `artifact_sources` records that mapping. Existing symlink, size
@@ -50,8 +102,22 @@ Executor startup runs concurrently with opening the event stream and never waits
 for SSE headers or a connection event. A session-state check handles a connection
 event missed during subscription; task submission happens once. On connection
 failure, `result.json` retains `environment_error` and `executor_diagnostics`
-(container state and bounded, redacted logs captured before cleanup). Diagnostics
-are also printed on failure; neither API key nor executor routing URLs are logged.
+(container state and bounded, redacted logs captured before cleanup). Terminal
+messages contain progress and error status; detailed diagnostics stay in JSON.
+
+Ctrl+C requests shutdown and exits with code 130 after cleanup. Cancellation of an
+active or possibly submitted turn is requested before deletion is attempted. Each API and
+Docker cleanup operation has a 10-second deadline and its own safe result in
+`cleanup_operations` (also exported in CSV). `session_deleted=true` requires the
+API's matching ID and `deleted=true`; errors, timeouts and unconfirmed responses
+leave it null. The primary task error is retained separately from cleanup errors.
+A second Ctrl+C aborts the remaining cleanup, saves which results are unknown or
+skipped, and exits without starting another assignment.
+
+The terminal prints session/executor/turn/scoring/deletion/cleanup milestones.
+Every 15 seconds, a heartbeat shows elapsed time and the
+current stage. This does not alter the agent timeout. Terminal progress contains
+fixed labels and counters, without request bodies, MCP responses or credentials.
 
 The simple runner has no approval files, Git checks, preliminary audits or
 `spend_control` request field. It enforces a wall-clock timeout (default 900
@@ -59,6 +125,130 @@ seconds), CPU/memory/process limits and networkless scoring. The executor uses
 a Docker bridge network for the OpenAI relay and MCP; it does not enforce the
 older pilot's egress allowlist or a hard 30,000-token cap. These results are
 simple benchmark runs, not compliance with the preregistered protocol below.
+
+## Paired tool-value pilot
+
+Run the sixteen B/C/D/E tasks in both modes, with the same standard instructions and
+GPT-6 Luna `medium` reasoning:
+
+```sh
+.venv-wsl/bin/python -m benchmarks.codex_r.run_simple --effort medium --pilot tool-value
+```
+
+To select only E01-E05 through the existing task selector:
+
+```sh
+.venv-wsl/bin/python -m benchmarks.codex_r.run_simple --effort medium --tasks E01 E02 E03 E04 E05
+```
+
+The runner schedules each task without MCP and then with the consolidated MCP
+tool set. MCP use remains optional. `--pilot tool-value` cannot be combined with
+`--tasks`; the existing `--tasks hard-pilot`, R01..R12 and default R01 behavior
+remain available. Use `--effort high` to select high reasoning.
+
+`--pilot full` runs all 19 registered H/B/C/D/E tasks: H01, H04, H10, B01-B03,
+C01-C05, D01-D03 and E01-E05 (38 paired trials). H02-H03 and H05-H09 are not
+registered; the legacy R01-R12 suite remains under `--tasks all`. E02 uses the
+repaired 500-gene negative-binomial fixture and is included. The runner selects
+`codex-r-benchmark:pilot-bioc` and `rkmcp-codex-runtime:codex-0.163.0-bioc`
+automatically when E02/E03 are selected, and probes both images before creating
+an OpenAI session. To continue an interrupted run without replaying completed trials,
+pass its result directory with `--resume` and the same effort. Resume checks the
+saved manifest against current source, dirty-tree, image, toolset, scorer and
+task configuration; it refuses to replay any trial directory that lacks a
+finalized `result.json`.
+
+```sh
+.venv-wsl/bin/python -m benchmarks.codex_r.run_simple --effort medium --pilot full
+.venv-wsl/bin/python -m benchmarks.codex_r.run_simple --effort medium --resume benchmarks/codex_r/results/RUN_ID
+```
+
+B01-B03 test bug fixes, C01-C03 test behavior tied to pinned dplyr 1.2.1,
+tidyr 1.3.2 and readr 2.2.0 documentation, C04-C05 test cranlogs 2.1.1 date-range
+and mirror-scoped download totals, D01-D03 test package discovery, and E01-E05
+test CRAN/Bioconductor release alignment, a DESeq2 workflow, a documented
+namespace relocation, mixed-repository dependencies and three-way compatibility
+classification. E02/E03 require the E-specific Bioconductor package pins listed
+in their task provenance; the default `codex-r-benchmark:pilot` image currently
+does not contain these packages. `configs/bioc.Dockerfile` adds them on top of the frozen
+image (build-time network only; Bioconductor 3.22; DESeq2 1.50.2, SummarizedExperiment
+1.40.0, Biobase 2.70.0; GenomicRanges 1.62.0 from the release Archive, SHA-256 checked; every
+renv.lock version is asserted unchanged):
+
+```sh
+docker build --pull=false -f benchmarks/codex_r/configs/bioc.Dockerfile -t codex-r-benchmark:pilot-bioc benchmarks/codex_r
+```
+
+The paired Bioconductor executor is built from the existing Codex runtime and
+copies only `/opt/benchmark-library` from the pinned scorer donor. Its Codex
+binary, entrypoint, user and execution contract remain inherited from the runtime:
+
+```sh
+docker build --pull=false --network=none -f benchmarks/codex_r/runtime/bioc.Dockerfile -t rkmcp-codex-runtime:codex-0.163.0-bioc benchmarks/codex_r/runtime
+.venv-wsl/bin/python -m benchmarks.codex_r.full_selftest
+```
+
+No hidden benchmark files are copied to the executor. E02 passes 5/5 with the
+unchanged reference and standard DESeq2 parametric fitting; E03 and all other
+registered H/B/C/D/E reference/mutant pairs pass their offline self-tests.
+See [the full offline report](reports/full-offline-readiness-20261025/README.md)
+for image digests, fixture reproduction and the exact checks. No package
+installation occurs while scoring or during agent tasks.
+R 4.5.2 and the existing locked environment are used. Public fixture and task
+hashes, package versions, documentation URLs and check timestamps are saved in
+each trial's `task_provenance`. The hidden reference controls and verifiers are
+mounted only into the networkless scorer, never into the agent workspace.
+
+The run directory contains `results.csv` / `results.json`, `mcp_calls.csv` and
+`mcp_tool_aggregates.csv`. Per-call rows report request/result JSON byte counts,
+an explicitly approximate result-token count (`ceil(bytes / 4)`), duration,
+status, error category and truncation. This byte-based estimate is not a model
+token count or a billed token count. MCP arguments and full results are removed
+from the saved agent events. `tool_search_calls` and server `tools/list` counts
+remain separate diagnostics, and client calls are reconciled against the
+server's audit and per-call log.
+
+The E-block snapshot facts and their SHA-256 list are in
+[`knowledge_pilot/metadata/E-source-snapshot.json`](knowledge_pilot/metadata/E-source-snapshot.json)
+and [`knowledge_pilot/metadata/E-source-snapshot.sha256`](knowledge_pilot/metadata/E-source-snapshot.sha256).
+E01/E04/E05 have deterministic offline JSON scorers. E02/E03 use the existing
+networkless R scorer and fail closed unless the scorer image has the exact E
+package pins. The currently available `codex-r-benchmark:pilot` image does not
+contain those packages; their Docker reference/mutant checks must be run against
+an image restored with the task metadata's package versions before interpreting
+their scores. The runner probes those exact package pins and aborts before an
+OpenAI session if they are absent. The scorer itself reports `environment_mismatch`
+rather than grading those tasks as candidate failures. No installation occurs
+while scoring.
+
+The opt-in [`measurement_hardening_v2.md`](measurement_hardening_v2.md) documents the
+versioned D/E evaluator, public output contracts, open-world alternative policy, safe MCP
+observation schema 2.1, with bounded discovery query/alias/pagination fields and server protocol
+call IDs, and separate adoption/effectiveness/efficiency metrics. Legacy scoring
+remains the default; select V2 with `--knowledge-pilot-scorer knowledge-pilot-v2`. The separate
+`knowledge-pilot-v2.1` scorer is opt-in for D01/D03 and adds a versioned local claim registry
+with `supported`, `unknown` and `contradicted` states. Unknown claims cause automatic-scoring
+abstention and remain null in the overall score. V2 and saved B1 results are unchanged. The
+offline B1 rescore is documented in
+[`reports/b1_scorer_v21_rescore_20261026.md`](reports/b1_scorer_v21_rescore_20261026.md)
+and its machine-readable report; it leaves C01 on its original legacy scorer.
+
+Agent input/output/cached/reasoning usage is copied from session/turn usage when
+the API provides it. The API calls those counts best-effort and they can change;
+missing values stay null. Cost is saved only when returned by the API. The
+runner does not infer cost from MCP bytes or from token estimates. A local
+server-call example with no agent session is in
+[`reports/tool-value-example.md`](reports/tool-value-example.md).
+
+The scorer reference/mutant self-test can run without OpenAI credentials:
+
+```sh
+.venv-wsl/bin/python -m pytest tests/test_knowledge_pilot.py -q
+```
+
+It checks the existing B/C R references, D JSON references and E01/E04/E05
+JSON references against deliberately incorrect controls. E02/E03 require the
+exact package-enabled scorer image described above.
 
 The protocol follows official OpenAI documentation for
 [self-hosted executors](https://developers.openai.com/api/docs/guides/agents-api/environments/self-hosted),
@@ -85,30 +275,24 @@ Results use a new directory with `mcp-smoke-B-1/events.json` and `result.json`.
 `mcp_server_audit` is in that result and the aggregate `results.json`. There is
 no solution.R requirement, R score or `fully_correct` grade for this diagnostic.
 
-Success requires inspecting both sides:
+The runner redacts MCP arguments and response bodies from saved `events.json`.
+The smoke result therefore records transport evidence only:
 
-1. `events.json` contains a completed native `tool_search_call` (or the actual
-   emitted tool-search item type) discovering the R-Knowledge-MCP documentation
-   tool. `mcp_usage.tool_search_calls >= 1`. Automatic server `tools/list` is not
-   a model tool-search call.
-2. A completed MCP call targets `r_knowledge` / `get_function_docs` with actual
-   arguments `package="dplyr"`, `function="closest"`, `repository="cran"`.
-   `mcp_usage.calls >= 1` and its tool names contain `get_function_docs`.
-3. The actual tool result contains documentation for closest(), without an MCP
-   error or a provider error payload. Inspect the returned version, source URL
-   and UTC check time. An agent's success message alone is insufficient.
-4. `mcp_server_audit.list_tools_requests >= 1`, `call_tool_requests >= 1`,
+1. A completed MCP call is identified in redacted `events.json` by
+   `r_knowledge` / `get_function_docs`; `mcp_usage.calls >= 1`.
+2. This status does not certify that the returned documentation contained
+   closest() or that its provider result was successful.
+3. `mcp_server_audit.list_tools_requests >= 1`, `call_tool_requests >= 1`,
    `tool_names` includes `get_function_docs`, and `rejected_requests == 0`.
-5. The turn completes and session/container cleanup succeeds.
+4. The turn completes and session/container cleanup succeeds.
 
-`smoke_transport_checks` automatically checks the observable discovery/call
-counters on both sides. `smoke_transport_observed` is a traffic result, not proof
-of a successful documentation response; step 3 still requires inspecting the
-saved result. `smoke_transport_missing` exits nonzero. A tool error can produce
-a CallToolRequest, so counts alone cannot establish documentation retrieval.
-If MCP is called but tool_search is absent, MCP invocation is demonstrated but
-the discovery portion of this smoke test has not passed. The task requests native
-discovery explicitly; it cannot create a search capability absent from the API.
+`mcp_usage.tool_search_calls` remains a separate diagnostic metric. A separate
+tool-search event is not required for `smoke_transport_observed`: the agent's
+documentation call and server's `CallToolRequest` must both be present, alongside
+the list-tools request and zero rejected requests. This status confirms traffic,
+not a successful documentation response. `smoke_transport_missing` exits
+nonzero. A tool error can
+produce a CallToolRequest, so counts alone cannot establish documentation retrieval.
 
 ## Original preregistered pilot
 

@@ -1,0 +1,393 @@
+{
+  "schema_version": 1,
+  "audit_id": "P1-A",
+  "audit_date": "2026-10-26",
+  "run_id": "20261026T104750Z-f78eabf1",
+  "scope": "offline source and saved-artifact audit; no MCP implementation or historical benchmark files modified",
+  "constraints_observed": {
+    "network_requests": 0,
+    "model_runs": 0,
+    "agents_api_sessions": 0,
+    "docker_runs": 0,
+    "r_execution": 0,
+    "b1_or_b2_trials": 0,
+    "tests_run": 0
+  },
+  "b1": {
+    "trials": 12,
+    "tasks": [
+      "D01",
+      "D03",
+      "C01"
+    ],
+    "get_function_docs_calls": 132,
+    "docs_not_found": {
+      "total": 59,
+      "control": 33,
+      "treatment": 26
+    },
+    "distinct_argument_fingerprints": 59,
+    "task_counts": {
+      "D01": {
+        "total": 56,
+        "control": 32,
+        "treatment": 24
+      },
+      "D03": {
+        "total": 3,
+        "control": 1,
+        "treatment": 2
+      },
+      "C01": 0
+    },
+    "identity_projection": {
+      "total": 42,
+      "missing": 17,
+      "by_package": {
+        "termr": 28,
+        "climenu": 12,
+        "validate": 2
+      },
+      "requested_version_known": 33,
+      "requested_version_counts": {
+        "termr@1.0.1": 22,
+        "climenu@0.2.0": 10,
+        "validate@1.1.7": 1
+      },
+      "requested_version_unknown_with_identity": 9
+    },
+    "outcome": {
+      "normalized_error_code": "docs_not_found",
+      "meaning": "literal requested string absent from the Rd alias index built from the selected package source archive",
+      "resolved_archive_version_preserved_in_error_projection": false,
+      "provider_source_count_in_failure_envelope": 0,
+      "upstream_source_errors": 0,
+      "http_cache_hits_across_failed_calls": 213,
+      "failed_calls_with_upstream_fetch": 3,
+      "exact_repeated_failed_requests": 0,
+      "previous_call_docs_not_found": 44,
+      "next_call_successful_get_function_docs": 15,
+      "root_cause_determined": 0,
+      "root_cause_unresolved": 59
+    },
+    "per_event_inventory": "benchmarks/codex_r/reports/p1_docs_not_found_inventory_20261026.csv"
+  },
+  "root_cause_taxonomy": [
+    {
+      "category": "literal_rd_alias_miss",
+      "count": 59,
+      "confidence": "high for observed lookup stage",
+      "evidence": [
+        "provider code emits docs_not_found when literal alias index lookup has no match",
+        "all 59 saved calls have normalized docs_not_found outcome"
+      ],
+      "caveat": "does not prove that a corresponding function or symbol is absent"
+    },
+    {
+      "category": "likely_nonexistent_function",
+      "confirmed_count": 0,
+      "unresolved_events": 59,
+      "confidence": "insufficient",
+      "evidence": [
+        "No pinned package archive, namespace export set, or complete reference manual body is present in the offline artifacts."
+      ]
+    },
+    {
+      "category": "possibly_wrong_package",
+      "confirmed_count": 0,
+      "unresolved_events": 59,
+      "confidence": "insufficient",
+      "caveat": "package identity is projected for 42 events, but task intent and correct package mapping are not proven"
+    },
+    {
+      "category": "alias_or_topic_mismatch",
+      "identity_bearing_events": 42,
+      "unprojected_events": 17,
+      "confidence": "high that requested strings were not literal Rd aliases; low on why",
+      "plausible_causes": [
+        "guessed name",
+        "alternate alias",
+        "different topic",
+        "package re-export"
+      ]
+    },
+    {
+      "category": "namespace_or_reexport_mismatch",
+      "confirmed_count": 0,
+      "unresolved_events": 59,
+      "confidence": "insufficient",
+      "caveat": "NAMESPACE and re-export evidence are absent from event telemetry"
+    },
+    {
+      "category": "version_mismatch",
+      "explicit_version_mismatch_errors": 0,
+      "unresolved_events": 59,
+      "confidence": "insufficient",
+      "caveat": "33 projected requests include a requested version; selected archive version was not preserved in failed-call projection"
+    },
+    {
+      "category": "upstream_document_retrieval_failure",
+      "confirmed_count": 0,
+      "unresolved_events": 59,
+      "confidence": "high that these were not normalized source errors",
+      "caveat": "archive/provider coverage can still be insufficient for export discovery"
+    },
+    {
+      "category": "insufficient_evidence",
+      "count": 59,
+      "confidence": "high",
+      "reason": "retained evidence establishes the alias miss stage only, not an underlying root cause"
+    }
+  ],
+  "current_tool_architecture": {
+    "default_toolset": "consolidated 15-tool set unless MCP_TOOLSET overrides",
+    "legacy_toolset": "legacy 35-tool set",
+    "package_search": {
+      "tool": "search_packages",
+      "searches": [
+        "package names",
+        "package titles"
+      ],
+      "includes_function_index": false
+    },
+    "package_metadata": {
+      "tool": "get_package",
+      "sections": [
+        "metadata",
+        "dependencies",
+        "vignettes",
+        "agent_guidance",
+        "context7"
+      ],
+      "function_discovery_section": false
+    },
+    "function_docs": {
+      "tool": "get_function_docs",
+      "lookup_key": "case-sensitive literal Rd alias",
+      "output": "one raw Rd topic page, 8000 characters",
+      "version_scope": "current selected CRAN package version or selected Bioconductor release",
+      "error_suggestions": "existing alias hints are returned under error details"
+    },
+    "r_documentation": {
+      "tool": "search_r_documentation",
+      "sources": "fixed local index of six official general R manuals",
+      "package_docs_search": false,
+      "network_during_search": false
+    },
+    "extra_legacy_resource": "cran://{package}/man/{alias}; requires known alias"
+  },
+  "function_discovery_findings": {
+    "partial_discovery_already_exists": true,
+    "source": "Rd alias index built from verified selected-version source archive",
+    "small_alias_set": "returns complete alias list when count <= 30",
+    "large_alias_set": "returns up to 10 closest aliases",
+    "fuzzy_candidates_are_verified_rd_aliases": true,
+    "fuzzy_candidates_prove_export": false,
+    "fuzzy_candidates_prove_runtime_callability": false,
+    "full_export_index_available_to_mcp_client": false,
+    "aliases_topics_exports_callable_functions_are_equivalent": false
+  },
+  "offline_evidence_availability": {
+    "checked_in_package_archives_or_manual_bodies_for_targets": false,
+    "checked_in_namespace_or_anindex_files_for_targets": false,
+    "official_resources_file_contains": [
+      "versions",
+      "URLs",
+      "HTTP status metadata"
+    ],
+    "official_resources_file_contains_page_bodies": false,
+    "tests_use_synthetic_archive_fixtures": true,
+    "allowed_verified_versions": {
+      "D01": {
+        "termr": "1.0.1",
+        "climenu": "0.2.0"
+      },
+      "D03": {
+        "validate": "1.1.7",
+        "pointblank": "0.12.4"
+      }
+    },
+    "sources_considered_for_future_index": [
+      "CRAN current PACKAGES and DESCRIPTION",
+      "CRAN version-pinned source archive: NAMESPACE, Rd, help/AnIndex, INDEX, optional Meta/nsInfo.rds",
+      "Bioconductor config.yaml release/R mapping and release/category PACKAGES index",
+      "Bioconductor version-pinned package source archive",
+      "reference manuals with separate version provenance",
+      "installed R helpers only under a separately approved runtime protocol"
+    ]
+  },
+  "api_options": {
+    "A": {
+      "option": "extend get_package with optional function_discovery",
+      "advantages": [
+        "reuses package identity flow",
+        "no additional MCP tool"
+      ],
+      "tradeoffs": [
+        "large result needs paging/filter fields",
+        "first call becomes slower when opted in",
+        "discovery hidden in generic include parameter"
+      ],
+      "recommendation": "possible but not preferred"
+    },
+    "B": {
+      "option": "extend search_r_documentation for package functions",
+      "advantages": [
+        "reuses existing R documentation search entry point"
+      ],
+      "tradeoffs": [
+        "current scope is six general manuals",
+        "package/repository/version identity would change tool semantics"
+      ],
+      "recommendation": "do not use for package APIs"
+    },
+    "C": {
+      "option": "new list_package_functions tool",
+      "advantages": [
+        "explicit agent-facing discovery intent",
+        "bounded package/repository/version/query/pagination scope",
+        "exports and aliases can remain distinct"
+      ],
+      "tradeoffs": [
+        "one additive tool/schema",
+        "must preserve provenance, version pinning, limits, and provider contract"
+      ],
+      "recommendation": "preferred"
+    }
+  },
+  "proposed_contract": {
+    "entities": [
+      "namespace export declarations",
+      "Rd documentation topics",
+      "literal Rd aliases",
+      "S3/S4 method declarations"
+    ],
+    "match_types": [
+      "exact",
+      "alias",
+      "fuzzy"
+    ],
+    "per_item_fields": [
+      "name",
+      "declaration_kind",
+      "status",
+      "documentation_topic",
+      "alias_verified",
+      "export_status",
+      "callability"
+    ],
+    "provenance_fields": [
+      "repository",
+      "Bioconductor release/channel",
+      "package_version",
+      "source_url",
+      "checked_at",
+      "source verification"
+    ],
+    "output_cap_target_bytes": 20480,
+    "default_page_size_max": 50,
+    "hard_output_cap_bytes": 60000,
+    "version_change_behavior": "return explicit unavailable/stale result; do not mix pages or substitute current documentation"
+  },
+  "get_function_docs_changes": [
+    "Keep literal exact lookup and preserve existing error code/message.",
+    "Promote resolved archive version, version scope, sources and lookup stage into structured error fields.",
+    "Represent suggestions as source-backed Rd aliases with topic, match type and independent export/callability status.",
+    "Keep requested and available versions separate; never substitute versions.",
+    "Return no hints from a different package/repository/version when a source is missing."
+  ],
+  "offline_replay": {
+    "current_input_coverage": "42 of 59 requests have safe package/name identity; 17 lack arguments",
+    "current_fixture_coverage": "no target package archive/manual bodies checked in",
+    "required_inputs": [
+      "all original allowlisted request fields",
+      "pinned package archives",
+      "content digest/checksum",
+      "version-matched NAMESPACE and Rd/AnIndex"
+    ],
+    "metrics": [
+      "exact docs retrieval",
+      "verified alias/topic resolution",
+      "verified export match",
+      "fuzzy suggestions",
+      "unresolved",
+      "source/version unavailable",
+      "false verified candidates"
+    ],
+    "false_positive_policy": "fuzzy suggestions alone are not successes; no runtime-callability claims",
+    "model_or_trial_required": false,
+    "live_network_used": false
+  },
+  "b2_design": {
+    "status": "proposed, not run",
+    "tasks": [
+      "D01-termr",
+      "D01-climenu",
+      "D03-validate",
+      "negative/ambiguous",
+      "version-bound",
+      "non-discovery control"
+    ],
+    "repetitions": "five paired repetitions per task; randomized condition order",
+    "single_treatment_variable": "availability of list_package_functions",
+    "held_constant": [
+      "prompts",
+      "server description",
+      "other tools",
+      "model settings",
+      "tasks",
+      "scorer",
+      "source fixtures"
+    ],
+    "primary_metrics": [
+      "docs_not_found per trial",
+      "verified docs lookup per trial",
+      "final answer correctness",
+      "scorer abstention",
+      "tool adoption"
+    ],
+    "proposed_thresholds": {
+      "offline_replay": "zero false verified exports/aliases and improved exact/verified resolution",
+      "agent_trial": "at least 30% fewer docs_not_found on discovery tasks with no scorer correctness/abstention regression on negative/control tasks"
+    },
+    "server_description_effect": "test separately with toolset and all other conditions fixed"
+  },
+  "evidence_references": [
+    "src/cran_knowledge_mcp/server.py:266-305, 993-1170, 1627-1635",
+    "src/cran_knowledge_mcp/service.py:51,139,164-181,352-493,1558-1680,2174-2229",
+    "src/cran_knowledge_mcp/providers/protocol.py:9-19",
+    "src/cran_knowledge_mcp/providers/base.py:105-326",
+    "src/cran_knowledge_mcp/providers/cran.py:39-190",
+    "src/cran_knowledge_mcp/providers/bioconductor.py:14-108",
+    "src/cran_knowledge_mcp/releases.py:23-101",
+    "src/cran_knowledge_mcp/parsers.py:86-176",
+    "src/cran_knowledge_mcp/http.py:25-31,96-285",
+    "src/cran_knowledge_mcp/providers/r_documentation.py:24-28,98-106,455-675,810-884",
+    "src/cran_knowledge_mcp/mcp_discovery.py:7-46",
+    "tests/test_function_docs_hints.py",
+    "benchmarks/codex_r/results/20261026T104750Z-f78eabf1/",
+    "benchmarks/codex_r/reports/b1_discovery_offline_audit_20261026.md",
+    "benchmarks/codex_r/knowledge_pilot/verifier/official_resources.json",
+    "benchmarks/codex_r/knowledge_pilot/metadata/D01.json",
+    "benchmarks/codex_r/knowledge_pilot/metadata/D03.json"
+  ],
+  "artifacts": [
+    "benchmarks/codex_r/reports/p1_function_discovery_audit_20261026.md",
+    "benchmarks/codex_r/reports/p1_function_discovery_audit_20261026.json",
+    "benchmarks/codex_r/reports/p1_docs_not_found_inventory_20261026.csv"
+  ],
+  "current_provider_internal_data": {
+    "parsed_source_cache": [
+      "validated package DESCRIPTION",
+      "archive members",
+      "literal alias to Rd archive member index"
+    ],
+    "cache_limits": "up to 8 parsed archives / 48 MiB",
+    "exposed_to_mcp": {
+      "successful_docs_result": "one topic/page plus archive_member",
+      "docs_not_found": "bounded available_aliases or closest_aliases under error details",
+      "full_alias_to_topic_index": false,
+      "namespace_export_index": false
+    }
+  }
+}

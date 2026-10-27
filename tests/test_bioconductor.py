@@ -447,3 +447,14 @@ async def test_bioconductor_ssrf_routes_rejected(bioc_service, path):
     with pytest.raises(KnowledgeError, match="fixed"):
         await api.bioc_http.fetch(path)
     assert not calls
+
+
+async def test_function_discovery_release_category_and_cache_separation(bioc_service):
+    api, _, _ = bioc_service
+    a = await api.list_package_functions("DESeq2", repository="bioconductor", bioc_version="9.40")
+    b = await api.list_package_functions("DESeq2", repository="bioconductor", bioc_version="9.41")
+    assert a["bioc_version"] == "9.40" and b["bioc_version"] == "9.41"
+    assert a["category"] == "software" and a["required_r_version"] == "4.4"
+    assert a["snapshot"] != b["snapshot"]
+    assert a["coverage"]["namespace"] == "unavailable"
+    assert a["verification_status"] == "partial"

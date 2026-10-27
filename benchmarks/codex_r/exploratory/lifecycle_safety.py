@@ -111,7 +111,14 @@ def ensure_directory(path: Path, *, mode=0o700):
     while not cursor.exists():
         missing.append(cursor)
         cursor = cursor.parent
-    path.mkdir(mode=mode, parents=True, exist_ok=True)
+    if os.name == "nt":
+        # On Windows, Python's POSIX mode=0o700 can create a directory whose
+        # inherited ACL denies the current process access. Windows permissions
+        # come from the parent DACL, so preserve inheritance and leave the mode
+        # argument to POSIX platforms.
+        path.mkdir(parents=True, exist_ok=True)
+    else:
+        path.mkdir(mode=mode, parents=True, exist_ok=True)
     for created in reversed(missing):
         sync_directory(created.parent)
 

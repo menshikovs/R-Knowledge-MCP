@@ -6,9 +6,13 @@ import ipaddress
 import os
 import re
 import shlex
+import shutil
 import socket
 import subprocess
 import tarfile
+import tempfile
+import uuid
+from pathlib import Path
 
 import httpx
 import pytest
@@ -19,6 +23,117 @@ from cran_knowledge_mcp.service import KnowledgeService
 
 class OfflineActionBlocked(AssertionError):
     """A test attempted an external connection or a live benchmark command."""
+
+
+class _WindowsTempPathFactory:
+    """Create test temp paths outside the checkout with inherited Windows ACLs."""
+
+    _retention_policy = "failed"
+
+    def __init__(self, root: Path, temp_parent: Path) -> None:
+        self._root = root.resolve()
+        self._temp_parent = temp_parent.resolve()
+        if self._root.is_symlink() or self._root.parent != self._temp_parent:
+            raise RuntimeError("Windows pytest temp root is not a direct child of system temp")
+        if not self._root.name.startswith("cran-mcp-pytest-"):
+            raise RuntimeError("Refusing an unexpected Windows pytest temp root")
+        self._basetemp = self._root / f"pytest-{uuid.uuid4().hex}"
+        self._basetemp.mkdir()
+
+    def getbasetemp(self) -> Path:
+        return self._basetemp
+
+    def mktemp(self, basename: str, numbered: bool = True) -> Path:
+        relative = Path(basename)
+        if (
+            not basename
+            or relative.is_absolute()
+            or len(relative.parts) != 1
+            or relative.parts[0] in {".", ".."}
+        ):
+            raise ValueError(
+                f"temporary directory name must be a single relative component: {basename!r}"
+            )
+
+        if numbered:
+            suffix = 0
+            candidate = self._basetemp / f"{basename}{suffix}"
+            while candidate.exists():
+                suffix += 1
+                candidate = self._basetemp / f"{basename}{suffix}"
+        else:
+            candidate = self._basetemp / basename
+        candidate.mkdir()
+        return candidate
+
+    def cleanup_after_success(self) -> None:
+        root = self._root.resolve()
+        if root.parent != self._temp_parent or not root.name.startswith("cran-mcp-pytest-"):
+            raise RuntimeError("Refusing to clean outside this run's unique temp root")
+        try:
+            shutil.rmtree(root)
+        except PermissionError:
+            # Some Windows tests intentionally leave an open journal handle
+            # until interpreter shutdown. Keep that unique temp tree instead
+            # of turning a successful test run into a session teardown error.
+            pass
+
+
+def pytest_configure(config):
+    """Use inherited ACLs for pytest and tempfile directories on Windows."""
+    if os.name != "nt":
+        return
+
+    temp_parent = Path(tempfile.gettempdir()).resolve()
+    root = temp_parent / f"cran-mcp-pytest-{uuid.uuid4().hex}"
+    root.mkdir()
+    factory = _WindowsTempPathFactory(root, temp_parent)
+    config._windows_temp_path_factory = factory
+    config._windows_original_tempdir = tempfile.tempdir
+    config._windows_original_mkdtemp = tempfile.mkdtemp
+
+    def inherited_acl_mkdtemp(suffix=None, prefix=None, dir=None):
+        parent = Path(dir or tempfile.gettempdir())
+        if not parent.is_dir():
+            raise FileNotFoundError(f"Temporary directory parent does not exist: {parent}")
+        for _ in range(100):
+            name = f"{prefix or 'tmp'}{uuid.uuid4().hex}{suffix or ''}"
+            candidate = parent / name
+            try:
+                candidate.mkdir()
+            except FileExistsError:
+                continue
+            return str(candidate)
+        raise FileExistsError("Could not allocate a unique inherited-ACL temp directory")
+
+    # tempfile.TemporaryDirectory calls tempfile.mkdtemp internally. Creating
+    # directories with Path.mkdir lets Windows inherit the parent's ACL instead
+    # of applying Python's restrictive mode=0o700 path.
+    tempfile.tempdir = str(root)
+    tempfile.mkdtemp = inherited_acl_mkdtemp
+
+
+@pytest.fixture(scope="session")
+def tmp_path_factory(request):
+    """Use the inherited-ACL factory on Windows and pytest's default elsewhere."""
+    if os.name != "nt":
+        return request.config._tmp_path_factory
+    return request.config._windows_temp_path_factory
+
+
+@pytest.hookimpl(trylast=True)
+def pytest_sessionfinish(session, exitstatus):
+    """Clean the unique Windows temp tree after success and restore tempfile globals."""
+    factory = getattr(session.config, "_windows_temp_path_factory", None)
+    try:
+        if factory is not None and exitstatus == 0:
+            factory.cleanup_after_success()
+    finally:
+        original_mkdtemp = getattr(session.config, "_windows_original_mkdtemp", None)
+        if original_mkdtemp is not None:
+            tempfile.mkdtemp = original_mkdtemp
+        if hasattr(session.config, "_windows_original_tempdir"):
+            tempfile.tempdir = session.config._windows_original_tempdir
 
 
 def _is_loopback_host(host: object) -> bool:
@@ -52,6 +167,8 @@ def _is_forbidden_process(args: object) -> bool:
     blocked_executables = {
         "codex",
         "codex.exe",
+        "codex-cli",
+        "codex-cli.exe",
         "curl",
         "curl.exe",
         "docker",

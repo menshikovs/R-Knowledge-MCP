@@ -1,0 +1,7 @@
+device,batch,event_id,state
+dev-a,1,e1,ready
+dev-a,1,e2,NA
+dev-b,1,e3,NA
+dev-a,2,e4,NA
+dev-b,1,e5,alarm
+dev-a,1,e6,NA

@@ -605,8 +605,12 @@ def _ensure_private_directory(path: Path, *, synthetic: bool) -> None:
     while not cursor.exists():
         missing.append(cursor)
         cursor = cursor.parent
-    path.mkdir(mode=0o700, parents=True, exist_ok=True)
-    if os.name != "nt":
+    if os.name == "nt":
+        # POSIX mode bits are not Windows ACLs. Passing 0o700 to mkdir can
+        # create an inherited ACL that denies the current process access.
+        path.mkdir(parents=True, exist_ok=True)
+    else:
+        path.mkdir(mode=0o700, parents=True, exist_ok=True)
         os.chmod(path, 0o700)
         mode = stat.S_IMODE(path.stat().st_mode)
         if mode & 0o077:

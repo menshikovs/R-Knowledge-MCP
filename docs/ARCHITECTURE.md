@@ -327,3 +327,15 @@ source, check, category, sanitized message, official URL and timestamp. These
 checks detect selected changes but do not guarantee ongoing source availability.
 See [Upstream monitoring](UPSTREAM_MONITORING.md) for manual execution,
 failure-category definitions and resource bounds.
+
+
+## Version-scoped function discovery
+
+The consolidated list_package_functions tool routes through KnowledgeService and
+PackageRepository to the existing verified CRAN/Bioconductor source infrastructure.
+Data-only NAMESPACE/Rd parsing remains in parsers.py; function_discovery.py builds
+the normalized source index and bounded matching/page projections. The optional
+Rust scan_calls binding is reused through the existing Python fallback adapter;
+source verification and export/alias semantics are shared Python policy.
+See [the Python/Rust decision](architecture/function-discovery-python-rust.md) and
+[tool reference](FUNCTION_DISCOVERY.md) for identity, cache, limits and verification.

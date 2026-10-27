@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/r-knowledge-mcp/knowledge-pilot-v2/E04.schema.json",
+  "title": "E04 repository and dependency answer",
+  "type": "object", "additionalProperties": false,
+  "required": ["r_version", "bioconductor", "packages", "versions", "dependency_edges", "install_strategy", "rationale", "sources"],
+  "properties": {
+    "r_version": {"type": "string"},
+    "bioconductor": {"type": "string"},
+    "packages": {"oneOf": [
+      {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string", "enum": ["CRAN", "Bioconductor", "Bioconductor 3.22"]}},
+      {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["name", "repository"], "properties": {"name": {"type": "string"}, "repository": {"type": "string", "enum": ["CRAN", "Bioconductor", "Bioconductor 3.22"]}}}}
+    ]},
+    "versions": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "string"}},
+    "dependency_edges": {"type": "array", "minItems": 1, "items": {"oneOf": [
+      {"type": "object", "additionalProperties": false, "required": ["package", "depends_on", "minimum_version"], "properties": {"package": {"type": "string"}, "depends_on": {"type": "string"}, "minimum_version": {"type": "string"}}},
+      {"type": "object", "additionalProperties": false, "required": ["package", "depends_on", "constraint"], "properties": {"package": {"type": "string"}, "depends_on": {"type": "string"}, "constraint": {"type": "string", "pattern": "^>=\\s*[0-9]+(?:\\.[0-9]+)*$"}}}
+    ]}},
+    "install_strategy": {"oneOf": [
+      {"type": "string", "minLength": 1},
+      {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+    ]},
+    "rationale": {"type": "string", "minLength": 30},
+    "sources": {"type": "array", "minItems": 1, "items": {"oneOf": [{"type": "string", "format": "uri"}, {"type": "object", "additionalProperties": false, "required": ["url"], "properties": {"url": {"type": "string", "format": "uri"}, "claim": {"type": "string"}}}]}}
+  }
+}

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "source_commit": "8f3ded59bde15fa55379625ff3cde430de04ec2c",
-  "project_id": "proj_oN1TijPxFAUzTKuDxsg13H3G",
+  "source_commit": "",
+  "project_id": "",
   "agent": {
     "model": "gpt-6-luna",
     "tools": []
@@ -11,16 +11,16 @@
   "cleanup_seconds": 60,
   "executor_image": "sha256:ea7eaa089df6671c5eb7dc913fb752909dff5344aafe5f8c4974aa97e2365074",
   "spend_limit_cents": 200,
-  "billing_owner_id": "user-u9wbojTMsBqYOdQ3oKeBB67f",
+  "billing_owner_id": "",
   "credential_attestation": {
     "verification_method": "operator_dashboard_attestation",
-    "organization_id": "org-4ru6NWth3GFnUaZ8QLdhXiPf",
-    "project_id": "proj_oN1TijPxFAUzTKuDxsg13H3G",
-    "owner_id": "user-u9wbojTMsBqYOdQ3oKeBB67f",
-    "application_key_resource_id": "key_Ldtb7jlfZ4WBRKzq",
-    "environment_key_label": "r-environment-key",
-    "operator_id": "user-u9wbojTMsBqYOdQ3oKeBB67f",
-    "reviewer_id": "user-u9wbojTMsBqYOdQ3oKeBB67f",
+    "organization_id": "",
+    "project_id": "",
+    "owner_id": "",
+    "application_key_resource_id": "",
+    "environment_key_label": "",
+    "operator_id": "",
+    "reviewer_id": "",
     "application_permissions": [
       "api.agents.read",
       "api.agents.write"

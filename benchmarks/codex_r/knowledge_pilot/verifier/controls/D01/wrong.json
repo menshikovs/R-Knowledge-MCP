@@ -1,0 +1,1 @@
+{"r_version":"4.5.2","rationale":"This package is probably good.","recommendations":[{"package":"termr","version":"1.0.0","source_url":"https://cran.r-project.org/package=termr","documentation_url":"https://stat.ethz.ch/CRAN/web/packages/termr/refman/termr.html","feature_ids":["reactive_terminal_ui"],"caveat_ids":[]}]}

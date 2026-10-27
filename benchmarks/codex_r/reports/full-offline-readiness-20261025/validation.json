@@ -1,0 +1,1626 @@
+{
+  "kind": "offline_reference_mutant_validation_not_model_trials",
+  "api_calls": 0,
+  "checked_at_utc": "2026-10-25T13:20:22.540220+00:00",
+  "images": {
+    "scorer": "sha256:a4e959f2ed9af8141ecec5d95d727880fd5dfc325efc19cb55032d6d34899161",
+    "executor": "sha256:ab9eefda7d00d6872d1e62f5e3fba2a683317f6969b3ac3ab5bfa94f42c9976d",
+    "mcp": "sha256:0c095198b92433f2b251548cce4e05fb4c19bf9c530494a8087164d243d1b0f2"
+  },
+  "runtime_versions": {
+    "scorer": {
+      "status": "verified",
+      "r": "4.5.2",
+      "packages": {
+        "DESeq2": "1.50.2",
+        "SummarizedExperiment": "1.40.0",
+        "Biobase": "2.70.0",
+        "GenomicRanges": "1.62.0",
+        "BiocVersion": "3.22.0"
+      }
+    },
+    "executor": {
+      "status": "verified",
+      "r": "4.5.2",
+      "packages": {
+        "DESeq2": "1.50.2",
+        "SummarizedExperiment": "1.40.0",
+        "Biobase": "2.70.0",
+        "GenomicRanges": "1.62.0",
+        "BiocVersion": "3.22.0"
+      }
+    }
+  },
+  "network": "none",
+  "tasks": {
+    "H01": {
+      "task": "H01",
+      "checks": 18,
+      "checks_failed_by_some_wrong_control": 13,
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 18,
+          "total": 18,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "rlang": "1.3.0",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 2.57
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 18,
+          "total": 18,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "rlang": "1.3.0",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 2.51
+        },
+        "wrong_filter_then_group": {
+          "status": "scored",
+          "passed": 12,
+          "total": 18,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "all_invalid_group_is_reported_with_na_mean",
+            "zero_weight_sum_gives_na_not_nan",
+            "negative_weight_is_rejected_even_without_measure",
+            "special_column_names_are_literal",
+            "zero_grouping_columns_return_one_row",
+            "integer_weights_sum_exactly_beyond_integer_range"
+          ],
+          "details": [
+            "all_invalid_group_is_reported_with_na_mean: Expected `result$g` to be identical to `c(\"keep\", \"lost\")`.\nDifferences:\n`actual`:   \"keep\"       \n`expected`: \"keep\" \"lost\"\n",
+            "zero_weight_sum_gives_na_not_nan: Expected `is.na(result$weighted_mean[2]) && !is.nan(result$weighted_mean[2])` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "negative_weight_is_rejected_even_without_measure: Expected `nrow(result)` to be identical to `nrow(expected)`.\nDifferences:\n  `actual`: 1\n`expected`: 2\n",
+            "special_column_names_are_literal: candidate call failed: \u0432\u201e\u2116 In argument: `..1 = dplyr::pick(dplyr::all_of(groups))`.\nCaused by error in `pick()`:\n! `.data` must be a vector, not a <rlang_data_pronoun> object.\n\u0432\u045a\u2013 Detected incompatible scalar S3 list. To be treated as a vector, the object must explicitly inherit from <list> or should implement a `vec_proxy()`",
+            "zero_grouping_columns_return_one_row: Expected `is.na(result$weighted_mean) && !is.nan(result$weighted_mean)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "integer_weights_sum_exactly_beyond_integer_range: unexpected warning: There was 1 warning in `dplyr::summarise()`.\n\u0432\u201e\u2116 In argument: `weighted_mean = sum(.data[[\"w\"]] *\n  .data[[\"x\"]])/sum(.data[[\"w\"]])`.\n\u0432\u201e\u2116 In group 1: `g = \"a\"`.\nCaused by warning in `.data[[\"w\"]] * .data["
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "rlang": "1.3.0",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 2.88
+        },
+        "wrong_finite_and_integer": {
+          "status": "scored",
+          "passed": 9,
+          "total": 18,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "two_non_syntactic_groups_match_oracle",
+            "grouping_order_follows_argument_order",
+            "non_finite_measure_and_weight_rows_are_invalid",
+            "all_invalid_group_is_reported_with_na_mean",
+            "negative_weight_is_rejected_even_without_measure",
+            "special_column_names_are_literal",
+            "existing_grouping_is_ignored",
+            "zero_grouping_columns_return_one_row",
+            "integer_weights_sum_exactly_beyond_integer_range"
+          ],
+          "details": [
+            "two_non_syntactic_groups_match_oracle: Expected `result$weighted_mean` to equal `expected$weighted_mean`.\nDifferences:\n  `actual`: 9.9 8.0 4.0 Inf 2.0\n`expected`: 9.9 8.0 4.0 5.0 2.0\n",
+            "grouping_order_follows_argument_order: Expected `result$weighted_mean` to equal `expected$weighted_mean`.\nDifferences:\n  `actual`: 9.9 2.0 8.0 Inf 4.0\n`expected`: 9.9 2.0 8.0 5.0 4.0\n",
+            "non_finite_measure_and_weight_rows_are_invalid: Expected `is.na(result$weighted_mean)` to be identical to `is.na(expected$weighted_mean)`.\nDifferences:\n`actual`:   TRUE  TRUE \n`expected`: FALSE FALSE\n",
+            "all_invalid_group_is_reported_with_na_mean: Expected `result$n_valid` to be identical to `c(1L, 0L)`.\nDifferences:\n  `actual`: 1 1\n`expected`: 1 0\n",
+            "negative_weight_is_rejected_even_without_measure: candidate call failed: negative",
+            "special_column_names_are_literal: candidate call failed: \u0432\u201e\u2116 In argument: `..1 = dplyr::pick(dplyr::all_of(groups))`.\nCaused by error in `pick()`:\n! `.data` must be a vector, not a <rlang_data_pronoun> object.\n\u0432\u045a\u2013 Detected incompatible scalar S3 list. To be treated as a vector, the object must explicitly inherit from <list> or should implement a `vec_proxy()`",
+            "existing_grouping_is_ignored: Expected `result$weighted_mean` to equal `expected$weighted_mean`.\nDifferences:\n  `actual`: 9.9 5.0 Inf 2.0\n`expected`: 9.9 5.0 5.0 2.0\n",
+            "zero_grouping_columns_return_one_row: Expected `result$weighted_mean` to equal `expected$weighted_mean`.\nDifferences:\n  `actual`: Inf\n`expected`: 6.7\n",
+            "integer_weights_sum_exactly_beyond_integer_range: unexpected warning: There was 1 warning in `dplyr::summarise()`.\n\u0432\u201e\u2116 In argument: `weighted_mean = if (isTRUE(.ws > 0)) sum((.data[[\"w\"]] *\n  .data[[\"x\"]])[.valid])/.ws else NA_real_`.\n\u0432\u201e\u2116 In group 1: `g = \"a\"`.\nCaused by wa"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "rlang": "1.3.0",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 2.97
+        },
+        "wrong_keeps_existing_groups": {
+          "status": "scored",
+          "passed": 12,
+          "total": 18,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "two_non_syntactic_groups_match_oracle",
+            "grouping_order_follows_argument_order",
+            "special_column_names_are_literal",
+            "existing_grouping_is_ignored",
+            "date_logical_and_integer_keys_keep_types",
+            "integer_weights_sum_exactly_beyond_integer_range"
+          ],
+          "details": [
+            "two_non_syntactic_groups_match_oracle: Expected `inherits(result, \"grouped_df\")` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "grouping_order_follows_argument_order: Expected `inherits(result, \"grouped_df\")` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "special_column_names_are_literal: candidate call failed: \u0432\u201e\u2116 In argument: `..2 = dplyr::pick(dplyr::all_of(groups))`.\nCaused by error in `pick()`:\n! `.data` must be a vector, not a <rlang_data_pronoun> object.\n\u0432\u045a\u2013 Detected incompatible scalar S3 list. To be treated as a vector, the object must explicitly inherit from <list> or should implement a `vec_proxy()`",
+            "existing_grouping_is_ignored: Expected `inherits(result, \"grouped_df\")` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "date_logical_and_integer_keys_keep_types: Expected `inherits(result, \"grouped_df\")` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "integer_weights_sum_exactly_beyond_integer_range: unexpected warning: There was 1 warning in `dplyr::summarise()`.\n\u0432\u201e\u2116 In argument: `weighted_mean = if (.ws > 0) sum((.data[[\"w\"]] *\n  .data[[\"x\"]])[.ok[[1]]])/.ws else NA_real_`.\n\u0432\u201e\u2116 In group 1: `g = \"a\"`.\nCaused by warning "
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "rlang": "1.3.0",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 3.26
+        },
+        "wrong_parse_names": {
+          "status": "scored",
+          "passed": 10,
+          "total": 18,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "two_non_syntactic_groups_match_oracle",
+            "grouping_order_follows_argument_order",
+            "special_column_names_are_literal",
+            "existing_grouping_is_ignored",
+            "zero_grouping_columns_return_one_row",
+            "row_permutation_does_not_change_result",
+            "integer_weights_sum_exactly_beyond_integer_range",
+            "input_is_not_modified"
+          ],
+          "details": [
+            "two_non_syntactic_groups_match_oracle: candidate call failed: <text>:1:8: unexpected input\n1: sales (\u0432\u201a\u00ac\n           ^",
+            "grouping_order_follows_argument_order: candidate call failed: <text>:1:8: unexpected input\n1: sales (\u0432\u201a\u00ac\n           ^",
+            "special_column_names_are_literal: candidate call failed: \u0432\u201e\u2116 In argument: `..1 = dplyr::pick(dplyr::all_of(groups))`.\nCaused by error in `pick()`:\n! `.data` must be a vector, not a <rlang_data_pronoun> object.\n\u0432\u045a\u2013 Detected incompatible scalar S3 list. To be treated as a vector, the object must explicitly inherit from <list> or should implement a `vec_proxy()`",
+            "existing_grouping_is_ignored: candidate call failed: <text>:1:8: unexpected input\n1: sales (\u0432\u201a\u00ac\n           ^",
+            "zero_grouping_columns_return_one_row: candidate call failed: <text>:1:8: unexpected input\n1: sales (\u0432\u201a\u00ac\n           ^",
+            "row_permutation_does_not_change_result: candidate call failed: <text>:1:8: unexpected input\n1: sales (\u0432\u201a\u00ac\n           ^",
+            "integer_weights_sum_exactly_beyond_integer_range: unexpected warning: There was 1 warning in `dplyr::summarise()`.\n\u0432\u201e\u2116 In argument: `weighted_mean = if (weight_sum > 0) sum((w *\n  x)[.valid])/weight_sum else NA_real_`.\n\u0432\u201e\u2116 In group 1: `g = \"a\"`.\nCaused by warning in `w * x`",
+            "input_is_not_modified: candidate call failed: <text>:1:8: unexpected input\n1: sales (\u0432\u201a\u00ac\n           ^"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "rlang": "1.3.0",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 2.55
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 18,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "two_non_syntactic_groups_match_oracle",
+            "grouping_order_follows_argument_order",
+            "c_locale_order_with_na_last",
+            "non_finite_measure_and_weight_rows_are_invalid",
+            "all_invalid_group_is_reported_with_na_mean",
+            "zero_weight_sum_gives_na_not_nan",
+            "negative_weight_is_rejected_even_without_measure",
+            "bad_columns_signal_classed_errors",
+            "special_column_names_are_literal",
+            "global_variables_do_not_leak_into_columns",
+            "existing_grouping_is_ignored",
+            "zero_grouping_columns_return_one_row",
+            "empty_input_keeps_columns_and_types",
+            "factor_groups_sort_by_levels_and_omit_unused",
+            "date_logical_and_integer_keys_keep_types",
+            "row_permutation_does_not_change_result",
+            "integer_weights_sum_exactly_beyond_integer_range",
+            "input_is_not_modified"
+          ],
+          "details": [
+            "two_non_syntactic_groups_match_oracle: candidate call failed: could not find function \"dynamic_summary\"",
+            "grouping_order_follows_argument_order: candidate call failed: could not find function \"dynamic_summary\"",
+            "c_locale_order_with_na_last: candidate call failed: could not find function \"dynamic_summary\"",
+            "non_finite_measure_and_weight_rows_are_invalid: candidate call failed: could not find function \"dynamic_summary\"",
+            "all_invalid_group_is_reported_with_na_mean: candidate call failed: could not find function \"dynamic_summary\"",
+            "zero_weight_sum_gives_na_not_nan: candidate call failed: could not find function \"dynamic_summary\"",
+            "negative_weight_is_rejected_even_without_measure: expected error class dynamic_summary_negative_weight; got simpleError/error/condition: could not find function \"dynamic_summary\"",
+            "bad_columns_signal_classed_errors: expected error class dynamic_summary_bad_column; got simpleError/error/condition: could not find function \"dynamic_summary\"",
+            "special_column_names_are_literal: candidate call failed: could not find function \"dynamic_summary\"",
+            "global_variables_do_not_leak_into_columns: candidate call failed: could not find function \"dynamic_summary\"",
+            "existing_grouping_is_ignored: candidate call failed: could not find function \"dynamic_summary\"",
+            "zero_grouping_columns_return_one_row: candidate call failed: could not find function \"dynamic_summary\"",
+            "empty_input_keeps_columns_and_types: candidate call failed: could not find function \"dynamic_summary\"",
+            "factor_groups_sort_by_levels_and_omit_unused: candidate call failed: could not find function \"dynamic_summary\"",
+            "date_logical_and_integer_keys_keep_types: candidate call failed: could not find function \"dynamic_summary\"",
+            "row_permutation_does_not_change_result: candidate call failed: could not find function \"dynamic_summary\"",
+            "integer_weights_sum_exactly_beyond_integer_range: candidate call failed: could not find function \"dynamic_summary\"",
+            "input_is_not_modified: candidate call failed: could not find function \"dynamic_summary\""
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "rlang": "1.3.0",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 1.95
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 18,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "rlang": "1.3.0",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 1.33
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 18,
+          "total": 18,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "rlang": "1.3.0",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 2.39
+        }
+      },
+      "problems": [],
+      "gate": "passed"
+    },
+    "H04": {
+      "task": "H04",
+      "checks": 17,
+      "checks_failed_by_some_wrong_control": 15,
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 17,
+          "total": 17,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 3.13
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 17,
+          "total": 17,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 3.05
+        },
+        "wrong_merge_reorders": {
+          "status": "scored",
+          "passed": 6,
+          "total": 17,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matches_latest_prior_quote",
+            "staleness_bound_is_inclusive_1800_seconds",
+            "unsorted_inputs_match_sorted_inputs",
+            "trade_order_and_duplicates_are_preserved",
+            "unmatched_columns_are_typed_missing_values",
+            "different_time_zones_and_dst_use_instants",
+            "missing_trade_symbol_or_time_gets_no_match",
+            "extra_trade_columns_are_kept_unchanged",
+            "empty_trades_and_empty_quotes",
+            "matches_slow_oracle_on_generated_data",
+            "scales_to_100k_trades_and_quotes_within_30s"
+          ],
+          "details": [
+            "matches_latest_prior_quote: Expected `nrow(result)` to be identical to `nrow(trades)`.\nDifferences:\n  `actual`: 2\n`expected`: 5\n",
+            "staleness_bound_is_inclusive_1800_seconds: Expected `nrow(result)` to be identical to `nrow(trades)`.\nDifferences:\n  `actual`: 2\n`expected`: 3\n",
+            "unsorted_inputs_match_sorted_inputs: Expected `nrow(result)` to be identical to `nrow(trades)`.\nDifferences:\n  `actual`: 2\n`expected`: 5\n",
+            "trade_order_and_duplicates_are_preserved: Expected `nrow(result)` to be identical to `nrow(trades)`.\nDifferences:\n  `actual`: 2\n`expected`: 5\n",
+            "unmatched_columns_are_typed_missing_values: Expected `nrow(result)` to be identical to `nrow(trades)`.\nDifferences:\n  `actual`: 1\n`expected`: 2\n",
+            "different_time_zones_and_dst_use_instants: Expected `nrow(result)` to be identical to `nrow(trades)`.\nDifferences:\n  `actual`: 2\n`expected`: 4\n",
+            "missing_trade_symbol_or_time_gets_no_match: Expected `result[[column]]` to be identical to `trades[[column]]`.\nDifferences:\n`actual`:   \"A\" \"A\" NA \n`expected`: NA  \"A\" \"A\"\n\nsymbol",
+            "extra_trade_columns_are_kept_unchanged: Expected `nrow(result)` to be identical to `nrow(trades)`.\nDifferences:\n  `actual`: 2\n`expected`: 5\n",
+            "empty_trades_and_empty_quotes: Expected `nrow(result)` to be identical to `nrow(trades)`.\nDifferences:\n  `actual`: 4\n`expected`: 5\n",
+            "matches_slow_oracle_on_generated_data: Expected `nrow(result)` to be identical to `nrow(trades)`.\nDifferences:\n  `actual`: 292\n`expected`: 300\n",
+            "scales_to_100k_trades_and_quotes_within_30s: candidate call failed: R session crashed with exit code -9"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 9.05
+        },
+        "wrong_na_price_after_join": {
+          "status": "scored",
+          "passed": 16,
+          "total": 17,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "quotes_with_missing_time_or_price_are_ignored"
+          ],
+          "details": [
+            "quotes_with_missing_time_or_price_are_ignored: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`:           NA\n`expected`: 1772452800.0\n"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 3.25
+        },
+        "wrong_nearest_quote": {
+          "status": "scored",
+          "passed": 13,
+          "total": 17,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "quote_one_millisecond_after_trade_never_matches",
+            "different_time_zones_and_dst_use_instants",
+            "matches_slow_oracle_on_generated_data",
+            "scales_to_100k_trades_and_quotes_within_30s"
+          ],
+          "details": [
+            "quote_one_millisecond_after_trade_never_matches: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`: 1772445610.0\n`expected`: 1772445600.0\n",
+            "different_time_zones_and_dst_use_instants: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`: 1772953800.0 1772953800.0 NA 1793514000.0\n`expected`: 1772951400.0           NA NA 1793514000.0\n",
+            "matches_slow_oracle_on_generated_data: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n     actual       | expected                    \n [1] 1772445594.0 | 1772445594.0 [1]            \n [2] 1772448038.2 | 1772448038.2 [2]            \n [3] 1772445687.0 - 1772445547.5 [3]            \n [4] 1772449785.8 | 1772449785.8 [4]            \n [5] 1772449285.5 | 1772449285.5 [5]            \n [6] 1772445000.8 | 1772445000.8 [6]            \n [7] 1772449392.8 - 1772449253.2 [7]            \n [8] 1772446",
+            "scales_to_100k_trades_and_quotes_within_30s: Expected `value$quote_seq[sample_rows]` to be identical to `expected$quote_seq`.\nDifferences:\n     actual | expected                \n [1] 99000  - NA       [1]            \n [2] 98481  | 98481    [2]            \n [3] 99762  | 99762    [3]            \n [4] 99243  | 99243    [4]            \n [5] 98724  | 98724    [5]            \n [6] 98405  - 98205    [6]            \n [7] 99686  - 99486    [7]            \n [8] 99167  - NA       [8]            \n [9] 98648  - NA       [9]            \n[10] 99929  | 99"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 4.14
+        },
+        "wrong_no_staleness": {
+          "status": "scored",
+          "passed": 10,
+          "total": 17,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matches_latest_prior_quote",
+            "staleness_bound_is_inclusive_1800_seconds",
+            "unsorted_inputs_match_sorted_inputs",
+            "different_time_zones_and_dst_use_instants",
+            "extra_trade_columns_are_kept_unchanged",
+            "matches_slow_oracle_on_generated_data",
+            "scales_to_100k_trades_and_quotes_within_30s"
+          ],
+          "details": [
+            "matches_latest_prior_quote: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`: 1772461800.2 1772459970.0 1772459940.0 1772461800.2 1772461800.3\n`expected`: 1772461800.2 1772459970.0           NA 1772461800.2           NA\n",
+            "staleness_bound_is_inclusive_1800_seconds: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`: 1772445600.2 1772445600.2 1772445600.2\n`expected`: 1772445600.2           NA 1772445600.2\n",
+            "unsorted_inputs_match_sorted_inputs: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`: 1772461800.3 1772459970.0 1772461800.2 1772461800.2 1772459940.0\n`expected`:           NA 1772459970.0 1772461800.2 1772461800.2           NA\n",
+            "different_time_zones_and_dst_use_instants: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`: 1772951400.0 1772951400.0 NA 1793514000.0\n`expected`: 1772951400.0           NA NA 1793514000.0\n",
+            "extra_trade_columns_are_kept_unchanged: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`: 1772461800.2 1772459970.0 1772459940.0 1772461800.2 1772461800.3\n`expected`: 1772461800.2 1772459970.0           NA 1772461800.2           NA\n",
+            "matches_slow_oracle_on_generated_data: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n     actual       | expected         \n[34] 1772443800.0 | 1772443800.0 [34]\n[35] 1772448038.2 | 1772448038.2 [35]\n[36] 1772445547.5 | 1772445547.5 [36]\n[37] 1772449785.8 - NA           [37]\n[38] 1772447491.5 | 1772447491.5 [38]\n[39] 1772445000.8 | 1772445000.8 [39]\n[40] 1772449253.2 | 1772449253.2 [40]\n\n     actual       | expected         \n[78] 1772443893.0 | 1772443893.0 [78]\n[79] 1772448159.8 | 177",
+            "scales_to_100k_trades_and_quotes_within_30s: Expected `value$quote_seq[sample_rows]` to be identical to `expected$quote_seq`.\nDifferences:\n  `actual[6:12]`: 98205 99486 NA 98448 99929 99410 98891\n`expected[6:12]`: 98205 99486 NA    NA 99929 99410 98891\n\n  `actual[13:21]`: 98372 99653 99134 98615 99896 99377 99058 98539 99820\n`expected[13:21]`: 98372 99653 99134    NA    NA    NA 99058 98539 99820\n\n  `actual[22:30]`: 99301 98782 98263 99544 99025 98506 99987 99468 NA\n`expected[22:30]`: 99301 98782 98263    NA    NA    NA 99987 99468 NA\n\n  `"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 3.47
+        },
+        "wrong_slow_but_correct": {
+          "status": "scored",
+          "passed": 16,
+          "total": 17,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "scales_to_100k_trades_and_quotes_within_30s"
+          ],
+          "details": [
+            "scales_to_100k_trades_and_quotes_within_30s: Expected `result$elapsed` < 30.\nActual comparison: 56.7 >= 30.0\nDifference: 26.7 >= 0"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 59.05
+        },
+        "wrong_strict_inequality": {
+          "status": "scored",
+          "passed": 11,
+          "total": 17,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matches_latest_prior_quote",
+            "quote_at_exact_trade_time_matches",
+            "unsorted_inputs_match_sorted_inputs",
+            "trade_order_and_duplicates_are_preserved",
+            "extra_trade_columns_are_kept_unchanged",
+            "matches_slow_oracle_on_generated_data"
+          ],
+          "details": [
+            "matches_latest_prior_quote: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`: 1772461799.0 1772459970.0 NA 1772461799.0 NA\n`expected`: 1772461800.2 1772459970.0 NA 1772461800.2 NA\n",
+            "quote_at_exact_trade_time_matches: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`: 1772445599.5\n`expected`: 1772445600.5\n",
+            "unsorted_inputs_match_sorted_inputs: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`: NA 1772459970.0 1772461799.0 1772461799.0 NA\n`expected`: NA 1772459970.0 1772461800.2 1772461800.2 NA\n",
+            "trade_order_and_duplicates_are_preserved: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`: 1772461799.0 1772461799.0 1772461799.0 1772459970.0 1772461799.0\n`expected`: 1772461800.2 1772461800.2 1772461800.2 1772459970.0 1772461800.2\n",
+            "extra_trade_columns_are_kept_unchanged: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n  `actual`: 1772461799.0 1772459970.0 NA 1772461799.0 NA\n`expected`: 1772461800.2 1772459970.0 NA 1772461800.2 NA\n",
+            "matches_slow_oracle_on_generated_data: Expected `as.numeric(result$quote_time)` to be identical to `expected$quote_time`.\nDifferences:\n     actual       | expected         \n[93] 1772449374.8 | 1772449374.8 [93]\n[94] 1772445061.5 | 1772445061.5 [94]\n[95] 1772449314.0 | 1772449314.0 [95]\n[96] 1772446977.0 - 1772446991.2 [96]\n[97] 1772446337.2 | 1772446337.2 [97]\n[98] 1772448767.2 | 1772448767.2 [98]\n[99] 1772446276.5 | 1772446276.5 [99]\n\n      actual       | expected          \n[162] 1772447005.5 | 1772447005.5 [162]\n[163] 1772444514.8 "
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 3.14
+        },
+        "wrong_tie_by_row_order": {
+          "status": "scored",
+          "passed": 14,
+          "total": 17,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "equal_time_ties_use_largest_quote_seq",
+            "unsorted_inputs_match_sorted_inputs",
+            "scales_to_100k_trades_and_quotes_within_30s"
+          ],
+          "details": [
+            "equal_time_ties_use_largest_quote_seq: Expected `result$quote_seq` to be identical to `expected$quote_seq`.\nDifferences:\n  `actual`: 5\n`expected`: 9\n",
+            "unsorted_inputs_match_sorted_inputs: Expected `result$quote_seq` to be identical to `expected$quote_seq`.\nDifferences:\n  `actual`: NA 2 8 8 NA\n`expected`: NA 2 9 9 NA\n",
+            "scales_to_100k_trades_and_quotes_within_30s: Expected `value$quote_seq[sample_rows]` to be identical to `expected$quote_seq`.\nDifferences:\n  `actual`: NA  1281   762   243  1524  1005   486 NA NA   929 and 91 more...\n`expected`: NA 98481 99762 99243 98724 98205 99486 NA NA 99929            ...\n"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 2.97
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 17,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matches_latest_prior_quote",
+            "quote_one_millisecond_after_trade_never_matches",
+            "quote_at_exact_trade_time_matches",
+            "staleness_bound_is_inclusive_1800_seconds",
+            "equal_time_ties_use_largest_quote_seq",
+            "unsorted_inputs_match_sorted_inputs",
+            "trade_order_and_duplicates_are_preserved",
+            "unmatched_columns_are_typed_missing_values",
+            "different_time_zones_and_dst_use_instants",
+            "quotes_with_missing_time_or_price_are_ignored",
+            "missing_trade_symbol_or_time_gets_no_match",
+            "symbols_are_case_sensitive",
+            "extra_trade_columns_are_kept_unchanged",
+            "empty_trades_and_empty_quotes",
+            "inputs_are_not_modified",
+            "matches_slow_oracle_on_generated_data",
+            "scales_to_100k_trades_and_quotes_within_30s"
+          ],
+          "details": [
+            "matches_latest_prior_quote: candidate call failed: could not find function \"asof_price\"",
+            "quote_one_millisecond_after_trade_never_matches: candidate call failed: could not find function \"asof_price\"",
+            "quote_at_exact_trade_time_matches: candidate call failed: could not find function \"asof_price\"",
+            "staleness_bound_is_inclusive_1800_seconds: candidate call failed: could not find function \"asof_price\"",
+            "equal_time_ties_use_largest_quote_seq: candidate call failed: could not find function \"asof_price\"",
+            "unsorted_inputs_match_sorted_inputs: candidate call failed: could not find function \"asof_price\"",
+            "trade_order_and_duplicates_are_preserved: candidate call failed: could not find function \"asof_price\"",
+            "unmatched_columns_are_typed_missing_values: candidate call failed: could not find function \"asof_price\"",
+            "different_time_zones_and_dst_use_instants: candidate call failed: could not find function \"asof_price\"",
+            "quotes_with_missing_time_or_price_are_ignored: candidate call failed: could not find function \"asof_price\"",
+            "missing_trade_symbol_or_time_gets_no_match: candidate call failed: could not find function \"asof_price\"",
+            "symbols_are_case_sensitive: candidate call failed: could not find function \"asof_price\"",
+            "extra_trade_columns_are_kept_unchanged: candidate call failed: could not find function \"asof_price\"",
+            "empty_trades_and_empty_quotes: candidate call failed: could not find function \"asof_price\"",
+            "inputs_are_not_modified: candidate call failed: could not find function \"asof_price\"",
+            "matches_slow_oracle_on_generated_data: candidate call failed: could not find function \"asof_price\"",
+            "scales_to_100k_trades_and_quotes_within_30s: candidate call failed: could not find function \"asof_price\""
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 1.94
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 17,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 1.32
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 17,
+          "total": 17,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0",
+              "dplyr": "1.2.1",
+              "tibble": "3.3.1"
+            }
+          },
+          "seconds": 3.09
+        }
+      },
+      "problems": [],
+      "gate": "passed"
+    },
+    "H10": {
+      "task": "H10",
+      "checks": 18,
+      "checks_failed_by_some_wrong_control": 15,
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 18,
+          "total": 18,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0"
+            }
+          },
+          "seconds": 2.16
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 18,
+          "total": 18,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0"
+            }
+          },
+          "seconds": 2.18
+        },
+        "wrong_between_denominator": {
+          "status": "scored",
+          "passed": 6,
+          "total": 18,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "two_imputations_match_analytic_rubin_values",
+            "two_imputations_match_analytic_barnard_rubin_values",
+            "twenty_imputations_match_oracle_for_both_methods",
+            "default_method_is_rubin1987",
+            "zero_within_variance_limits",
+            "confidence_levels_090_and_099",
+            "interval_uses_student_t_not_normal",
+            "between_variance_uses_m_minus_one",
+            "tiny_standard_errors_whose_variances_underflow",
+            "huge_standard_errors_whose_variances_overflow",
+            "estimates_near_the_largest_double",
+            "huge_complete_df_approaches_rubin1987"
+          ],
+          "details": [
+            "two_imputations_match_analytic_rubin_values: std_error: got 1.5811388300841898, expected 2 (relative error 0.209)",
+            "two_imputations_match_analytic_barnard_rubin_values: std_error: got 1.5811388300841898, expected 2 (relative error 0.209)",
+            "twenty_imputations_match_oracle_for_both_methods: std_error: got 0.76822766807763443, expected 0.77329949260500486 (relative error 0.00656)",
+            "default_method_is_rubin1987: std_error: got 0.76822766807763443, expected 0.77329949260500486 (relative error 0.00656)",
+            "zero_within_variance_limits: std_error: got 1.4401645996461911, expected 1.7638342073763937 (relative error 0.184)",
+            "confidence_levels_090_and_099: std_error: got 0.76822766807763443, expected 0.77329949260500486 (relative error 0.00656)",
+            "interval_uses_student_t_not_normal: std_error: got 2.3270550455855541, expected 2.709448488366426 (relative error 0.141)",
+            "between_variance_uses_m_minus_one: std_error: got 3.5433819375782161, expected 4.2817441928883762 (relative error 0.172)",
+            "tiny_standard_errors_whose_variances_underflow: std_error: got 1.6571341979453562e-170, expected 1.7245168405479063e-170 (relative error 0.0391)",
+            "huge_standard_errors_whose_variances_overflow: std_error: got 2.462214450449026e+200, expected 2.5658007197234421e+200 (relative error 0.0404)",
+            "estimates_near_the_largest_double: std_error: got 4.7161660511714696e+306, expected 5.7752344829741275e+306 (relative error 0.183)",
+            "huge_complete_df_approaches_rubin1987: std_error: got 0.76822766807763443, expected 0.77329949260500486 (relative error 0.00656)"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0"
+            }
+          },
+          "seconds": 2.03
+        },
+        "wrong_df_combination": {
+          "status": "scored",
+          "passed": 9,
+          "total": 18,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "two_imputations_match_analytic_barnard_rubin_values",
+            "twenty_imputations_match_oracle_for_both_methods",
+            "identical_estimates_have_zero_between_variance",
+            "zero_total_variance_collapses_the_interval",
+            "zero_within_variance_limits",
+            "confidence_levels_090_and_099",
+            "tiny_standard_errors_whose_variances_underflow",
+            "huge_standard_errors_whose_variances_overflow",
+            "huge_complete_df_approaches_rubin1987"
+          ],
+          "details": [
+            "two_imputations_match_analytic_barnard_rubin_values: df: got 4.2777777777777777, expected 0.96597145993413835 (relative error 3.43)",
+            "twenty_imputations_match_oracle_for_both_methods: df: got 319.97295501021898, expected 35.494325863900023 (relative error 8.01)",
+            "identical_estimates_have_zero_between_variance: df: got 40, expected 38.139534883720927 (relative error 0.0488)",
+            "zero_total_variance_collapses_the_interval: df: got 5, expected 3.75 (relative error 0.333)",
+            "zero_within_variance_limits: Expected `as.double(actual)` to be identical to `expected`.\nDifferences:\n  `actual`: 2.0\n`expected`: 0.0\n\ndf",
+            "confidence_levels_090_and_099: df: got 128.76310871471989, expected 5.2802804369739409 (relative error 23.4)",
+            "tiny_standard_errors_whose_variances_underflow: df: got 52.744314407234, expected 12.124909450579541 (relative error 3.35)",
+            "huge_standard_errors_whose_variances_overflow: df: got 50.463129113924055, expected 11.724292719647977 (relative error 3.3)",
+            "huge_complete_df_approaches_rubin1987: df: got 738513094258695.25, expected 277.87770863738467 (relative error 2.66e+12)"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0"
+            }
+          },
+          "seconds": 2.27
+        },
+        "wrong_naive_squares": {
+          "status": "scored",
+          "passed": 14,
+          "total": 18,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "tiny_standard_errors_whose_variances_underflow",
+            "huge_standard_errors_whose_variances_overflow",
+            "estimates_near_the_largest_double",
+            "invalid_inputs_signal_pool_input_error"
+          ],
+          "details": [
+            "tiny_standard_errors_whose_variances_underflow: std_error: got 0, expected 1.7245168405479063e-170 (relative error 1)",
+            "huge_standard_errors_whose_variances_overflow: candidate call failed: missing value where TRUE/FALSE needed",
+            "estimates_near_the_largest_double: candidate call failed: missing value where TRUE/FALSE needed",
+            "invalid_inputs_signal_pool_input_error: expected an error of class pool_input_error but the call succeeded"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0"
+            }
+          },
+          "seconds": 2.13
+        },
+        "wrong_no_inflation": {
+          "status": "scored",
+          "passed": 6,
+          "total": 18,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "two_imputations_match_analytic_rubin_values",
+            "two_imputations_match_analytic_barnard_rubin_values",
+            "twenty_imputations_match_oracle_for_both_methods",
+            "default_method_is_rubin1987",
+            "zero_within_variance_limits",
+            "confidence_levels_090_and_099",
+            "interval_uses_student_t_not_normal",
+            "between_variance_uses_m_minus_one",
+            "tiny_standard_errors_whose_variances_underflow",
+            "huge_standard_errors_whose_variances_overflow",
+            "estimates_near_the_largest_double",
+            "huge_complete_df_approaches_rubin1987"
+          ],
+          "details": [
+            "two_imputations_match_analytic_rubin_values: std_error: got 1.7320508075688772, expected 2 (relative error 0.134)",
+            "two_imputations_match_analytic_barnard_rubin_values: std_error: got 1.7320508075688772, expected 2 (relative error 0.134)",
+            "twenty_imputations_match_oracle_for_both_methods: std_error: got 0.7684699425687247, expected 0.77329949260500486 (relative error 0.00625)",
+            "default_method_is_rubin1987: std_error: got 0.7684699425687247, expected 0.77329949260500486 (relative error 0.00625)",
+            "zero_within_variance_limits: std_error: got 1.5275252316519468, expected 1.7638342073763937 (relative error 0.134)",
+            "confidence_levels_090_and_099: std_error: got 0.7684699425687247, expected 0.77329949260500486 (relative error 0.00625)",
+            "interval_uses_student_t_not_normal: std_error: got 2.4283053075481811, expected 2.709448488366426 (relative error 0.104)",
+            "between_variance_uses_m_minus_one: std_error: got 3.7416573867739413, expected 4.2817441928883762 (relative error 0.126)",
+            "tiny_standard_errors_whose_variances_underflow: std_error: got 1.6708281379802851e-170, expected 1.7245168405479063e-170 (relative error 0.0311)",
+            "huge_standard_errors_whose_variances_overflow: std_error: got 2.4832774042918897e+200, expected 2.5658007197234421e+200 (relative error 0.0322)",
+            "estimates_near_the_largest_double: std_error: got 5.0019996001599284e+306, expected 5.7752344829741275e+306 (relative error 0.134)",
+            "huge_complete_df_approaches_rubin1987: std_error: got 0.7684699425687247, expected 0.77329949260500486 (relative error 0.00625)"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0"
+            }
+          },
+          "seconds": 2.05
+        },
+        "wrong_z_interval": {
+          "status": "scored",
+          "passed": 5,
+          "total": 18,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "two_imputations_match_analytic_rubin_values",
+            "two_imputations_match_analytic_barnard_rubin_values",
+            "twenty_imputations_match_oracle_for_both_methods",
+            "default_method_is_rubin1987",
+            "identical_estimates_have_zero_between_variance",
+            "zero_within_variance_limits",
+            "confidence_levels_090_and_099",
+            "interval_uses_student_t_not_normal",
+            "between_variance_uses_m_minus_one",
+            "tiny_standard_errors_whose_variances_underflow",
+            "huge_standard_errors_whose_variances_overflow",
+            "estimates_near_the_largest_double",
+            "huge_complete_df_approaches_rubin1987"
+          ],
+          "details": [
+            "two_imputations_match_analytic_rubin_values: ci_lower: got -1.9199279690801072, expected -7.7229452184531358 (relative error 0.751)",
+            "two_imputations_match_analytic_barnard_rubin_values: ci_lower: got -1.9199279690801072, expected -25.628645836758267 (relative error 0.925)",
+            "twenty_imputations_match_oracle_for_both_methods: ci_lower: got 2.0893608452310932, expected 2.0827307471642125 (relative error 0.00318)",
+            "default_method_is_rubin1987: ci_lower: got 2.0893608452310932, expected 2.0827307471642125 (relative error 0.00318)",
+            "identical_estimates_have_zero_between_variance: ci_lower: got 1.0035187741100311, expected 0.98725947844375395 (relative error 0.0165)",
+            "zero_within_variance_limits: ci_lower: got -1.1237181878241502, expected -5.2558327338601849 (relative error 0.786)",
+            "confidence_levels_090_and_099: ci_lower: got 2.333035524868925, expected 2.3287808042405493 (relative error 0.00183)",
+            "interval_uses_student_t_not_normal: ci_lower: got 6.3562452115019807, expected 3.3794717630098337 (relative error 0.881)",
+            "between_variance_uses_m_minus_one: ci_lower: got -3.3920644090747381, expected -11.670610542069134 (relative error 0.709)",
+            "tiny_standard_errors_whose_variances_underflow: ci_lower: got -1.2549908982066986e-170, expected -1.387990242065062e-170 (relative error 0.0958)",
+            "huge_standard_errors_whose_variances_overflow: ci_lower: got -2.5288770021648948e+200, expected -2.7403810312012058e+200 (relative error 0.0772)",
+            "estimates_near_the_largest_double: ci_lower: got 9.3680748411096912e+307, expected 8.0179698971872316e+307 (relative error 0.168)",
+            "huge_complete_df_approaches_rubin1987: ci_lower: got 2.0893608452310932, expected 2.0827307471642102 (relative error 0.00318)"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0"
+            }
+          },
+          "seconds": 2.08
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 18,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "two_imputations_match_analytic_rubin_values",
+            "two_imputations_match_analytic_barnard_rubin_values",
+            "twenty_imputations_match_oracle_for_both_methods",
+            "default_method_is_rubin1987",
+            "identical_estimates_have_zero_between_variance",
+            "zero_total_variance_collapses_the_interval",
+            "zero_within_variance_limits",
+            "confidence_levels_090_and_099",
+            "interval_uses_student_t_not_normal",
+            "between_variance_uses_m_minus_one",
+            "tiny_standard_errors_whose_variances_underflow",
+            "huge_standard_errors_whose_variances_overflow",
+            "estimates_near_the_largest_double",
+            "invalid_inputs_signal_pool_input_error",
+            "result_structure_and_types",
+            "inputs_not_modified_and_no_warnings",
+            "huge_complete_df_approaches_rubin1987",
+            "imputation_order_does_not_matter"
+          ],
+          "details": [
+            "two_imputations_match_analytic_rubin_values: candidate call failed: could not find function \"pool_estimates\"",
+            "two_imputations_match_analytic_barnard_rubin_values: candidate call failed: could not find function \"pool_estimates\"",
+            "twenty_imputations_match_oracle_for_both_methods: candidate call failed: could not find function \"pool_estimates\"",
+            "default_method_is_rubin1987: candidate call failed: could not find function \"pool_estimates\"",
+            "identical_estimates_have_zero_between_variance: candidate call failed: could not find function \"pool_estimates\"",
+            "zero_total_variance_collapses_the_interval: candidate call failed: could not find function \"pool_estimates\"",
+            "zero_within_variance_limits: candidate call failed: could not find function \"pool_estimates\"",
+            "confidence_levels_090_and_099: candidate call failed: could not find function \"pool_estimates\"",
+            "interval_uses_student_t_not_normal: candidate call failed: could not find function \"pool_estimates\"",
+            "between_variance_uses_m_minus_one: candidate call failed: could not find function \"pool_estimates\"",
+            "tiny_standard_errors_whose_variances_underflow: candidate call failed: could not find function \"pool_estimates\"",
+            "huge_standard_errors_whose_variances_overflow: candidate call failed: could not find function \"pool_estimates\"",
+            "estimates_near_the_largest_double: candidate call failed: could not find function \"pool_estimates\"",
+            "invalid_inputs_signal_pool_input_error: expected error class pool_input_error; got simpleError/error/condition: could not find function \"pool_estimates\"",
+            "result_structure_and_types: candidate call failed: could not find function \"pool_estimates\"",
+            "inputs_not_modified_and_no_warnings: candidate call failed: could not find function \"pool_estimates\"",
+            "huge_complete_df_approaches_rubin1987: candidate call failed: could not find function \"pool_estimates\"",
+            "imputation_order_does_not_matter: candidate call failed: could not find function \"pool_estimates\""
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0"
+            }
+          },
+          "seconds": 1.77
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 18,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0"
+            }
+          },
+          "seconds": 1.32
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 18,
+          "total": 18,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "environment": {
+            "r": "4.5.2",
+            "packages": {
+              "callr": "3.7.6",
+              "processx": "3.8.6",
+              "testthat": "3.3.2",
+              "jsonlite": "2.0.0"
+            }
+          },
+          "seconds": 2.24
+        }
+      },
+      "problems": [],
+      "gate": "passed"
+    },
+    "B01": {
+      "reference": {
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong": {
+        "passed": 0,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "output columns",
+          "eligibility and inclusive date bounds",
+          "finite signed totals",
+          "first and last retained dates",
+          "typed empty result"
+        ]
+      }
+    },
+    "B02": {
+      "reference": {
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong": {
+        "passed": 2,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "output preserves input and adds result",
+          "forward fill only",
+          "empty input keeps output schema"
+        ]
+      }
+    },
+    "B03": {
+      "reference": {
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong": {
+        "passed": 1,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "latest revision replaces earlier line",
+          "latest cancellation removes a line",
+          "zero quantity remains counted",
+          "duplicate revision uses latest received record once"
+        ]
+      }
+    },
+    "C01": {
+      "reference": {
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong": {
+        "passed": 1,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "chooses closest earlier promo",
+          "never joins a future promotion",
+          "matches same customer and inclusive date",
+          "adds only the requested promotion columns"
+        ]
+      }
+    },
+    "C02": {
+      "reference": {
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong": {
+        "passed": 0,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "one row per sample in input order",
+          "duplicate cell values aggregate",
+          "observed all-missing cell stays missing",
+          "only absent combinations receive zero",
+          "analyte columns are alphabetical and numeric"
+        ]
+      }
+    },
+    "C03": {
+      "reference": {
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong": {
+        "passed": 3,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "European decimal and grouping marks",
+          "quiet parsing"
+        ]
+      }
+    },
+    "C04": {
+      "reference": {
+        "passed": 9,
+        "total": 9,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong_when_all": {
+        "passed": 3,
+        "total": 9,
+        "fully_correct": false,
+        "failed_checks": [
+          "calls cranlogs with package and from/to, without when",
+          "sums all daily counts including inclusive boundary dates",
+          "retains the requested package and date interval",
+          "labels the statistic as mirror downloads, not global installations",
+          "returns zero for an empty response",
+          "returns zero when every count is missing"
+        ]
+      },
+      "wrong_date_range": {
+        "passed": 3,
+        "total": 9,
+        "fully_correct": false,
+        "failed_checks": [
+          "calls cranlogs with package and from/to, without when",
+          "sums all daily counts including inclusive boundary dates",
+          "retains the requested package and date interval",
+          "labels the statistic as mirror downloads, not global installations",
+          "returns zero for an empty response",
+          "returns zero when every count is missing"
+        ]
+      },
+      "wrong_global_claim": {
+        "passed": 8,
+        "total": 9,
+        "fully_correct": false,
+        "failed_checks": [
+          "labels the statistic as mirror downloads, not global installations"
+        ]
+      }
+    },
+    "C05": {
+      "reference": {
+        "passed": 7,
+        "total": 7,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong_when_all": {
+        "passed": 1,
+        "total": 7,
+        "fully_correct": false,
+        "failed_checks": [
+          "requests the whole history with packages/from/to and no when",
+          "sums observations across the full fixture period",
+          "reports the full-period boundaries and package",
+          "labels mirror downloads without claiming global installs",
+          "returns zero for missing observations",
+          "ignores missing counts while summing the available observations"
+        ]
+      },
+      "wrong_start_date": {
+        "passed": 1,
+        "total": 7,
+        "fully_correct": false,
+        "failed_checks": [
+          "requests the whole history with packages/from/to and no when",
+          "sums observations across the full fixture period",
+          "reports the full-period boundaries and package",
+          "labels mirror downloads without claiming global installs",
+          "returns zero for missing observations",
+          "ignores missing counts while summing the available observations"
+        ]
+      },
+      "wrong_global_claim": {
+        "passed": 6,
+        "total": 7,
+        "fully_correct": false,
+        "failed_checks": [
+          "labels mirror downloads without claiming global installs"
+        ]
+      }
+    },
+    "D01": {
+      "reference": {
+        "passed": 4,
+        "total": 4,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong": {
+        "passed": 0,
+        "total": 4,
+        "fully_correct": false,
+        "failed_checks": [
+          "answer_shape",
+          "accepted_package_and_version",
+          "official_source_and_docs",
+          "documented_fit_and_limits"
+        ]
+      }
+    },
+    "D02": {
+      "reference": {
+        "passed": 4,
+        "total": 4,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong": {
+        "passed": 3,
+        "total": 4,
+        "fully_correct": false,
+        "failed_checks": [
+          "documented_fit_and_limits"
+        ]
+      }
+    },
+    "D03": {
+      "reference": {
+        "passed": 4,
+        "total": 4,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong": {
+        "passed": 3,
+        "total": 4,
+        "fully_correct": false,
+        "failed_checks": [
+          "documented_fit_and_limits"
+        ]
+      }
+    },
+    "E01": {
+      "reference": {
+        "passed": 6,
+        "total": 6,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong_release": {
+        "passed": 0,
+        "total": 6,
+        "fully_correct": false,
+        "failed_checks": [
+          "release_and_R_conflict_identified",
+          "valid_minimal_release_alignment",
+          "package_sources_and_pins",
+          "dependency_graph_constraints_satisfied",
+          "minimal_change_explained",
+          "official_evidence"
+        ]
+      },
+      "wrong_sources": {
+        "passed": 3,
+        "total": 6,
+        "fully_correct": false,
+        "failed_checks": [
+          "package_sources_and_pins",
+          "dependency_graph_constraints_satisfied",
+          "official_evidence"
+        ]
+      },
+      "wrong_nonminimal": {
+        "passed": 2,
+        "total": 6,
+        "fully_correct": false,
+        "failed_checks": [
+          "package_sources_and_pins",
+          "dependency_graph_constraints_satisfied",
+          "minimal_change_explained",
+          "official_evidence"
+        ]
+      },
+      "wrong_graph": {
+        "passed": 5,
+        "total": 6,
+        "fully_correct": false,
+        "failed_checks": [
+          "dependency_graph_constraints_satisfied"
+        ]
+      }
+    },
+    "E02": {
+      "reference": {
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong_design": {
+        "passed": 4,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "reference_level_and_sign"
+        ]
+      },
+      "wrong_counts": {
+        "passed": 0,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "workflow_returns_a_result",
+          "result_has_requested_columns",
+          "all_genes_present",
+          "count_container_and_samples",
+          "reference_level_and_sign"
+        ]
+      }
+    },
+    "E03": {
+      "reference": {
+        "passed": 4,
+        "total": 4,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong_namespace": {
+        "passed": 0,
+        "total": 4,
+        "fully_correct": false,
+        "failed_checks": [
+          "result_class",
+          "assay_values_preserved",
+          "feature_names_preserved",
+          "phenotype_columns_preserved"
+        ]
+      },
+      "wrong_output": {
+        "passed": 0,
+        "total": 4,
+        "fully_correct": false,
+        "failed_checks": [
+          "result_class",
+          "assay_values_preserved",
+          "feature_names_preserved",
+          "phenotype_columns_preserved"
+        ]
+      }
+    },
+    "E04": {
+      "reference": {
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong_repositories": {
+        "passed": 1,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "package_sources",
+          "version_constraints",
+          "dependency_edge_reported",
+          "repository_aware_install"
+        ]
+      },
+      "wrong_edges": {
+        "passed": 3,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "version_constraints",
+          "dependency_edge_reported"
+        ]
+      },
+      "wrong_install": {
+        "passed": 3,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "version_constraints",
+          "repository_aware_install"
+        ]
+      }
+    },
+    "E05": {
+      "reference": {
+        "passed": 5,
+        "total": 5,
+        "fully_correct": true,
+        "failed_checks": []
+      },
+      "wrong_all_compatible": {
+        "passed": 1,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "verified_positive",
+          "verified_negative",
+          "unknown_not_overclaimed",
+          "official_evidence"
+        ]
+      },
+      "wrong_all_incompatible": {
+        "passed": 2,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "verified_positive",
+          "unknown_not_overclaimed",
+          "official_evidence"
+        ]
+      },
+      "wrong_unverified": {
+        "passed": 2,
+        "total": 5,
+        "fully_correct": false,
+        "failed_checks": [
+          "verified_positive",
+          "unknown_not_overclaimed",
+          "official_evidence"
+        ]
+      }
+    }
+  },
+  "executor_contract": {
+    "base_image": "sha256:ea7eaa089df6671c5eb7dc913fb752909dff5344aafe5f8c4974aa97e2365074",
+    "derived_image": "sha256:ab9eefda7d00d6872d1e62f5e3fba2a683317f6969b3ac3ab5bfa94f42c9976d",
+    "base_layers_preserved": true,
+    "configuration_fields_equal": [
+      "User",
+      "Entrypoint",
+      "Cmd",
+      "WorkingDir",
+      "Env",
+      "Healthcheck",
+      "Volumes",
+      "StopSignal"
+    ],
+    "user": "65534:65534",
+    "entrypoint": [
+      "/opt/codex/bin/codex"
+    ],
+    "cmd": [
+      "--version"
+    ],
+    "codex_version": "codex-cli 0.163.0",
+    "codex_binary_sha256": "399ff69c431c066e40de318fba45c2b07f45a76b19939d247ee4828fc70c4215",
+    "exec_server_environment_id_and_remote_flags": true
+  },
+  "library_boundaries": {
+    "scorer": {
+      "locked_cran_packages": 89,
+      "installed_library_packages": 112,
+      "hidden_paths_absent": true
+    },
+    "executor": {
+      "locked_cran_packages": 89,
+      "installed_library_packages": 112,
+      "hidden_paths_absent": true
+    }
+  },
+  "E02_reproducibility": {
+    "counts_sha256": "f34b1c2edfc505407e8119a9d71e6b491cb82e3e252ea865b8917eb58010473c",
+    "generator_sha256": "cfaddaa81ab5ca16809c859fbb92fbb2b48243fafe4885170c6c88a3945b2477",
+    "two_generated_files_equal": true,
+    "workflow": {
+      "scorer": {
+        "workflow_sha256": "0bfc47e72844c8804b32f6cac5b2dd66ac32dbdd90881222437b5cbd3398fce2",
+        "fit_type": "parametric",
+        "dispersion_range": [
+          0.06424725809456315,
+          6.257273097190382
+        ],
+        "genes": 500,
+        "repetitions_equal": true
+      },
+      "executor": {
+        "workflow_sha256": "0bfc47e72844c8804b32f6cac5b2dd66ac32dbdd90881222437b5cbd3398fce2",
+        "fit_type": "parametric",
+        "dispersion_range": [
+          0.06424725809456315,
+          6.257273097190382
+        ],
+        "genes": 500,
+        "repetitions_equal": true
+      }
+    }
+  },
+  "status": "passed",
+  "ready_tasks": [
+    "H01",
+    "H04",
+    "H10",
+    "B01",
+    "B02",
+    "B03",
+    "C01",
+    "C02",
+    "C03",
+    "C04",
+    "C05",
+    "D01",
+    "D02",
+    "D03",
+    "E01",
+    "E02",
+    "E03",
+    "E04",
+    "E05"
+  ],
+  "planned_model_trials": 38,
+  "completed_at_utc": "2026-10-25T13:53:01.057726+00:00",
+  "local_checks": {
+    "targeted_pytest_passed": 77,
+    "docker_pytest_passed": 3,
+    "ruff_check": "passed",
+    "ruff_format_check": "passed",
+    "source_results_modified": false,
+    "ubuntu_wsl_python": "3.14.4"
+  },
+  "resource_inventory": {
+    "benchmark_containers": [],
+    "benchmark_networks": [],
+    "unrelated_resources_removed": false
+  },
+  "package_library_manifest": {
+    "file": "runtime-packages.json",
+    "package_count": 112,
+    "sha256": "7ab06eac27258044b2cb932de03991303c54c90be2cf9bf2e5d18941a4536135"
+  },
+  "blocking_problems": [],
+  "nonfatal_diagnostics": [
+    {
+      "code": "R_NAMESPACE_STACK_IMBALANCE",
+      "reproduction": "../E02-namespace-diagnostic-20261025.json",
+      "observed_during": "loadNamespace(DESeq2), before counts are read",
+      "exit_code": 0,
+      "workflow_results_repeated_identically": true
+    }
+  ]
+}

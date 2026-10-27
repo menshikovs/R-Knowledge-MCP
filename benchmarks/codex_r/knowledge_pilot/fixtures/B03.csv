@@ -1,0 +1,10 @@
+invoice_id,line_id,revision,received_at,status,quantity,unit_price
+I-1,L-1,1,2025-03-01,active,2,10
+I-1,L-1,1,2025-03-03,active,2,10
+I-1,L-1,2,2025-03-05,active,2,12
+I-1,L-2,1,2025-03-01,active,0,99
+I-2,L-1,1,2025-03-01,active,3,5
+I-2,L-1,2,2025-03-04,cancelled,3,5
+I-2,L-2,1,2025-03-01,active,-2,7
+I-3,L-1,1,2025-03-01,active,1,6
+I-3,L-1,1,2025-03-03,active,1,8

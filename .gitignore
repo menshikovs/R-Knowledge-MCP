@@ -15,6 +15,48 @@ pytest-cache-files-*/
 .venv-wsl
 native/target/
 tests/.r-doc-index-*.json
+# ==========================================
+# Temporary test and benchmark directories
+# ==========================================
+
+# Python environments and caches
+.venv/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+
+# Pytest temporary directories
+.pytest-*/
+.pytest_*/
+.tmp-pytest*/
+.test-tmp*/
+.pytest-windows-tmp/
+.tmp-e-specific/
+
+# Codex temporary tests
+.codex_*_pytest_*/
+
+# Benchmark and regression temporary data
+.f09-*/
+.final-regression-*/
+.p0-*/
+.pytest-b1-*/
+.pytest-p1-*/
+.pytest-r01a-*/
+.pytest-view-*/
+.pytest-v2-*/
+.rkmcp-spend-control-tests-*/
+
+# Other generated temporary directories
+.playwright-mcp/
+.tmp-*/
+/tmp????????/
+/tests/tmp????????/
+.serena
+
+# Temporary audit test directories
+audit-test-temp-*/
+.scratch-test
 
 # Internal security reviews and benchmark artifacts
 /docs/ARCHITECTURE_AUDIT.md

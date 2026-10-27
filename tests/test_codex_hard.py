@@ -144,8 +144,113 @@ def test_runner_routes_hard_tasks_to_the_hard_suite_and_consolidated_tools():
     task_suite, toolset, tools = run_simple.suite_for("H04")
     assert task_suite is suite and toolset == "consolidated"
     assert tools == suite.manifest()["mcp"]["tools"]
+    assert {
+        "list_package_functions",
+        "get_function_docs",
+        "get_package",
+        "search_packages",
+    } <= set(tools)
+    assert not set(tools) & {"build_r_prompt", "get_r_prompt_context", "validate_r_prompt"}
     legacy_suite, legacy_toolset, legacy_tools = run_simple.suite_for("R01")
     assert legacy_toolset == "legacy" and "get_package_info" in legacy_tools
+
+
+def test_standard_exposure_preflight_matches_the_server_and_agent_config():
+    expected = {
+        "list_package_functions",
+        "get_function_docs",
+        "get_package",
+        "search_packages",
+    }
+    exposed = run_simple.tool_exposure_preflight("D01", "with-mcp")
+    assert expected <= set(exposed["allowed_tools"])
+    assert exposed["agent_tools"] == exposed["allowed_tools"]
+    assert set(exposed["allowed_tools"]) <= set(exposed["registered_tools"])
+    assert exposed["generated_configuration"] == "verified"
+    assert exposed["live_mcp_discovery"] == "unverified"
+
+    without_mcp = run_simple.tool_exposure_preflight("D01", "without-mcp")
+    assert without_mcp["agent_tools"] == []
+
+
+def test_function_discovery_policy_can_be_isolated_and_b1_stays_frozen():
+    control = run_simple.suite_for("D01", function_discovery=False)[2]
+    treatment = run_simple.suite_for("D01", function_discovery=True)[2]
+    b1 = run_simple.suite_for("D01", experiment=run_simple.B1_DISCOVERY_EXPERIMENT)[2]
+    assert "list_package_functions" not in control
+    assert "list_package_functions" in treatment
+    assert b1 == suite.manifest()["mcp"]["b1_discovery_tools"]
+    assert "list_package_functions" not in b1
+    b1_agent_config = run_simple.tool_exposure_preflight(
+        "D01", "with-mcp", experiment=run_simple.B1_DISCOVERY_EXPERIMENT
+    )
+    assert b1_agent_config["agent_tools"] == b1
+    with pytest.raises(ValueError, match="fixed pre-discovery"):
+        run_simple.suite_for(
+            "D01",
+            experiment=run_simple.B1_DISCOVERY_EXPERIMENT,
+            function_discovery=True,
+        )
+
+
+def test_required_discovery_tool_cannot_be_removed_from_standard_allowlist(monkeypatch):
+    manifest = suite.manifest()
+    manifest["mcp"]["tools"].remove("list_package_functions")
+    monkeypatch.setattr(suite, "manifest", lambda: manifest)
+    with pytest.raises(ValueError, match="missing a required tool"):
+        run_simple.suite_for("D01")
+
+
+def test_tui_source_passes_the_runner_discovery_policy_without_changing_b1():
+    launcher = (
+        Path(__file__).resolve().parents[1]
+        / "benchmarks"
+        / "codex_r"
+        / "launcher"
+        / "launcher_core.R"
+    ).read_text(encoding="utf-8")
+    build_args = launcher.split("build_args <- function(cfg) {", 1)[1]
+    assert '"--function-discovery", "enabled"' in build_args
+    b1_branch = build_args.split("if (is_b1(cfg))", 1)[1].split("  args <- c(args", 1)[0]
+    assert "--function-discovery" not in b1_branch
+
+
+def test_experiment_metadata_records_the_agent_tools_by_task_and_mode(tmp_path):
+    from types import SimpleNamespace
+
+    args = SimpleNamespace(
+        run_id="offline-tool-exposure-preflight",
+        knowledge_pilot_scorer="legacy",
+        effort="medium",
+        instructions="standard",
+        modes=["without-mcp", "with-mcp"],
+        repetitions=1,
+        timeout=60,
+        executor_image="executor:test",
+        scorer_image="scorer:test",
+        mcp_image="mcp:test",
+        function_discovery="enabled",
+        runtime_versions=None,
+    )
+    manifest = run_simple.write_experiment_manifest(
+        tmp_path,
+        args,
+        {"executor": "executor:test", "scorer": "scorer:test", "mcp": "mcp:test"},
+        ["D01"],
+        write=False,
+    )
+    mcp = manifest["mcp_server"]
+    expected = run_simple.suite_for("D01")[2]
+    assert "list_package_functions" in mcp["allowed_tools"]
+    assert set(mcp["allowed_tools"]) == set(mcp["allowed_tools_by_task"]["D01"]) == set(expected)
+    assert mcp["agent_tools_by_task_mode"]["D01"] == {
+        "without-mcp": [],
+        "with-mcp": expected,
+    }
+    assert mcp["exposure_verification_by_task"]["D01"] == {
+        "generated_configuration": "verified",
+        "live_mcp_discovery": "unverified",
+    }
 
 
 def test_mcp_usage_counts_only_observed_tool_calls():

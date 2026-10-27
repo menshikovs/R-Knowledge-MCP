@@ -1,0 +1,367 @@
+{
+  "type": "separate_current_json_scorer_re_evaluation",
+  "historical_python_scorer_hash_recorded": false,
+  "current_scorer_source_sha256": "ab048467640f575e6b4e6f79eea02ea76c7a9a1398c52adf72541c2d4b532139",
+  "normalized_or_corrected_inputs": false,
+  "trials": [
+    {
+      "trial_id": "D01-A-1",
+      "original": {
+        "status": "scored",
+        "passed": 1,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs",
+          "documented_fit_and_limits"
+        ],
+        "artifacts": {
+          "answer.json": "ac5b41da8c4dc9407b35804938199ceed87285330e0ba4bdfd64797ca6151878"
+        }
+      },
+      "re_evaluated": {
+        "status": "scored",
+        "passed": 1,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs",
+          "documented_fit_and_limits"
+        ],
+        "artifacts": {
+          "answer.json": "ac5b41da8c4dc9407b35804938199ceed87285330e0ba4bdfd64797ca6151878"
+        }
+      }
+    },
+    {
+      "trial_id": "D01-B-1",
+      "original": {
+        "status": "scored",
+        "passed": 4,
+        "total": 4,
+        "failed_checks": [],
+        "artifacts": {
+          "answer.json": "0928884db89de95bba442c9d7a24f07e795fad7e69b0373e54aea90d9b4a427a"
+        }
+      },
+      "re_evaluated": {
+        "status": "scored",
+        "passed": 4,
+        "total": 4,
+        "failed_checks": [],
+        "artifacts": {
+          "answer.json": "0928884db89de95bba442c9d7a24f07e795fad7e69b0373e54aea90d9b4a427a"
+        }
+      }
+    },
+    {
+      "trial_id": "D02-A-1",
+      "original": {
+        "status": "scored",
+        "passed": 1,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs",
+          "documented_fit_and_limits"
+        ],
+        "artifacts": {
+          "answer.json": "707ee773b8c8254f09f96c2ab260da9b832eb82a66cd464a86053fecfb5fb7e0"
+        }
+      },
+      "re_evaluated": {
+        "status": "scored",
+        "passed": 1,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs",
+          "documented_fit_and_limits"
+        ],
+        "artifacts": {
+          "answer.json": "707ee773b8c8254f09f96c2ab260da9b832eb82a66cd464a86053fecfb5fb7e0"
+        }
+      }
+    },
+    {
+      "trial_id": "D02-B-1",
+      "original": {
+        "status": "scored",
+        "passed": 1,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs",
+          "documented_fit_and_limits"
+        ],
+        "artifacts": {
+          "answer.json": "6b945c1f2f31ce96cddd4ed51c9ad794d76da668b2ab8fc25d1f95e5440b9061"
+        }
+      },
+      "re_evaluated": {
+        "status": "scored",
+        "passed": 1,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs",
+          "documented_fit_and_limits"
+        ],
+        "artifacts": {
+          "answer.json": "6b945c1f2f31ce96cddd4ed51c9ad794d76da668b2ab8fc25d1f95e5440b9061"
+        }
+      }
+    },
+    {
+      "trial_id": "D03-A-1",
+      "original": {
+        "status": "scored",
+        "passed": 2,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs"
+        ],
+        "artifacts": {
+          "answer.json": "d5aedfa7d1e7388e9546fa2b691642e348ca0f3a6f4ebc4ac6317ef670b8c026"
+        }
+      },
+      "re_evaluated": {
+        "status": "scored",
+        "passed": 2,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs"
+        ],
+        "artifacts": {
+          "answer.json": "d5aedfa7d1e7388e9546fa2b691642e348ca0f3a6f4ebc4ac6317ef670b8c026"
+        }
+      }
+    },
+    {
+      "trial_id": "D03-B-1",
+      "original": {
+        "status": "scored",
+        "passed": 2,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs"
+        ],
+        "artifacts": {
+          "answer.json": "1cfd5aae138fd20694ebfa8c0c263c98ef7e391346fc63b42f2471d2bddbda42"
+        }
+      },
+      "re_evaluated": {
+        "status": "scored",
+        "passed": 2,
+        "total": 4,
+        "failed_checks": [
+          "accepted_package_and_version",
+          "official_source_and_docs"
+        ],
+        "artifacts": {
+          "answer.json": "1cfd5aae138fd20694ebfa8c0c263c98ef7e391346fc63b42f2471d2bddbda42"
+        }
+      }
+    },
+    {
+      "trial_id": "E01-A-1",
+      "original": {
+        "status": "scored",
+        "passed": 0,
+        "total": 6,
+        "failed_checks": [
+          "release_and_R_conflict_identified",
+          "valid_minimal_release_alignment",
+          "package_sources_and_pins",
+          "dependency_graph_constraints_satisfied",
+          "minimal_change_explained",
+          "official_evidence"
+        ],
+        "artifacts": {
+          "answer.json": "49d910178cbdd435466f6b42ce565225cf6b9fed8ceeaf7746d21f4ed48c6f77"
+        }
+      },
+      "re_evaluated": {
+        "status": "scored",
+        "passed": 0,
+        "total": 6,
+        "failed_checks": [
+          "release_and_R_conflict_identified",
+          "valid_minimal_release_alignment",
+          "package_sources_and_pins",
+          "dependency_graph_constraints_satisfied",
+          "minimal_change_explained",
+          "official_evidence"
+        ],
+        "artifacts": {
+          "answer.json": "49d910178cbdd435466f6b42ce565225cf6b9fed8ceeaf7746d21f4ed48c6f77"
+        }
+      }
+    },
+    {
+      "trial_id": "E01-B-1",
+      "original": {
+        "status": "scored",
+        "passed": 0,
+        "total": 6,
+        "failed_checks": [
+          "release_and_R_conflict_identified",
+          "valid_minimal_release_alignment",
+          "package_sources_and_pins",
+          "dependency_graph_constraints_satisfied",
+          "minimal_change_explained",
+          "official_evidence"
+        ],
+        "artifacts": {
+          "answer.json": "1273bb5be6371c8655c4adccf2024410979582e0fb243ae8c426bf23038d7f6c"
+        }
+      },
+      "re_evaluated": {
+        "status": "scored",
+        "passed": 0,
+        "total": 6,
+        "failed_checks": [
+          "release_and_R_conflict_identified",
+          "valid_minimal_release_alignment",
+          "package_sources_and_pins",
+          "dependency_graph_constraints_satisfied",
+          "minimal_change_explained",
+          "official_evidence"
+        ],
+        "artifacts": {
+          "answer.json": "1273bb5be6371c8655c4adccf2024410979582e0fb243ae8c426bf23038d7f6c"
+        }
+      }
+    },
+    {
+      "trial_id": "E04-A-1",
+      "original": {
+        "status": "scored",
+        "passed": 0,
+        "total": 5,
+        "failed_checks": [
+          "package_sources",
+          "version_constraints",
+          "dependency_edge_reported",
+          "repository_aware_install",
+          "evidence_and_reasoning"
+        ],
+        "artifacts": {
+          "answer.json": "2ced9924359d4fcd2ff6811955a2caf71a4b4b72e255bcba0fcfa4f037736116"
+        }
+      },
+      "re_evaluated": {
+        "status": "scored",
+        "passed": 0,
+        "total": 5,
+        "failed_checks": [
+          "package_sources",
+          "version_constraints",
+          "dependency_edge_reported",
+          "repository_aware_install",
+          "evidence_and_reasoning"
+        ],
+        "artifacts": {
+          "answer.json": "2ced9924359d4fcd2ff6811955a2caf71a4b4b72e255bcba0fcfa4f037736116"
+        }
+      }
+    },
+    {
+      "trial_id": "E04-B-1",
+      "original": {
+        "status": "scored",
+        "passed": 1,
+        "total": 5,
+        "failed_checks": [
+          "package_sources",
+          "dependency_edge_reported",
+          "repository_aware_install",
+          "evidence_and_reasoning"
+        ],
+        "artifacts": {
+          "answer.json": "91de870d8172e7781e0ec94a0d4593b191e6f2510dcd00816cf8b5c9ec4eb8cd"
+        }
+      },
+      "re_evaluated": {
+        "status": "scored",
+        "passed": 1,
+        "total": 5,
+        "failed_checks": [
+          "package_sources",
+          "dependency_edge_reported",
+          "repository_aware_install",
+          "evidence_and_reasoning"
+        ],
+        "artifacts": {
+          "answer.json": "91de870d8172e7781e0ec94a0d4593b191e6f2510dcd00816cf8b5c9ec4eb8cd"
+        }
+      }
+    },
+    {
+      "trial_id": "E05-A-1",
+      "original": {
+        "status": "scored",
+        "passed": 1,
+        "total": 5,
+        "failed_checks": [
+          "verified_positive",
+          "verified_negative",
+          "unknown_not_overclaimed",
+          "official_evidence"
+        ],
+        "artifacts": {
+          "answer.json": "7afbcadb67208102c4e6f35458dd601631258a83146520a636114c6c8f565ab0"
+        }
+      },
+      "re_evaluated": {
+        "status": "scored",
+        "passed": 1,
+        "total": 5,
+        "failed_checks": [
+          "verified_positive",
+          "verified_negative",
+          "unknown_not_overclaimed",
+          "official_evidence"
+        ],
+        "artifacts": {
+          "answer.json": "7afbcadb67208102c4e6f35458dd601631258a83146520a636114c6c8f565ab0"
+        }
+      }
+    },
+    {
+      "trial_id": "E05-B-1",
+      "original": {
+        "status": "scored",
+        "passed": 1,
+        "total": 5,
+        "failed_checks": [
+          "verified_positive",
+          "verified_negative",
+          "unknown_not_overclaimed",
+          "official_evidence"
+        ],
+        "artifacts": {
+          "answer.json": "65e1aa24cbb2e3b18a8c77bc45c30c5673de15c9716d760347c8c3d8c0a583b1"
+        }
+      },
+      "re_evaluated": {
+        "status": "scored",
+        "passed": 1,
+        "total": 5,
+        "failed_checks": [
+          "verified_positive",
+          "verified_negative",
+          "unknown_not_overclaimed",
+          "official_evidence"
+        ],
+        "artifacts": {
+          "answer.json": "65e1aa24cbb2e3b18a8c77bc45c30c5673de15c9716d760347c8c3d8c0a583b1"
+        }
+      }
+    }
+  ],
+  "all_match": true
+}

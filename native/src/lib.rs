@@ -33,6 +33,7 @@ struct Token {
     line: usize,
 }
 
+#[derive(Debug)]
 enum ScanError {
     /// Python's `KnowledgeError("invalid_r_syntax", message)`.
     Syntax(String),
@@ -433,6 +434,12 @@ fn scan(chars: &[char]) -> Result<Vec<CallRecord>, ScanError> {
 /// raises `ValueError(code, message)` for R syntax errors.
 #[pyfunction]
 fn scan_calls<'py>(py: Python<'py>, source: String) -> PyResult<Option<Bound<'py, PyList>>> {
+    if source.len() > 256 << 10 {
+        return Err(PyValueError::new_err((
+            "input_too_large",
+            "R source exceeds 256 KiB",
+        )));
+    }
     let result = py.detach(move || {
         let chars: Vec<char> = source.chars().collect();
         scan(&chars)
@@ -572,4 +579,66 @@ fn cran_knowledge_native(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_function(wrap_pyfunction!(scan_calls, module)?)?;
     module.add_class::<SearchIndex>()?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn scan_source(source: &str) -> Result<Vec<CallRecord>, ScanError> {
+        scan(&source.chars().collect::<Vec<_>>())
+    }
+
+    #[test]
+    fn namespace_literals_methods_and_imports_keep_exact_arguments() {
+        let calls = scan_source(
+            "export(select, \"données\")\nimportFrom(OtherPkg, delegated)\n\
+             S3method(print, Widget)\nexportMethods(show)\n",
+        )
+        .unwrap();
+        assert_eq!(calls.len(), 4);
+        assert_eq!(calls[0].0, "export");
+        assert_eq!(calls[0].4[1].1, "\"données\"");
+        assert_eq!(calls[1].4[0].1, "OtherPkg");
+        assert_eq!(calls[2].0, "S3method");
+        assert_eq!(calls[3].0, "exportMethods");
+        assert!(calls.iter().all(|call| call.5.is_none()));
+    }
+
+    #[test]
+    fn dynamic_namespace_calls_are_not_executed_and_remain_visible() {
+        let source = "if (TRUE) { export(hidden) }\nexport(get('dynamic'))";
+        let calls = scan_source(source).unwrap();
+        assert!(calls.iter().any(|call| call.0 == "if"));
+        assert!(calls
+            .iter()
+            .any(|call| call.0 == "get" && call.5.as_deref() == Some("export")));
+        let real = calls.iter().find(|call| call.0 == "export").unwrap();
+        let chars: Vec<char> = source.chars().collect();
+        assert_eq!(
+            chars[real.1..real.2].iter().collect::<String>(),
+            "export(hidden)"
+        );
+    }
+
+    #[test]
+    fn malformed_input_returns_syntax_error_and_unicode_code_defers() {
+        for source in ["export(", "export('unclosed)", "export(a])"] {
+            assert!(matches!(scan_source(source), Err(ScanError::Syntax(_))));
+        }
+        assert!(matches!(
+            scan_source("export(données)"),
+            Err(ScanError::NeedsPython)
+        ));
+    }
+
+    #[test]
+    fn namespace_scanning_is_deterministic_and_argument_copies_are_bounded() {
+        let source = format!("export(\"{}\")", "a".repeat(4000));
+        let a = scan_source(&source).unwrap();
+        let b = scan_source(&source).unwrap();
+        assert_eq!(a, b);
+        assert!(a[0].4[0].1.chars().count() < 2100);
+        assert!(a[0].4[0].1.ends_with(TRUNCATED_SUFFIX));
+    }
 }

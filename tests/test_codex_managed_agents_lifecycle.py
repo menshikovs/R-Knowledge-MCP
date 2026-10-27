@@ -4,6 +4,7 @@ import importlib.util
 import os
 import shutil
 import subprocess
+import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -465,6 +466,10 @@ def test_live_mode_rejects_synthetic_client_before_authorization(tmp_path):
         )
 
 
+@pytest.mark.skipif(
+    sys.platform != "linux",
+    reason="The live lifecycle gate requires private Linux evidence storage",
+)
 def test_live_mode_rejects_closed_attempt_before_gates_or_external_effects(tmp_path):
     controller, client, runtime, topology, ledger, leases = make_controller(tmp_path)
     client.synthetic = False

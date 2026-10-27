@@ -1,0 +1,2476 @@
+{
+  "schema_version": 1,
+  "registry": "r-agent-benchmark-expansion",
+  "registry_version": "1.0.0",
+  "source_manifest": "benchmark_expansion_sources/SOURCE_MANIFEST.json",
+  "source_specification_count": 148,
+  "existing_pilot_environment": {
+    "r": "4.5.2",
+    "bioconductor": "3.22",
+    "lockfile": "configs/renv.lock",
+    "ggplot2": "4.0.3"
+  },
+  "known_source_version_gaps": [
+    {
+      "source_requirement": "R 4.6 with stable Bioconductor 3.23",
+      "affected_tasks": [
+        "ADDON-C09"
+      ],
+      "existing_pilot": "R 4.5.2 with Bioconductor 3.22"
+    },
+    {
+      "source_requirement": "ggplot2 4.0.0",
+      "affected_tasks": [
+        "ECO-GP01",
+        "ECO-GP02",
+        "ADDON-C02"
+      ],
+      "existing_pilot": "ggplot2 4.0.3"
+    }
+  ],
+  "legacy_r01_r12_crosswalk": [
+    {
+      "task_id": "R01",
+      "area": "Base R validation",
+      "spec": "tasks/R01/task.md",
+      "thematic_source_candidates": [
+        "GGP-P01"
+      ],
+      "deduplication_status": "not_verified; thematic links are not duplicates"
+    },
+    {
+      "task_id": "R02",
+      "area": "Grouped sales",
+      "spec": "tasks/R02/task.md",
+      "thematic_source_candidates": [
+        "ECO-T01"
+      ],
+      "deduplication_status": "not_verified; thematic links are not duplicates"
+    },
+    {
+      "task_id": "R03",
+      "area": "Malformed typed CSV",
+      "spec": "tasks/R03/task.md",
+      "thematic_source_candidates": [
+        "ECO-V03",
+        "ADDON-B02"
+      ],
+      "deduplication_status": "not_verified; thematic links are not duplicates"
+    },
+    {
+      "task_id": "R04",
+      "area": "Grouped logarithmic plot",
+      "spec": "tasks/R04/task.md",
+      "thematic_source_candidates": [
+        "GGP-R02"
+      ],
+      "deduplication_status": "not_verified; thematic links are not duplicates"
+    },
+    {
+      "task_id": "R05",
+      "area": "Irregular visits",
+      "spec": "tasks/R05/task.md",
+      "thematic_source_candidates": [
+        "GGP-T05"
+      ],
+      "deduplication_status": "not_verified; thematic links are not duplicates"
+    },
+    {
+      "task_id": "R06",
+      "area": "Parameterized account lookup",
+      "spec": "tasks/R06/task.md",
+      "thematic_source_candidates": [],
+      "deduplication_status": "not_verified; thematic links are not duplicates"
+    },
+    {
+      "task_id": "R07",
+      "area": "Safe SQL aggregation",
+      "spec": "tasks/R07/task.md",
+      "thematic_source_candidates": [
+        "HARD-H06"
+      ],
+      "deduplication_status": "not_verified; thematic links are not duplicates"
+    },
+    {
+      "task_id": "R08",
+      "area": "Shiny reactive filtering",
+      "spec": "tasks/R08/task.md",
+      "thematic_source_candidates": [
+        "ADDON-B08"
+      ],
+      "deduplication_status": "not_verified; thematic links are not duplicates"
+    },
+    {
+      "task_id": "R09",
+      "area": "Reusable Shiny module",
+      "spec": "tasks/R09/task.md",
+      "thematic_source_candidates": [
+        "ECO-SH03"
+      ],
+      "deduplication_status": "not_verified; thematic links are not duplicates"
+    },
+    {
+      "task_id": "R10",
+      "area": "Local reproducible Quarto report",
+      "spec": "tasks/R10/task.md",
+      "thematic_source_candidates": [
+        "GGP-K01",
+        "GGP-K03"
+      ],
+      "deduplication_status": "not_verified; thematic links are not duplicates"
+    },
+    {
+      "task_id": "R11",
+      "area": "Pinned Bioconductor interval summary",
+      "spec": "tasks/R11/task.md",
+      "thematic_source_candidates": [],
+      "deduplication_status": "not_verified; thematic links are not duplicates"
+    },
+    {
+      "task_id": "R12",
+      "area": "CSV to validated reporting workflow",
+      "spec": "tasks/R12/task.md",
+      "thematic_source_candidates": [
+        "GGP-K03"
+      ],
+      "deduplication_status": "not_verified; thematic links are not duplicates"
+    }
+  ],
+  "suites": [
+    {
+      "suite": "beginner",
+      "prefix": "BEGINNER",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "specification_count": 20
+    },
+    {
+      "suite": "ggplot",
+      "prefix": "GGP",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "specification_count": 41
+    },
+    {
+      "suite": "ecosystem",
+      "prefix": "ECO",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "specification_count": 37
+    },
+    {
+      "suite": "ecosystem_addon",
+      "prefix": "ADDON",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "specification_count": 25
+    },
+    {
+      "suite": "anova",
+      "prefix": "ANOVA",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "specification_count": 15
+    },
+    {
+      "suite": "hard_blueprint",
+      "prefix": "HARD",
+      "source_document": "blueprints/R_Knowledge_MCP_Hard_Benchmark_v1.md",
+      "source_sha256": "a62fc7793d930fba24d34c0a5fc4826122b0843828c31225b41df501e4b195ea",
+      "specification_count": 10
+    }
+  ],
+  "tasks": [
+    {
+      "id": "BEGINNER-001",
+      "suite": "beginner",
+      "source_id": "01",
+      "title": "Addition",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-001 — Addition\n\n1. **Addition:** Create `a <- 10` and `b <- 5`. Print their sum.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-002",
+      "suite": "beginner",
+      "source_id": "02",
+      "title": "Rectangle area",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-002 — Rectangle area\n\n2. **Rectangle area:** Create `width <- 8` and `height <- 4`. Calculate and print the rectangle's area.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-003",
+      "suite": "beginner",
+      "source_id": "03",
+      "title": "Arithmetic mean",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-003 — Arithmetic mean\n\n3. **Arithmetic mean:** Calculate and print the mean of 10, 20, and 30.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-004",
+      "suite": "beginner",
+      "source_id": "04",
+      "title": "Temperature conversion",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-004 — Temperature conversion\n\n4. **Temperature conversion:** Set `celsius <- 25`. Convert it to Fahrenheit using `F = C * 1.8 + 32` and print the result.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-005",
+      "suite": "beginner",
+      "source_id": "05",
+      "title": "String concatenation",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-005 — String concatenation\n\n5. **String concatenation:** Set `name <- \"Alex\"`. Use `paste()` to produce the exact string `\"Hello, Alex!\"` and print it.\n\n### Level 2 — Vectors\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-006",
+      "suite": "beginner",
+      "source_id": "06",
+      "title": "Create a vector",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-006 — Create a vector\n\n6. **Create a vector:** Create a vector `x` containing the integers from 1 through 10 and print it.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-007",
+      "suite": "beginner",
+      "source_id": "07",
+      "title": "Vector sum",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-007 — Vector sum\n\n7. **Vector sum:** For `x <- c(5, 10, 15, 20, 25)`, print the sum of all elements.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-008",
+      "suite": "beginner",
+      "source_id": "08",
+      "title": "Maximum and minimum",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-008 — Maximum and minimum\n\n8. **Maximum and minimum:** For `x <- c(12, 5, 8, 21, 3, 17)`, print the maximum and minimum values.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-009",
+      "suite": "beginner",
+      "source_id": "09",
+      "title": "Average grade",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-009 — Average grade\n\n9. **Average grade:** For `grades <- c(7, 8, 6, 9, 10)`, print the mean grade.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-010",
+      "suite": "beginner",
+      "source_id": "10",
+      "title": "Vector filtering",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-010 — Vector filtering\n\n10. **Vector filtering:** For `x <- c(3, 12, 7, 18, 5, 20)`, print only values strictly greater than 10, preserving their original order.\n\n### Level 3 — Conditions and Loops\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-011",
+      "suite": "beginner",
+      "source_id": "11",
+      "title": "Positive number",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-011 — Positive number\n\n11. **Positive number:** Set `x <- 15`. Use `if`/`else` to print `\"positive\"` if `x > 0`, or `\"non-positive\"` otherwise.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-012",
+      "suite": "beginner",
+      "source_id": "12",
+      "title": "Even or odd",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-012 — Even or odd\n\n12. **Even or odd:** Set `x <- 8`. Use `%%` and `if`/`else` to print `\"even\"` or `\"odd\"`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-013",
+      "suite": "beginner",
+      "source_id": "13",
+      "title": "Age check",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-013 — Age check\n\n13. **Age check:** Set `age <- 17`. Use `if`/`else` to print `\"Adult\"` if `age >= 18`, or `\"Minor\"` otherwise.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-014",
+      "suite": "beginner",
+      "source_id": "14",
+      "title": "Counting loop",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-014 — Counting loop\n\n14. **Counting loop:** Use a `for` loop to print the integers from 1 through 10, one per iteration.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-015",
+      "suite": "beginner",
+      "source_id": "15",
+      "title": "Squares loop",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-015 — Squares loop\n\n15. **Squares loop:** Use a `for` loop to print the squares of the integers from 1 through 5, one per iteration.\n\n### Level 4 — Functions and Data Frames\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-016",
+      "suite": "beginner",
+      "source_id": "16",
+      "title": "Square function",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-016 — Square function\n\n16. **Square function:** Define `square(x)` to return the square of its argument. Demonstrate it with `square(4)`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-017",
+      "suite": "beginner",
+      "source_id": "17",
+      "title": "Addition function",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-017 — Addition function\n\n17. **Addition function:** Define `add(a, b)` to return the sum of its arguments. Demonstrate it with `add(3, 5)`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-018",
+      "suite": "beginner",
+      "source_id": "18",
+      "title": "Create a data frame",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-018 — Create a data frame\n\n18. **Create a data frame:** Create and print a `data.frame` with columns `Name` and `Age` and the following rows, in order: Anna/20, Mark/22, John/19.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-019",
+      "suite": "beginner",
+      "source_id": "19",
+      "title": "Filter a data frame",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-019 — Filter a data frame\n\n19. **Filter a data frame:** Given the data frame below, print only rows where `age > 20`, preserving row order and both columns:\n\n    ```r\n    df <- data.frame(\n      name = c(\"Anna\", \"Mark\", \"John\", \"Lisa\"),\n      age = c(20, 25, 18, 30)\n    )\n    ```\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "BEGINNER-020",
+      "suite": "beginner",
+      "source_id": "20",
+      "title": "Line plot",
+      "source_document": "public/README_TEST.md",
+      "source_sha256": "2357b942172a8c79abb86ce5924d254972e15f690c48b4ae10197b0dd103bcb5",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BEGINNER-020 — Line plot\n\n20. **Line plot:** Given `x <- c(1, 2, 3, 4, 5)` and `y <- c(2, 4, 6, 8, 10)`, create a line plot using `plot()` with a nonempty title and nonempty labels for both axes.\n\n## Scoring Rules\n\n- **1 point:** The R code executes successfully, follows the explicitly requested approach, and produces the correct result.\n- **0 points:** The code fails, produces an incorrect result, or violates an explicitly required approach.\n- Accept semantically equivalent correct solutions; do not require an exact code match.\n- For tasks 14–15, verify the sequence of printed values rather than the specific printing function.\n- For task 20, require a line plot (`type = \"l\"` or an equivalent line drawn using `plot()`) and nonempty `main`, `xlab`, and `ylab` labels.\n- Evaluate the submitted executable code, not claims made in comments.\n\n**Benchmark integrity:** Keep `README_ANSWERS.md` private during model evaluation.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "GGP-B01",
+      "suite": "ggplot",
+      "source_id": "B01",
+      "title": "Scatter plot и общая регрессия",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### B01 — Scatter plot и общая регрессия\nПостройте `x` против `y`. Окрасьте точки по `group`, сделайте полупрозрачными (`alpha = 0.55`), добавьте **одну общую** линию линейной регрессии со стандартным 95% доверительным интервалом. Названия осей — `X` и `Y`; легенды — `Группа`. Пропущенные `y` не должны приводить к падению кода.\n\n**Приёмка:** четыре цвета для групп; **одна**, а не четыре регрессионные линии; CI видим; объект `p`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-B02",
+      "suite": "ggplot",
+      "source_id": "B02",
+      "title": "Состав регионов в процентах",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### B02 — Состав регионов в процентах\nСоздайте составную столбиковую диаграмму по `region`, где заливка обозначает `segment`, а **каждый столбец нормирован на 100%**. Подпишите вертикальную ось в процентах и добавьте заголовок.\n\n**Приёмка:** одинаковая высота столбцов; доли по каждому региону суммируются в 1; график не использует суммы по `value`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-B03",
+      "suite": "ggplot",
+      "source_id": "B03",
+      "title": "Временной ряд ежедневных средних",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### B03 — Временной ряд ежедневных средних\nРассчитайте среднее `score` по каждой наблюдаемой дате `day` и визуализируйте линией с точками. Даты должны идти по возрастанию. Добавьте горизонтальную линию на уровне **общего среднего `score` по исходному `df`**.\n\n**Приёмка:** одна точка на наблюдаемую дату; корректная средняя по исходным строкам; временная ось типа `Date`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-B04",
+      "suite": "ggplot",
+      "source_id": "B04",
+      "title": "Сопоставимые гистограммы",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### B04 — Сопоставимые гистограммы\nПостройте гистограммы `x` отдельно для каждой `group` в 4 панелях (`facet_wrap`). Используйте **одинаковую ширину бина `0.4` и одинаковые масштабы осей** для всех панелей. Добавьте тонкую вертикальную линию в нуле.\n\n**Приёмка:** 4 панели, общие масштабы, одинаковое разбиение на бины.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-B05",
+      "suite": "ggplot",
+      "source_id": "B05",
+      "title": "Bubble plot",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### B05 — Bubble plot\nПокажите зависимость `score` от `x`. Размер точек кодирует **положительное** `value`, цвет — `segment`. Используйте `scale_size_area(max_size = 8)`, прозрачность `0.5` и подписи обеих легенд. Строки с отсутствующим `value` не должны отображаться.\n\n**Приёмка:** размер **по площади**, а не по радиусу; три категории цветов; нет предупреждения о невалидных размерах.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-X01",
+      "suite": "ggplot",
+      "source_id": "X01",
+      "title": "Boxplot + jitter",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### X01 — Boxplot + jitter\nВизуализируйте `y` по `group`, совместив boxplot и полупрозрачные jitter-точки. Используйте ширину jitter `0.12`; скрывайте точки-выбросы самого слоя boxplot, чтобы не показывать их дважды.\n\n**Приёмка:** сами наблюдения видимы; NA в `y` исключаются только из графика; порядок A–D.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-X02",
+      "suite": "ggplot",
+      "source_id": "X02",
+      "title": "Отметка выбросов по правилу 1.5×IQR",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### X02 — Отметка выбросов по правилу 1.5×IQR\nДля каждой группы рассчитайте Q1, Q3 и IQR для непустых `y`. Создайте boxplot и отдельно выделите **красным** фактические наблюдения за пределами `[Q1−1.5 IQR, Q3+1.5 IQR]`. В легенде не должно быть дублирующихся записей.\n\n**Приёмка:** определение выбросов реализовано явно в коде; значения с NA пропущены; численность выделенных точек воспроизводима.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-X03",
+      "suite": "ggplot",
+      "source_id": "X03",
+      "title": "Boxplot с сортировкой по медиане",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### X03 — Boxplot с сортировкой по медиане\nПостройте горизонтальные boxplot `score` по `group`; категории отсортированы **по убыванию медианы сверху вниз**. Добавьте вертикальную пунктирную линию на уровне общей медианы `score`.\n\n**Приёмка:** порядок вычислен из данных, не прописан вручную; корректная общая медиана.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-R01",
+      "suite": "ggplot",
+      "source_id": "R01",
+      "title": "Плотности по группам",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### R01 — Плотности по группам\nСоздайте ridgeline-график распределений `score` для A–D через `ggridges::geom_density_ridges()`. Используйте заливку по группе, прозрачность `0.7`, масштаб высот `scale = 1.1`; легенду заливки отключите.\n\n**Приёмка:** 4 распределения, порядок факторов A–D, нет использования `geom_violin()` вместо ridgelines.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-R02",
+      "suite": "ggplot",
+      "source_id": "R02",
+      "title": "Логарифмическая шкала и фасеты",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### R02 — Логарифмическая шкала и фасеты\nПостройте ridgeline-плотности **положительного** `value` по `segment`, отдельно для `region`. Примените логарифмическую шкалу X, отображайте три панели регионов и отключите легенду заливки.\n\n**Приёмка:** логарифмическая шкала настоящая (`scale_x_log10()`); пропуски `value` исключены; положительность значений проверена.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-E01",
+      "suite": "ggplot",
+      "source_id": "E01",
+      "title": "Отображаются строки вместо столбцов",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### E01 — Отображаются строки вместо столбцов\n```r\np <- ggplot(df, aes(x = \"x\", y = \"y\")) + geom_point()\n```\n**Цель:** точки из числовых столбцов `x`, `y`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-E02",
+      "suite": "ggplot",
+      "source_id": "E02",
+      "title": "Неправильная геометрия для категорий",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### E02 — Неправильная геометрия для категорий\n```r\np <- ggplot(df, aes(x = region)) + geom_histogram(bins = 12)\n```\n**Цель:** абсолютное количество наблюдений в каждом регионе.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-E03",
+      "suite": "ggplot",
+      "source_id": "E03",
+      "title": "Неподходящая цветовая шкала",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### E03 — Неподходящая цветовая шкала\n```r\np <- ggplot(df, aes(x, score, colour = group)) +\n  geom_point() + scale_colour_continuous()\n```\n**Цель:** категориальная легенда для четырёх групп.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-E04",
+      "suite": "ggplot",
+      "source_id": "E04",
+      "title": "Соединение строк в случайном порядке",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### E04 — Соединение строк в случайном порядке\n```r\na <- aggregate(score ~ day, df, mean)\nset.seed(304)\na <- a[sample.int(nrow(a)), ]  # намеренно перемешано\np <- ggplot(a, aes(day, score)) + geom_path()\n```\n**Цель:** корректный график времени, соединённый от ранних дат к поздним.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-E05",
+      "suite": "ggplot",
+      "source_id": "E05",
+      "title": "Среднее становится NA",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### E05 — Среднее становится NA\n```r\nm <- aggregate(y ~ group, df, function(z) mean(z, na.rm = FALSE),\n               na.action = na.pass)\np <- ggplot(m, aes(group, y)) + geom_col()\n```\n**Цель:** действительные средние `y` по всем четырём группам.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-E06",
+      "suite": "ggplot",
+      "source_id": "E06",
+      "title": "Нельзя совместить stat_count и y",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### E06 — Нельзя совместить stat_count и y\n```r\np <- ggplot(df, aes(group, y)) + geom_bar()\n```\n**Цель:** столбцы **среднего `y`** по группе (не числа строк).\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-E07",
+      "suite": "ggplot",
+      "source_id": "E07",
+      "title": "Числовые группы становятся одной коробкой",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### E07 — Числовые группы становятся одной коробкой\n```r\np <- ggplot(df, aes(x = as.integer(group), y = score)) +\n  geom_boxplot()\n```\n**Цель:** четыре отдельных boxplot для групп A–D.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-E08",
+      "suite": "ggplot",
+      "source_id": "E08",
+      "title": "Логарифмирование переменной, способной быть неположительной",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### E08 — Логарифмирование переменной, способной быть неположительной\n```r\np <- ggplot(df, aes(x, x)) + geom_point() + scale_y_log10()\n```\n**Цель:** показать **все конечные значения** `x` по обеим осям, включая отрицательные и нули, без потери по причине логарифма.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-E09",
+      "suite": "ggplot",
+      "source_id": "E09",
+      "title": "Ручная палитра для непрерывной величины",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### E09 — Ручная палитра для непрерывной величины\n```r\np <- ggplot(df, aes(x, score, colour = score)) +\n  geom_point() + scale_colour_manual(values = c(\"red\", \"blue\"))\n```\n**Цель:** непрерывная цветовая шкала величины `score`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-E10",
+      "suite": "ggplot",
+      "source_id": "E10",
+      "title": "Ошибка единиц экспорта",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### E10 — Ошибка единиц экспорта\n```r\np <- ggplot(df, aes(x, score)) + geom_point()\nggsave(\"plot.png\", plot = p, width = 1200, height = 800,\n       units = \"in\", dpi = 100)\n```\n**Цель:** PNG ровно **1200×800 пикселей** при 100 DPI, без создания гигантского файла.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-T01",
+      "suite": "ggplot",
+      "source_id": "T01",
+      "title": "Полный календарь с пропусками дат",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### T01 — Полный календарь с пропусками дат\nПостройте временной ряд среднего `score` на **каждую дату** от минимальной до максимальной `day`. Если для какой-то даты наблюдений нет, оставьте `NA` (не подставляйте нуль и не интерполируйте). Для графика используйте `geom_line()` и точки для доступных средних.\n\n**Приёмка:** в таблице агрегации присутствуют и отсутствующие даты; между двумя датами с пропущенным значением линия не должна искусственно заполнять дыру.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-T02",
+      "suite": "ggplot",
+      "source_id": "T02",
+      "title": "Медиана и межквартильный диапазон",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### T02 — Медиана и межквартильный диапазон\nДля каждой комбинации `group × region` рассчитайте Q1, медиану и Q3 по `y`, исключив NA; покажите точку медианы и вертикальный отрезок `[Q1,Q3]`. На X расположите `group`, на панели разделите `region`.\n\n**Приёмка:** максимум 12 комбинаций; числовые границы рассчитаны вручную; нет доверительных интервалов вместо IQR.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-T03",
+      "suite": "ggplot",
+      "source_id": "T03",
+      "title": "Два наиболее частых сегмента в каждой группе",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### T03 — Два наиболее частых сегмента в каждой группе\nПосчитайте наблюдения по `group × segment`, выберите **ровно два** самых многочисленных сегмента в каждой группе. При равенстве частот выбирайте сегменты по алфавиту. Покажите горизонтальную столбиковую диаграмму по четырём фасетам `group`.\n\n**Приёмка:** ровно 8 столбцов; определённое правило tie-break; сортировка зависит от данных.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-T04",
+      "suite": "ggplot",
+      "source_id": "T04",
+      "title": "Heatmap внутригрупповых долей",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### T04 — Heatmap внутригрупповых долей\nПостройте матрицу долей `region` внутри каждой `group`: сумма по регионам каждой группы должна быть 100%. Нарисуйте `geom_tile()`, а на каждой плитке напечатайте процент с одним знаком после запятой.\n\n**Приёмка:** `4×3` плитки, явная нормировка **по группе**, корректные текстовые подписи.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-T05",
+      "suite": "ggplot",
+      "source_id": "T05",
+      "title": "Преобразование wide → long и z-score",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### T05 — Преобразование wide → long и z-score\nПревратите столбцы `x` и `score` в длинный формат со столбцами `metric`, `raw_value`. Для каждой пары `group × metric` вычислите `z = (raw_value − mean) / sd` с выборочным SD и покажите boxplot `z` для четырёх групп в двух панелях по `metric`.\n\n**Приёмка:** 960 строк до фильтрации; для каждой пары среднее z ≈ 0, SD z ≈ 1; исходный `df` неизменен.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-P01",
+      "suite": "ggplot",
+      "source_id": "P01",
+      "title": "Корректная фильтрация NA",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### P01 — Корректная фильтрация NA\nПостройте scatter plot `x` против `y` только для групп B и C. Удаляйте лишь те строки, где `x` или `y` не являются конечными; отсутствие значения `value` не должно исключать строку. Добавьте линейную регрессию.\n\n**Приёмка:** фильтр `is.finite()` только по нужным переменным; число использованных строк проверяемо.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-P02",
+      "suite": "ggplot",
+      "source_id": "P02",
+      "title": "Один миллион наблюдений",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### P02 — Один миллион наблюдений\nС seed `902` создайте `big` с `n = 1000000`, `x = rnorm(n)`, `y = 0.6*x + rnorm(n, sd=0.8)`. Покажите двумерную плотность через 2D-бины (`stat_bin_2d`, 80 бинов), **без миллиона отдельных точек**. Сохраните PNG `big_density.png` размером 1600×1000 px при 100 DPI.\n\n**Приёмка:** все миллион записей участвуют в биннинге, нет слоя из миллиона `geom_point`, правильный размер PNG.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-P03",
+      "suite": "ggplot",
+      "source_id": "P03",
+      "title": "Пустая таблица без ошибок",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### P03 — Пустая таблица без ошибок\nНапишите функцию `plot_group_medians(data)`. Для обычного `data` с `group`, `y` она рисует медиану непустых конечных `y` по группам. Для пустого входа (0 строк), полностью отсутствующих конечных `y`, а также отсутствующих столбцов выдаёт **осмысленное пустое изображение**, а не ошибку.\n\n**Приёмка:** все 4 вызова возвращают объект `ggplot`: `df`, `df[0, ]`, `transform(df, y = NA_real_)`, `data.frame(other = 1:3)`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-P04",
+      "suite": "ggplot",
+      "source_id": "P04",
+      "title": "Необычные имена колонок",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### P04 — Необычные имена колонок\nСоздайте таблицу `odd` с точными именами столбцов `reading (°C)` и `rate %` (`check.names = FALSE`); значения возьмите соответственно из `df$x` и `df$score`. Постройте scatter plot, используя программный доступ к именам (`.data[[...]]`), не переименовывая исходные колонки.\n\n**Приёмка:** отсутствие ошибок парсинга и неявной замены названий; правильные подписи осей.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-P05",
+      "suite": "ggplot",
+      "source_id": "P05",
+      "title": "Неиспользуемый уровень категории",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### P05 — Неиспользуемый уровень категории\nПостройте столбики численностей `group` для **полного** набора уровней `A, B, C, D, E`, хотя `E` отсутствует в наблюдениях. Для `E` должен быть нулевой столбец или обозначенная категория с нулём.\n\n**Приёмка:** на оси X виден `E`; не удаляется нулевой уровень; численности A–D неизменны.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-N01",
+      "suite": "ggplot",
+      "source_id": "N01",
+      "title": "Сравнение разных единиц без ложной второй оси",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### N01 — Сравнение разных единиц без ложной второй оси\nПо каждой дате вычислите средние `y` и `score`; приведите **каждый временной ряд по отдельности** к z-score (по доступным датам) и покажите две линии на общей оси стандартизованных величин. Избегайте `sec_axis()`.\n\n**Приёмка:** корректное отдельное масштабирование; две линии и легенда; значение z≈0 в среднем у каждого ряда.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-N02",
+      "suite": "ggplot",
+      "source_id": "N02",
+      "title": "Donut chart",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### N02 — Donut chart\nСоздайте кольцевую диаграмму распределения `group` с **истинными** долями наблюдений. Центральная область должна оставаться пустой, рядом с категориями покажите проценты в легенде. Используйте `coord_polar()` без внешних пакетов.\n\n**Приёмка:** четыре сектора, доли суммируются в 100%, середина пустая.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-N03",
+      "suite": "ggplot",
+      "source_id": "N03",
+      "title": "Подпись выбросов по MAD",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### N03 — Подпись выбросов по MAD\nНайдите по всему `df` медиану `y` и масштабированное `stats::mad(y, constant=1.4826)`. Считайте аномалиями наблюдения с `abs(y − median) > 3*MAD`. Создайте scatter `x` vs `y`, выделите аномалии красным и подпишите их `id`.\n\n**Приёмка:** воспроизводимый список аномалий, реальный MAD (не SD), подписи только нужных строк.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-N04",
+      "suite": "ggplot",
+      "source_id": "N04",
+      "title": "Bootstrap CI для среднего",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### N04 — Bootstrap CI для среднего\nДля каждой `group` оцените среднее `score` и двухсторонний **percentile bootstrap 95% CI**: 300 повторов, выборка с возвращением размера группы, один seed `404` до начала всего bootstrap. Покажите среднее и вертикальный интервал.\n\n**Приёмка:** 300 повторов на группу; границы — эмпирические квантили 0.025 и 0.975; обычный t-интервал не подходит.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-N05",
+      "suite": "ggplot",
+      "source_id": "N05",
+      "title": "ECDF вручную с 90-м процентилем",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### N05 — ECDF вручную с 90-м процентилем\nДля групп A и C постройте отдельные эмпирические функции распределения `score` как ступенчатые кривые, **без `stat_ecdf()`**. Отметьте вертикальными пунктирными линиями 90-й процентиль каждой группы. Используйте два фасета.\n\n**Приёмка:** по возрастанию `score`, шаг `1/n`, итоговая высота 1; перцентиль рассчитан по фактическим данным.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-K01",
+      "suite": "ggplot",
+      "source_id": "K01",
+      "title": "Самодостаточный HTML-отчёт",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### K01 — Самодостаточный HTML-отчёт\nНапишите `k01.Rmd`, который создает данные внутри документа с seed `1101`, `n=160`, `x=rnorm(n)`, `y=2*x+rnorm(n)`, и строит scatter с регрессией. Заголовок HTML — «Диагностика связи»; R-код графика должен быть скрыт (`echo=FALSE`), но сам график виден; подпись рисунка и размеры `7×4` дюйма должны быть заданы через chunk options.\n\n**Приёмка:** `rmarkdown::render(\"k01.Rmd\")` создаёт HTML; результат не зависит от переменных глобальной среды.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-K02",
+      "suite": "ggplot",
+      "source_id": "K02",
+      "title": "Параметризованный отчёт",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### K02 — Параметризованный отчёт\nНапишите `k02.Rmd` с YAML-параметром `chosen_group: \"B\"`. Внутри с seed `1102` создайте 240 наблюдений, `group=sample(c(\"A\",\"B\",\"C\"),240,TRUE)` и `measurement=rnorm(240, mean=match(group,c(\"A\",\"B\",\"C\")))`. График должен содержать **только** выбранную параметром группу и отображать её распределение `measurement` гистограммой. Выведите выбранную группу текстом в отчёте.\n\n**Приёмка:** рендер параметра `chosen_group=\"C\"` меняет график и заголовок без правки исходника; не используется глобальная среда.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-K03",
+      "suite": "ggplot",
+      "source_id": "K03",
+      "title": "Две диаграммы и два формата отчёта",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### K03 — Две диаграммы и два формата отчёта\nНапишите `k03.Rmd` с YAML, допускающим рендер в `html_document` и `md_document`. Создайте данные внутри документа с seed `1103`, `n=180`, `category=sample(LETTERS[1:3],n,TRUE)` и `val=rnorm(n)`. Покажите две диаграммы: столбики численностей `category` и boxplot `val` по `category`, с подписями и размерами фигур. Предоставьте две команды `rmarkdown::render(...)` для каждого формата.\n\n**Приёмка:** оба формата успешно рендерятся; никаких внешних изображений; обе диаграммы присутствуют.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-A01",
+      "suite": "ggplot",
+      "source_id": "A01",
+      "title": "Универсальная функция scatter plot",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### A01 — Универсальная функция scatter plot\nНапишите `plot_xy(data, x, y, color = NULL)`, где `x`, `y`, `color` — **строки** с именами столбцов. Функция должна проверять наличие колонок, что X и Y числовые, принимать имя цвета необязательным, возвращать `ggplot` и не использовать `aes_string()` или `eval(parse())`.\n\n**Приёмка:** `plot_xy(df,\"x\",\"score\",\"group\")` и `plot_xy(df,\"x\",\"y\")` работают; отсутствующая колонка и нечисловой X дают понятную ошибку.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-A02",
+      "suite": "ggplot",
+      "source_id": "A02",
+      "title": "Разделение преобразований и отображения",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### A02 — Разделение преобразований и отображения\nРеализуйте две функции: `summarise_daily(data)` возвращает `data.frame(day, mean_score, n_valid)` (одна строка на дату, NA в `score` игнорируются; при 0 валидных значений среднее = NA), а `plot_daily(summary_data)` только строит линию и точки из **готовой** сводки. Одна функция не должна делать работу другой.\n\n**Приёмка:** `summarise_daily(df)` без дубликатов дат; `plot_daily(summarise_daily(df))` возвращает ggplot; визуализация не вычисляет среднее повторно.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "GGP-A03",
+      "suite": "ggplot",
+      "source_id": "A03",
+      "title": "Композиция как переиспользуемый компонент",
+      "source_document": "public/ggplot_benchmark_tests.md",
+      "source_sha256": "d66458d3eb14ee320edf12c06426365b1b4a976768737231d7668bf8b97c6d14",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### A03 — Композиция как переиспользуемый компонент\nНапишите `build_dashboard(data, path)`, который проверяет колонки `group`, `x`, `score`, `value`, создаёт (1) scatter `x` vs `score` по цветам группы и (2) boxplot `value` по группе, объединяет панели с помощью `patchwork`, сохраняет PNG ровно `1400×700` px при `100 dpi`, возвращает список `plot`, `path`, `n_rows`. Функция должна быть повторно вызываемой и не полагаться на переменные из глобальной среды.\n\n**Приёмка:** `inherits(result$plot, \"patchwork\")`; `file.exists(result$path)`; `result$n_rows == nrow(df)`; понятная ошибка на отсутствии обязательной колонки.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source preparation states its solution examples were not executed; the pilot pins ggplot2 4.0.3, while version-specific source tasks require 4.0.0; rendering checks are absent."
+      ]
+    },
+    {
+      "id": "ECO-T01",
+      "suite": "ecosystem",
+      "source_id": "T01",
+      "title": "`{{ }}` и нестандартные имена столбцов",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### T01 — `{{ }}` и нестандартные имена столбцов\n**Тип:** исправление кода · **Приоритет MCP:** низкий\n\n**Промпт:**\n\nНапиши функцию `group_median(data, group, value)`, принимающую **некавыченные** имена столбцов. Функция должна группировать по `group`, возвращать столбцы группировки и `median_value`, считать медиану с `na.rm = TRUE` и не изменять вход. Используй tidy evaluation через `{{ }}`. Продемонстрируй на данных, где имя группирующего столбца содержит пробел:\n\n```r\nx <- data.frame(`risk band` = c(\"L\", \"L\", \"H\", \"H\"),\n                score = c(2, NA_real_, 5, 9), check.names = FALSE)\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-T02",
+      "suite": "ecosystem",
+      "source_id": "T02",
+      "title": "`.data[[...]]` и конфликт имён",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### T02 — `.data[[...]]` и конфликт имён\n**Тип:** исправление кода · **Приоритет MCP:** низкий\n\n**Промпт:**\n\nНапиши функцию `keep_above(data, column, threshold)`, где `column` — **строка** с именем столбца, в том числе нестандартным (`\"total cost\"`). Используй `.data[[column]]` внутри `dplyr::filter()`, не применяй `eval(parse())`. Данные:\n\n```r\ncolumn <- \"wrong column\"  # внешняя переменная, которую нельзя спутать со столбцом\nx <- data.frame(`total cost` = c(11, 25, NA, 40), id = letters[1:4], check.names = FALSE)\nkeep_above(x, \"total cost\", 20)\n```\n\nРезультат должен содержать `id` `b` и `d`, пропуски не должны включаться. Объясни область видимости `.data` и `.env`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-T03",
+      "suite": "ecosystem",
+      "source_id": "T03",
+      "title": "`enquo()` и передача выражения между функциями",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### T03 — `enquo()` и передача выражения между функциями\n**Тип:** исправление кода · **Приоритет MCP:** низкий\n\n**Промпт:**\n\nРеализуй две функции: `summarise_one(data, expr)` получает **некавыченное выражение**, например `price * qty`, а `summarise_wrapper(data, expr)` передаёт его в `summarise_one()`. Обе должны работать с `dplyr`; итог — один столбец `total` со суммой выражения (`na.rm = TRUE`). Используй `rlang::enquo()` и корректную передачу quosure, а не строковое преобразование. Покажи результат на:\n\n```r\nx <- data.frame(price = c(2, 4, 1), qty = c(3, 2, NA))\nsummarise_wrapper(x, price * qty)  # total = 14\n```\n\nОбъясни, на каком уровне происходит захват выражения и почему наивная вложенная передача может сломаться.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-T04",
+      "suite": "ecosystem",
+      "source_id": "T04",
+      "title": "`!!` для внедрения выражения",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### T04 — `!!` для внедрения выражения\n**Тип:** генерация кода · **Приоритет MCP:** низкий\n\n**Промпт:**\n\nЕсть заранее построенное выражение `predicate <- rlang::expr(revenue > 100 & segment != \"trial\")`. Напиши функцию `apply_predicate(data, predicate)` с `dplyr::filter()`, которая использует `!!` и корректно применяет выражение к данным. Проверь ожидаемые `id` на:\n\n```r\nx <- data.frame(id = 1:4, revenue = c(150, 200, 80, 110),\n                segment = c(\"paid\", \"trial\", \"paid\", \"paid\"))\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-T05",
+      "suite": "ecosystem",
+      "source_id": "T05",
+      "title": "`!!!` для динамического набора вычислений",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### T05 — `!!!` для динамического набора вычислений\n**Тип:** генерация кода · **Приоритет MCP:** низкий\n\n**Промпт:**\n\nНапиши функцию `summarise_with_exprs(data, specs)`, где `specs` — именованный список выражений `rlang::expr()`. Функция должна вычислять каждое выражение как отдельный столбец с переданным именем, используя `!!!` в `dplyr::summarise()`.\n\n```r\nx <- data.frame(x = c(1, 3, 5), y = c(2, 4, 6))\nspecs <- list(avg_x = rlang::expr(mean(x)), max_y = rlang::expr(max(y)))\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-DT01",
+      "suite": "ecosystem",
+      "source_id": "DT01",
+      "title": "Ключи, сортировка и соединение",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### DT01 — Ключи, сортировка и соединение\n**Тип:** объяснение + код · **Приоритет MCP:** средний\n\n**Промпт:**\n\nДаны две `data.table`:\n\n```r\nlibrary(data.table)\nx <- data.table(id = c(3L, 1L, 2L), value = c(\"c\", \"a\", \"b\"))\ny <- data.table(id = c(2L, 3L), flag = c(TRUE, FALSE))\n```\n\nПокажи: (1) как установить ключ по `id` и какое **побочное изменение порядка строк** может возникнуть; (2) как выполнить join, сохранив все строки `x`, и сделать порядок результата предсказуемым; (3) чем `setkey()` отличается от создания индекса и от `setorder()`. Различай поведение «по ссылке» и копирование.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-DT02",
+      "suite": "ecosystem",
+      "source_id": "DT02",
+      "title": "Обновление по ссылке в функции",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### DT02 — Обновление по ссылке в функции\n**Тип:** исправление ошибки · **Приоритет MCP:** средний\n\n**Промпт:**\n\n```r\nlibrary(data.table)\nDT <- data.table(id = 1:3, score = c(10, NA_real_, 30))\nfill_scores <- function(x) {\n  x[is.na(score), score := 0]\n  x\n}\nout <- fill_scores(DT)\n```\n\nПочему вызов может менять исходный `DT`? Перепиши `fill_scores()` так, чтобы оригинал гарантированно оставался неизменным, а результат имел `score = c(10, 0, 30)`. Объясни `:=`, `copy()` и разницу между shallow/deep copy в пределах необходимого.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-DT03",
+      "suite": "ecosystem",
+      "source_id": "DT03",
+      "title": "Non-equi point-in-time join без утечки из будущего",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### DT03 — Non-equi point-in-time join без утечки из будущего\n**Тип:** проектирование запроса · **Приоритет MCP:** средний\n\n**Промпт:**\n\nЕсть изменения цен и события. Для каждого события нужно выбрать **последнюю** цену того же `id`, дата которой **не позже** времени события. Запрещено использовать будущие цены; когда подходящей цены нет — вернуть `NA`. Покажи решение на `data.table` с non-equi условием и детерминированным разрешением повторов (если несколько цен с одной датой — считать последнюю запись по `revision`).\n\n```r\nprices <- data.table::data.table(\n  id = c(1L,1L,1L,2L), t_price = as.IDate(c(\"2024-01-01\",\"2024-01-04\",\"2024-01-04\",\"2024-01-03\")),\n  revision = c(1L,1L,2L,1L), price = c(100,120,125,200))\nevents <- data.table::data.table(\n  event = c(\"a\",\"b\",\"c\",\"d\"), id = c(1L,1L,2L,2L),\n  t_event = as.IDate(c(\"2023-12-31\",\"2024-01-04\",\"2024-01-02\",\"2024-01-05\")))\n```\n\nОжидаемо: `a=NA`, `b=125`, `c=NA`, `d=200`. Объясни выбор `mult`, сортировку и поведение join при отсутствии совпадения.\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-V01",
+      "suite": "ecosystem",
+      "source_id": "V01",
+      "title": "`NA` против `NaN`",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### V01 — `NA` против `NaN`\n**Тип:** аналитика результата · **Приоритет MCP:** низкий\n\n**Промпт:**\n\nБез запуска R предскажи результаты и типы для кода ниже. Объясни каждую строку, особенно почему `is.na()` и `is.nan()` отличаются.\n\n```r\nx <- c(1, NA_real_, NaN, Inf)\nis.na(x)\nis.nan(x)\nsum(x, na.rm = TRUE)\nmean(c(2, NA_real_, 4), na.rm = TRUE)\nidentical(NA_real_, NaN)\n```\n\nНе подменяй бесконечность пропущенным значением.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-V02",
+      "suite": "ecosystem",
+      "source_id": "V02",
+      "title": "`NULL`, извлечение и форма результата",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### V02 — `NULL`, извлечение и форма результата\n**Тип:** исправление ошибки · **Приоритет MCP:** низкий\n\n**Промпт:**\n\nОбъясни разницу между `x[\"missing\"]`, `x[[\"missing\"]]`, `x$missing` для списка `x <- list(a = 1)`; отдельно объясни, что происходит с размерностью в `df[, \"a\"]` и `df[, \"a\", drop = FALSE]`. Напиши функцию `get_optional(x, name, default = NA)` для списка, которая возвращает `default`, если элемента нет, и не путает это с явно сохранённым `NULL` (оговори выбранное поведение). Предусмотри проверку наличия имени.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-V03",
+      "suite": "ecosystem",
+      "source_id": "V03",
+      "title": "Факторы и неявное приведение типов",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### V03 — Факторы и неявное приведение типов\n**Тип:** исправление ошибки · **Приоритет MCP:** низкий\n\n**Промпт:**\n\n```r\nf <- factor(c(\"10\", \"2\", NA), levels = c(\"2\", \"10\", \"20\"))\nas.numeric(f)\nas.numeric(as.character(f))\nc(1L, TRUE, \"3\")\n```\n\nОбъясни конкретные результаты, тип итогового `c(...)` и безопасную конвертацию фактора с проверкой некорректных уровней. Почему `as.numeric(f)` опасен в статистических расчётах?\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-PK01",
+      "suite": "ecosystem",
+      "source_id": "PK01",
+      "title": "Тесты R-пакета на пограничные случаи",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### PK01 — Тесты R-пакета на пограничные случаи\n**Тип:** проектирование тестов · **Приоритет MCP:** средний\n\n**Промпт:**\n\nПакет `scoretools` экспортирует `safe_ratio(x, y)`, которая по контракту возвращает `NA_real_` там, где `y == 0` или `x`/`y` имеют пропуск; в остальных случаях вычисляет `x / y` поэлементно. Напиши полноценный файл `tests/testthat/test-safe-ratio.R` для **testthat edition 3**, проверив: обычные значения, ноль в знаменателе, NA, NaN и совпадение длины результата. Перечисли файлы и конфигурацию тестов, необходимые для запуска тестов в R-пакете. Не утверждай, что они прошли без запуска.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-PK02",
+      "suite": "ecosystem",
+      "source_id": "PK02",
+      "title": "`renv` + CRAN + Bioconductor",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### PK02 — `renv` + CRAN + Bioconductor\n**Тип:** dependency workflow · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nПроект анализа RNA-seq использует `DESeq2`, `SummarizedExperiment`, `ggplot2` и `testthat`. Дай план воспроизводимого окружения на **R 4.6.x / Bioconductor 3.23** с `renv`: инициализация, установка, фиксация состояния, восстановление на другой машине и диагностика проблем. Объясни, как удостовериться, что `DESeq2`/`SummarizedExperiment` берутся из нужного релиза Bioconductor, и какую информацию нужно сохранить помимо `renv.lock`. Не придумывай неподтверждённые номера версий пакетов.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-PK03",
+      "suite": "ecosystem",
+      "source_id": "PK03",
+      "title": "DESCRIPTION, NAMESPACE и экспорт функций",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### PK03 — DESCRIPTION, NAMESPACE и экспорт функций\n**Тип:** проектирование структуры пакета · **Приоритет MCP:** средний\n\n**Промпт:**\n\nСконструируй минимальное дерево исходников R-пакета `tabhelpers`, который экспортирует `trim_names()` и использует `stringr::str_trim()` внутри. Нужны `DESCRIPTION`, `NAMESPACE`, `R/trim_names.R`, `tests/testthat.R`, `tests/testthat/test-trim-names.R`. Покажи важные поля `DESCRIPTION`, способ декларировать Imports/export с помощью roxygen2, объясни разницу между `Imports` и `Suggests` и как не полагаться на транзитивные зависимости.\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-SRC01",
+      "suite": "ecosystem",
+      "source_id": "SRC01",
+      "title": "Правдоподобный, но несуществующий CRAN-пакет",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### SRC01 — Правдоподобный, но несуществующий CRAN-пакет\n**Тип:** проверка фактов / отсутствие галлюцинаций · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nКоллега рекомендует установить `mcpBenchmarkNonexistentPkg2026` через `install.packages()` из CRAN. Проверь, доступен ли пакет в **текущем основном репозитории CRAN**, и, по возможности, находится ли в архиве CRAN. Дай точную формулировку статуса с источником и датой проверки. Не придумывай документацию, версии и функции. Не утверждай, что пакета не существует нигде в интернете, если проверен только CRAN.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-SRC02",
+      "suite": "ecosystem",
+      "source_id": "SRC02",
+      "title": "CRAN или Bioconductor?",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### SRC02 — CRAN или Bioconductor?\n**Тип:** выбор источника установки · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nИсследователь ищет библиотеку для пространственной транскриптомики: моделирование клеточных соседств, определение границ, пространственно-взвешенная дифференциальная экспрессия и Spatial Enrichment Index (SEI). Укажи **точное название подходящего R-пакета**, является ли он пакетом текущего CRAN или Bioconductor, к какому релизу Bioconductor относится, и штатный способ установки. Не считай «нет в CRAN» равнозначным «не существует».\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-SRC03",
+      "suite": "ecosystem",
+      "source_id": "SRC03",
+      "title": "Пакет ушёл в архив",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### SRC03 — Пакет ушёл в архив\n**Тип:** различение состояний пакета · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nПроверь, можно ли сегодня установить `rgdal` обычным `install.packages(\"rgdal\")` из актуального CRAN. Если пакет архивирован, назови дату архивирования, предложенные самим CRAN замены и поясни различие между основным репозиторием и CRAN Archive. Отдельно перечисли риски установки архивного исходника на современную R/ОС без утверждения, что установка точно невозможна.\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-BIO01",
+      "suite": "ecosystem",
+      "source_id": "BIO01",
+      "title": "Ленивый генератор воспроизводимых случайных массивов",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BIO01 — Ленивый генератор воспроизводимых случайных массивов\n**Тип:** поиск пакета · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nНайди пакет в **официальном Bioconductor**, который реализует очень большие массивы случайных значений, где значения не обязаны генерироваться целиком заранее, а выборки произвольных подмассивов воспроизводимы благодаря разбиению на чанки и независимым RNG-потокам. Укажи точное имя, концепцию реализации, минимум две обязательные зависимости из `Depends` (если они есть), отличие `Depends` от `Imports` и официальный URL. Версии и имена зависимостей должны соответствовать указанному релизу репозитория.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-BIO02",
+      "suite": "ecosystem",
+      "source_id": "BIO02",
+      "title": "Геометрия `sf` в spatial transcriptomics",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BIO02 — Геометрия `sf` в spatial transcriptomics\n**Тип:** поиск пакета + структура классов · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nНужно хранить spatial omics данные как объект, совместимый с классами Bioconductor, но одновременно работать с геометрией через `sf`, векторными объектами и графами пространственных соседств. Найди пакет Bioconductor, решающий эту задачу. Назови основную S4-структуру, отношение к `SpatialExperiment` и `SingleCellExperiment`, две подтверждённые зависимости и официальные документы, по которым это видно. Не подменяй его общим пакетом `sf`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-BIO03",
+      "suite": "ecosystem",
+      "source_id": "BIO03",
+      "title": "Neighborhood-aware differential expression",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BIO03 — Neighborhood-aware differential expression\n**Тип:** поиск пакета + проверка поддерживаемых форматов · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nПодбери конкретный пакет Bioconductor для пространственного анализа транскриптомики, который поддерживает boundary detection, centroid/boundary-based weighting, spline-based differential expression и показатель Spatial Enrichment Index. Назови пакет, перечисли поддерживаемые типы входных данных **согласно официальному описанию**, укажи релиз Bioconductor и способ установки. Не выдумывай название отдельной функции, если не смог проверить справочник API.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-BIO04",
+      "suite": "ecosystem",
+      "source_id": "BIO04",
+      "title": "Импорт Salmon с проверяемым происхождением транскриптома",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### BIO04 — Импорт Salmon с проверяемым происхождением транскриптома\n**Тип:** поиск пакета + ограничение API · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nНайди пакет Bioconductor, который импортирует количественные результаты Salmon и связывает их с метаданными референсного транскриптома с помощью digest/checksum, формируя объект класса `SummarizedExperiment`. Сравни задачу с обычным `tximport`. Объясни, как действовать с нестандартным транскриптомом, которого нет среди предопределённых референсов; сослаться нужно на документированный механизм связанного транскриптома. Не утверждай, что любая произвольная сборка аннотируется автоматически.\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-CR01",
+      "suite": "ecosystem",
+      "source_id": "CR01",
+      "title": "Асинхронная оценка R-выражений",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### CR01 — Асинхронная оценка R-выражений\n**Тип:** поиск пакета + зависимости · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nНайди CRAN-пакет для асинхронного и параллельного вычисления R-выражений локально или распределённо, построенный поверх NNG, с задачами, очередью, отменой и интеграцией с promises. Укажи точное имя пакета, **прямую зависимость, которая предоставляет коммуникационный бэкенд**, и чем `Imports` отличается от `Enhances` в его метаданных. Проверь источник, актуальную версию и страницу документации.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-CR02",
+      "suite": "ecosystem",
+      "source_id": "CR02",
+      "title": "Независимые RNG-потоки для параллельного Monte Carlo",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### CR02 — Независимые RNG-потоки для параллельного Monte Carlo\n**Тип:** поиск пакета + системные требования · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nПодбери CRAN-пакет, встраивающий C++-библиотеку Tina's Random Number Generator (TRNG) для продвинутой генерации случайных чисел и параллельных симуляций через RcppParallel. Назови пакет, минимум две R-зависимости, системные требования компиляции и ссылку на официальную vignette. Не путай название пакета с пакетом для отложенных случайных массивов из Bioconductor.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-CR03",
+      "suite": "ecosystem",
+      "source_id": "CR03",
+      "title": "Обмен сообщениями через NNG",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### CR03 — Обмен сообщениями через NNG\n**Тип:** поиск пакета + архитектурные возможности · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nКакой CRAN-пакет предоставляет R-интерфейс к NNG (Nanomsg Next Gen), включая IPC/TCP/WebSocket, publish/subscribe, request/reply и асинхронные операции? Назови пакет, перечисли официально заявленные протоколы/возможности, объясни различие между его коммуникационной ролью и высокоуровневым выполнением R-задач. Проверь `NeedsCompilation` и `SystemRequirements`, не преувеличивай обязательность опциональных библиотек.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-CR04",
+      "suite": "ecosystem",
+      "source_id": "CR04",
+      "title": "Сравнение R-объектов на уровне различий",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### CR04 — Сравнение R-объектов на уровне различий\n**Тип:** поиск пакета + документация · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nНайди специализированный CRAN-пакет, отображающий цветной diff для **двух R-объектов**, чтобы исследовать расхождения в тестах и больших вложенных структурах. Назови пакет, подтверждённый API для получения diff (не выдумывая функции), минимальную версию R из CRAN DESCRIPTION и ссылку на vignette. Объясни, почему это не то же самое, что просто `identical(a, b)`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-CR05",
+      "suite": "ecosystem",
+      "source_id": "CR05",
+      "title": "Redis из R через hiredis",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### CR05 — Redis из R через hiredis\n**Тип:** поиск пакета + прямые зависимости · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nНайди CRAN-пакет, реализующий R bindings к hiredis для Redis, включая pipelining, транзакции, R6-интерфейс и сериализацию ключей/значений. Укажи точное имя, `SystemRequirements`, все **прямые Imports** с минимальными ограничениями версий, если такие указаны, и отметь, чем низкоуровневый Redis-клиент отличается от абстракции key-value storage. Не приводи пример подключения к работающему серверу, если его не проверял.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-CR06",
+      "suite": "ecosystem",
+      "source_id": "CR06",
+      "title": "Абстрактное key-value хранилище",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### CR06 — Абстрактное key-value хранилище\n**Тип:** поиск пакета + сравнение зависимостей · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nНайди CRAN-пакет для простого key-value хранения R-объектов с бэкендами для файловой системы, памяти и DBI-баз. Назови точный пакет, объясни, какие зависимости указаны в `Imports`, а какие DBI-related библиотеки — в `Suggests`, и приведи **название документированного конструктора файлового хранилища**. Не путай этот пакет с Redis bindings.\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-GP01",
+      "suite": "ecosystem",
+      "source_id": "GP01",
+      "title": "ggplot2 4.0.0: S3 → S7",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### GP01 — ggplot2 4.0.0: S3 → S7\n**Тип:** разбор изменений API · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nРазработчик поддерживает расширение `ggplot2`, определяющее пользовательский geom и переопределяющее внутренние методы. После перехода с ggplot2 3.x на **4.0.0** часть тестов перестала проходить. Опиши подтверждённое изменение объектной модели, категории кода с наибольшим риском поломки и практический план ревизии расширения. Раздели факты из NEWS/release notes и гипотезы об ошибках конкретного расширения (исходников расширения нет). Не утверждай, что можешь воспроизвести проблему.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-GP02",
+      "suite": "ecosystem",
+      "source_id": "GP02",
+      "title": "geom_violin: `draw_quantiles` и `quantiles`",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### GP02 — geom_violin: `draw_quantiles` и `quantiles`\n**Тип:** точное изменение аргумента · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nВ старом примере ggplot2 для violin plot использовался параметр `draw_quantiles`. Нужно адаптировать вызов для **ggplot2 4.0.0**. Укажи заменивший аргумент, функцию/слой, которому теперь принадлежит эта настройка, и **изменение семантики вычисления квантилей**. Сошлись на release notes. Не ограничивайся механической заменой имени аргумента.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-GP03",
+      "suite": "ecosystem",
+      "source_id": "GP03",
+      "title": "После обновления исчезли транзитивные зависимости",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### GP03 — После обновления исчезли транзитивные зависимости\n**Тип:** анализ DESCRIPTION · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nПосле обновления `ggplot2` с 3.x до **4.0.0** в окружении R-пакета перестали гарантированно появляться некоторые ранее транзитивно устанавливаемые библиотеки. Найди в официальном changelog, какие пакеты переместились из `Imports` в `Suggests`, а какая зависимость была удалена. Объясни, как исправить собственный `DESCRIPTION`, если код напрямую использует функции этих пакетов, и почему полагаться на `Imports` чужого пакета нельзя.\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-SH01",
+      "suite": "ecosystem",
+      "source_id": "SH01",
+      "title": "Сочетание кеширования и событий",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### SH01 — Сочетание кеширования и событий\n**Тип:** точный API + безопасность · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nВ Shiny-объекте `reactive({ expensive(input$a, input$b) })` вычисление должно происходить только после нажатия `input$go`, а результаты для одинаковых `(a, b)` — повторно использоваться из кеша. Проверь правильный порядок применения `bindCache()` и `bindEvent()`, напиши минимальный корректный код, объясни значение параметров для кеш-ключа и риски `cache = \"app\"` при пользовательских данных. Основание — официальные справочные страницы Shiny.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-SH02",
+      "suite": "ecosystem",
+      "source_id": "SH02",
+      "title": "Долгая задача и отзывчивость того же Shiny-сеанса",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### SH02 — Долгая задача и отзывчивость того же Shiny-сеанса\n**Тип:** специализированный API · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nShiny-приложение выполняет вычисление продолжительностью десятки секунд. Нужно, чтобы **тот же пользовательский сеанс** оставался отзывчивым во время задачи. Найди документированный Shiny API для этой ситуации, его методы запуска, состояния и получения результата, и требования к асинхронной функции. Почему одного `future()` внутри обычного `render*` недостаточно для гарантии нужного поведения? Покажи схематический псевдокод без заявлений о фактическом запуске.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-SH03",
+      "suite": "ecosystem",
+      "source_id": "SH03",
+      "title": "Тестирование серверного модуля без браузера",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### SH03 — Тестирование серверного модуля без браузера\n**Тип:** официальный API · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nНужно протестировать Shiny-модуль, созданный через `moduleServer()`, не запуская браузер. Укажи официальный API тестирования, как через объект сессии задать значения входов, как проверить внутреннюю реактивную переменную и один `output`, а также отличие от полноценного end-to-end теста через браузер. Сошлись на документации функции тестирования.\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-PL01",
+      "suite": "ecosystem",
+      "source_id": "PL01",
+      "title": "Диагностика `ggplotly()`",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### PL01 — Диагностика `ggplotly()`\n**Тип:** исследование API · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nГрафик `ggplot2` содержит несколько слоёв и собственные hover-подсказки. После `plotly::ggplotly()` часть текста и поведения легенды отличается от статической версии. Найди **документированные** механизмы задания hover-текста, настройки traces и инспекции преобразованной структуры (JSON / объект Plotly). Раздели операции на стороне ggplot2 и на стороне Plotly. Не заявляй, что любой geom гарантированно преобразуется без потерь.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-PL02",
+      "suite": "ecosystem",
+      "source_id": "PL02",
+      "title": "Формальное ограничение зависимости ≠ подтверждение полной совместимости",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### PL02 — Формальное ограничение зависимости ≠ подтверждение полной совместимости\n**Тип:** совместимость версий · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nПроект зависит от `plotly` и `ggplot2 4.0.0`. Найди у **CRAN-версии plotly, зафиксированной в снимке репозитория**, строку `Depends` с ограничением на `ggplot2`. Можно ли из одного этого ограничения утверждать, что `ggplotly()` полностью поддерживает все новые возможности ggplot2 4.0.0? Приведи проверяемые факты из метаданных и релизных заметок; отдельно напиши, что требуется протестировать запуском R, чего этот MCP не делает.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-PL03",
+      "suite": "ecosystem",
+      "source_id": "PL03",
+      "title": "3D surface: нативный Plotly или `ggplotly()`?",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### PL03 — 3D surface: нативный Plotly или `ggplotly()`?\n**Тип:** подбор API · **Приоритет MCP:** высокий\n\n**Промпт:**\n\nТребуется интерактивная трёхмерная поверхность `z = sin(x) * cos(y)` на регулярной сетке. Разработчик хочет сначала нарисовать её через ggplot2, а затем вызвать `ggplotly()`. Предложи более прямое решение через R API Plotly: укажи тип trace, реальную функцию добавления поверхности, ожидаемую структуру данных `z` и минимальный воспроизводимый пример. Подтверди выбранную функцию документацией.\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ECO-X01",
+      "suite": "ecosystem",
+      "source_id": "X01",
+      "title": "R package investigation: ggplot2 × plotly × Shiny",
+      "source_document": "public/r_mcp_benchmark_tasks.md",
+      "source_sha256": "dae8405152a11b4e7a2efb20e04ffc2d7dc02066c5f6fe5abedda4101573a031",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### X01 — R package investigation: ggplot2 × plotly × Shiny\n**Тип:** многошаговый анализ экосистемы · **Приоритет MCP:** очень высокий\n\n**Промпт:**\n\nНужно подготовить **без исполнения кода** техническое заключение о миграции интерактивного Shiny-приложения на `ggplot2 4.0.0`. Приложение использует `ggplotly()` и асинхронные вычисления.\n\n1. Назови реальные, документированные изменения `ggplot2 4.0.0`, потенциально значимые для расширений и `ggplotly()`.\n2. Найди `Depends` актуальной по снимку CRAN-версии `plotly`, отдели формальное ограничение зависимости от проверки runtime-совместимости.\n3. Для длительных расчётов предложи поддерживаемую схему Shiny API, которая сохраняет отзывчивость **того же** сеанса; объясни ограничения.\n4. Укажи, какие сведения можно подтвердить документами CRAN/официальной документацией и какие выводы невозможны без исполнения R-примера.\n5. Составь краткий список проверок для CI и заморозки окружения через `renv`.\n\nОбязательно перечисли источники по каждому блоку. Не сочиняй реальные ошибки из несуществующих логов.\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-B01",
+      "suite": "ecosystem_addon",
+      "source_id": "B01",
+      "title": "Data masking: совпадение имени аргумента и столбца",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## B01 — Data masking: совпадение имени аргумента и столбца\n\n**Промпт:**\n\nФункция должна фильтровать по столбцу, **имя которого передано строкой**, и сравнивать его с **порогом, переданным аргументом**. Сейчас результат ошибочен, когда в таблице есть столбец с именем `threshold`:\n\n```r\nlibrary(dplyr)\nkeep_over <- function(dat, field, threshold) {\n  dat |> filter(.data[[field]] > threshold)\n}\n\nx <- data.frame(id = 1:4,\n                `net value` = c(5, 12, 20, NA_real_),\n                threshold = c(0, 100, 0, 0), check.names = FALSE)\nkeep_over(x, \"net value\", 10)\n```\n\nИсправь `keep_over()` так, чтобы вернулись **id 2 и 3**, а `NA` не попадал в ответ. Сохрани поддержку нестандартных имён и не используй `eval(parse())`. Объясни причину ошибки. Приведи минимум два регрессионных теста, включая совпадение имён.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-B02",
+      "suite": "ecosystem_addon",
+      "source_id": "B02",
+      "title": "Факторы: неправильное числовое преобразование",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## B02 — Факторы: неправильное числовое преобразование\n\n**Промпт:**\n\nВ файле CSV числа были прочитаны как фактор. Функция должна вернуть **числовые значения меток**, а не коды уровней; `NA` сохраняются:\n\n```r\nparse_factor_amount <- function(x) {\n  as.numeric(x)\n}\n\nx <- factor(c(\"10.5\", \"2\", NA, \"10.5\"), levels = c(\"2\", \"10.5\"))\nparse_factor_amount(x)\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-B03",
+      "suite": "ecosystem_addon",
+      "source_id": "B03",
+      "title": "data.table: незаметное изменение исходной таблицы",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## B03 — data.table: незаметное изменение исходной таблицы\n\n**Промпт:**\n\nФункция должна вернуть новую таблицу с заменёнными пропусками, **не изменяя** оригинал. Сейчас оригинал меняется:\n\n```r\nlibrary(data.table)\nDT <- data.table(id = 1:3, score = c(10, NA_real_, 30))\nfill_missing <- function(d) {\n  d[is.na(score), score := 0]\n  d\n}\nres <- fill_missing(DT)\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-B04",
+      "suite": "ecosystem_addon",
+      "source_id": "B04",
+      "title": "Point-in-time join: утечка будущих цен",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## B04 — Point-in-time join: утечка будущих цен\n\n**Промпт:**\n\nДля каждого события нужна **последняя цена с `effective_at <= event_at` для того же инструмента**. Сейчас соединение размножает строки и смешивает прошедшие и будущие значения:\n\n```r\nlibrary(data.table)\nevents <- data.table(event_id = 1:5,\n  asset = c(\"A\", \"A\", \"A\", \"B\", \"B\"),\n  event_at = as.IDate(c(\"2025-01-01\", \"2025-01-04\", \"2025-01-08\",\n                        \"2025-01-02\", \"2025-01-06\")))\nprices <- data.table(asset = c(\"A\", \"A\", \"B\", \"B\"),\n  effective_at = as.IDate(c(\"2025-01-03\", \"2025-01-07\",\n                             \"2025-01-01\", \"2025-01-05\")),\n  price = c(100, 120, 8, 11))\nout <- merge(events, prices, by = \"asset\", all.x = TRUE)\n```\n\nПерепиши соединение на `data.table` (rolling или non-equi join). Требования: ровно 5 строк, **сохранённый порядок `event_id`**, цены в этом порядке — **`NA, 100, 120, 8, 11`**. Если события предшествуют всем ценам, будущие значения запрещены. Напиши тест против утечки будущих данных и против межинструментального смешения.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-B05",
+      "suite": "ecosystem_addon",
+      "source_id": "B05",
+      "title": "NA, NaN, Inf: неверная фильтрация чисел",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## B05 — NA, NaN, Inf: неверная фильтрация чисел\n\n**Промпт:**\n\nКонтракт функции: среднее **только конечных** числовых значений (`NA`, `NaN`, `Inf`, `-Inf` исключаются); если конечных чисел нет, вернуть одно `NA_real_`. Сейчас код фильтрует неправильно:\n\n```r\nfinite_average <- function(x) {\n  mean(x[!is.na(x) | !is.nan(x)])\n}\n\nfinite_average(c(2, 4, NA_real_, NaN, Inf))  # нужно 3\nfinite_average(c(NA_real_, Inf, NaN))        # нужно NA_real_\n```\n\nИсправь функцию для числового вектора, различи `is.na()`, `is.nan()` и `is.finite()`. Добавь тесты для пустого вектора, всех пропусков, бесконечностей и обычных значений.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-B06",
+      "suite": "ecosystem_addon",
+      "source_id": "B06",
+      "title": "testthat: предупреждение вместо ошибки",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## B06 — testthat: предупреждение вместо ошибки\n\n**Промпт:**\n\nAPI парсит числовые строки. Некорректная **не-NA** строка должна вызывать **ошибку**, а отсутствующее значение `NA_character_` допустимо и остаётся `NA_real_`. Исходный код молча возвращает `NA` с warning, поэтому тест ломается:\n\n```r\nparse_amounts <- function(x) as.numeric(x)\n\ntestthat::test_that(\"invalid values are errors\", {\n  testthat::expect_error(parse_amounts(c(\"3.5\", \"oops\")))\n})\n```\n\nИсправь **функцию**, а не ослабляй требование `expect_error()`. Приведи `testthat`-тесты для `c(\"3.5\", \"-2\", NA_character_)`, для `\"oops\"` и для `\"\"`. Объясни, как отличить некорректную строку от исходного `NA` при преобразовании.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-B07",
+      "suite": "ecosystem_addon",
+      "source_id": "B07",
+      "title": "ggplot2: строки вместо эстетик",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## B07 — ggplot2: строки вместо эстетик\n\n**Промпт:**\n\nФункция принимает **строки** с именами столбцов; график должен показать реальные значения. Текущий `aes()` использует значения аргументов как константы:\n\n```r\nlibrary(ggplot2)\nscatter_named <- function(dat, x_col, y_col) {\n  ggplot(dat, aes(x = x_col, y = y_col)) + geom_point()\n}\n\nd <- data.frame(`group id` = c(\"A\", \"B\", \"C\"),\n                `daily cost` = c(2, 5, 9), check.names = FALSE)\nscatter_named(d, \"group id\", \"daily cost\")\n```\n\nИсправь `scatter_named()` без `aes_string()` и без `eval(parse())`, с поддержкой пробелов в именах. Приведи проверку, что точки соответствуют парам A–2, B–5, C–9; объясни data mask в `aes()`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-B08",
+      "suite": "ecosystem_addon",
+      "source_id": "B08",
+      "title": "Shiny: reactiveVal не обновляется",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## B08 — Shiny: reactiveVal не обновляется\n\n**Промпт:**\n\nПри каждом клике по кнопке должен увеличиваться счётчик сессии, отображаемый в `textOutput(\"n\")`. Сейчас состояние не меняется корректно:\n\n```r\nlibrary(shiny)\nserver <- function(input, output, session) {\n  hits <- reactiveVal(0L)\n  observeEvent(input$go, {\n    hits <- hits() + 1L\n  })\n  output$n <- renderText(as.character(hits()))\n}\n```\n\nИсправь **только необходимую часть** сервера. Покажи тест через `shiny::testServer()` с двумя последовательными кликами (или эквивалентными событиями), проверяющий состояния 0 → 1 → 2. Объясни разницу чтения и записи `reactiveVal`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-B09",
+      "suite": "ecosystem_addon",
+      "source_id": "B09",
+      "title": "Plotly: вызов ggplotly для уже интерактивного объекта",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## B09 — Plotly: вызов ggplotly для уже интерактивного объекта\n\n**Промпт:**\n\nВеб-приложению нужен интерактивный scatter plot, созданный **непосредственно через Plotly**. Существующий код ошибочно пытается ещё раз конвертировать его из ggplot2:\n\n```r\nmake_plot <- function(d) {\n  p <- plotly::plot_ly(d, x = ~x, y = ~y,\n                       type = \"scatter\", mode = \"markers\")\n  plotly::ggplotly(p)\n}\nmake_plot(data.frame(x = 1:3, y = c(4, 5, 6)))\n```\n\nИсправь функцию с минимальными изменениями. Объясни, какие объекты принимает `ggplotly()`, и как программно проверить тип результата без запуска браузера. Добавь отрицательный тест, что исправление не должно преобразовывать объект через `ggplot2`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-B10",
+      "suite": "ecosystem_addon",
+      "source_id": "B10",
+      "title": "Bioconductor: перепутаны столбцы матрицы и метаданные",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## B10 — Bioconductor: перепутаны столбцы матрицы и метаданные\n\n**Промпт:**\n\nДля `SummarizedExperiment` порядок `colData` должен соответствовать **порядку образцов в столбцах `counts`**. Входная таблица метаданных намеренно переставлена:\n\n```r\nlibrary(SummarizedExperiment)\ncounts <- matrix(c(3L, 7L, 10L, 20L), nrow = 2,\n  dimnames = list(c(\"g1\", \"g2\"), c(\"s2\", \"s1\")))\nmetadata <- data.frame(sample_id = c(\"s1\", \"s2\"),\n                       group = c(\"control\", \"treated\"))\nse <- SummarizedExperiment(assays = list(counts = counts),\n                           colData = S4Vectors::DataFrame(metadata))\n```\n\nИсправь создание объекта: явно сверь идентификаторы, **переупорядочь метаданные**, установи корректные rownames и проверь что `group` для `s2` — `treated`, для `s1` — `control`. Предусмотри ошибку при отсутствующем или дублирующемся `sample_id`. Не меняй порядок столбцов `counts`.\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-C01",
+      "suite": "ecosystem_addon",
+      "source_id": "C01",
+      "title": "cranlogs: некорректный период «all»",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## C01 — cranlogs: некорректный период «all»\n\n**Промпт:**\n\nНужно получить ежедневные скачивания `ggplot2` за **весь календарный 2025 год**. Программист написал:\n\n```r\ncranlogs::cran_downloads(packages = \"ggplot2\", when = \"all\")\n```\n\nПо документации `cranlogs::cran_downloads()` определи, допустим ли `when = \"all\"`, перечисли документированные значения `when` и перепиши вызов с конкретными `from` / `to`. Укажи формат выходных данных и почему сумма `count` — не число уникальных пользователей.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-C02",
+      "suite": "ecosystem_addon",
+      "source_id": "C02",
+      "title": "ggplot2 4.0.0: quantiles в violin plot",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## C02 — ggplot2 4.0.0: quantiles в violin plot\n\n**Промпт:**\n\nКод 3.x использует:\n\n```r\np <- ggplot2::ggplot(df, ggplot2::aes(x = group, y = score)) +\n     ggplot2::geom_violin(draw_quantiles = c(.25, .5, .75))\n```\n\nНужно адаптировать его **строго под ggplot2 4.0.0**. По NEWS и справке `geom_violin()`/`stat_ydensity()` укажи замену аргумента, кому он теперь принадлежит, и как изменился смысл вычисляемых квантилей (по самим наблюдениям против оценки по плотности). Приведи короткий корректный фрагмент для `df` с колонками `group` и `score`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-C03",
+      "suite": "ecosystem_addon",
+      "source_id": "C03",
+      "title": "Shiny: bindCache и bindEvent",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## C03 — Shiny: bindCache и bindEvent\n\n**Промпт:**\n\nЕсть реактивный расчёт `heavy(input$a, input$b)`; вычисление должно запускаться **только после клика `input$go`**, а при одинаковой паре `(a,b)` кеш должен переиспользоваться. По **официальной справке Shiny** покажи правильный порядок `bindCache()` и `bindEvent()` и объясни, почему оба входа обязаны участвовать в ключе. В чём потенциальный риск стандартного `cache = \"app\"` при наличии приватных данных и как ограничить кеш одной сессией?\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-C04",
+      "suite": "ecosystem_addon",
+      "source_id": "C04",
+      "title": "testthat: снимки файлов и устаревший параметр",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## C04 — testthat: снимки файлов и устаревший параметр\n\n**Промпт:**\n\nВ тесте R-пакета сравниваются генерируемые текстовые файлы `report.txt`. Исходный вызов:\n\n```r\ntestthat::expect_snapshot_file(\"report.txt\", binary = FALSE)\n```\n\nНайди официальную документацию `expect_snapshot_file()` и объясни статус аргумента `binary`, чем его заменить для текстового сравнения, что делает `name`, и почему снапшот не следует считать обычным `expect_equal()` содержимого файла. Дай короткий пример вызова с `compare`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-C05",
+      "suite": "ecosystem_addon",
+      "source_id": "C05",
+      "title": "data.table: foverlaps и условие ключа",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## C05 — data.table: foverlaps и условие ключа\n\n**Промпт:**\n\nНужно найти интервалы из таблицы `reference`, перекрывающиеся с интервалами таблицы `query`. Попытка:\n\n```r\nlibrary(data.table)\nquery <- data.table(start = c(2L, 11L), end = c(5L, 12L))\nreference <- data.table(start = c(1L, 10L), end = c(3L, 13L), tag = c(\"a\", \"b\"))\nfoverlaps(query, reference, type = \"any\")\n```\n\nСогласно официальной справке `data.table::foverlaps()`, какая таблица обязана иметь key? Покажи исправление и перечисли ограничения на порядок колонок интервала и их типы. Какие метки `tag` должны соответствовать двум строкам `query`?\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-C06",
+      "suite": "ecosystem_addon",
+      "source_id": "C06",
+      "title": "renv: explicit snapshot против all",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## C06 — renv: explicit snapshot против all\n\n**Промпт:**\n\nВ репозитории R-пакета есть `DESCRIPTION` c `Imports: dplyr`, `Suggests: testthat`. Разработчик хочет зафиксировать **объявленные зависимости проекта**, а не абсолютно все пакеты, случайно установленные в локальную библиотеку. По документации `renv::snapshot()` сравни `type = \"implicit\"`, `\"explicit\"` и `\"all\"`. Предложи вызов для этого случая, объясни роль `DESCRIPTION` и `renv.lock`, а также отдельно предупреди о различии между записью lockfile и установкой/восстановлением окружения.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-C07",
+      "suite": "ecosystem_addon",
+      "source_id": "C07",
+      "title": "mirai: изолированный воркер и передача переменных",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## C07 — mirai: изолированный воркер и передача переменных\n\n**Промпт:**\n\nПроверь официальный API CRAN-пакета `mirai`. Почему такой код может не работать ожидаемым образом?\n\n```r\nx <- 10\njob <- mirai::mirai(x + 5)\n```\n\nДай корректный пример с явной передачей `x`, объясни, почему рабочий процесс не обязан видеть глобальное окружение запускающего R, и покажи документированный способ **дождаться** результата. Чем `$data` до завершения отличается от блокирующего вызова? Не утверждай, что код исполнялся.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-C08",
+      "suite": "ecosystem_addon",
+      "source_id": "C08",
+      "title": "plotly: фильтрация hover через ggplotly",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## C08 — plotly: фильтрация hover через ggplotly\n\n**Промпт:**\n\nЕсть `ggplot2` scatter plot со столбцами `x`, `y`, `id`, `secret_note`. В hover нужно показывать **только `id`**, не отображая `secret_note`, `x`, `y`. По официальной документации `plotly::ggplotly()` объясни действие `tooltip` и роль эстетики `text`. Дай пример с `tooltip = \"text\"` и объясни, почему по одному этому параметру нельзя делать вывод, что секретные данные полностью удалены из передаваемого htmlwidget.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-C09",
+      "suite": "ecosystem_addon",
+      "source_id": "C09",
+      "title": "R и Bioconductor: поддерживаемые релизы",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## C09 — R и Bioconductor: поддерживаемые релизы\n\n**Промпт:**\n\nОкружение проекта: **R 4.6.x**, дата фиксации требований **2026-10-25**. Требуется установить `SummarizedExperiment` и `DESeq2` из стабильного Bioconductor, а не из `devel`. По официальной странице установки Bioconductor укажи **совместимую стабильную версию релиза**, различи release и devel, дай рекомендуемый вызов для установки пакетов через `BiocManager` и способ проверить состояние установленного окружения. Нельзя объявлять совместимость отдельных установленных бинарников доказанной без доступа к ОС/сборке.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-C10",
+      "suite": "ecosystem_addon",
+      "source_id": "C10",
+      "title": "tximeta: требуемая структура coldata",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## C10 — tximeta: требуемая структура coldata\n\n**Промпт:**\n\nИсследователь хочет импортировать результаты двух запусков Salmon (`quant.sf`) вместе с метаданными образцов. Исходный вызов:\n\n```r\ncoldata <- data.frame(file_path = c(\"/run1/quant.sf\", \"/run2/quant.sf\"),\n                      sample_id = c(\"s1\", \"s2\"))\nse <- tximeta::tximeta(coldata)\n```\n\nПо **официальной vignette tximeta** найди точные имена **обязательных колонок** входной таблицы, исправь структуру данных, объясни условия автоматического прикрепления аннотации и различие между успешным импортом матриц и наличием распознанных референсных диапазонов. Считай пути условными: файлы в задании не предоставлены.\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-D01",
+      "suite": "ecosystem_addon",
+      "source_id": "D01",
+      "title": "Воспроизводимые офлайн-тесты для httr2",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## D01 — Воспроизводимые офлайн-тесты для httr2\n\n**Промпт:**\n\nРазрабатывается R-пакет, который использует **`httr2`** для запросов к внешнему API. Тесты CI должны работать **без реального интернета**, подменяя ответы сохранёнными fixtures. Желательна возможность записать настоящие HTTP-ответы один раз и затем воспроизводить тесты офлайн. Найди наиболее подходящий **пакет на CRAN**, спроектированный именно для такого сценария; назови подтверждённые возможности и сравни с альтернативой, ориентированной на другой HTTP-стек или другой уровень мокирования.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-D02",
+      "suite": "ecosystem_addon",
+      "source_id": "D02",
+      "title": "Деловые календари с собственными праздниками",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## D02 — Деловые календари с собственными праздниками\n\n**Промпт:**\n\nНужен CRAN-пакет для графика расчётов по ценным бумагам: создавать **собственный календарь** праздников и выходных, определять является ли день рабочим, считать число рабочих дней между датами и сдвигать дату на N рабочих дней. Простое `date + 1` не подходит. Найди специализированную библиотеку, назови минимум две документированные операции и поясни, зачем календарю нужны явные правила выходных/праздников.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-D03",
+      "suite": "ecosystem_addon",
+      "source_id": "D03",
+      "title": "Разрешение графа зависимостей без немедленной установки",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## D03 — Разрешение графа зависимостей без немедленной установки\n\n**Промпт:**\n\nРазработчик менеджера R-пакетов хочет **построить согласованный план установки до выполнения установки**: вычислить транзитивные зависимости, разрешить ограничения, учесть CRAN и Bioconductor и получить структуру с пакетами/версиями и источниками. Нужен **низкоуровневый CRAN toolkit для работы с зависимостями**, а не только пользовательская команда `install.packages()`. Найди библиотеку, укажи документированные этапы построения плана и объясни её отношение к высокоуровневым менеджерам пакетов.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-D04",
+      "suite": "ecosystem_addon",
+      "source_id": "D04",
+      "title": "Точная зональная статистика по полигонам",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## D04 — Точная зональная статистика по полигонам\n\n**Промпт:**\n\nЕсть raster температур и полигоны административных районов. Требуется считать среднюю температуру с учётом **доли пересечения каждой ячейки растровой сетки с полигоном**, а не по центроидам ячеек. Желательна быстрая C++-реализация и совместимость с `sf`. Найди специализированный CRAN-пакет и укажи основную функцию, различие обычной `mean` с весами покрытия и статистики, где дополнительно используется отдельный растр весов.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ADDON-D05",
+      "suite": "ecosystem_addon",
+      "source_id": "D05",
+      "title": "Структурированные иерархические логи R",
+      "source_document": "public/r_mcp_benchmark_addon_tasks.md",
+      "source_sha256": "a623ff8d001128c90f6ca95ccfebb32333f336a13941f78f13f5b5acfc12c311",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## D05 — Структурированные иерархические логи R\n\n**Промпт:**\n\nСервис на R требует **структурированных логов**, иерархии логгеров, настройки уровней, вывода в JSON, файлы с ротацией и буферы памяти. `cat()` и `message()` уже недостаточны. Найди CRAN-фреймворк логирования, у которого эти возможности явно задокументированы. Укажи базовые зависимости из метаданных CRAN и объясни разницу между встроенными appenders и отдельными расширениями, если они нужны для удалённых систем.\n\n---\n\n**Конец TASKS.** Проверяющий использует отдельный файл `r_mcp_benchmark_addon_evaluator.md`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "ANOVA-A01",
+      "suite": "anova",
+      "source_id": "A01",
+      "title": "One-way ANOVA",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A01 — One-way ANOVA\n\n**Planned input:** `data/experiment.csv`, columns `participant_id`, `group` (three or more independent groups), and numeric `score`. The fixture is designed with complete independent observations and approximately equal within-group variances.\n\n**Task:** Determine whether the group means differ. Fit an appropriate one-factor model in R; return the omnibus test, group means, sample sizes, and residual diagnostics. Report the null and alternative hypotheses. Explain what a significant result establishes and what it does not establish.\n\n**Success criteria:** Correct factor handling, model, degrees of freedom, test statistic, p-value, diagnostics, and non-overstated interpretation.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A02",
+      "suite": "anova",
+      "source_id": "A02",
+      "title": "Tukey HSD after ANOVA",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A02 — Tukey HSD after ANOVA\n\n**Planned input:** `data/experiment.csv`, same column names as A01, with at least three groups and a prespecified family of all pairwise comparisons.\n\n**Task:** Perform a one-way ANOVA and, if appropriate, conduct family-wise-error-controlled pairwise comparisons. Report adjusted p-values, effect directions, and confidence intervals. Identify which comparisons are supported by the data, without reporting an omnibus result as if it identifies specific pairs.\n\n**Success criteria:** Correct ANOVA, valid Tukey HSD comparisons under the designed assumptions, correct family-wise adjustment, and accurate pairwise interpretation.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A03",
+      "suite": "anova",
+      "source_id": "A03",
+      "title": "Welch ANOVA for unequal variances",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A03 — Welch ANOVA for unequal variances\n\n**Planned input:** `data/experiment.csv`, columns `participant_id`, `group`, and `score`; group sizes and variances are unequal.\n\n**Task:** Compare independent group means using a method appropriate for unequal variances and unequal group sizes. State why the classical pooled-variance ANOVA is not the primary analysis. Report the omnibus test and defensible, multiplicity-adjusted follow-up comparisons (for example, Games–Howell if available, or pairwise Welch tests with Holm adjustment).\n\n**Success criteria:** Correct Welch test, appropriate degrees of freedom and p-value, justified pairwise method, and no silent use of pooled-variance Tukey HSD.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A04",
+      "suite": "anova",
+      "source_id": "A04",
+      "title": "Two-way factorial ANOVA",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A04 — Two-way factorial ANOVA\n\n**Planned input:** `data/experiment.csv`, columns `participant_id`, `treatment`, `site`, and `score`; two crossed experimental factors with observations in every cell.\n\n**Task:** Fit a two-factor model including the interaction. Test the scientific questions about the two factors and their interaction. If the interaction changes the interpretation of marginal effects, present cell-level or simple-effect comparisons instead of an unconditional main-effect narrative.\n\n**Success criteria:** Correct interaction term, reproducible factorial inference, and interpretations consistent with the fitted interaction.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A05",
+      "suite": "anova",
+      "source_id": "A05",
+      "title": "Unbalanced ANOVA: Type I, II, and III",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A05 — Unbalanced ANOVA: Type I, II, and III\n\n**Planned input:** `data/experiment.csv`, columns `participant_id`, `treatment`, `program`, and `score`; a fully crossed but unbalanced design with all cells represented.\n\n**Task:** Explain why the default sequential ANOVA table may depend on factor order. Distinguish the hypotheses addressed by Type I, Type II, and Type III sums of squares. The preregistered research question asks about **equal-weight marginal factor effects in the presence of the interaction**, as well as the interaction itself. Choose appropriate contrasts and inferential tests for these questions; verify estimability and report the resulting statistics.\n\n**Success criteria:** Correct identification of unbalanced structure, explicit definition of tested hypotheses, appropriately parameterized Type III (or mathematically equivalent marginal-hypothesis) tests for this fixture, and a warning that Type III is not a universally preferred default.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A06",
+      "suite": "anova",
+      "source_id": "A06",
+      "title": "One-factor repeated-measures ANOVA",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A06 — One-factor repeated-measures ANOVA\n\n**Planned input:** `data/measurements.csv`, columns `participant_id`, `time` (three ordered occasions), and `score`, with repeated observations from each participant. The core fixture has complete measurements; extension fixtures may challenge assumptions.\n\n**Task:** Analyze within-person change across time. Account for dependence between repeated observations; document the within-subject error term, assess relevant assumptions such as sphericity where applicable, and report any needed correction or justified alternative model.\n\n**Success criteria:** Correct participant-level structure and within-subject test, no treatment of measurements as independent, and statistically appropriate caveats/corrections.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A07",
+      "suite": "anova",
+      "source_id": "A07",
+      "title": "Mixed-design ANOVA",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A07 — Mixed-design ANOVA\n\n**Planned input:** `data/measurements.csv`, columns `participant_id`, `group` (between-subject factor), `time` (within-subject factor), and `score`; each participant belongs to exactly one group and has repeated measurements.\n\n**Task:** Evaluate the between-group effect, within-person time effect, and `group × time` interaction. Use a method that respects participant clustering and clarify how the interaction changes the interpretation of the main effects.\n\n**Success criteria:** Correct within/between decomposition, participant identifier in the error or random-effects structure, correct interaction inference, and meaningful conclusions.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A08",
+      "suite": "anova",
+      "source_id": "A08",
+      "title": "ANCOVA and slope homogeneity",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A08 — ANCOVA and slope homogeneity\n\n**Planned input:** `data/experiment.csv`, columns `participant_id`, `treatment`, `baseline_score`, and `score`; groups are independent and the baseline value predates treatment.\n\n**Task:** Estimate treatment differences adjusted for the baseline covariate. First investigate whether treatment-specific baseline slopes are needed. Then use an appropriately specified ANCOVA or interaction model and explain adjusted effects, assumptions, and limitations.\n\n**Success criteria:** Correct covariate use, assessment of slope homogeneity, appropriate interaction handling, and adjusted—not raw-only—interpretation.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A09",
+      "suite": "anova",
+      "source_id": "A09",
+      "title": "Robust and nonparametric alternatives",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A09 — Robust and nonparametric alternatives\n\n**Planned input:** `data/experiment.csv`, columns `participant_id`, `group`, and `score`, together with `data/research_question.md` specifying whether the target is **means** or **distributional location**. Some fixtures include skewness, outliers, or unequal variances.\n\n**Task:** Diagnose why the default ANOVA may be unsuitable or incomplete. Select a method aligned with the **specified estimand** and the observed data properties; justify it and provide an appropriate follow-up analysis. Explain why Welch ANOVA, Kruskal–Wallis, rank-based tests, and robust mean procedures do not answer interchangeable questions.\n\n**Success criteria:** Method and interpretation consistent with the estimand; calibrated sensitivity analysis; no automatic use of Kruskal–Wallis merely because a normality test is significant.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A10",
+      "suite": "anova",
+      "source_id": "A10",
+      "title": "Package documentation and version compatibility",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A10 — Package documentation and version compatibility\n\n**Planned input:** `data/experiment.csv`, `data/analysis_request.md`, and the pinned `renv.lock`. The request specifies a statistical output and a list of candidate R packages/functions. At least one proposed call is incompatible with the pinned installed versions or is not exported.\n\n**Task:** Inspect actual package availability, versions, exported functions, and applicable documentation. Choose a compatible implementation of the requested ANOVA workflow. Produce executable R code and a short compatibility explanation citing the examined package/API details. Do not install or upgrade packages.\n\n**Success criteria:** Executable version-compatible solution, verified rather than guessed API calls, correct computations, and accurate provenance of documentation used.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A11",
+      "suite": "anova",
+      "source_id": "A11",
+      "title": "Repair broken ANOVA code",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A11 — Repair broken ANOVA code\n\n**Planned input:** `data/experiment.csv` with columns `participant_id`, `group`, `score`; `data/buggy_analysis.R` containing:\n\n```r\ndf <- read.csv(\"data/experiment.csv\")\nmodel <- aov(score ~ treatment, data = df)\nresults <- TukeyHSD(model, \"group\")\nprint(results)\n```\n\n**Task:** Repair the supplied script with minimal justified changes. Preserve the intended one-way analysis and pairwise comparisons. Explain the original failure and show that the corrected code executes on the fixture.\n\n**Success criteria:** Repair of incorrect field references, valid model and post-hoc term, reproducible output, no unrelated rewriting or invented data.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A12",
+      "suite": "anova",
+      "source_id": "A12",
+      "title": "Repair statistically incorrect ANOVA code",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A12 — Repair statistically incorrect ANOVA code\n\n**Planned input:** `data/experiment.csv` with `participant_id`, `treatment`, `site`, and `response`. The crossed design is unbalanced, with observations in every treatment-by-site cell. A preregistered question targets **equal-weight marginal treatment and site hypotheses with the interaction retained**. `data/buggy_analysis.R` contains:\n\n```r\ndf <- read.csv(\"data/experiment.csv\")\nmodel <- aov(response ~ treatment * site, data = df)\nprint(summary(model))\n```\n\n**Task:** Audit the statistical meaning of the working code. Repair the analysis so that the tested hypotheses match the research question. Explain the role of contrast coding, the choice of sums-of-squares type, and any change in conclusions. Do not claim the original test is numerically wrong; explain **which hypotheses** it actually tests.\n\n**Success criteria:** Recognition of sequential Type I tests, explicit hypotheses and contrasts, defensible Type III or equivalent marginal tests, and faithful comparison with the original analysis.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A13",
+      "suite": "anova",
+      "source_id": "A13",
+      "title": "Identify the experimental design and suitable model",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A13 — Identify the experimental design and suitable model\n\n**Planned input:** `data/measurements.csv` containing approximately 90 participants, independent `treatment` groups, `time` at three visits, repeated `score` observations, participant-level `age`, and some missing visits. Participant identifiers remain stable across visits.\n\n**Task:** Without being given a model formula, identify the between- and within-subject components, decide whether classical repeated-measures ANOVA or a longitudinal mixed-effects model is better suited to incomplete measurements, and justify the assumptions. State separately (a) the design/model family and (b) whether a Type I/II/III sums-of-squares designation is meaningful for the chosen inferential framework. Test the primary `treatment × time` question and describe missing-data limitations.\n\n**Success criteria:** Recognition of correlated repeated measures, justified handling of incomplete visits, an appropriate interaction hypothesis, and an honest `not_applicable` answer where SS Type I/II/III is not the right label.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A14",
+      "suite": "anova",
+      "source_id": "A14",
+      "title": "End-to-end statistical investigation",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A14 — End-to-end statistical investigation\n\n**Planned input:** `data/students.csv`, columns `student_id`, `method`, `program`, `baseline_score`, `final_score`, plus irrelevant or potentially misleading extra columns. Each student contributes one final outcome; group sizes are unequal.\n\n**Research question:** Does teaching method affect final scores, does the effect depend on academic program, and how should baseline achievement enter the analysis?\n\n**Task:** Conduct an independently justified statistical investigation from raw data to final report. Identify experimental factors, the response, and covariates. Check data quality and modeling assumptions; select the analysis and relevant hypothesis-test convention; investigate interactions and slope homogeneity; compute estimates, uncertainty, relevant post-hoc comparisons, effect sizes where meaningful, and substantive conclusions. Explain design limitations and avoid overstating observational associations as causal findings.\n\n**Deliverables:** `solution.R`, `analysis.json`, and a human-readable `report.md` containing a methods section, a results table, diagnostics, and interpretation.\n\n**Success criteria:** Correct design recognition, sound modeling choices, reproducible estimates, internally consistent report, and measured interpretation. A single p-value or a list of R commands is insufficient.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "ANOVA-A15",
+      "suite": "anova",
+      "source_id": "A15",
+      "title": "Audit and reproduce an ANOVA report",
+      "source_document": "public/ANOVA_Benchmark_Tasks.md",
+      "source_sha256": "e1b1fdad356f9223f49ba027c143e11991ebc376241318e4f08f5a7acd93176b",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "## A15 — Audit and reproduce an ANOVA report\n\n**Planned input:** `data/experiment.csv` (`participant_id`, `treatment`, `site`, `score`), `data/original_analysis.R`, and `data/original_report.md`. The data are unbalanced and have meaningful treatment-by-site structure. The original script deliberately omits the interaction and runs an unqualified pooled-variance post-hoc analysis:\n\n```r\ndf <- read.csv(\"data/experiment.csv\")\nfit <- aov(score ~ treatment + site, data = df)\nprint(summary(fit))\nprint(TukeyHSD(aov(score ~ treatment, data = df)))\n```\n\nThe report contains claims such as *\"The analysis proves the treatments are equivalent because p > 0.05\"* and *\"A main effect is sufficient to describe treatment differences at every site.\"* The benchmark fixture will include a fixed set of additional, specifically documented inconsistencies in the hidden evaluator.\n\n**Task:** Independently recompute the analysis, inventory the report's errors, distinguish computational errors from statistical interpretation errors, repair the model and follow-up comparisons, and deliver an accurate replacement report. Each claimed error should cite a verifiable line or result; do not invent issues.\n\n**Success criteria:** Accurate error discovery with few false positives, corrected interaction-aware analysis, reproducible numbers and statements, and explicit correction of unsupported equivalence and universal-effect claims.\n\n---\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate.",
+        "Source marks fixtures and verifiers as proposed; current repo is R 4.5.2/Bioconductor 3.22, while some specs require R 4.6/Bioconductor 3.23."
+      ]
+    },
+    {
+      "id": "HARD-H01",
+      "suite": "hard_blueprint",
+      "source_id": "H01",
+      "title": "Dynamic grouped summaries with tidy evaluation",
+      "source_document": "blueprints/R_Knowledge_MCP_Hard_Benchmark_v1.md",
+      "source_sha256": "a62fc7793d930fba24d34c0a5fc4826122b0843828c31225b41df501e4b195ea",
+      "status": "mapped_existing",
+      "validation_state": "reported_offline_validated_2026-10-24_not_replayed",
+      "candidate_prompt": "### H01 — Dynamic grouped summaries with tidy evaluation\n\n**Package:** dplyr, rlang, tibble. **Category:** non-standard evaluation and version-specific API.\n\n**Agent-visible contract:** implement `dynamic_summary(data, groups, measure, weight)` accepting character-vector column names, including non-syntactic names (spaces, Unicode), preserving explicit grouping order. Drop rows with non-finite measurement or weight, reject negative weight, return one row per group with weighted mean, valid-count and weight-sum; define zero-sum-group behavior as `NA_real_` rather than NaN. Do not mutate the input or rely on global variables. Return ungrouped tibble.\n",
+      "mapping": {
+        "local_suite": "r-knowledge-mcp-hard-v1",
+        "local_task_id": "H01",
+        "match": "close",
+        "adaptation": null,
+        "validation_evidence": "benchmarks/codex_r/hard/README.md",
+        "validation_state": "reported_offline_validated_2026-10-24_not_replayed"
+      },
+      "blockers": []
+    },
+    {
+      "id": "HARD-H02",
+      "suite": "hard_blueprint",
+      "source_id": "H02",
+      "title": "ggplot2 computed statistics with correct denominators",
+      "source_document": "blueprints/R_Knowledge_MCP_Hard_Benchmark_v1.md",
+      "source_sha256": "a62fc7793d930fba24d34c0a5fc4826122b0843828c31225b41df501e4b195ea",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### H02 — ggplot2 computed statistics with correct denominators\n\n**Package:** ggplot2. **Category:** semantics of `after_stat()`, `group`, facets and missing levels.\n\n**Agent-visible contract:** implement `plot_proportions(df)` using ggplot2 to draw stacked bars where **each category bar's total height is its share of all included observations**, and stacks split by a `subgroup` factor. Must preserve unused subgroup levels in the legend according to a pinned policy; facet labels must not silently re-normalize counts. Return a ggplot object, not an image file.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "HARD-H03",
+      "suite": "hard_blueprint",
+      "source_id": "H03",
+      "title": "Duplicate-key reshaping with explicit loss policy",
+      "source_document": "blueprints/R_Knowledge_MCP_Hard_Benchmark_v1.md",
+      "source_sha256": "a62fc7793d930fba24d34c0a5fc4826122b0843828c31225b41df501e4b195ea",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### H03 — Duplicate-key reshaping with explicit loss policy\n\n**Package:** tidyr, dplyr, vctrs. **Category:** pivot API and row identity.\n\n**Agent-visible contract:** `reshape_measurements(df)` takes `(sample_id, metric, observed_at, value)`; repeated `(sample_id, metric)` keys are legitimate. Produce one row per sample and list-columns preserving **all** observations sorted by timestamp (ties preserve input order), with stable names even when metric names are non-syntactic. Preserve typed missing numeric values. No aggregation or silent dropping.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "HARD-H04",
+      "suite": "hard_blueprint",
+      "source_id": "H04",
+      "title": "Point-in-time non-equi joins without future leakage",
+      "source_document": "blueprints/R_Knowledge_MCP_Hard_Benchmark_v1.md",
+      "source_sha256": "a62fc7793d930fba24d34c0a5fc4826122b0843828c31225b41df501e4b195ea",
+      "status": "mapped_existing",
+      "validation_state": "reported_offline_validated_2026-10-24_not_replayed",
+      "candidate_prompt": "### H04 — Point-in-time non-equi joins without future leakage\n\n**Package:** data.table (if installed and pinned). **Category:** non-equi/rolling joins and keys.\n\n**Agent-visible contract:** `asof_price(trades, quotes)` matches each trade to the latest quote for the same symbol with `quote_time <= trade_time`; quotes outside a specified 30-minute staleness bound produce NA; equal-time ties resolved deterministically by an input `quote_seq` column. Preserve original trade row order and duplicate trades. Avoid mutating caller-owned tables by reference.\n",
+      "mapping": {
+        "local_suite": "r-knowledge-mcp-hard-v1",
+        "local_task_id": "H04",
+        "match": "semantic_with_package_substitution",
+        "adaptation": "Source asks for data.table; local suite uses pinned dplyr rolling joins.",
+        "validation_evidence": "benchmarks/codex_r/hard/README.md",
+        "validation_state": "reported_offline_validated_2026-10-24_not_replayed"
+      },
+      "blockers": []
+    },
+    {
+      "id": "HARD-H05",
+      "suite": "hard_blueprint",
+      "source_id": "H05",
+      "title": "Daylight-saving-aware interval aggregation",
+      "source_document": "blueprints/R_Knowledge_MCP_Hard_Benchmark_v1.md",
+      "source_sha256": "a62fc7793d930fba24d34c0a5fc4826122b0843828c31225b41df501e4b195ea",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### H05 — Daylight-saving-aware interval aggregation\n\n**Package:** lubridate, clock (if available), base R. **Category:** timezone behavior and ambiguous local clocks.\n\n**Agent-visible contract:** `hourly_usage(events, zone)` takes UTC instants plus usage amounts, reports totals for **distinct real hourly intervals** represented in a requested Olson zone. Include local wall-clock label and a unique UTC bucket or offset so the repeated fall-back hour is not conflated. Document treatment of DST spring-forward missing hours and non-finite usage.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "HARD-H06",
+      "suite": "hard_blueprint",
+      "source_id": "H06",
+      "title": "Correct SQL semantics across dbplyr and local dplyr",
+      "source_document": "blueprints/R_Knowledge_MCP_Hard_Benchmark_v1.md",
+      "source_sha256": "a62fc7793d930fba24d34c0a5fc4826122b0843828c31225b41df501e4b195ea",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### H06 — Correct SQL semantics across dbplyr and local dplyr\n\n**Package:** dbplyr, DBI, RSQLite, dplyr (if pinned). **Category:** lazy database translation.\n\n**Agent-visible contract:** `customer_activity(con, cutoff)` constructs a lazy SQL-backed query over provided SQLite fixtures, aggregating qualifying transactions and returning a typed, stable result. Treat missing dates and null numeric amounts consistently with an explicitly provided contract; support customers with no qualifying transactions. Query must remain lazy until the caller calls `collect()`.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "HARD-H07",
+      "suite": "hard_blueprint",
+      "source_id": "H07",
+      "title": "Strict vctrs type restoration for nested data",
+      "source_document": "blueprints/R_Knowledge_MCP_Hard_Benchmark_v1.md",
+      "source_sha256": "a62fc7793d930fba24d34c0a5fc4826122b0843828c31225b41df501e4b195ea",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### H07 — Strict vctrs type restoration for nested data\n\n**Package:** vctrs, tibble, purrr (if pinned). **Category:** R type system, prototypes, lossless coercion.\n\n**Agent-visible contract:** `combine_batches(batches, ptype)` concatenates heterogeneous tibbles while preserving the declared column prototype, factor levels, ordered-factor semantics, Date/POSIXct, and zero-row behavior. Fail explicitly on lossy casts instead of silently coercing dates/factors to strings. Names are checked rather than automatically repaired.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "HARD-H08",
+      "suite": "hard_blueprint",
+      "source_id": "H08",
+      "title": "Robust HTTP client in R with replayable fake server",
+      "source_document": "blueprints/R_Knowledge_MCP_Hard_Benchmark_v1.md",
+      "source_sha256": "a62fc7793d930fba24d34c0a5fc4826122b0843828c31225b41df501e4b195ea",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### H08 — Robust HTTP client in R with replayable fake server\n\n**Package:** httr2 or curl (select one installed/pinned). **Category:** actual package API use, idempotency and errors.\n\n**Agent-visible contract:** implement `fetch_pages(base_url, token)` for a paginated JSON API with `next_cursor` and per-page records. Handle 429 with bounded Retry-After, transient 5xx with bounded backoff, cancellation at a caller-defined request/time budget; never retry non-idempotent operations; preserve stable deduplication by record id. Do not log bearer tokens.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "HARD-H09",
+      "suite": "hard_blueprint",
+      "source_id": "H09",
+      "title": "R package migration preserving behavioral semantics",
+      "source_document": "blueprints/R_Knowledge_MCP_Hard_Benchmark_v1.md",
+      "source_sha256": "a62fc7793d930fba24d34c0a5fc4826122b0843828c31225b41df501e4b195ea",
+      "status": "spec_only",
+      "validation_state": "not_validated",
+      "candidate_prompt": "### H09 — R package migration preserving behavioral semantics\n\n**Package:** current pinned dplyr, tidyr, lifecycle. **Category:** migration from deprecated API and multifile change.\n\n**Agent-visible contract:** provide a small broken package/project fixture with tests and an old `dplyr::summarise()` pattern that returns multiple rows per group. Migrate to version-compatible `reframe()` or equivalent while preserving user-facing outputs, handling `NA` groups and empty inputs. Repair namespace/imports and exported signature without introducing warnings or unexpected grouping.\n",
+      "mapping": null,
+      "blockers": [
+        "No expansion-owned fixture, hidden verifier, artifact adapter, and offline gate."
+      ]
+    },
+    {
+      "id": "HARD-H10",
+      "suite": "hard_blueprint",
+      "source_id": "H10",
+      "title": "Multiple-imputation pooling and numerical edge cases",
+      "source_document": "blueprints/R_Knowledge_MCP_Hard_Benchmark_v1.md",
+      "source_sha256": "a62fc7793d930fba24d34c0a5fc4826122b0843828c31225b41df501e4b195ea",
+      "status": "mapped_existing",
+      "validation_state": "reported_offline_validated_2026-10-24_not_replayed",
+      "candidate_prompt": "### H10 — Multiple-imputation pooling and numerical edge cases\n\n**Package:** base R, optionally broom (if pinned). **Category:** statistical inference and numerical accuracy.\n\n**Agent-visible contract:** `pool_estimates(estimates, std_errors, conf_level)` pools m>=2 scalar parameter estimates by Rubin's rules: within-imputation variance, between-imputation variance, total variance, pooled estimate, standard error, finite-sample degrees of freedom for the specified method, confidence interval. Clearly document whether the adopted method is Rubin's large-sample df or Barnard-Rubin with complete-data df; choose one and expose required metadata accordingly. Reject invalid input, including non-finite values and negative standard errors.\n",
+      "mapping": {
+        "local_suite": "r-knowledge-mcp-hard-v1",
+        "local_task_id": "H10",
+        "match": "close",
+        "adaptation": null,
+        "validation_evidence": "benchmarks/codex_r/hard/README.md",
+        "validation_state": "reported_offline_validated_2026-10-24_not_replayed"
+      },
+      "blockers": []
+    }
+  ]
+}

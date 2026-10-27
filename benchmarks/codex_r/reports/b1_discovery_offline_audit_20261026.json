@@ -1,0 +1,238 @@
+{
+  "schema_version": "1.0",
+  "audit_type": "offline_b1_discovery_audit",
+  "run_id": "20261026T104750Z-f78eabf1",
+  "generated_date": "2026-10-26",
+  "scope": {
+    "network_or_new_trials": false,
+    "models_or_agents_api": false,
+    "docker_operations": false,
+    "historical_results_modified": false,
+    "scorer_modified": false,
+    "frozen_evidence_modified": false,
+    "raw_payloads_or_full_transcripts_included": false
+  },
+  "experiment_validity": {
+    "planned_trials": 12,
+    "completed_trials": 12,
+    "scored_trials": 6,
+    "unsupported_trials": 6,
+    "planned_pairs": 6,
+    "score_comparable_pairs_in_comparison_artifact": 2,
+    "comparable_pairs": ["C01-R1", "C01-R2"],
+    "condition_order_design": "balanced_pairs_v1",
+    "condition_server_description_digests_differ": true,
+    "advertised_interface_toolset_and_schema_digests_match": true,
+    "mcp_adoption": {
+      "C01": {"control": "0/4 trials", "treatment": "0/4 trials"},
+      "D01_D03": {"control": "4/4 trials", "treatment": "4/4 trials"}
+    },
+    "frozen_documentation_text_available_for_D01_D03": false,
+    "note": "Run artifacts preserve resource URLs and metadata but not complete cited manuals; no live sources were queried."
+  },
+  "unsupported_trial_audit": [
+    {
+      "trial_id": "b1-discovery-D03-R1-control",
+      "status": "unsupported_for_automatic_scoring",
+      "checks": {"schema_validity": "pass 1/1", "factual_correctness": "pass 4/4", "version_repository_identity": "pass 2/2", "source_quality": "pass 3/3", "unsupported_claims": "fail"},
+      "package": "pointblank",
+      "version": "0.12.4",
+      "unsupported_ids": ["cross_record_rules"],
+      "claim_excerpt": "rows_distinct() checks cross-row uniqueness",
+      "claim_classification": "evidence_coverage_gap",
+      "factuality": "not_determinable",
+      "primary_error": {"origin": "candidate", "category": "r_runtime", "reason_code": "R_RUNTIME_ERROR", "source_code": "unsupported_for_automatic_scoring"}
+    },
+    {
+      "trial_id": "b1-discovery-D03-R1-treatment",
+      "status": "unsupported_for_automatic_scoring",
+      "checks": {"schema_validity": "pass 1/1", "factual_correctness": "pass 4/4", "version_repository_identity": "pass 2/2", "source_quality": "pass 3/3", "unsupported_claims": "fail"},
+      "package": "pointblank",
+      "version": "0.12.4",
+      "unsupported_ids": ["cross_record_rules"],
+      "claim_excerpt": "rows_distinct() checks cross-row uniqueness",
+      "claim_classification": "evidence_coverage_gap",
+      "factuality": "not_determinable",
+      "primary_error": {"origin": "candidate", "category": "r_runtime", "reason_code": "R_RUNTIME_ERROR", "source_code": "unsupported_for_automatic_scoring"}
+    },
+    {
+      "trial_id": "b1-discovery-D03-R2-control",
+      "status": "unsupported_for_automatic_scoring",
+      "checks": {"schema_validity": "pass 1/1", "factual_correctness": "pass 4/4", "version_repository_identity": "pass 2/2", "source_quality": "pass 3/3", "unsupported_claims": "fail"},
+      "package": "pointblank",
+      "version": "0.12.4",
+      "unsupported_ids": ["cross_record_rules"],
+      "claim_excerpt": "failed rows can be extracted for row-based checks",
+      "claim_classification": "evidence_coverage_gap",
+      "factuality": "not_determinable",
+      "primary_error": {"origin": "mcp_server", "category": "upstream", "reason_code": "MCP_PROVIDER_ERROR", "source_code": "source_unavailable"},
+      "partial_tool_event": {"tool": "get_package", "package": "pointblank", "call_number": 1, "call_status": "ok", "verification_status": "partial", "source_count": 2, "diagnostic": "source_unavailable"},
+      "effect_on_final_answer": "not_determinable"
+    },
+    {
+      "trial_id": "b1-discovery-D03-R2-treatment",
+      "status": "unsupported_for_automatic_scoring",
+      "checks": {"schema_validity": "pass 1/1", "factual_correctness": "pass 4/4", "version_repository_identity": "pass 2/2", "source_quality": "pass 3/3", "unsupported_claims": "fail"},
+      "package": "pointblank",
+      "version": "0.12.4",
+      "unsupported_ids": ["cross_record_rules"],
+      "claim_excerpt": "failed-row extracts are limited to row-based checks",
+      "claim_classification": "evidence_coverage_gap",
+      "factuality": "not_determinable",
+      "primary_error": {"origin": "candidate", "category": "r_runtime", "reason_code": "R_RUNTIME_ERROR", "source_code": "unsupported_for_automatic_scoring"}
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-control",
+      "status": "unsupported_for_automatic_scoring",
+      "checks": {"schema_validity": "pass 1/1", "factual_correctness": "fail 3/4", "version_repository_identity": "pass 2/2", "source_quality": "fail 2/3", "unsupported_claims": "fail"},
+      "package": "termr",
+      "version": "1.0.1",
+      "unsupported_ids": ["keyboard_single_multi_select"],
+      "claim_classification": "evidence_coverage_gap",
+      "factuality": "not_determinable",
+      "missing_required_caveats": ["some_apis_experimental"],
+      "failed_check_details": ["documented_limits", "official_documentation_url"],
+      "documentation_url_used": "https://cran.r-project.org/web/packages/termr/index.html",
+      "primary_error": {"origin": "candidate", "category": "r_runtime", "reason_code": "R_RUNTIME_ERROR", "source_code": "unsupported_for_automatic_scoring"}
+    },
+    {
+      "trial_id": "b1-discovery-D01-R2-treatment",
+      "status": "unsupported_for_automatic_scoring",
+      "checks": {"schema_validity": "pass 1/1", "factual_correctness": "pass 4/4", "version_repository_identity": "pass 2/2", "source_quality": "fail 2/3", "unsupported_claims": "fail"},
+      "package": "termr",
+      "version": "1.0.1",
+      "unsupported_ids": ["keyboard_single_multi_select"],
+      "claim_classification": "evidence_coverage_gap",
+      "factuality": "not_determinable",
+      "failed_check_details": ["official_documentation_url"],
+      "documentation_url_used": "https://cran.r-project.org/web/packages/termr/index.html",
+      "primary_error": {"origin": "candidate", "category": "r_runtime", "reason_code": "R_RUNTIME_ERROR", "source_code": "unsupported_for_automatic_scoring"}
+    }
+  ],
+  "scorer_audit": {
+    "scorer": "knowledge-pilot-v2",
+    "unsupported_trigger": "supplied feature/caveat IDs outside required_features/required_caveats set unsupported_claims",
+    "trigger_per_trial": {
+      "D03-R1-control": ["cross_record_rules"],
+      "D03-R1-treatment": ["cross_record_rules"],
+      "D03-R2-control": ["cross_record_rules"],
+      "D03-R2-treatment": ["cross_record_rules"],
+      "D01-R2-control": ["keyboard_single_multi_select"],
+      "D01-R2-treatment": ["keyboard_single_multi_select"]
+    },
+    "proven_factual_false_positive": false,
+    "confirmed_design_issue": "required feature lists are treated as exhaustive supported-claim allow-lists; an extra task-allowed feature is rejected without checking the documentation evidence",
+    "recommended_change": "store per-package source-backed supported feature/caveat inventories separately from required minimums; test a documented extra claim and a truly unsupported claim",
+    "scorer_modified": false
+  },
+  "docs_not_found": {
+    "total_events": 59,
+    "control_events": 33,
+    "treatment_events": 26,
+    "distinct_argument_fingerprints": 59,
+      "get_function_docs_distinct_fingerprints": {"control": 64, "treatment": 60},
+    "identical_retries_after_error": 0,
+    "similar_calls": {"control": 58, "treatment": 53},
+    "projected_package_function_identities": 42,
+    "projected_identity_counts_by_package": {"termr": 28, "climenu": 12, "validate": 2},
+    "projected_error_request_names": {
+      "climenu@0.2.0": ["choose_menu", "climenu", "climenu_menu", "multi_menu", "multi_select_menu", "multiple_menu", "multiple_select", "select_menu", "single_menu", "single_select"],
+      "climenu@unknown": ["choose", "climenu"],
+      "termr@1.0.1": ["check_box", "check_box_group", "check_list", "checkbox_group", "checkbox_set", "checklist", "choice_list", "key_select", "list_view", "menu", "menu_screen", "menu_select", "multi_select", "multiselect", "new_app", "run_app", "select", "select_input", "select_list", "select_many", "select_menu", "selection_list"],
+      "termr@unknown": ["choice", "menu", "new_app", "select", "select_input", "termr_app"],
+      "validate@1.1.7": ["violations"],
+      "validate@unknown": ["violations"]
+    },
+    "missing_projected_identity": 17,
+    "definitive_root_cause_counts": null,
+    "possible_causes_not_distinguishable_offline": ["function_absent", "wrong_or_guessed_function_name", "wrong_package", "namespace_or_reexport_mismatch", "version_incompatibility", "documentation_provider_limitation", "insufficient_data"],
+    "classification_note": "docs_not_found is an application result and does not by itself establish a provider outage or prove a function is absent."
+  },
+  "tool_effectiveness": {
+    "get_function_docs": {
+      "control": {"calls": 67, "success": 34, "docs_not_found": 33, "exact_repeats": 3, "page_truncated": 11, "output_truncated": 0},
+      "treatment": {"calls": 65, "success": 39, "docs_not_found": 26, "exact_repeats": 5, "page_truncated": 13, "output_truncated": 0}
+    },
+    "get_package": {
+      "control": {"calls": 9, "verified": 7, "partial": 1, "errors": 1, "error_code": "not_configured"},
+      "treatment": {"calls": 7, "verified": 7, "partial": 0, "errors": 0}
+    },
+    "search_packages": {"control": {"calls": 4, "verified": 4, "errors": 0}, "treatment": {"calls": 5, "verified": 5, "errors": 0}},
+    "search_r_documentation": {"control": {"calls": 0}, "treatment": {"calls": 2, "success": 1, "invalid_input": 1}},
+    "projection_coverage": "42/59 docs_not_found events include package/function identity"
+  },
+  "error_classification": {
+    "bug_confirmed": true,
+    "bug": "unsupported_for_automatic_scoring falls through to R_RUNTIME_ERROR when no explicit scorer reason is present",
+    "affected_trials": ["D03-R1-control", "D03-R1-treatment", "D03-R2-treatment", "D01-R2-control", "D01-R2-treatment"],
+    "D03_R2_control": "source_unavailable from partial get_package(pointblank) is promoted to primary because unsupported outcome enters the failed-trial path; final-answer causality is unproven",
+    "recommended_regression_cases": ["unsupported scorer result with no runtime exception", "unsupported result plus recoverable partial MCP source_unavailable"],
+    "classifier_modified": false,
+    "historical_results_modified": false
+  },
+  "control_treatment": {
+    "overall": {
+      "calls": {"control": 80, "treatment": 79},
+      "distinct_argument_fingerprints": {"control": 77, "treatment": 74},
+      "successful_calls_metrics_definition": {"control": 45, "treatment": 52},
+      "partial_calls": {"control": 1, "treatment": 0},
+      "application_errors": {"control": 34, "treatment": 27},
+      "docs_not_found": {"control": 33, "treatment": 26},
+      "exact_repeats": {"control": 3, "treatment": 5},
+      "repeated_identically_after_error": {"control": 0, "treatment": 0}
+    },
+    "task_call_totals": {
+      "D01_control": {"calls": 55, "docs_not_found": 32},
+      "D01_treatment": {"calls": 50, "docs_not_found": 24},
+      "D03_control": {"calls": 25, "docs_not_found": 1},
+      "D03_treatment": {"calls": 29, "docs_not_found": 2}
+    },
+      "mean_trial_duration_seconds": {"control": 117.699, "treatment": 100.315},
+      "mean_duration_seconds_by_task": {
+        "C01": {"control": 57.264, "treatment": 56.1},
+        "D01": {"control": 133.397, "treatment": 129.386},
+        "D03": {"control": 162.435, "treatment": 115.459}
+      },
+      "pair_comparability": {
+        "C01_R1": true,
+        "C01_R2": true,
+        "D01_R1": false,
+        "D01_R2": false,
+        "D03_R1": false,
+        "D03_R2": false
+      },
+    "pair_examples": {
+      "D01_R2_control": {"calls": 36, "docs_not_found": 22},
+      "D01_R2_treatment": {"calls": 32, "docs_not_found": 16}
+    },
+    "causal_effect_established": false,
+    "reason": "two repetitions per task/condition, dependent calls within trials, and unsupported score pairs"
+  },
+  "prioritized_recommendations": [
+    "Separate required minimum facts from exhaustive source-backed supported-claim inventories.",
+    "Map unsupported scorer status to a scorer abstention reason rather than R_RUNTIME_ERROR.",
+    "Preserve safe package/function/version identities for all docs_not_found observations.",
+    "Validate function names against package indexes before exploratory retries.",
+    "Distinguish package-page URLs from documentation-manual URLs in task guidance and results.",
+    "Keep unsupported pairs out of score comparisons and report call changes descriptively."
+  ],
+  "remaining_unknowns": [
+    "Whether pointblank 0.12.4 documentation supports cross_record_rules/rows_distinct in the frozen version.",
+    "Whether termr 1.0.1 supports the asserted keyboard_single_multi_select behavior in the frozen version.",
+    "Definitive root causes for the 59 docs_not_found calls, including 17 without projected identity.",
+    "Whether successful or partial documentation responses changed the final answers.",
+    "Causal effect of Treatment on calls, answer quality or duration.",
+    "Cost and token usage; saved values are unavailable."
+  ],
+  "checks_performed": [
+    "Read-only inspection of run result JSON, experiment metadata and paired comparison JSON.",
+    "Compared all six saved answer artifacts with their saved V2 dimension results and frozen candidate facts.",
+    "Aggregated MCP call and metrics CSVs and projected package/function identities from the V2 observation JSONL.",
+    "Read scorer logic, error classification logic, task contracts and local frozen D01/D03 metadata/reference files.",
+    "No tests or full test suite run; no implementation changed."
+  ],
+  "output_files": [
+    "benchmarks/codex_r/reports/b1_discovery_offline_audit_20261026.md",
+    "benchmarks/codex_r/reports/b1_discovery_offline_audit_20261026.json"
+  ]
+}

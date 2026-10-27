@@ -2209,16 +2209,14 @@ def _terminate_process_tree(process: subprocess.Popen) -> dict:
     """Terminate only the process group created by the fixed offline probe."""
     if os.name == "nt":
         try:
-            result = subprocess.run(
-                ["taskkill.exe", "/PID", str(process.pid), "/T", "/F"],
-                capture_output=True,
-                timeout=5,
-                check=False,
-            )
-            return {"method": "taskkill_tree", "exit_code": result.returncode}
-        except (OSError, subprocess.TimeoutExpired):
+            # The Windows probe deliberately does not spawn a descendant, since
+            # taskkill/pipe inheritance is unreliable in restricted sandboxes.
             process.kill()
-            return {"method": "root_only_fallback", "exit_code": None}
+            return {"method": "windows_root_process_terminate", "exit_code": 0}
+        except OSError:
+            if process.poll() is not None:
+                return {"method": "already_exited", "exit_code": 0}
+            raise
     try:
         os.killpg(process.pid, signal.SIGKILL)
         return {"method": "process_group_sigkill", "exit_code": 0}

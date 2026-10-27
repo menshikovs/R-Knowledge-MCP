@@ -6,6 +6,7 @@ import socket
 import subprocess
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import httpx
 import pytest
@@ -195,6 +196,64 @@ def session_record(url):
     }
 
 
+SYNTHETIC_ATTEMPT_ID = "R01-A/attempt-1"
+SYNTHETIC_SPEND_LIMIT_CENTS = 1000
+
+
+def synthetic_authorization(attempt_id=SYNTHETIC_ATTEMPT_ID):
+    """Match the current session spend-control contract without live authorization."""
+    return {
+        "synthetic": True,
+        "authorization_id": "a" * 32,
+        "schema_version": 2,
+        "spend_control_approval": {
+            "limit_cents": SYNTHETIC_SPEND_LIMIT_CENTS,
+            "attempt_id": attempt_id,
+            "typed_confirmation": (
+                f"APPROVE SESSION SPEND LIMIT {SYNTHETIC_SPEND_LIMIT_CENTS} USD CENTS "
+                f"FOR {attempt_id}"
+            ),
+        },
+    }
+
+
+def synthetic_spend_control_limit(authorization, context):
+    """Validate fixture binding while skipping the closed historical-attempt guard only."""
+    approval = authorization.get("spend_control_approval")
+    attempt_id = context.get("attempt_id")
+    if (
+        authorization.get("synthetic") is not True
+        or type(authorization.get("schema_version")) is not int
+        or authorization.get("schema_version") != 2
+        or not isinstance(approval, dict)
+        or set(approval) != {"limit_cents", "attempt_id", "typed_confirmation"}
+        or approval.get("attempt_id") != attempt_id
+        or approval.get("typed_confirmation")
+        != (f"APPROVE SESSION SPEND LIMIT {approval.get('limit_cents')} USD CENTS FOR {attempt_id}")
+    ):
+        raise AssertionError("Synthetic spend-control approval is not bound to this attempt")
+    return managed.validate_spend_control_limit(approval.get("limit_cents"))
+
+
+def test_synthetic_authorization_matches_the_session_spend_control_contract():
+    contract_attempt_id = "R01-A/synthetic-contract-test"
+    authorization = synthetic_authorization(contract_attempt_id)
+    limit = lifecycle._approved_session_spend_limit(
+        authorization, {"attempt_id": contract_attempt_id}
+    )
+    config = managed.build_agent_config(
+        {
+            "trial_id": "R01-A",
+            "condition": "A",
+            "model": "gpt-6-luna",
+            "reasoning_effort": "medium",
+            "expected_tools": [],
+        },
+        spend_control_limit_cents=limit,
+    )
+    assert config["spend_control"] == {"limit": SYNTHETIC_SPEND_LIMIT_CENTS}
+
+
 @pytest.mark.parametrize("url", ACCEPTED)
 def test_shared_policy_traverses_actual_executor_startup_unchanged(workspace, url):
     checked = managed.validate_environment_record(session_record(url))
@@ -311,6 +370,7 @@ def run_synthetic(
     )
     context = {
         "trial_id": "R01-A",
+        "attempt_id": SYNTHETIC_ATTEMPT_ID,
         "condition": "A",
         "model": "gpt-6-luna",
         "reasoning_effort": "medium",
@@ -318,11 +378,18 @@ def run_synthetic(
         "workspace": str(workspace),
     }
     try:
-        record = control.run_one(
-            context=context,
-            authorization={"synthetic": True},
-            state_directory=workspace.parent / "synthetic-state",
-        )
+        # This harness uses a closed historical journal identity. Stub only that guard;
+        # the fixture still verifies its bound mock approval and the client validates the cap.
+        with patch.object(
+            lifecycle,
+            "_approved_session_spend_limit",
+            side_effect=synthetic_spend_control_limit,
+        ):
+            record = control.run_one(
+                context=context,
+                authorization=synthetic_authorization(),
+                state_directory=workspace.parent / "synthetic-state",
+            )
     except lifecycle.LifecycleError as exc:
         record = exc.audit_record
     return record, docker, routes

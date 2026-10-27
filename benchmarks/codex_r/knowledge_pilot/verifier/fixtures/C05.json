@@ -1,0 +1,10 @@
+{
+  "request": {"packages": "ggplot2", "from": "2012-10-01", "to": "last-day"},
+  "response": [
+    {"package": "ggplot2", "date": "2012-10-01", "count": 12},
+    {"package": "ggplot2", "date": "2012-10-02", "count": 0},
+    {"package": "ggplot2", "date": "2020-03-15", "count": 29},
+    {"package": "ggplot2", "date": "2026-10-20", "count": null},
+    {"package": "ggplot2", "date": "2026-10-21", "count": 40}
+  ]
+}

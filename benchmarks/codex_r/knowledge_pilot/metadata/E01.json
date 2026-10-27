@@ -1,0 +1,7 @@
+{
+  "id": "E01",
+  "environment": {"r": "4.5.2", "packages": {}},
+  "checked_at_utc": "2026-10-25T10:47:27Z",
+  "sources": [{"url":"https://bioconductor.org/about/release-announcements/","kind":"official_release_table","fact":"Bioconductor 3.22 maps to R 4.5"},{"url":"https://bioconductor.org/packages/3.22/bioc/html/DESeq2.html","kind":"official_package_metadata","package":"DESeq2","version":"1.50.2"},{"url":"https://cran.r-project.org/web/packages/ggplot2/DESCRIPTION","kind":"official_cran_description","package":"ggplot2","version":"4.0.3"},{"url":"https://ggplot2.tidyverse.org/news/index.html","kind":"official_maintainer_release_news","package":"ggplot2","version":"4.0.3"}],
+  "snapshot": "metadata/E-source-snapshot.json"
+}

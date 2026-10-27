@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-26T15:49:43.168Z",
+  "feature": "P1-B verified R function discovery",
+  "implementation_status": "implemented; permitted full offline WSL validation passed",
+  "native": {
+    "platform": "Windows amd64",
+    "python": "CPython 3.14.4",
+    "rustc": "1.99.0",
+    "cargo": "1.99.0",
+    "module": "cran_knowledge_native",
+    "abi_version": 3,
+    "wheel": "native/target/p1b-wheels/cran_knowledge_native-0.1.0-cp311-abi3-win_amd64.whl",
+    "build": "maturin build --release --offline -i ../.venv/Scripts/python.exe --out target/p1b-wheels",
+    "build_passed": true,
+    "import_passed": true,
+    "cargo_fmt_check": "passed",
+    "cargo_check_offline": "passed",
+    "cargo_clippy": "passed: cargo clippy --offline --release -- -D warnings",
+    "cargo_test": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0
+    },
+    "targeted_pytest": {
+      "passed": 145,
+      "failed": 0,
+      "skipped": 0,
+      "junit_seconds": 6.344
+    }
+  },
+  "python_fallback": {
+    "platform": "Ubuntu WSL",
+    "python": "CPython 3.14.4",
+    "native_available": false,
+    "targeted_pytest": {
+      "passed": 102,
+      "failed": 0,
+      "skipped": 43
+    },
+    "skip_reason": "Native-only fixtures, parity and binding tests skipped; actual native parity was separately tested in Windows.",
+    "linux_rust_and_maturin_available": false
+  },
+  "lint": {
+    "ruff_check": "passed in WSL",
+    "ruff_format_check": {
+      "passed": true,
+      "files": 255
+    },
+    "native_ci_yaml_parse": "passed; CI itself was not executed"
+  },
+  "replay": {
+    "total": 59,
+    "identity_preserved": 42,
+    "excluded_missing_identity": 17,
+    "excluded_missing_source": 42,
+    "evaluated": 0,
+    "historical_metrics": null
+  },
+  "integrity": {
+    "benchmarks/codex_r/results/20261026T104750Z-f78eabf1/results.json": "8dab038ca58f683c377e5684546a864cd01748c3e35c60f775af644b1b4e02e0",
+    "benchmarks/codex_r/results/20261026T104750Z-f78eabf1/experiment.json": "77f7313561f82f742ba578d239cf50df79473fc7b9b1233a11b2797495f0dfba",
+    "benchmarks/codex_r/results/20261026T104750Z-f78eabf1/mcp_calls.csv": "1bb09ca742f84ada275e40192ec948e7c348d92036cf32f83f7629359e7a951b",
+    "benchmarks/codex_r/results/20261026T104750Z-f78eabf1/mcp_observations_v2.jsonl": "b4bf3d56f52fda47b9e2d18c02ee689638d353490f37fefa016cb707920f010c",
+    "benchmarks/codex_r/scorer_evidence/knowledge_pilot_claims_v2_1.json": "af2ce8d3a9ed944fa9179bcd4ae03138ffb26e1175f08471ed5ada17dadb864f",
+    "src/cran_knowledge_mcp/mcp_discovery.py": "dbaf2f91446be6f600eebf5910ed73d78c3ccbada8173eb507c6300492f60882"
+  },
+  "known_baseline_checks": {
+    "results_json_matches_recorded_sha256": true,
+    "frozen_v21_evidence_matches_recorded_sha256": true
+  },
+  "prohibited_external_actions": {
+    "models": 0,
+    "real_agents_api_sessions": 0,
+    "real_benchmark_trials": 0,
+    "docker_execution": 0,
+    "live_package_requests": 0,
+    "package_archive_downloads": 0
+  },
+  "r_execution_note": {
+    "feature_executes_r": false,
+    "development_test_collection_readiness_probes": 2,
+    "description": "Two early full WSL pytest collections invoked the existing launcher r_ready Rscript dependency probe. This was discovered, disclosed, and subsequent full runs excluded tests/test_codex_launcher.py to avoid further R execution. No package source, NAMESPACE or Rd was evaluated by the new feature."
+  },
+  "full_offline_suite": {
+    "status": "passed",
+    "command": "wsl -d Ubuntu --cd /mnt/c/programming_pj/cran-mcp --exec .venv-wsl/bin/python -m pytest -q --tb=short -m 'not docker' --ignore=tests/test_codex_launcher.py -o usefixtures=r01a_offline_guard --basetemp=/tmp/cran-mcp-p1b-resumed-review --junitxml=.test-tmp/p1b-resumed-review.xml",
+    "exclusions": [
+      "Docker-marked tests",
+      "R-executing tests/test_codex_launcher.py"
+    ],
+    "junit_path": ".test-tmp/p1b-resumed-review.xml",
+    "log_path": ".test-tmp/p1b-resumed-review.log",
+    "exit_code": 0,
+    "passed": 1474,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 43,
+    "deselected": 22,
+    "elapsed_seconds": 1308.63,
+    "junit_seconds": 1308.585,
+    "skip_reasons": {
+      "cran_knowledge_native is not installed": 9,
+      "actual PyO3 module is unavailable; parity not verified": 9,
+      "PyO3 unavailable; binding checks not verified": 1,
+      "cran-knowledge-native is not installed": 24
+    }
+  },
+  "development_validation_notes": [
+    "Initial full Windows run: 231 failed, 1225 passed, 74 skipped, 22 deselected; repository-internal temporary paths and Windows POSIX-private-evidence limitations made it unsuitable as release validation.",
+    "The docs miss checked_at compatibility regression was fixed by preserving original failed-envelope fields and adding separately labelled source evidence; the original prompt contract test remains unchanged.",
+    "Intermediate WSL runs were interrupted after newly identified compatibility/security or test-boundary issues; their partial counts are not claimed as a passing full suite.",
+    "Final review fixed method identity collisions across distinct generics and bounded replay fixture/inventory memory.",
+    "The previous final WSL process disappeared after 66% when the session stopped; no JUnit/summary was produced. It is not counted as passed. The user requested continuation and the permitted full suite was restarted with a fresh temporary directory."
+  ],
+  "remaining_limitations": [
+    "No real B1 target source snapshots are available; no numerical historical or agent improvement is measured.",
+    "Linux native compilation was unavailable locally; Windows actual PyO3 parity passed and a native Linux CI job was added.",
+    "R launcher and Docker checks are intentionally excluded under the task boundaries.",
+    "Static namespace declarations and literal Rd aliases do not prove runtime callability."
+  ],
+  "changed_files": [
+    ".github/workflows/tests.yml",
+    "README.md",
+    "docs/ARCHITECTURE.md",
+    "docs/FUNCTION_DISCOVERY.md",
+    "docs/architecture/function-discovery-python-rust.md",
+    "native/src/lib.rs",
+    "src/cran_knowledge_mcp/config.py",
+    "src/cran_knowledge_mcp/parsers.py",
+    "src/cran_knowledge_mcp/function_discovery.py",
+    "src/cran_knowledge_mcp/providers/base.py",
+    "src/cran_knowledge_mcp/providers/protocol.py",
+    "src/cran_knowledge_mcp/server.py",
+    "src/cran_knowledge_mcp/service.py",
+    "tests/data/function_discovery_cases.json",
+    "tests/test_function_discovery.py",
+    "tests/test_function_discovery_replay.py",
+    "tests/test_consolidated_server.py",
+    "tests/test_bioconductor.py",
+    "benchmarks/codex_r/replay_function_discovery.py",
+    "benchmarks/codex_r/reports/p1b_function_discovery_replay.md",
+    "benchmarks/codex_r/reports/p1b_function_discovery_replay.json",
+    "benchmarks/codex_r/reports/b2_function_discovery_design.md",
+    "benchmarks/codex_r/reports/p1b_function_discovery_verification.json",
+    "benchmarks/codex_r/reports/p1b_function_discovery_verification.md"
+  ],
+  "release_readiness": "NOT READY for an unconditional whole-project release: permitted offline suite and Windows native validation passed; R launcher/Docker checks and local Linux-native build remain unverified."
+}

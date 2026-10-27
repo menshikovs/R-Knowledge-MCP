@@ -110,6 +110,7 @@ def _authorization_store(root, role_state):
         issuer_role="synthetic-issuer",
         runtime_role="synthetic-runtime",
         current_role=lambda: role_state["value"],
+        sync_directory=(lambda _path: True) if os.name == "nt" else None,
     )
 
 
@@ -1893,6 +1894,7 @@ data = json.load(sys.stdin)
 store = module.OfflineStagingAuthorizationStore(
     Path(data["root"]), synthetic=True, issuer_role="synthetic-issuer",
     runtime_role="synthetic-runtime", current_role=lambda: "synthetic-runtime",
+    sync_directory=lambda _path: True,
 )
 journal = module.StagingJournal(Path(data["journal"]), synthetic=True)
 Path(data["ready"]).write_text("ready", encoding="ascii")
@@ -2783,6 +2785,8 @@ def _solo_request(limit=137):
 
 
 def _solo_store(tmp_path, *, accept=True, tty=True):
+    if sys.platform != "linux":
+        pytest.skip("Solo-operator durable evidence requires private Linux filesystem state")
     state = tmp_path / "solo-state"
     state.mkdir(mode=0o700)
     terminal = _SoloTerminal(accept=accept, tty=tty)
@@ -3914,7 +3918,7 @@ def test_solo_operator_private_record_and_symlink_checks_are_fail_closed(tmp_pat
 
 def test_solo_operator_cli_inspection_does_not_create_missing_state(tmp_path):
     state = tmp_path / "missing-store"
-    state.mkdir(mode=0o700)
+    state.mkdir()
     path = ROOT / "benchmarks/codex_r/exploratory/f09_solo_operator.py"
     result = subprocess.run(
         [sys.executable, "-B", str(path), "inspect", "--state-dir", str(state)],
