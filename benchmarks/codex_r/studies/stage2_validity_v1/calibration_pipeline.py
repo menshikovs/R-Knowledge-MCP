@@ -18,7 +18,7 @@ import math
 from pathlib import Path
 from typing import Any
 
-from . import calibration, manifest, runner
+from . import calibration, manifest, records, runner
 
 STUDY_ROOT = Path(__file__).resolve().parent
 CODEX_ROOT = STUDY_ROOT.parents[1]
@@ -191,6 +191,77 @@ def audit_task_eligibility() -> dict[str, Any]:
     }
 
 
+def validate_calibration_schedule(schedule: dict[str, Any]) -> list[str]:
+    """Validate structural and methodological integrity of a baseline calibration schedule.
+
+    Returns a list of problems (empty if valid).
+    """
+    problems: list[str] = []
+    if not isinstance(schedule, dict):
+        return ["schedule must be a dictionary"]
+
+    if schedule.get("schedule_version") != "stage27-calibration-schedule-v1.0":
+        problems.append("invalid or missing schedule_version")
+
+    arms = schedule.get("arms")
+    if arms != ["A"]:
+        problems.append(f"baseline calibration schedule must specify arms=['A'], got {arms!r}")
+
+    tasks = schedule.get("candidate_tasks")
+    if not isinstance(tasks, list) or not tasks:
+        problems.append("candidate_tasks must be a non-empty list")
+    elif len(set(tasks)) != len(tasks):
+        problems.append("duplicate tasks in candidate_tasks")
+
+    reps = schedule.get("repetitions_per_task")
+    if not isinstance(reps, int) or reps < 1:
+        problems.append("repetitions_per_task must be an integer >= 1")
+
+    trials = schedule.get("trials")
+    if not isinstance(trials, list):
+        problems.append("trials must be a list")
+        return problems
+
+    if isinstance(tasks, list) and isinstance(reps, int):
+        expected_count = len(tasks) * reps
+        if len(trials) != expected_count:
+            problems.append(
+                f"expected {expected_count} trials ({len(tasks)} tasks x {reps} reps), "
+                f"got {len(trials)}"
+            )
+
+    trial_ids: set[str] = set()
+    for idx, trial in enumerate(trials, start=1):
+        if not isinstance(trial, dict):
+            problems.append(f"trial {idx} is not a dictionary")
+            continue
+        tid = trial.get("trial_id")
+        if not tid:
+            problems.append(f"trial {idx} missing trial_id")
+        elif tid in trial_ids:
+            problems.append(f"duplicate trial_id: {tid}")
+        else:
+            trial_ids.add(tid)
+
+        task = trial.get("task")
+        if not task or (isinstance(tasks, list) and task not in tasks):
+            problems.append(f"trial {idx} has invalid task: {task!r}")
+
+        arm = trial.get("arm")
+        if arm != "A":
+            problems.append(f"trial {idx} ({tid}) specifies arm {arm!r}, expected 'A'")
+
+        rep = trial.get("repetition")
+        if not isinstance(rep, int) or rep < 1 or (isinstance(reps, int) and rep > reps):
+            problems.append(f"trial {idx} ({tid}) has invalid repetition: {rep!r}")
+
+        for key in ("scorer_version", "task_sha256", "scorer_sha256"):
+            if not trial.get(key):
+                problems.append(f"trial {idx} ({tid}) missing required metadata key: {key}")
+
+    return problems
+
+
 def build_calibration_schedule(seed: int = 20261028) -> dict[str, Any]:
     """Generate the deterministic Arm-A-only baseline calibration schedule.
 
@@ -209,17 +280,23 @@ def build_calibration_schedule(seed: int = 20261028) -> dict[str, Any]:
 
             trial_seed = (seed + trial_idx * 1009) & 0xFFFFFFFF
             trial_id = f"cal-A-{tid}-r{rep}-{trial_idx:03d}"
+            block_id = f"cal-block-{trial_idx:03d}"
 
             trials.append(
                 {
                     "trial_id": trial_id,
+                    "block_id": block_id,
                     "task": tid,
                     "arm": "A",
                     "repetition": rep,
+                    "execution_index": trial_idx,
+                    "position_in_block": 1,
+                    "fresh_context": True,
                     "scorer_version": scorer_name,
                     "task_sha256": task_sha,
                     "scorer_sha256": scorer_sha,
                     "randomization_seed": trial_seed,
+                    "trial_seed": trial_seed,
                     "model": MODEL_IDENTITY,
                     "runtime_image": RUNTIME_IMAGE,
                     "timeout_seconds": TIMEOUT_SECONDS,
@@ -264,6 +341,172 @@ def build_calibration_schedule(seed: int = 20261028) -> dict[str, Any]:
         },
         "model_execution_authorized": False,
         "trials": trials,
+    }
+
+
+def execute_calibration(
+    schedule: dict[str, Any] | Path,
+    out_dir: Path,
+    *,
+    authorize_spend: bool = False,
+    mock: bool = False,
+    seed: int = 20261028,
+    executor: runner.TrialAttemptExecutor | None = None,
+) -> dict[str, Any]:
+    """Execute the Arm-A-only baseline calibration schedule.
+
+    Safety & authorization contract:
+    - Never executes paid model API calls without explicit `authorize_spend=True` AND
+      a valid `OPENAI_API_KEY` in the host environment.
+    - If `mock=True`, executes deterministically offline using `runner.make_mock_trial_executor`.
+    - Persists Stage 2 schema-compliant `trial_records.jsonl` and append-only
+      `ledger_journal.jsonl`.
+    - Resumes idempotently: trials already finalized are not re-executed.
+    """
+    if isinstance(schedule, (str, Path)):
+        schedule_path = Path(schedule)
+        schedule_data = json.loads(schedule_path.read_text(encoding="utf-8"))
+    else:
+        schedule_data = schedule
+
+    problems = validate_calibration_schedule(schedule_data)
+    if problems:
+        raise ValueError(f"Invalid calibration schedule: {problems}")
+
+    if not authorize_spend and not mock:
+        raise RuntimeError(
+            "Model execution budget not authorized. Pass --authorize-spend to confirm "
+            "budget allocation and run live trials, or pass --mock to run isolated mock validation."
+        )
+
+    if authorize_spend and not mock:
+        import os
+
+        if not os.environ.get("OPENAI_API_KEY"):
+            raise RuntimeError(
+                "OPENAI_API_KEY is not set in the host environment. Real model calibration "
+                "requires a valid API key in the host environment."
+            )
+        raise NotImplementedError(
+            "Live paid model calibration execution is gated pending project owner authorization "
+            "and backend harness integration."
+        )
+
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    staging_dir = out_dir / "staging"
+    staging_dir.mkdir(parents=True, exist_ok=True)
+    workspaces_dir = out_dir / "workspaces"
+    workspaces_dir.mkdir(parents=True, exist_ok=True)
+    records_path = out_dir / "trial_records.jsonl"
+    journal_path = out_dir / "ledger_journal.jsonl"
+
+    (out_dir / "schedule.json").write_text(
+        json.dumps(schedule_data, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    cfg = runner.StudyExecutionConfig(
+        study_id=schedule_data.get("study_id", "stage27_baseline_calibration"),
+        stage="baseline_calibration_mock",
+        timeout_seconds=TIMEOUT_SECONDS,
+        max_infra_retries=0,
+        stop_on_invalidating_violation=True,
+        synthetic=True,
+    )
+    (out_dir / "run_config.json").write_text(
+        json.dumps(cfg.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    finalized: dict[str, dict[str, Any]] = {}
+    if records_path.exists():
+        for line in records_path.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line:
+                rec = json.loads(line)
+                finalized[rec["trial_id"]] = rec
+
+    def _emit_journal(event: str, **fields: Any) -> None:
+        entry = {"timestamp_utc": runner._utc_now(), "event": event, **fields}
+        with journal_path.open("a", encoding="utf-8") as h:
+            h.write(json.dumps(entry, sort_keys=True) + "\n")
+
+    if executor is None:
+        executor = runner.make_mock_trial_executor(effect_b=0.0, effect_c_over_b=0.0)
+
+    ordered_trials = sorted(schedule_data["trials"], key=lambda t: t["execution_index"])
+    for planned_trial in ordered_trials:
+        tid = planned_trial["trial_id"]
+        if tid in finalized:
+            _emit_journal("trial_skipped_already_finalized", trial_id=tid)
+            continue
+
+        attempt_id = f"{tid}__att01"
+        workspace_dir = workspaces_dir / attempt_id
+        workspace_dir.mkdir(parents=True, exist_ok=True)
+
+        spec = runner.build_trial_invocation_spec(planned_trial, cfg)
+        staging_marker = staging_dir / f"{tid}.staging.json"
+        staging_marker.write_text(
+            json.dumps({"trial_id": tid, "attempt_id": attempt_id, "stage": "executing"}),
+            encoding="utf-8",
+        )
+        _emit_journal(
+            "trial_attempt_started",
+            trial_id=tid,
+            attempt_id=attempt_id,
+            task=planned_trial["task"],
+            arm="A",
+            repetition=planned_trial["repetition"],
+        )
+
+        raw_out = executor(spec, 1, workspace_dir)
+        runner_record = raw_out["runner_record"]
+        telemetry_events = raw_out.get("telemetry_events", [])
+        expected = cfg.expected_contract(spec["scorer_version"])
+        stage2_rec = records.from_runner_result(
+            planned_trial, runner_record, telemetry_events, expected
+        )
+        stage2_rec["synthetic"] = True
+
+        staging_marker.write_text(
+            json.dumps(
+                {"trial_id": tid, "attempt_id": attempt_id, "stage": "scored_pending_commit"}
+            ),
+            encoding="utf-8",
+        )
+
+        with records_path.open("a", encoding="utf-8") as h:
+            h.write(json.dumps(stage2_rec, sort_keys=True) + "\n")
+
+        if staging_marker.exists():
+            staging_marker.unlink()
+
+        finalized[tid] = stage2_rec
+        _emit_journal(
+            "trial_attempt_committed",
+            trial_id=tid,
+            attempt_id=attempt_id,
+            outcome_kind=stage2_rec["outcome_kind"],
+            score=stage2_rec["score"],
+        )
+
+    complete_dataset = [
+        finalized[t["trial_id"]] for t in ordered_trials if t["trial_id"] in finalized
+    ]
+    dataset_problems = records.validate_dataset(
+        complete_dataset, [t["trial_id"] for t in ordered_trials]
+    )
+
+    return {
+        "study_id": cfg.study_id,
+        "stage": cfg.stage,
+        "synthetic": True,
+        "total_planned": len(ordered_trials),
+        "finalized_count": len(finalized),
+        "dataset_problems": dataset_problems,
+        "records_path": str(records_path),
+        "journal_path": str(journal_path),
+        "records": complete_dataset,
     }
 
 

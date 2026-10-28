@@ -80,13 +80,35 @@ From [`calibration_eligibility_report.json`](file:///c:/programming_pj/cran-mcp/
   - Expected wall-clock runtime: ~1.2 hours.
 - **Status**: `PREPARED_NOT_EXECUTED`. Zero real model API calls have been run.
 
+### 4.3 Mathematical and Methodological Feasibility Analysis for Confirmatory Quota ($K \ge 30$)
+
+A rigorous audit of the benchmark catalogue reveals fundamental mathematical and methodological blockers to reaching the preregistered confirmatory core threshold ($K \ge 30$ tasks in $S1$):
+
+1. **Schedule Upper-Bound Blocker ($\max(|S1|) = 17 \ll 30$)**:
+   - Current confirmatory core count: $|S1| = 0$.
+   - The calibration schedule tests only the 17 $S2$ candidate tasks.
+   - Even under a theoretical 100% pass rate where all 17 tasks exhibit non-degenerate baseline variance ($\bar{Y}_A \in [0.10, 0.90]$), the maximum possible yield is $0 + 17 = 17$ tasks.
+   - This leaves a deterministic deficit of at least $13$ tasks ($43.3\%$ short of the required 30).
+2. **Whole-Catalogue Blocker ($\text{Total Usable Non-Quarantined Tasks} = 25 < 30$)**:
+   - Total benchmark tasks: $N = 31$.
+   - 6 tasks ($B01$–$B03$, $E01$–$E03$) are quarantined ($Q$) due to historical verifier failures and schema issues.
+   - Total non-quarantined tasks: $31 - 6 = 25$ tasks ($17\ S2 + 8\ RC$).
+   - Even if all 8 $RC$ (recalibration/decoupling) tasks were fully repaired and added to the calibration pool, the entire usable task pool is $25 < 30$.
+   - **Conclusion**: Reaching $K = 30$ confirmatory tasks from the existing 31-task catalogue is mathematically impossible. The benchmark must be expanded by at least $+5$ tasks (and realistically $+15$ to $+20$ tasks to absorb empirical attrition), or the minimum confirmatory threshold must be formally re-specified in the protocol.
+3. **Statistical Attrition Reality (~50%–70% Yield)**:
+   - Historical R-Knowledge-MCP evaluations indicate substantial saturation on either floor ($0.0$) or ceiling ($1.0$).
+   - In realistic empirical calibration, only ~8 to 12 of the 17 $S2$ candidate tasks are expected to fall within $[0.10, 0.90]$.
+4. **Sample-Size Uncertainty at $R = 3$**:
+   - With $R = 3$ observations per task, the Wilson 95% confidence interval for a task with $1/3$ success is $[0.061, 0.792]$ (crosses the $0.10$ floor), and for $2/3$ is $[0.208, 0.939]$ (crosses the $0.90$ ceiling).
+   - Tasks scoring $1/3$ or $2/3$ are flagged as `"inconclusive_sample_size_limited"`. Robust qualification requires $R \ge 5$ baseline repetitions per task.
+
 ---
 
 ## 5. Formal Research Readiness Gates
 
 | Gate | Description | Status | Evidence & Blockers |
 | :--- | :--- | :--- | :--- |
-| **Gate 1** | Offline Research Infrastructure | **`PASS`** | 151 offline validity, artifact, and runner tests pass; 279 frozen evidence files verified with 0 differences. |
+| **Gate 1** | Offline Research Infrastructure | **`PASS`** | 156 offline validity, artifact, runner, and calibration tests pass; 279 frozen evidence files verified with 0 differences. |
 | **Gate 2** | Real Docker Experiment Infrastructure | **`PASS`** | 9 live Docker tests pass (186.2s); 3-trial live CLI smoke test passes on D01 with 12/12 checks and clean teardown. |
 | **Gate 3** | Baseline Model Calibration Execution | **`BLOCKED`** | Awaiting explicit project owner spend authorization; no model API credits authorized. |
 | **Gate 4** | Three-Arm Pilot Execution | **`BLOCKED`** | Awaiting completion of Gate 3 baseline calibration and human pilot spend authorization. |
@@ -97,11 +119,11 @@ From [`calibration_eligibility_report.json`](file:///c:/programming_pj/cran-mcp/
 ## 6. Offline Verification Summary
 
 ```
-============================== 151 passed, 9 deselected in 26.98s ==============================
+============================== 156 passed, 9 deselected in 28.50s ==============================
 - tests/test_stage2_validity.py: 73 passed
 - tests/test_stage2_artifacts.py: 41 passed
 - tests/test_stage26_live_runner.py: 31 passed (offline)
-- tests/test_stage27_calibration.py: 6 passed
+- tests/test_stage27_calibration.py: 11 passed (eligibility, schedule validation, mock execution, CLI commands, blockers)
 - tests/test_stage26_live_runner.py (live Docker): 9 passed (verified in Phase 4 / Stage 2.6)
 - ruff check . & ruff format --check .: 318 files checked, 0 errors, all formatted
 - cli.py frozen --verify: 279 frozen files, 0 differences
@@ -111,24 +133,38 @@ From [`calibration_eligibility_report.json`](file:///c:/programming_pj/cran-mcp/
 
 ## 7. Execution Commands for Authorized Calibration (Future Phase)
 
-When human project owner spend authorization is provided:
+The calibration execution adapter is fully implemented in `calibration_pipeline.py` and exposed via `cli.py`:
 
-1. **Verify Host Docker Engine & Environment**:
-   ```bash
-   python -m benchmarks.codex_r.studies.stage2_validity_v1.cli docker-preflight
-   ```
-2. **Review Readiness Gates**:
+1. **Review Readiness Gates**:
    ```bash
    python -m benchmarks.codex_r.studies.stage2_validity_v1.cli readiness-gates
    ```
-3. **Run 51-Trial Baseline Calibration (Arm A only)**:
+
+2. **Offline Mock Calibration Run (Zero Cost, No Network)**:
+   ```bash
+   python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration \
+     --schedule benchmarks/codex_r/studies/stage2_validity_v1/calibration_schedule.json \
+     --out-dir benchmarks/codex_r/studies/stage2_validity_v1/calibration_runs_mock \
+     --mock
+   ```
+
+3. **Live 51-Trial Baseline Calibration (Arm A only, Requires Spend Authorization)**:
    ```bash
    # Requires OPENAI_API_KEY exported in host shell (never inside containers)
-   python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration --out <calibration_output_dir>
+   export OPENAI_API_KEY="sk-..."
+
+   python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration \
+     --schedule benchmarks/codex_r/studies/stage2_validity_v1/calibration_schedule.json \
+     --out-dir benchmarks/codex_r/studies/stage2_validity_v1/calibration_runs \
+     --authorize-spend
    ```
+
 4. **Evaluate Difficulty & Uncertainty on Calibration Results**:
    ```bash
-   python -m benchmarks.codex_r.studies.stage2_validity_v1.cli evaluate-calibration --records <calibration_output_dir>/trial_records.jsonl
+   python -m benchmarks.codex_r.studies.stage2_validity_v1.cli evaluate-baseline \
+     --records benchmarks/codex_r/studies/stage2_validity_v1/calibration_runs/trial_records.jsonl \
+     --out benchmarks/codex_r/studies/stage2_validity_v1/baseline_difficulty_report.json
    ```
+
 5. **Select Qualified Tasks for S1 Confirmatory Core**:
-   Qualify tasks exhibiting empirical baseline difficulty $\bar{Y}_A \in [0.10, 0.90]$ and non-degenerate variance until $K \ge 30$ tasks are qualified.
+   Qualify tasks exhibiting empirical baseline difficulty $\bar{Y}_A \in [0.10, 0.90]$ and non-degenerate variance until $K \ge 30$ tasks are qualified (addressing catalogue expansion requirements).

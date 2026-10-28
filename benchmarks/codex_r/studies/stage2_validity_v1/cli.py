@@ -20,7 +20,15 @@ import json
 import sys
 from pathlib import Path
 
-from . import (
+STUDY = Path(__file__).resolve().parent
+REPO_ROOT = STUDY.parents[3]
+SRC_DIR = REPO_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from . import (  # noqa: E402
     calibration,
     calibration_pipeline,
     design,
@@ -34,10 +42,9 @@ from . import (
     study_configs,
 )
 
-STUDY = Path(__file__).resolve().parent
-
 
 def _dump(path: Path, data) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps(data, indent=2, sort_keys=False) + "\n", encoding="utf-8", newline="\n"
     )
@@ -96,6 +103,71 @@ def main(argv: list[str] | None = None) -> int:
     cp.add_argument("--out-dir", type=Path, default=STUDY)
     rg = sub.add_parser("readiness-gates")
     rg.add_argument("--out", type=Path, default=STUDY / "readiness_gates_report.json")
+    ec = sub.add_parser(
+        "execute-calibration",
+        help="Execute the Arm-A baseline calibration schedule with mock or authorized models",
+    )
+    ec.add_argument(
+        "--schedule",
+        type=Path,
+        default=STUDY / "calibration_schedule.json",
+        help="Path to calibration_schedule.json (default: study directory)",
+    )
+    ec.add_argument(
+        "--out-dir",
+        type=Path,
+        default=STUDY / "calibration_runs",
+        help="Directory to persist calibration records and journal",
+    )
+    ec.add_argument(
+        "--mock",
+        action="store_true",
+        help="Execute using offline mock model executor without network or API calls",
+    )
+    ec.add_argument(
+        "--authorize-spend",
+        action="store_true",
+        help="Explicitly authorize model API spend (requires OPENAI_API_KEY)",
+    )
+    ec.add_argument(
+        "--seed",
+        type=int,
+        default=20261028,
+        help="Randomization seed",
+    )
+    eb = sub.add_parser(
+        "evaluate-baseline",
+        help="Evaluate baseline difficulty, variance, and uncertainty from Arm A trial records",
+    )
+    eb.add_argument(
+        "--records",
+        type=Path,
+        required=True,
+        help="Path to trial_records.jsonl from calibration run",
+    )
+    eb.add_argument(
+        "--out",
+        type=Path,
+        default=STUDY / "baseline_difficulty_report.json",
+        help="Output path for baseline difficulty report JSON",
+    )
+    # Alias evaluate-calibration to evaluate-baseline for documented compatibility
+    ec_eval = sub.add_parser(
+        "evaluate-calibration",
+        help="Alias for evaluate-baseline",
+    )
+    ec_eval.add_argument(
+        "--records",
+        type=Path,
+        required=True,
+        help="Path to trial_records.jsonl from calibration run",
+    )
+    ec_eval.add_argument(
+        "--out",
+        type=Path,
+        default=STUDY / "baseline_difficulty_report.json",
+        help="Output path for baseline difficulty report JSON",
+    )
     args = parser.parse_args(argv)
 
     if args.command == "summarize-history":
@@ -235,6 +307,35 @@ def main(argv: list[str] | None = None) -> int:
         _dump(args.out, gates)
         for g in gates["gates"]:
             print(f"[{g['status']}] {g['gate_id']}: {g['name']}")
+        return 0
+    elif args.command == "execute-calibration":
+        res = calibration_pipeline.execute_calibration(
+            schedule=args.schedule,
+            out_dir=args.out_dir,
+            authorize_spend=args.authorize_spend,
+            mock=args.mock,
+            seed=args.seed,
+        )
+        print(
+            f"Executed calibration: {res['finalized_count']}/{res['total_planned']} trials "
+            f"persisted to {res['records_path']}"
+        )
+        if res["dataset_problems"]:
+            for prob in res["dataset_problems"][:10]:
+                print(f"  [ERROR] {prob}", file=sys.stderr)
+            return 1
+        return 0
+    elif args.command in ("evaluate-baseline", "evaluate-calibration"):
+        lines = [x for x in args.records.read_text(encoding="utf-8").splitlines() if x.strip()]
+        recs = [json.loads(x) for x in lines]
+        res = calibration_pipeline.evaluate_baseline_difficulty(recs)
+        _dump(args.out, res)
+        print(f"Evaluated baseline difficulty for {res['evaluated_tasks']} tasks -> {args.out}")
+        for tid, tinfo in res["tasks"].items():
+            print(
+                f"  {tid}: mean={tinfo['mean_score']} status={tinfo['uncertainty_status']} "
+                f"class={tinfo['classification']}"
+            )
         return 0
     return 0
 
