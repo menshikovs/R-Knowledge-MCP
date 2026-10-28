@@ -12,7 +12,15 @@ from datetime import UTC, datetime
 from .config import cache_ttl, github_token
 from .diagnostics import awaitable_operation_id, log_internal_failure
 from .errors import KnowledgeError
-from .http import BioconductorHTTP, CranHTTP, package_name, version_parts
+from .http import (
+    BioconductorHTTP,
+    CranHTTP,
+    package_name,
+    unavailable_version_details,
+    version_match,
+    version_parts,
+    version_resolution,
+)
 from .project_analysis import (
     analyze_quarto_document as analyze_quarto_source,
 )
@@ -1645,12 +1653,17 @@ class KnowledgeService:
             info = await self.get_package_info(package, repository, bioc_version, False)
             if "error" in info:
                 return info
-            if version_parts(package_version) != version_parts(info["package_version"]):
+            scope = "latest_cran" if repository == "cran" else "selected_bioconductor_release"
+            if version_match(package_version, info["package_version"]) is None:
+                details = unavailable_version_details(
+                    package_version, info["package_version"], scope
+                )
                 error = KnowledgeError(
                     "requested_version_unavailable",
                     "Only the selected repository's current source documentation is available; "
                     "the requested version was not substituted.",
                     info.get("source_url"),
+                    details=details,
                 )
                 return {
                     **failure(error, package, repository, info.get("bioc_version")),
@@ -1663,21 +1676,30 @@ class KnowledgeService:
             "resolved_package_version"
         )
         if package_version is not None and resolved is not None:
-            if version_parts(package_version) != version_parts(resolved):
+            if version_match(package_version, resolved) is None:
+                scope = "latest_cran" if repository == "cran" else "selected_bioconductor_release"
                 error = KnowledgeError(
                     "requested_version_unavailable",
                     "Package version changed during resolution.",
                     result.get("source_url"),
                     related_sources=result.get("sources", []),
-                    details={
-                        "requested_package_version": package_version,
-                        "available_package_version": resolved,
-                    },
+                    details=unavailable_version_details(package_version, resolved, scope),
                 )
                 return failure(error, package, repository, result.get("bioc_version"))
+        if resolved is not None and "error" not in result:
+            result["requested_package_version"] = package_version
+            result["version_resolution"] = version_resolution(
+                package_version, resolved, result.get("version_scope", "latest_cran")
+            )
         if result.get("error", {}).get("code") == "docs_not_found":
             result["requested_package_version"] = package_version
             result["error"]["requested_package_version"] = package_version
+            if package_version is not None and resolved is not None:
+                result["error"]["version_resolution"] = version_resolution(
+                    package_version,
+                    resolved,
+                    "latest_cran" if repository == "cran" else "selected_bioconductor_release",
+                )
         return result
 
     async def check_r_compatibility(

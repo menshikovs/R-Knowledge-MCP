@@ -1,0 +1,25 @@
+== python 3.11
+3.11.17
+All checks passed!
+278 files already formatted
+1851 tests collected in 14.19s
+303 passed, 31 skipped, 1 warning in 12.90s
+== python 3.12
+3.12.15
+All checks passed!
+278 files already formatted
+1851 tests collected in 11.26s
+303 passed, 31 skipped, 1 warning in 10.84s
+== python 3.13
+3.13.5
+All checks passed!
+278 files already formatted
+1851 tests collected in 10.31s
+303 passed, 31 skipped, 1 warning in 12.01s
+== python 3.14
+3.14.4
+All checks passed!
+278 files already formatted
+1851 tests collected in 12.79s
+303 passed, 31 skipped, 1 warning in 14.39s
+DONE

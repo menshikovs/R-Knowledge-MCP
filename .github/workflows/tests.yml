@@ -82,4 +82,4 @@ jobs:
       - name: Verify actual bindings and semantic parity
         run: |
           python -c "from cran_knowledge_mcp.native import native; assert native is not None"
-          python -m pytest tests/test_native_parity.py tests/test_function_discovery.py tests/test_function_discovery_replay.py -q -o usefixtures=r01a_offline_guard
+          python -m pytest tests/test_native_parity.py tests/test_function_discovery.py tests/test_function_discovery_replay.py tests/test_discovery_status.py tests/test_real_archives.py -q -o usefixtures=r01a_offline_guard

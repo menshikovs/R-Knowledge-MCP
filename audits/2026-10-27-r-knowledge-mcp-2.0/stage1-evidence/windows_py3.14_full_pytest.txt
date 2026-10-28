@@ -1,0 +1,95 @@
+........................................................................ [  3%]
+......................sss............................................... [  7%]
+........................................................................ [ 11%]
+.............................ssssss..................................... [ 15%]
+........................................................................ [ 19%]
+..................................................ss.sssssssssssssssss.s [ 23%]
+ssssssssssss..sssssssss.....sssssss..ssss..ssss.s....................... [ 27%]
+..............s.ssssss.................................................. [ 31%]
+.......................................s................ssssssssssssssss [ 35%]
+ssss.................................................................... [ 38%]
+........................................................................ [ 42%]
+........................................................................ [ 46%]
+...s.........s.s..................................ssssss.....ssss..sssss [ 50%]
+ssssssssssssssssssssssss....................s........................... [ 54%]
+........................................................................ [ 58%]
+........................................................................ [ 62%]
+........................................................................ [ 66%]
+........................................................................ [ 70%]
+........................................................................ [ 73%]
+........................................................................ [ 77%]
+........................................................................ [ 81%]
+........................................................................ [ 85%]
+........................................................................ [ 89%]
+........................................................................ [ 93%]
+..........................ssssss........................................ [ 97%]
+...................................................                      [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\_pytest\config\__init__.py:1464
+  C:\programming_pj\cran-mcp\.venv\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] tests\test_benchmark_telemetry.py:796: Runner uses POSIX signals
+SKIPPED [1] tests\test_benchmark_telemetry.py:817: Runner uses POSIX signals
+SKIPPED [1] tests\test_benchmark_telemetry.py:835: Runner uses POSIX signals
+SKIPPED [6] tests\test_codex_connection_diagnostics.py:328: Probe uses Linux SIGALRM
+SKIPPED [1] tests\test_codex_connectivity_harness.py:2669: Linux replacement of an open file required
+SKIPPED [1] tests\test_codex_connectivity_harness.py:2698: Linux symlink and mode semantics required
+SKIPPED [55] tests\test_codex_connectivity_harness.py:2789: Solo-operator durable evidence requires private Linux filesystem state
+SKIPPED [1] tests\test_codex_docker_runtime.py:231: real F09 ACL integration requires Linux getfacl/setfacl
+SKIPPED [3] tests\test_codex_docker_runtime.py:279: Set R_KNOWLEDGE_BENCH_IMAGE_ID to run real Docker integration tests
+SKIPPED [1] tests\test_codex_docker_runtime.py:298: Set R_KNOWLEDGE_CODEX_IMAGE_ID to test the pinned Codex image
+SKIPPED [1] tests\test_codex_docker_runtime.py:403: Set R_KNOWLEDGE_CODEX_IMAGE_ID to test the restricted executor boundary
+SKIPPED [1] tests\test_codex_docker_runtime.py:430: Set R_KNOWLEDGE_CODEX_IMAGE_ID to test Codex proxy transport
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_hard.py:79: symlinks are not available on this platform
+SKIPPED [1] tests\test_codex_launcher.py:56: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:81: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:111: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:117: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:131: Launcher needs POSIX signals/PTY
+SKIPPED [2] tests\test_codex_launcher.py:142: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:157: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:175: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:245: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:272: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:303: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:313: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:322: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:336: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:360: Launcher needs POSIX signals/PTY
+SKIPPED [3] tests\test_codex_launcher.py:385: Launcher needs POSIX signals/PTY
+SKIPPED [1] tests\test_codex_launcher.py:410: needs BENCH_PYTHON or the .venv-wsl virtual environment of the real runner
+SKIPPED [1] tests\test_codex_managed_agents_lifecycle.py:469: The live lifecycle gate requires private Linux evidence storage
+SKIPPED [1] tests\test_codex_managed_agents_lifecycle.py:754: Windows sandbox does not grant symlink creation privilege
+SKIPPED [1] tests\test_codex_managed_agents_lifecycle.py:774: Pinned Codex/R image IDs and Docker are required
+SKIPPED [6] tests\test_codex_simple.py:213: Runner uses Linux SIGALRM
+SKIPPED [4] tests\test_codex_simple.py:451: POSIX symlink security regression
+SKIPPED [4] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:174: Runner uses POSIX signals
+SKIPPED [4] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:206: Runner uses POSIX signals
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:235: Runner uses POSIX signals
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:255: Runner uses POSIX signals
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:262: Runner uses POSIX signals
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:269: Runner uses POSIX signals
+SKIPPED [2] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:278: Runner uses POSIX signals
+SKIPPED [2] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:287: Runner uses POSIX signals
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:315: Runner uses POSIX signals
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:322: Runner uses POSIX signals
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:330: Runner uses POSIX signals
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:354: Runner uses POSIX signals
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:374: Runner uses POSIX signals
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:384: Runner uses POSIX signals
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:428: Runner uses POSIX signals
+SKIPPED [3] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:442: Runner uses POSIX signals
+SKIPPED [2] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:515: Runner uses POSIX signals
+SKIPPED [1] \mnt\c\programming_pj\cran-mcp\tests\test_codex_simple_interrupts.py:539: Runner uses POSIX signals
+SKIPPED [1] tests\test_codex_single_trial_adapter.py:418: Windows sandbox denied child-process creation; process-tree cleanup unverified
+SKIPPED [1] tests\test_telemetry_integration.py:384: Linux with a Docker CLI is required
+SKIPPED [1] tests\test_telemetry_integration.py:567: Linux with a Docker CLI is required
+SKIPPED [1] tests\test_telemetry_integration.py:609: Linux with a Docker CLI is required
+SKIPPED [1] tests\test_telemetry_integration.py:637: Linux with a Docker CLI is required
+SKIPPED [1] tests\test_telemetry_integration.py:660: Linux with a Docker CLI is required
+SKIPPED [1] tests\test_telemetry_integration.py:688: Linux with a Docker CLI is required
+1708 passed, 143 skipped, 1 warning in 531.30s (0:08:51)

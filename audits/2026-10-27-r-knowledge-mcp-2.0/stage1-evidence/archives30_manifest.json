@@ -1,0 +1,242 @@
+[
+ {
+  "package": "runner",
+  "version": "0.4.6",
+  "url": "https://cloud.r-project.org/src/contrib/runner_0.4.6.tar.gz",
+  "sha256": "faff9f5958ed5f7a71ecfe159d04b5608998a6651b66ea6f595b7612b5555435",
+  "bytes": 1072174,
+  "retrieved_utc": "2026-10-28T10:19:53Z"
+ },
+ {
+  "package": "DIVINE",
+  "version": "0.1.2",
+  "url": "https://cloud.r-project.org/src/contrib/DIVINE_0.1.2.tar.gz",
+  "sha256": "1960027e4105f90433411a61ec4ebddb6deaee69c1274786a338b4ba5b4aa451",
+  "bytes": 428266,
+  "retrieved_utc": "2026-10-28T10:19:54Z"
+ },
+ {
+  "package": "ggnext",
+  "version": "0.1.0",
+  "url": "https://cloud.r-project.org/src/contrib/ggnext_0.1.0.tar.gz",
+  "sha256": "7ea15631e2277f68bbcd402b6f0c673c83121faf875c18a3c6ee8724bd0ed5c8",
+  "bytes": 246030,
+  "retrieved_utc": "2026-10-28T10:19:54Z"
+ },
+ {
+  "package": "mditools",
+  "version": "0.1.1",
+  "url": "https://cloud.r-project.org/src/contrib/mditools_0.1.1.tar.gz",
+  "sha256": "bbf15c4a8e8e0d686e55fcc03f79852910db402020fbbd8dc2c2a68324f805ef",
+  "bytes": 89112,
+  "retrieved_utc": "2026-10-28T10:19:54Z"
+ },
+ {
+  "package": "ipsfs",
+  "version": "1.0.0",
+  "url": "https://cloud.r-project.org/src/contrib/ipsfs_1.0.0.tar.gz",
+  "sha256": "8dd8c427f209329fbd9baa08b1b1f22da2fe15e038fa2d0abab7359b4205eab2",
+  "bytes": 28312,
+  "retrieved_utc": "2026-10-28T10:19:54Z"
+ },
+ {
+  "package": "Rcan",
+  "version": "1.3.92",
+  "url": "https://cloud.r-project.org/src/contrib/Rcan_1.3.92.tar.gz",
+  "sha256": "73fe027384932b31ea5e26e86d6cee87317d9f6651939cd9c3fdea675c6b44d6",
+  "bytes": 1833023,
+  "retrieved_utc": "2026-10-28T10:19:54Z"
+ },
+ {
+  "package": "seecolor",
+  "version": "0.2.0",
+  "url": "https://cloud.r-project.org/src/contrib/seecolor_0.2.0.tar.gz",
+  "sha256": "eeef7a48aef83d44a82ff14c16f84604eb9849a93fe6036bb26a4d551bc2d1e1",
+  "bytes": 4674790,
+  "retrieved_utc": "2026-10-28T10:19:55Z"
+ },
+ {
+  "package": "EWOC.Comb",
+  "version": "1.0",
+  "url": "https://cloud.r-project.org/src/contrib/EWOC.Comb_1.0.tar.gz",
+  "sha256": "e8939d8640af29838b3876712abbd567eb9d04b2f9399084cf1a27713cd66832",
+  "bytes": 18663,
+  "retrieved_utc": "2026-10-28T10:19:55Z"
+ },
+ {
+  "package": "SBI",
+  "version": "0.1.2",
+  "url": "https://cloud.r-project.org/src/contrib/SBI_0.1.2.tar.gz",
+  "sha256": "0232b8ce8b5c25cfbda6dc680ecb357a98556f344de614e9358f708aaf73445c",
+  "bytes": 5093,
+  "retrieved_utc": "2026-10-28T10:19:55Z"
+ },
+ {
+  "package": "climenu",
+  "version": "0.2.0",
+  "url": "https://cloud.r-project.org/src/contrib/climenu_0.2.0.tar.gz",
+  "sha256": "b203bac81d33c30db576137549cd1c52bbc28eff9bcc6d905b228dcd25baafd7",
+  "bytes": 33669,
+  "retrieved_utc": "2026-10-28T10:19:55Z"
+ },
+ {
+  "package": "modelimpact",
+  "version": "1.1.0",
+  "url": "https://cloud.r-project.org/src/contrib/modelimpact_1.1.0.tar.gz",
+  "sha256": "d87564b7f8e13440fdb5789742a31694340b74520cd44cbb5f706665af02060c",
+  "bytes": 449408,
+  "retrieved_utc": "2026-10-28T10:19:55Z"
+ },
+ {
+  "package": "essential8",
+  "version": "0.2.0",
+  "url": "https://cloud.r-project.org/src/contrib/essential8_0.2.0.tar.gz",
+  "sha256": "db041e8a3f9d16b1b40bea6b8aa10f7f807d093ebd571797fb4e8958364374fb",
+  "bytes": 169019,
+  "retrieved_utc": "2026-10-28T10:19:55Z"
+ },
+ {
+  "package": "checkglobals",
+  "version": "0.1.4",
+  "url": "https://cloud.r-project.org/src/contrib/checkglobals_0.1.4.tar.gz",
+  "sha256": "c36c18ab5ad857b3183feaa0fa2c73c26177f63666d819bf499259e53f69f957",
+  "bytes": 35286,
+  "retrieved_utc": "2026-10-28T10:19:56Z"
+ },
+ {
+  "package": "TSEtools",
+  "version": "1.0.0",
+  "url": "https://cloud.r-project.org/src/contrib/TSEtools_1.0.0.tar.gz",
+  "sha256": "e398afa2a3d7dd2f183d81236a7f33fd364b8c192b403b544d93d2cb958f0d01",
+  "bytes": 16531,
+  "retrieved_utc": "2026-10-28T10:19:56Z"
+ },
+ {
+  "package": "RBMRB",
+  "version": "3.0.0",
+  "url": "https://cloud.r-project.org/src/contrib/RBMRB_3.0.0.tar.gz",
+  "sha256": "37f16303396a3ba46651c1a5bbc1fc748578647d6b40dcfee297dfb0820b510e",
+  "bytes": 50986,
+  "retrieved_utc": "2026-10-28T10:19:56Z"
+ },
+ {
+  "package": "tidyREDCap",
+  "version": "2.1.0",
+  "url": "https://cloud.r-project.org/src/contrib/tidyREDCap_2.1.0.tar.gz",
+  "sha256": "5eab1227773d4c93083f73f0ba115e5c5be651279eb2e3cad6a929d092cbbc5d",
+  "bytes": 1271649,
+  "retrieved_utc": "2026-10-28T10:19:57Z"
+ },
+ {
+  "package": "nptest",
+  "version": "1.2",
+  "url": "https://cloud.r-project.org/src/contrib/nptest_1.2.tar.gz",
+  "sha256": "0f38908bd3a4d18cbf6296d70582eddf3053e2b1f5ad18474aa4f0dec3c3b6c8",
+  "bytes": 45536,
+  "retrieved_utc": "2026-10-28T10:19:57Z"
+ },
+ {
+  "package": "mcglm",
+  "version": "0.9.0",
+  "url": "https://cloud.r-project.org/src/contrib/mcglm_0.9.0.tar.gz",
+  "sha256": "7517f7e2c7ff524d4c1aa95e9799089d03df888910450c1404101949dd67fe13",
+  "bytes": 590151,
+  "retrieved_utc": "2026-10-28T10:19:57Z"
+ },
+ {
+  "package": "AdvBinomApps",
+  "version": "1.0",
+  "url": "https://cloud.r-project.org/src/contrib/AdvBinomApps_1.0.tar.gz",
+  "sha256": "8938248f0c5e4cf50da8ab06997fc7fa8ab2e4e2589777a8c388fa2698b1d5b2",
+  "bytes": 12086,
+  "retrieved_utc": "2026-10-28T10:19:57Z"
+ },
+ {
+  "package": "rSEA",
+  "version": "2.1.2",
+  "url": "https://cloud.r-project.org/src/contrib/rSEA_2.1.2.tar.gz",
+  "sha256": "d8e1c2e309361eb99066352f2cf0e4a0b4127c886a51a790a170beaa65ad9124",
+  "bytes": 35508,
+  "retrieved_utc": "2026-10-28T10:19:57Z"
+ },
+ {
+  "package": "ipd",
+  "version": "0.4.1",
+  "url": "https://cloud.r-project.org/src/contrib/ipd_0.4.1.tar.gz",
+  "sha256": "17227df0d3c1e967fa59321ef49a03325ccb556422b82dac7522dbc6fed5a36c",
+  "bytes": 1386585,
+  "retrieved_utc": "2026-10-28T10:19:58Z"
+ },
+ {
+  "package": "fabletools",
+  "version": "0.8.0",
+  "url": "https://cloud.r-project.org/src/contrib/fabletools_0.8.0.tar.gz",
+  "sha256": "e96c553879d3bb214d735d4b934047639f710423c65ef3d8a1f027107c45610d",
+  "bytes": 216993,
+  "retrieved_utc": "2026-10-28T10:19:58Z"
+ },
+ {
+  "package": "gamesGA",
+  "version": "1.1.3.7",
+  "url": "https://cloud.r-project.org/src/contrib/gamesGA_1.1.3.7.tar.gz",
+  "sha256": "34211340e10f99681178ecf4e7a5c36fab15f99d4bffd903a0d33faca0f8a04e",
+  "bytes": 13967,
+  "retrieved_utc": "2026-10-28T10:19:58Z"
+ },
+ {
+  "package": "einops",
+  "version": "0.2.1",
+  "url": "https://cloud.r-project.org/src/contrib/einops_0.2.1.tar.gz",
+  "sha256": "fb49a16d64fb225c706cc84c628385d33ceb6c0a537b81ab2616bd3de7129e59",
+  "bytes": 221807,
+  "retrieved_utc": "2026-10-28T10:19:58Z"
+ },
+ {
+  "package": "torchvisionlib",
+  "version": "0.8.0",
+  "url": "https://cloud.r-project.org/src/contrib/torchvisionlib_0.8.0.tar.gz",
+  "sha256": "1b3da6908df18c202de54001be869a0a051e7dc261f86213c98299394a87b18e",
+  "bytes": 66529,
+  "retrieved_utc": "2026-10-28T10:19:58Z"
+ },
+ {
+  "package": "smdocker",
+  "version": "0.1.4",
+  "url": "https://cloud.r-project.org/src/contrib/smdocker_0.1.4.tar.gz",
+  "sha256": "6db1c3be00645e5c23aa4782f0ad4f11e974e8d34fcb9678a862cc1c036a538e",
+  "bytes": 26611,
+  "retrieved_utc": "2026-10-28T10:19:58Z"
+ },
+ {
+  "package": "swCRTdesign",
+  "version": "4.1",
+  "url": "https://cloud.r-project.org/src/contrib/swCRTdesign_4.1.tar.gz",
+  "sha256": "699be04519c95027205d843e7ba0d3a4cf412482f31ea07f68ea731bcc3c6878",
+  "bytes": 57989,
+  "retrieved_utc": "2026-10-28T10:19:58Z"
+ },
+ {
+  "package": "visxhclust",
+  "version": "1.1.0",
+  "url": "https://cloud.r-project.org/src/contrib/visxhclust_1.1.0.tar.gz",
+  "sha256": "42646c34ccd50c78a583d82d4ebcc4f83ea84a34e7f8e25e251795575e35a1f3",
+  "bytes": 3671073,
+  "retrieved_utc": "2026-10-28T10:19:59Z"
+ },
+ {
+  "package": "ggmr",
+  "version": "0.1.1",
+  "url": "https://cloud.r-project.org/src/contrib/ggmr_0.1.1.tar.gz",
+  "sha256": "8787fd37fd7b60e6d7d01ff2ed2f80ac5e8d24a9b0820a2ea476967ae0ce8124",
+  "bytes": 4224,
+  "retrieved_utc": "2026-10-28T10:19:59Z"
+ },
+ {
+  "package": "rcprd",
+  "version": "0.0.2",
+  "url": "https://cloud.r-project.org/src/contrib/rcprd_0.0.2.tar.gz",
+  "sha256": "d7047b0b463ae5b180524f99e1389b094fe57e4773df34cff8be1caa90a773b7",
+  "bytes": 849115,
+  "retrieved_utc": "2026-10-28T10:20:00Z"
+ }
+]

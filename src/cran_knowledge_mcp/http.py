@@ -79,6 +79,51 @@ def version_parts(value: str) -> tuple[int, ...]:
     return tuple(parts)
 
 
+EQUIVALENCE_RULE = (
+    "R numeric_version ==: '.' and '-' are interchangeable, leading zeros and trailing zero "
+    "components are ignored"
+)
+
+
+def version_match(requested: str, resolved: str) -> str | None:
+    """`identical`, `equivalent` (equal under R's `==`, spelled differently) or None.
+
+    Both spellings are always reported by callers; equivalence never replaces the resolved text.
+    """
+    if requested == resolved:
+        version_parts(requested)
+        return "identical"
+    return "equivalent" if version_parts(requested) == version_parts(resolved) else None
+
+
+def version_resolution(requested: str | None, resolved: str, scope: str) -> dict:
+    """The version contract of a version-sensitive answer (requested vs resolved)."""
+    match = "not_requested" if requested is None else version_match(requested, resolved)
+    if match is None:
+        raise KnowledgeError("invalid_input", "Requested version differs from the resolved one")
+    return {
+        "requested": requested,
+        "resolved": resolved,
+        "match": match,
+        "verified_for_requested_version": None if requested is None else True,
+        "version_scope": scope,
+        **({"equivalence_rule": EQUIVALENCE_RULE} if match == "equivalent" else {}),
+    }
+
+
+def unavailable_version_details(requested: str, available: str, scope: str) -> dict:
+    """Structured, actionable details for `requested_version_unavailable` (never substitutes)."""
+    older = version_parts(requested) < version_parts(available)
+    return {
+        "requested_package_version": requested,
+        "available_package_version": available,
+        "requested_relation": "older_than_available" if older else "newer_than_available",
+        "reason": "historical_versions_not_supported" if older else "not_in_repository_index",
+        "substituted": False,
+        "version_scope": scope,
+    }
+
+
 @dataclass(frozen=True)
 class Artifact:
     body: bytes

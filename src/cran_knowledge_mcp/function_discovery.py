@@ -9,7 +9,14 @@ from dataclasses import dataclass
 from difflib import SequenceMatcher
 
 from .errors import KnowledgeError
-from .parsers import decode, decode_rd, discovery_name, parse_namespace, rd_index_record
+from .parsers import (
+    decode,
+    decode_rd,
+    diagnostic_class,
+    discovery_name,
+    parse_namespace,
+    rd_coverage,
+)
 
 SCHEMA_VERSION = 1
 MAX_ENTRIES = 10_000
@@ -17,6 +24,27 @@ MAX_RELATIONS = 5
 MAX_FUZZY_CANDIDATES = 1000
 MAX_INDEX_BYTES = 8 << 20
 PAGE_BYTES = 16 << 10
+MAX_DIAGNOSTIC_EXAMPLES = 3
+MAX_PAGE_DIAGNOSTICS = 20
+
+# How far the enumeration can be trusted, derived from the diagnostic classes (parsers.py):
+#   complete                  no observations at all;
+#   complete_with_diagnostics only observations that cannot change what is enumerated (`info`);
+#   incomplete                a known gap, e.g. exportPattern() or an unreadable Rd file;
+#   unestablished             completeness cannot be determined statically (conditional NAMESPACE,
+#                             top-level dynamic Rd content, missing NAMESPACE).
+# `verification_status` is "verified" for the first two and "partial" for the others.
+COMPLETENESS = ("complete", "complete_with_diagnostics", "incomplete", "unestablished")
+
+
+def completeness_of(diagnostics) -> str:
+    classes = {item["class"] for item in diagnostics}
+    if "unestablished" in classes:
+        return "unestablished"
+    if "incomplete" in classes:
+        return "incomplete"
+    return "complete_with_diagnostics" if classes else "complete"
+
 
 KINDS = ("export", "alias", "topic", "method")
 COLLECTIONS = ("exports", "aliases", "documentation_topics", "methods")
@@ -41,6 +69,8 @@ class DiscoveryIndex:
     patterns: tuple[str, ...]
     issues: tuple[str, ...]
     estimated_bytes: int
+    diagnostics: tuple[dict, ...] = ()
+    completeness: str = "complete"
 
     def ranked(self, query: str | None, package: str) -> tuple[list[tuple[dict, str]], bool]:
         if query is None or not query.strip():
@@ -98,6 +128,7 @@ class DiscoveryIndex:
             "coverage": {
                 "namespace": self.namespace_status,
                 "rd": self.rd_status,
+                "completeness": self.completeness,
                 "scope": "literal Rd and static namespace declarations; runtime not checked",
                 "fuzzy_search_complete": fuzzy_complete,
             },
@@ -105,6 +136,8 @@ class DiscoveryIndex:
             "export_patterns_count": len(self.patterns),
             "export_patterns_complete": len(self.patterns) <= 20,
             "issues": list(self.issues[:20]),
+            "diagnostics": list(self.diagnostics[:MAX_PAGE_DIAGNOSTICS]),
+            "diagnostics_count": len(self.diagnostics),
             "pagination_scope": "one ordered entity stream; arrays project the same page",
             "collections": {},
         }
@@ -176,6 +209,17 @@ class DiscoveryIndex:
 def build_discovery_index(package: str, metadata: dict, files: dict[str, bytes]) -> DiscoveryIndex:
     encoding = metadata.get("Encoding", "UTF-8")
     issues = []
+    observed: dict[str, dict] = {}
+
+    def observe(code: str, source: str, example: dict) -> None:
+        item = observed.setdefault(
+            code, {"code": code, "class": diagnostic_class(code), "source": source, "count": 0}
+        )
+        item["count"] += 1
+        examples = item.setdefault("examples", [])
+        if len(examples) < MAX_DIAGNOSTIC_EXAMPLES:
+            examples.append(example)
+
     try:
         source = files.get(f"{package}/NAMESPACE")
         namespace = parse_namespace(decode(source, encoding) if source is not None else None)
@@ -183,8 +227,17 @@ def build_discovery_index(package: str, metadata: dict, files: dict[str, bytes])
         if exc.code == "source_too_large":
             raise
         namespace = parse_namespace(None)
+        namespace["diagnostics"] = [
+            {"code": "namespace_encoding_unavailable", "class": "unestablished"}
+        ]
         namespace["issues"] = ["namespace_encoding_unavailable"]
     issues.extend(namespace["issues"])
+    for item in namespace["diagnostics"]:
+        observe(
+            item["code"],
+            "NAMESPACE",
+            {k: item[k] for k in ("directive", "line") if k in item},
+        )
     topics, alias_topics = [], {}
     rd_status = "verified"
     relation_count = 0
@@ -194,19 +247,27 @@ def build_discovery_index(package: str, metadata: dict, files: dict[str, bytes])
         if len(member) > 512:
             rd_status = "partial"
             issues.append("rd_member_name_too_long")
+            observe("rd_member_name_too_long", "Rd", {"archive_member": member[:120]})
             continue
         try:
             text, _, _ = decode_rd(body, metadata.get("Encoding"))
         except KnowledgeError:
             rd_status = "partial"
             issues.append("rd_encoding_unavailable")
+            observe("rd_encoding_unavailable", "Rd", {"archive_member": member})
             continue
-        topic, good, complete, identifier_source = rd_index_record(member, text)
+        record = rd_coverage(member, text)
+        topic, good, complete = record["topic"], record["aliases"], record["complete"]
+        identifier_source = record["identifier_source"]
+        for code in record["diagnostics"]:
+            observe(code, "Rd", {"archive_member": member})
         if not complete:
             rd_status = "partial"
             issues.append("rd_literal_coverage_partial")
         if not discovery_name(topic):
+            rd_status = "partial"
             issues.append("rd_topic_name_unavailable")
+            observe("rd_topic_name_unavailable", "Rd", {"archive_member": member})
             continue
         relation_count += len(good)
         if relation_count > 20_000:
@@ -292,6 +353,7 @@ def build_discovery_index(package: str, metadata: dict, files: dict[str, bytes])
     estimated = len(json.dumps(entries, ensure_ascii=False).encode())
     if estimated > MAX_INDEX_BYTES:
         raise KnowledgeError("source_too_large", "Discovery index exceeds 8 MiB")
+    diagnostics = tuple(sorted(observed.values(), key=lambda item: (item["class"], item["code"])))
     return DiscoveryIndex(
         entries,
         namespace["status"],
@@ -299,6 +361,8 @@ def build_discovery_index(package: str, metadata: dict, files: dict[str, bytes])
         tuple(namespace["patterns"]),
         tuple(sorted(set(issues))),
         estimated,
+        diagnostics,
+        completeness_of(diagnostics),
     )
 
 

@@ -1,0 +1,5 @@
+top.Rd aliases after build stage: top,\alias
+{
+injected_top
+} 
+nested.Rd aliases after build stage: nested 
