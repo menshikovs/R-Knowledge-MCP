@@ -1,0 +1,48 @@
+{
+  "specification_version": "stage27-pilot-specification-v1.0",
+  "study_id": "stage2_validity_v1_pilot",
+  "status": "NOT_AUTHORIZED_FOR_EXECUTION",
+  "authorization_requirement": "Explicit human project owner budget allocation and model key configuration",
+  "authorized_budget_usd": null,
+  "candidate_tasks": [
+    "D01",
+    "D02",
+    "D03",
+    "C01",
+    "C04",
+    "E02",
+    "E03",
+    "E05",
+    "R01",
+    "H10"
+  ],
+  "task_count": 10,
+  "arms": [
+    "A",
+    "B",
+    "C"
+  ],
+  "repetitions": 3,
+  "total_trials": 90,
+  "model_identity": "gpt-6-luna",
+  "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+  "randomization_algorithm": "blocked-latin-permutations-v1",
+  "network_isolation": {
+    "candidate_network": "Docker --internal bridge",
+    "proxy": "CONNECT-only egress gateway (arm_gateway.py)",
+    "allowed_hosts": [
+      "api.openai.com:443"
+    ],
+    "mcp_access": "Arms B and C only; completely omitted in Arm A"
+  },
+  "telemetry_contract": {
+    "levels": 7,
+    "usage_tracking": "Per-trial token reporting from model upstream",
+    "cross_arm_canary_probes": true
+  },
+  "stop_conditions": {
+    "max_spend_usd": null,
+    "max_failure_rate": 0.15,
+    "abort_on_isolation_breach": true
+  }
+}

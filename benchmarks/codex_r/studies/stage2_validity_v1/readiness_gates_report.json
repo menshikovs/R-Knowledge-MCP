@@ -1,0 +1,51 @@
+{
+  "report_version": "stage27-readiness-gates-v1.0",
+  "infrastructure_ready_for_calibration": true,
+  "gates": [
+    {
+      "gate_id": "gate_1_offline_research_infrastructure",
+      "name": "Offline Research Infrastructure",
+      "status": "PASS",
+      "prerequisites": "Frozen digests, manifest, statistical tests, synthetic dry runs, unit test suite",
+      "verification_command": "pytest tests/test_stage2_validity.py tests/test_stage2_artifacts.py -m 'not docker'",
+      "actual_evidence": "114 offline validity and artifact tests pass; 279 frozen files match SHA-256 with 0 differences; 31 offline runner unit tests pass",
+      "remaining_blockers": "None"
+    },
+    {
+      "gate_id": "gate_2_docker_experiment_infrastructure",
+      "name": "Real Docker Experiment Infrastructure",
+      "status": "PASS",
+      "prerequisites": "Docker --internal, CONNECT forward proxy allowlist, mock model server, non-root candidate user, canary probe enforcement, leftover sweeping",
+      "verification_command": "pytest tests/test_stage26_live_runner.py -m docker",
+      "actual_evidence": "9 live Docker end-to-end integration tests pass (186.2s); 3-trial live CLI smoke test passes on D01 with 12/12 checks and clean Docker teardown",
+      "remaining_blockers": "None for infrastructure harness"
+    },
+    {
+      "gate_id": "gate_3_calibration_execution",
+      "name": "Baseline Model Calibration Execution",
+      "status": "BLOCKED",
+      "prerequisites": "Project owner authorization to spend model credits, host API key provisioning, execution of 51 Arm A baseline trials",
+      "verification_command": "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration",
+      "actual_evidence": "Calibration schedule prepared (51 trials across 17 S2 tasks); 0 model calls executed",
+      "remaining_blockers": "Awaiting explicit human spend authorization; no model API credits authorized"
+    },
+    {
+      "gate_id": "gate_4_pilot_execution",
+      "name": "Three-Arm Pilot Execution",
+      "status": "BLOCKED",
+      "prerequisites": "Completion of Gate 3 calibration, pilot budget approval, 90 planned trials (A/B/C)",
+      "verification_command": "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-pilot",
+      "actual_evidence": "Pilot specification prepared (90 trials); 0 model calls executed",
+      "remaining_blockers": "Awaiting Gate 3 calibration and human budget authorization"
+    },
+    {
+      "gate_id": "gate_5_confirmatory_experiment_eligibility",
+      "name": "Confirmatory Experiment Eligibility",
+      "status": "BLOCKED",
+      "prerequisites": "At least 30 qualified tasks in S1_confirmatory_core (variance in [0.10, 0.90], zero BEN-002 coupling), frozen registration commit",
+      "verification_command": "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli verify-confirmatory-eligibility",
+      "actual_evidence": "Currently 0 tasks meet S1 eligibility due to historical ceiling effects and BEN-002 coupling",
+      "remaining_blockers": "Requires baseline calibration data from Gate 3 to identify and qualify >= 30 tasks"
+    }
+  ]
+}
