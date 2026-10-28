@@ -244,9 +244,17 @@ correct verdict; they say nothing about model capability.
 | Manifest / generated-artifact consistency, including the amendment record | 11 of 11 equal |
 | `cli amendment --verify` | matches the unchanged originals and the amendment document |
 
-The 80 Linux skips are all clone or environment related. None is a Docker test: git-ignored
-bundles and saved historical runs absent from a clean clone (17), the optional native extension
-not installed (11), and two image-id variables unset (2).
+The 80 Linux skips (exact breakdown from the run log):
+
+| Count | Reason |
+| ---: | :--- |
+| 33 | optional native extension (`cran-knowledge-native`) not installed (24 + 9) |
+| 22 | PyO3 module unavailable, parity or bindings not verified (21 + 1) |
+| 17 | files absent from a clean clone: git-ignored `benchmark_expansion_sources/` bundle (8), historical result directories (7), saved D01 run (1), saved B1 run (1) |
+| 8 | legacy Docker/Codex integration tests gated on environment variables: `R_KNOWLEDGE_BENCH_IMAGE_ID` (3), `R_KNOWLEDGE_CODEX_IMAGE_ID` (3), pinned Codex/R image IDs (1), `BENCH_PYTHON` or the WSL venv (1) |
+
+The 8 gated legacy tests are pre-existing, unrelated to Stage 2/3A and were **not run** here. None
+of the Stage 2.6, 2.7 or 3A Docker tests is skipped on Linux (all 21 ran and passed).
 
 **Test failures vs environment failures.** There were no test failures. Two earlier Linux runs
 failed for environmental reasons, and both were investigated:
