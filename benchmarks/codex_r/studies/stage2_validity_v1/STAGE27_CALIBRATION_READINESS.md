@@ -5,6 +5,7 @@
 **Base Branch**: `2.0`  
 **Working Branch**: `feature/stage2-benchmark-validity`  
 **Baseline Commit**: `08ef9e9e2711e1174ed6796b3e3e60bf0ad7ca58`  
+**Pull Request**: `https://github.com/menshikovs/R-Knowledge-MCP/pull/28` (#28)  
 **Final Status**: `STAGE 2.7 READY FOR CALIBRATION`
 
 ---
@@ -52,6 +53,7 @@ No paid model API calls were executed. No empirical benefit claims are made base
 3. **Attempt Artifact Journaling**: Added raw attempt output preservation in `runner.py`'s `TrialLedger.write_attempt_evidence` to preserve crash/failure context.
 4. **Baseline Difficulty Uncertainty Decision Rule**: Implemented uncertainty-aware classification in `calibration_pipeline.py` recognizing that $R=3$ repetitions yield wide confidence intervals, categorizing borderline tasks as `"inconclusive_sample_size_limited"`.
 5. **Readiness Gates Verification**: Added formal evaluation of the 5 research readiness gates via CLI command `readiness-gates`.
+6. **Cross-Version Floating-Point Canonicalization**: Canonicalized float precision to 10 decimal places in `dryrun.result_digest` to eliminate 1-ULP platform and Python version discrepancies (Python 3.11 vs 3.14) in floating-point summation during synthetic dry-run verification.
 
 ---
 

@@ -3,7 +3,7 @@
   "seed": 20261028,
   "scenarios": {
     "null": {
-      "digest": "d95b4171d332b7e566bebc7fff7ac3908f941e3ff86a18d5971a82927598e015",
+      "digest": "164a11af1a8570d89aacc03c3433e1fe6936c539e4a10c5e1a403e33579b5dc7",
       "estimate_B_minus_A": 0.011111111111111108,
       "ci95": [
         -0.08444444444444445,
@@ -20,7 +20,7 @@
       }
     },
     "positive": {
-      "digest": "813c1795e3aec7622f04e3bd0eeaa2150b03b0315d31d51098360f44ec74279e",
+      "digest": "23f223c2b8fad207a5cf7bbe7ddf4dcabc9c9710a7bfd6d0727ae969e63c2240",
       "estimate_B_minus_A": 0.17111111111111113,
       "ci95": [
         0.05555555555555556,
@@ -37,7 +37,7 @@
       }
     },
     "negative_tool_tax": {
-      "digest": "9aaf0d4475a7613e58b4872cf8a20bd899a30ed3af48e5485a2147ab8d91a063",
+      "digest": "48d8cc432219ab507a6eecc326b8da96683df087548a1ecbec0c68d049f65de8",
       "estimate_B_minus_A": -0.17333333333333334,
       "ci95": [
         -0.26333333333333336,
@@ -54,7 +54,7 @@
       }
     },
     "heavy_missingness": {
-      "digest": "be7a06780017be8eda0edb220b17de6227bafe2b79e579ecdf148d64b432e4ec",
+      "digest": "cbd15e46cc0f1eb779688d05f056ff22304f5b7c2a0ce0376f319baa0de9abfc",
       "estimate_B_minus_A": 0.024691358024691357,
       "ci95": [
         -0.1234567901234568,
@@ -71,7 +71,7 @@
       }
     },
     "leaky_control": {
-      "digest": "619940352255036e1b70e91eeb147882c7ed7f5b193657988e1f00f3bf523973",
+      "digest": "4963f5d7c9c141f66e00d169ef16ed6e4e3fd415dbccaa47c1a25ca9888a5162",
       "estimate_B_minus_A": 0.010000000000000002,
       "ci95": [
         -0.10444444444444444,

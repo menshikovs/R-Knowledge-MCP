@@ -14,6 +14,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from . import analysis, design, protocol, records, telemetry
 
@@ -301,8 +302,26 @@ def analyse(
     }
 
 
+def _canonicalize_for_digest(obj: Any) -> Any:
+    """Canonicalize floats to 10 decimal places and dictionaries to string keys.
+
+    Prevents 1-ULP platform/compiler floating-point discrepancies across Python minor versions.
+    """
+    if isinstance(obj, float):
+        return round(obj, 10)
+    if isinstance(obj, dict):
+        return {
+            str(k): _canonicalize_for_digest(v)
+            for k, v in sorted(obj.items(), key=lambda x: str(x[0]))
+        }
+    if isinstance(obj, list):
+        return [_canonicalize_for_digest(x) for x in obj]
+    return obj
+
+
 def result_digest(result: dict) -> str:
-    return hashlib.sha256(json.dumps(result, sort_keys=True).encode()).hexdigest()
+    canonical = _canonicalize_for_digest(result)
+    return hashlib.sha256(json.dumps(canonical, sort_keys=True).encode()).hexdigest()
 
 
 def run_scenario(out: Path, scenario_name: str, tasks: int, reps: int, seed: int) -> dict:
