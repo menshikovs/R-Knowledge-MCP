@@ -98,7 +98,7 @@ class CranProvider(SourceRepository):
         artifact = await self.http.fetch(self.description_path(package))
         related_sources = [index.provenance(), artifact.provenance()]
         try:
-            records = dcf(description_text(artifact.body))
+            records = await asyncio.to_thread(lambda: dcf(description_text(artifact.body)))
         except KnowledgeError as exc:
             raise KnowledgeError(
                 exc.code,

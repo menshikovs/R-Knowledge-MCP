@@ -1,0 +1,11 @@
+('20261024T161534Z-06fa649c', 'R01', 'without-mcp', 'error', '{"category": "unclassified", "count": 1, "origin": "runner", "reason_code": "LEGACY_ERROR", "source_code": null}')
+('20261024T163156Z-e657575b', 'R01', 'without-mcp', 'error', '{"category": "unclassified", "count": 1, "origin": "runner", "reason_code": "LEGACY_ERROR", "source_code": null}')
+('20261024T163400Z-3077de97', 'R01', 'without-mcp', 'error', '{"category": "unclassified", "count": 1, "origin": "runner", "reason_code": "LEGACY_ERROR", "source_code": null}')
+('20261024T163854Z-400ad439', 'R01', 'without-mcp', 'error', '{"category": "unclassified", "count": 1, "origin": "runner", "reason_code": "LEGACY_ERROR", "source_code": null}')
+('20261024T165126Z-0bc78e62', 'R02', 'without-mcp', 'error', '{"category": "unclassified", "count": 1, "origin": "runner", "reason_code": "LEGACY_ERROR", "source_code": null}')
+('20261025T080709Z-6544f40e', 'D01', 'without-mcp', 'error', '{"category": "unclassified", "count": 1, "origin": "runner", "reason_code": "LEGACY_ERROR", "source_code": null}')
+('20261026T063723Z-c849c1af', 'D03', 'with-mcp', 'interrupted', '{"category": "interrupt", "count": null, "origin": "runner", "reason_code": "INTERRUPTED", "severity": "fatal", "source_code": "keyboard_interrupt"}')
+('20261026T101505Z-5544127a', 'D03', 'with-mcp', 'interrupted', '{"category": "interrupt", "count": null, "origin": "runner", "reason_code": "INTERRUPTED", "severity": "fatal", "source_code": "keyboard_interrupt"}')
+(9,)
+[('consolidated-v1.1', 'standard', 58), (None, None, 18), ('consolidated-v2', 'standard', 10), (None, 'standard', 2), ('consolidated-v1', 'standard', 2), (None, 'diagnostic', 1)]
+[(None, 77), ('treatment', 6), ('control', 8)]

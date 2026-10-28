@@ -1,0 +1,30 @@
+== default allowed_hosts=None
+ default Host: (200, '{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"experimental":{},"prompts":{"listChanged":false},"resource')
+ Host evil.example: (421, 'Invalid Host header')
+ Host 127.0.0.1.evil.example: (421, 'Invalid Host header')
+ Origin http://evil.example: (403, 'Invalid Origin header')
+ Origin http://localhost:1234: (200, '{"jsonrpc":"2.0","id":1,"result":{"protocolVersion":"2025-06-18","capabilities":{"experimental":{},"prompts":{"listChanged":false},"
+ Origin http://localhost.evil.example: (403, 'Invalid Origin header')
+ Origin null: (403, 'Invalid Origin header')
+ no Authorization header accepted (no auth layer): True
+ GET /mcp status 200 text/event-stream
+  GET stream still open after 3s read timeout: ReadTimeout
+ OPTIONS preflight: 405 {}
+ 20 MiB body: (413, 'Request body too large') 0.2s
+ deeply nested JSON: 500 {"jsonrpc":"2.0","id":"server-error","error":{"code":-32603,"message":"Error handling POST request"}
+ bad MCP-Protocol-Version header: (400, '{"jsonrpc":"2.0","id":"server-error","error":{"code":-32600,"message":"Bad Request: Unsupported protocol version: 1900-01-01. Sup
+== custom allowed host allowed_hosts=['example.test']
+ default Host: (421, 'Invalid Host header')
+ Host evil.example: (421, 'Invalid Host header')
+ Host 127.0.0.1.evil.example: (421, 'Invalid Host header')
+ Origin http://evil.example: (421, 'Invalid Host header')
+ Origin http://localhost:1234: (421, 'Invalid Host header')
+ Origin http://localhost.evil.example: (421, 'Invalid Host header')
+ Origin null: (421, 'Invalid Host header')
+ no Authorization header accepted (no auth layer): False
+ GET /mcp status 421 None
+  stream ended
+ OPTIONS preflight: 421 {}
+ 20 MiB body: (413, 'Request body too large') 0.3s
+ deeply nested JSON: 421 Invalid Host header
+ bad MCP-Protocol-Version header: (421, 'Invalid Host header')

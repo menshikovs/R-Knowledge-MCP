@@ -1,0 +1,338 @@
+All checks passed!
+269 files already formatted
+/home/user001/stage05/venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:300: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the "fixture" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to "function" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+
+1650 tests collected in 2.23s
+/home/user001/stage05/venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:300: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the "fixture" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to "function" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+...............ssss..ss...........................s..................... [  4%]
+.............................s.F........................................ [  8%]
+........................................................................ [ 13%]
+........................................................................ [ 17%]
+........................................................................ [ 21%]
+........................................................................ [ 26%]
+........................................................................ [ 30%]
+................ssssss.............................................sssss [ 34%]
+sss...................................................................FF [ 39%]
+FFFs.................................................................... [ 43%]
+........................................................................ [ 48%]
+........................................................................ [ 52%]
+...............s........................................................ [ 56%]
+........................................................................ [ 61%]
+........................................................................ [ 65%]
+........................................................................ [ 69%]
+................................ssssssssssssssssss...................... [ 74%]
+..................s..................................................... [ 78%]
+........................................................................ [ 82%]
+......s............................................sssssssssssssssssssss [ 87%]
+sss..................................................................... [ 91%]
+........................................................................ [ 96%]
+.............................FF...................................       [100%]
+=================================== FAILURES ===================================
+__________ test_experiment_record_identifies_sources_without_secrets ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-user001/pytest-0/test_experiment_record_identif0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ab9dbdbeac0>
+
+    def test_experiment_record_identifies_sources_without_secrets(tmp_path, monkeypatch):
+        from benchmarks.codex_r.runner import bench
+    
+        monkeypatch.setenv("OPENAI_API_KEY", "must-never-appear-0123456789")
+        state = experiment.git_state(bench.REPO)
+        assert set(state) >= {"revision", "dirty", "changed_paths"}
+        assert state["revision"] is None or len(state["revision"]) == 40
+>       assert (state["working_tree_sha256"] is None) == (state["dirty"] is False)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'working_tree_sha256'
+
+tests/test_benchmark_telemetry.py:1033: KeyError
+___________________ test_r_unit_and_headless_ui_suite_passes ___________________
+
+    @needs_termr
+    def test_r_unit_and_headless_ui_suite_passes():
+        code = (
+            'library(testthat); r <- test_dir("%s", reporter="silent", stop_on_failure=FALSE); '
+            "d <- as.data.frame(r); cat(sum(d$failed), sum(d$error), sum(d$nb), sep=' ')"
+            % (LAUNCHER / "tests" / "testthat")
+        )
+        result = subprocess.run(
+            [RSCRIPT, "-e", code], capture_output=True, text=True, timeout=600, check=False
+        )
+        last = result.stdout.strip().splitlines()[-1].split() if result.stdout.strip() else []
+        failed, errors, expectations = (last + ["x", "x", "0"])[:3]
+>       assert (failed, errors) == ("0", "0"), result.stdout + result.stderr
+E       AssertionError: 22 5 259
+E         Attaching package: ‘termr’
+E         
+E         The following object is masked from ‘package:testthat’:
+E         
+E             watch
+E         
+E         
+E       assert ('22', '5') == ('0', '0')
+E         
+E         At index 0 diff: '22' != '0'
+E         Use -v to get more diff
+
+tests/test_codex_launcher.py:347: AssertionError
+_______ test_real_terminal_ctrl_c_stops_gracefully_and_leaves_no_runner ________
+
+    @needs_termr
+    def test_real_terminal_ctrl_c_stops_gracefully_and_leaves_no_runner():
+        drive = pty_module()
+        session = drive.Session("sigint")
+        try:
+            assert session.read(10, "READY")
+            session.send("f5")
+            assert session.read(5, "RUNNING")
+            runner = session.runner_pids()
+>           assert len(runner) == 1
+E           assert 0 == 1
+E            +  where 0 = len([])
+
+tests/test_codex_launcher.py:368: AssertionError
+____ test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGTERM] _____
+
+how = 'SIGTERM'
+
+    @needs_termr
+    @pytest.mark.parametrize("how", ["SIGTERM", "SIGHUP", "SIGKILL"])
+    def test_runner_is_interrupted_when_the_launcher_dies_abnormally(how):
+        import os
+        import signal
+        import time
+    
+        drive = pty_module()
+        session = drive.Session("sigint")
+        try:
+            assert session.read(10, "READY")
+            session.send("f5")
+            assert session.read(5, "RUNNING")
+            runner = session.runner_pids()
+>           assert len(runner) == 1
+E           assert 0 == 1
+E            +  where 0 = len([])
+
+tests/test_codex_launcher.py:398: AssertionError
+_____ test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGHUP] _____
+
+how = 'SIGHUP'
+
+    @needs_termr
+    @pytest.mark.parametrize("how", ["SIGTERM", "SIGHUP", "SIGKILL"])
+    def test_runner_is_interrupted_when_the_launcher_dies_abnormally(how):
+        import os
+        import signal
+        import time
+    
+        drive = pty_module()
+        session = drive.Session("sigint")
+        try:
+            assert session.read(10, "READY")
+            session.send("f5")
+            assert session.read(5, "RUNNING")
+            runner = session.runner_pids()
+>           assert len(runner) == 1
+E           assert 0 == 1
+E            +  where 0 = len([])
+
+tests/test_codex_launcher.py:398: AssertionError
+____ test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGKILL] _____
+
+how = 'SIGKILL'
+
+    @needs_termr
+    @pytest.mark.parametrize("how", ["SIGTERM", "SIGHUP", "SIGKILL"])
+    def test_runner_is_interrupted_when_the_launcher_dies_abnormally(how):
+        import os
+        import signal
+        import time
+    
+        drive = pty_module()
+        session = drive.Session("sigint")
+        try:
+            assert session.read(10, "READY")
+            session.send("f5")
+            assert session.read(5, "RUNNING")
+            runner = session.runner_pids()
+>           assert len(runner) == 1
+E           assert 0 == 1
+E            +  where 0 = len([])
+
+tests/test_codex_launcher.py:398: AssertionError
+___________________ test_full_chain_with_real_mcp_container ____________________
+
+lab = <function lab.<locals>.make at 0x7ab991fb66c0>
+
+    def test_full_chain_with_real_mcp_container(lab):
+        scenario = lab()
+        assert scenario.run() == 0
+        events, record = scenario.events, scenario.record
+    
+        # chain and ordering of runner-observed stages ---
+        kinds = [e["event_type"] for e in events]
+        runner_order = [
+            "benchmark.run.started",
+            "benchmark.trial.started",
+            "agent.session.created",
+            "agent.turn.started",
+            "agent.turn.completed",
+            "cleanup.started",  # the runner releases resources before it exports and scores
+            "artifact.export.completed",
+            "scorer.started",
+            "scorer.completed",
+        ]
+        positions = [kinds.index(name) for name in runner_order]
+        assert positions == sorted(positions)
+        assert kinds[-2:] == ["benchmark.trial.completed", "benchmark.run.completed"]
+        assert "mcp.discovery.started" not in kinds  # not observable, never invented
+        (discovery,) = [e for e in events if e["event_type"] == "mcp.discovery.completed"]
+        assert discovery["observation"] == "server_audit_after_trial"
+        assert discovery["list_tools_requests"] == 1  # the one tools/list the fake agent sent
+        assert scenario.record["mcp_server_audit"]["list_tools_requests"] == 1
+    
+        # schema, ids, uniqueness ---
+        assert schema.validate_stream(events) == []
+        assert {e["schema_version"] for e in events} == {schema.SCHEMA_VERSION}
+        assert schema.SCHEMA_VERSION == "1.2"
+        run_id = scenario.run_dir.name
+        assert {e["run_id"] for e in events} == {run_id}
+        trial_events = [e for e in events if "trial_id" in e]
+        assert {e["trial_id"] for e in trial_events} == {"D01-B-1"}
+        assert len({e["trace_id"] for e in trial_events}) == 1
+        client = [e for e in events if e["source"] == "agent_stream" and "call_id" in e]
+        server = tool_events(events, "mcp_server")
+        starts = [e for e in client if e["event_type"] == "mcp.tool.started"]
+        assert len(starts) == len(CALLS) == len(server) == 9
+        assert len({e["call_id"] for e in starts}) == 9
+        assert len({e["call_id"] for e in server}) == 9
+        assert {e["call_id"] for e in starts}.isdisjoint({e["call_id"] for e in server})
+        assert not [
+            e for e in events if e["source"] == "mcp_server" and e["event_type"].endswith("started")
+        ]
+    
+        # client/server: only an unconfirmed ordinal link, never a shared id ---
+        assert {e["correlation"] for e in server} == {"ordinal_unconfirmed"}
+        assert [e["correlated_call_id"] for e in server] == [e["call_id"] for e in starts]
+        assert all(e["clock"] == "server_process" for e in server)
+        assert all(e["clock"] == "trial" for e in client)
+    
+        # outcomes: counts follow the observed calls ---
+        for number, event in enumerate(server, start=1):
+            assert event["is_error"] is (number in FAILED_CALLS)
+            assert event["event_type"] == (
+                "mcp.tool.failed" if number in FAILED_CALLS else "mcp.tool.completed"
+            )
+            assert event["partial"] is (
+                True if number in PARTIAL_CALLS else None if number in FAILED_CALLS else False
+            )
+        client_done = [e for e in client if e["event_type"] != "mcp.tool.started"]
+>       assert [e["is_error"] for e in client_done] == [n in FAILED_CALLS for n in range(1, 10)]
+                ^^^^^^^^^^^^^
+E       KeyError: 'is_error'
+
+tests/test_telemetry_integration.py:439: KeyError
+----------------------------- Captured stdout call -----------------------------
+D01-B-1: session created [1.6s]
+D01-B-1: Docker executor started [1.6s]
+D01-B-1: executor connected [1.6s]
+D01-B-1: turn started [1.6s]
+D01-B-1: turn completed [3.7s]
+D01-B-1: session deleted [3.7s]
+D01-B-1: scoring started [4.2s]
+D01-B-1: scoring completed [4.3s]
+D01-B-1: cleanup completed (confirmed) [4.3s]
+D01-B-1: scored score=4/4
+Results: /tmp/pytest-of-user001/pytest-0/test_full_chain_with_real_mcp_0/results/20261028T083730Z-a7996271
+__________ test_experiment_configuration_is_recorded_without_secrets ___________
+
+lab = <function lab.<locals>.make at 0x7ab991fb6c40>
+
+    def test_experiment_configuration_is_recorded_without_secrets(lab):
+        scenario = lab()
+        assert scenario.run() == 0
+        experiment_record = json.loads(
+            (scenario.run_dir / "experiment.json").read_text(encoding="utf-8")
+        )
+        repo = bench.REPO
+        head = subprocess.run(
+            ["git", "-C", str(repo), "rev-parse", "HEAD"], capture_output=True, text=True
+        ).stdout.strip()
+>       assert experiment_record["repository"]["revision"] == head
+E       AssertionError: assert None == ''
+
+tests/test_telemetry_integration.py:565: AssertionError
+----------------------------- Captured stdout call -----------------------------
+D01-B-1: session created [1.5s]
+D01-B-1: Docker executor started [1.5s]
+D01-B-1: executor connected [1.6s]
+D01-B-1: turn started [1.6s]
+D01-B-1: turn completed [3.6s]
+D01-B-1: session deleted [3.6s]
+D01-B-1: scoring started [4.2s]
+D01-B-1: scoring completed [4.2s]
+D01-B-1: cleanup completed (confirmed) [4.2s]
+D01-B-1: scored score=4/4
+Results: /tmp/pytest-of-user001/pytest-0/test_experiment_configuration_0/results/20261028T083735Z-4e1cd423
+=============================== warnings summary ===============================
+../venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1636
+  /home/user001/stage05/venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1636: PytestConfigWarning: Unknown config option: cache_dir
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+tests/test_codex_launcher.py::test_real_terminal_ctrl_c_stops_gracefully_and_leaves_no_runner
+tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGTERM]
+tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGHUP]
+tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGKILL]
+  /usr/lib/python3.14/pty.py:66: DeprecationWarning: This process (pid=997) is multi-threaded, use of forkpty() may lead to deadlocks in the child.
+    pid, fd = os.forkpty()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_benchmark_telemetry.py::test_experiment_record_identifies_sources_without_secrets
+FAILED tests/test_codex_launcher.py::test_r_unit_and_headless_ui_suite_passes
+FAILED tests/test_codex_launcher.py::test_real_terminal_ctrl_c_stops_gracefully_and_leaves_no_runner
+FAILED tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGTERM]
+FAILED tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGHUP]
+FAILED tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGKILL]
+FAILED tests/test_telemetry_integration.py::test_full_chain_with_real_mcp_container
+FAILED tests/test_telemetry_integration.py::test_experiment_configuration_is_recorded_without_secrets
+SKIPPED [1] tests/test_benchmark_analytics.py:256: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_analytics.py:275: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_analytics.py:295: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_analytics.py:306: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_analytics.py:458: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_analytics.py:471: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_analytics.py:1397: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_telemetry.py:986: saved D01 run is not available in this checkout
+SKIPPED [3] tests/test_codex_docker_runtime.py:279: Set R_KNOWLEDGE_BENCH_IMAGE_ID to run real Docker integration tests
+SKIPPED [1] tests/test_codex_docker_runtime.py:298: Set R_KNOWLEDGE_CODEX_IMAGE_ID to test the pinned Codex image
+SKIPPED [1] tests/test_codex_docker_runtime.py:403: Set R_KNOWLEDGE_CODEX_IMAGE_ID to test the restricted executor boundary
+SKIPPED [1] tests/test_codex_docker_runtime.py:430: Set R_KNOWLEDGE_CODEX_IMAGE_ID to test Codex proxy transport
+SKIPPED [1] tests/test_codex_expansion_registry.py:28: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:55: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:76: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:89: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:99: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:109: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:123: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:177: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_launcher.py:409: needs the WSL virtual environment of the real runner
+SKIPPED [1] tests/test_codex_managed_agents_lifecycle.py:774: Pinned Codex/R image IDs and Docker are required
+SKIPPED [9] tests/test_function_discovery.py:45: cran_knowledge_native is not installed
+SKIPPED [9] tests/test_function_discovery.py:58: actual PyO3 module is unavailable; parity not verified
+SKIPPED [1] tests/test_function_discovery.py:405: PyO3 unavailable; binding checks not verified
+SKIPPED [1] tests/test_knowledge_pilot_v21.py:180: saved B1 run is not present
+SKIPPED [6] tests/test_native_parity.py:87: cran-knowledge-native is not installed
+SKIPPED [3] tests/test_native_parity.py:102: cran-knowledge-native is not installed
+SKIPPED [1] tests/test_native_parity.py:109: cran-knowledge-native is not installed
+SKIPPED [1] tests/test_native_parity.py:115: cran-knowledge-native is not installed
+SKIPPED [1] tests/test_native_parity.py:120: cran-knowledge-native is not installed
+SKIPPED [4] tests/test_native_parity.py:144: cran-knowledge-native is not installed
+SKIPPED [8] tests/test_native_parity.py:212: cran-knowledge-native is not installed
+8 failed, 1574 passed, 68 skipped, 5 warnings in 417.24s (0:06:57)

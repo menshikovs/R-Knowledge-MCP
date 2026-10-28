@@ -1,4 +1,4 @@
-"""Mocked GitHub and Context7 API tests; no external requests or real secrets."""
+"""Mocked GitHub API tests; no external requests or real secrets."""
 
 import base64
 
@@ -6,7 +6,6 @@ import httpx
 import pytest
 
 from cran_knowledge_mcp.errors import KnowledgeError
-from cran_knowledge_mcp.providers.context7 import Context7Provider, safe_query
 from cran_knowledge_mcp.providers.github_agents import GitHubAgentsProvider, github_repository
 
 SHA = "a" * 40
@@ -157,119 +156,6 @@ async def test_github_api_failure_is_explicit_and_no_repository_is_not_assumed()
             "pkg", "1.2.3", "https://example.org/pkg", "v1.2.3", "cran", None
         )
     await client.aclose()
-
-
-@pytest.fixture
-async def context7_api():
-    calls = []
-
-    def handler(request):
-        calls.append(request)
-        if request.url.path == "/api/v2/libs/search":
-            return response(
-                {"results": [{"id": "/owner/pkg", "title": "pkg", "versions": ["1.2.3"]}]}
-            )
-        if request.url.path == "/api/v2/context":
-            assert request.url.params["libraryId"] == "/owner/pkg/1.2.3"
-            assert request.headers["authorization"] == "Bearer ctx7-server-test-key"
-            return response(
-                {
-                    "infoSnippets": [
-                        {"title": "Overview", "content": "Official package overview."}
-                    ],
-                    "codeSnippets": [{"codeTitle": "Usage", "codeList": [{"code": "pkg::run()"}]}],
-                }
-            )
-        return response({}, 404)
-
-    client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
-    provider = Context7Provider(client, "ctx7-server-test-key")
-    yield provider, calls
-    await client.aclose()
-
-
-async def test_context7_requires_exact_library_and_preserves_fragments(context7_api):
-    provider, calls = context7_api
-    result = await provider.get_context7_docs(
-        "pkg",
-        "1.2.3",
-        "https://github.com/owner/pkg",
-        "How should I call run? api_key=supersecret-token",
-        "cran",
-        None,
-    )
-    assert result["status"] == "verified"
-    assert result["version_scope"] == "package_version"
-    assert [fragment["kind"] for fragment in result["fragments"]] == ["documentation", "example"]
-    assert all("third_party" in fragment["authority"] for fragment in result["fragments"])
-    assert all("ctx7-server-test-key" not in request.url.query.decode() for request in calls)
-    assert all("supersecret-token" not in request.url.query.decode() for request in calls)
-    assert "supersecret-token" not in result["question_sent"]
-    cached = await provider.get_context7_docs(
-        "pkg",
-        "1.2.3",
-        "https://github.com/owner/pkg",
-        "How should I call run? api_key=supersecret-token",
-        "cran",
-        None,
-    )
-    assert cached["checked_at"] == result["checked_at"]
-    assert len(calls) == 2
-
-
-async def test_context7_mismatch_disabled_rate_limit_and_question_secret_redaction():
-    calls = []
-
-    def mismatch(request):
-        calls.append(request)
-        return response({"results": [{"id": "/different/repo", "title": "wrong"}]})
-
-    client = httpx.AsyncClient(transport=httpx.MockTransport(mismatch))
-    provider = Context7Provider(client, "server-key")
-    with pytest.raises(KnowledgeError, match="identity check"):
-        await provider.get_context7_docs(
-            "pkg", "1.2", "https://github.com/owner/pkg", "usage", "cran", None
-        )
-    await client.aclose()
-
-    client = httpx.AsyncClient(
-        transport=httpx.MockTransport(lambda request: response({}, 429, {"Retry-After": "17"}))
-    )
-    provider = Context7Provider(client, "server-key")
-    with pytest.raises(KnowledgeError, match="17 seconds"):
-        await provider.get_context7_docs(
-            "pkg", "1.2", "https://github.com/owner/pkg", "usage", "cran", None
-        )
-    await client.aclose()
-
-    client = httpx.AsyncClient(
-        transport=httpx.MockTransport(lambda request: pytest.fail("disabled must not call API"))
-    )
-    provider = Context7Provider(client, None)
-    with pytest.raises(KnowledgeError, match="disabled") as error:
-        await provider.get_context7_docs(
-            "pkg", "1.2", "https://github.com/owner/pkg", "usage", "cran", None
-        )
-    assert error.value.code == "not_configured"
-    await client.aclose()
-
-    sanitized = safe_query("use this api_key=supersecret-token for docs")
-    assert "supersecret-token" not in sanitized
-
-
-async def test_context7_not_found_and_api_errors_are_not_fabricated():
-    for status, expected in ((404, "no matching documentation"), (503, "503")):
-        client = httpx.AsyncClient(
-            transport=httpx.MockTransport(
-                lambda request, status=status: httpx.Response(status, json={"error": "upstream"})
-            )
-        )
-        provider = Context7Provider(client, "server-key")
-        with pytest.raises(KnowledgeError, match=expected):
-            await provider.get_context7_docs(
-                "pkg", "1.2", "https://github.com/owner/pkg", "usage", "cran", None
-            )
-        await client.aclose()
 
 
 async def test_github_token_is_sent_only_as_header_and_never_returned():

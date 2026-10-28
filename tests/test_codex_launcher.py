@@ -7,6 +7,7 @@ network, or a real benchmark trial.
 
 import importlib.util
 import io
+import os
 import re
 import shutil
 import subprocess
@@ -408,8 +409,11 @@ def test_runner_is_interrupted_when_the_launcher_dies_abnormally(how):
 
 @needs_termr
 @pytest.mark.skipif(
-    not (Path(__file__).resolve().parents[1] / ".venv-wsl" / "bin" / "python").exists(),
-    reason="needs the WSL virtual environment of the real runner",
+    not Path(
+        os.environ.get("BENCH_PYTHON")
+        or Path(__file__).resolve().parents[1] / ".venv-wsl" / "bin" / "python"
+    ).exists(),
+    reason="needs BENCH_PYTHON or the .venv-wsl virtual environment of the real runner",
 )
 def test_real_entry_point_starts_blocks_without_keys_and_quits():
     drive = pty_module()

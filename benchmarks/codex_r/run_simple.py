@@ -2606,7 +2606,11 @@ def run_trial(
                 }:
                     record["error"] = kind
                     if kind == "agent.session.environment.failed":
-                        record["environment_error"] = "environment_failed"
+                        # Same shape as the session-level error below: a reviewed categorical code.
+                        code = error_code((event.get("environment") or {}).get("error"))
+                        record["environment_error"] = (
+                            {"code": code} if code else "environment_failed"
+                        )
             if record["status"] != "completed":
                 raise RuntimeError(
                     f"Agent did not complete the task: "

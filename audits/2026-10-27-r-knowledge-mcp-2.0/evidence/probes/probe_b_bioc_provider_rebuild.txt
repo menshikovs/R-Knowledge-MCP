@@ -1,0 +1,10 @@
+# command: python -I probe_b.py 
+# started_utc: 2026-10-27T14:44:14.309284+00:00
+# ended_utc: 2026-10-27T14:44:14.755937+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+provider object replaced after cache expiry (unchanged upstream): True
+archive downloads after 2 calls: 1 -> 2 (content unchanged, no ETag in mock => refetch expected anyway)
+release equality across refetch: False same body: True
+yaml.safe_load calls for 5 consecutive bioc tool calls: 5

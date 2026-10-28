@@ -1,0 +1,9 @@
+# command: python -I probe_rss.py 
+# started_utc: 2026-10-27T14:45:44.648068+00:00
+# ended_utc: 2026-10-27T14:45:45.639834+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+expanded payload    0.0 MB (compressed      0 KB) -> ok                peak working set: before parse   18.1 MB, after   18.3 MB
+expanded payload  104.9 MB (compressed   1014 KB) -> source_too_large  peak working set: before parse   19.1 MB, after  134.2 MB
+expanded payload  133.2 MB (compressed   1287 KB) -> source_too_large  peak working set: before parse   19.5 MB, after  164.1 MB

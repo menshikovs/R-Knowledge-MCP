@@ -1,0 +1,818 @@
+{
+ "audit": {
+  "title": "Independent audit of R-Knowledge-MCP 2.0",
+  "date": "2026-10-27",
+  "directory": "audits/2026-10-27-r-knowledge-mcp-2.0/",
+  "mode": "audit-only; only files under audits/ were created in the repository; no production code, benchmark artefact, scorer, reference solution, historical result or report was modified"
+ },
+ "target": {
+  "repository": "https://github.com/menshikovs/R-Knowledge-MCP",
+  "branch": "2.0",
+  "commit": "4d2266c994849ac460514ac2ae6df8a6fc5c180e",
+  "commit_date": "2026-10-27T15:37:26+02:00",
+  "origin_2.0_equals_local_head": true,
+  "working_tree_clean": true,
+  "tracked_files": 515
+ },
+ "environment": {
+  "os": "Windows 11 Home 10.0.26100; WSL2 Ubuntu (python3 3.14.4)",
+  "python_audit_venvs": [
+   "3.14.4 (main)",
+   "3.11.17",
+   "3.12.15",
+   "3.13.5"
+  ],
+  "note_on_global_python": "the machine's global Python had mcp 2.2.0 (outside the project's <2 pin); it was not used for audit runs",
+  "tool_versions_source": "evidence/misc_commands.json (pip_list_audit_venv, rustc_version, cargo_version, docker_version, rscript_version, uv_version)"
+ },
+ "findings": {
+  "counts": {
+   "P0": 0,
+   "P1": 3,
+   "P2": 17,
+   "P3": 16,
+   "total": 36
+  },
+  "ids_by_severity": {
+   "P1": [
+    "CI-001",
+    "KC-001",
+    "BEN-001"
+   ],
+   "P2": [
+    "CI-002",
+    "CI-003",
+    "CI-004",
+    "KC-002",
+    "KC-003",
+    "SEC-001",
+    "SEC-002",
+    "MCP-001",
+    "AGT-001",
+    "AGT-002",
+    "BEN-002",
+    "BEN-003",
+    "BEN-004",
+    "BEN-005",
+    "TST-001",
+    "ARCH-001",
+    "PI-001"
+   ],
+   "P3": [
+    "SEC-003",
+    "SEC-004",
+    "SEC-005",
+    "SEC-006",
+    "SEC-007",
+    "SEC-008",
+    "SEC-009",
+    "MCP-002",
+    "MCP-003",
+    "KC-004",
+    "KC-005",
+    "ARCH-002",
+    "DOC-001",
+    "PERF-001",
+    "MCP-004",
+    "TST-002"
+   ]
+  }
+ },
+ "session_commands": [
+  {
+   "id": "ruff_check_clean_checkout_windows",
+   "command": "ruff check .",
+   "env": "Windows 11, venv from pyproject (ruff 0.17.3)",
+   "started_utc": "2026-10-27T13:47:03Z",
+   "exit_code": 0,
+   "result": "All checks passed!",
+   "evidence": "evidence/ci/ruff_check.txt"
+  },
+  {
+   "id": "ruff_format_check_clean_checkout_windows",
+   "command": "ruff format --check .",
+   "exit_code": 0,
+   "result": "311 files already formatted (git-archive tree incl. untracked-free files)",
+   "evidence": "evidence/ci/ruff_format.txt"
+  },
+  {
+   "id": "pytest_console_script_gitarchive",
+   "command": "pytest -x -q -p no:cacheprovider (git archive export)",
+   "exit_code": 1,
+   "result": "ModuleNotFoundError: No module named 'benchmarks' at tests/test_baseline_root_cause_audit.py",
+   "evidence": "n/a (first reproduction; superseded by clone-based runs)"
+  },
+  {
+   "id": "pytest_python_m_gitarchive_full",
+   "command": "python -m pytest -q (git archive export, no .git)",
+   "exit_code": 1,
+   "result": "11 failed, 1400 passed, 195 skipped in 424.76s (one failure is an artefact of the export lacking .git)",
+   "evidence": "evidence/ci/pytest_windows_gitarchive_run.txt"
+  },
+  {
+   "id": "pytest_console_script_collect_clone_windows",
+   "command": "pytest --collect-only -q (real clone)",
+   "exit_code": "not captured (pytest reports 'Interrupted: 23 errors during collection')",
+   "result": "23 collection errors, all ModuleNotFoundError: benchmarks",
+   "evidence": "evidence/ci/pytest_bare_collect_windows.txt"
+  },
+  {
+   "id": "pytest_python_m_full_with_coverage_clone_windows",
+   "command": "coverage run --branch --source=src/cran_knowledge_mcp -m pytest -q -p no:cacheprovider",
+   "started_utc": "2026-10-27T13:57:09Z",
+   "ended_utc": "2026-10-27T14:04:01Z",
+   "exit_code": 1,
+   "result": "10 failed, 1401 passed, 195 skipped in 408.64s; coverage 84% (6419 stmts, 829 missed, 2752 branches, 496 partial)",
+   "evidence": "evidence/ci/pytest_windows_clone_cov.txt, evidence/ci/coverage_report.txt"
+  },
+  {
+   "id": "wsl_ci_exact_commands",
+   "command": "(WSL Ubuntu, Python 3.14.4, pip install -e '.[dev]') ruff check .; ruff format --check .; pytest -q -p no:cacheprovider",
+   "started_utc": "2026-10-27T14:13Z (approx.)",
+   "exit_code": "pytest: interrupted (22 collection errors); the wrapper did not capture exit codes",
+   "result": "ruff check pass; ruff format pass (267 files); pytest: Interrupted: 22 errors during collection",
+   "evidence": "evidence/ci/wsl_ci_bare.txt"
+  },
+  {
+   "id": "wsl_pytest_pythonpath_fixed_with_analytics",
+   "command": "(WSL) sed pythonpath=[\"src\", \".\"]; pip install -e '.[dev,analytics]'; pytest -q -p no:cacheprovider",
+   "started_utc": "2026-10-27T14:17:08Z",
+   "ended_utc": "2026-10-27T14:23:26Z",
+   "exit_code": "1 by pytest convention (wrapper wrote exit=0 because of a quoting artefact; the summary line is authoritative)",
+   "result": "17 failed, 1529 passed, 60 skipped in 377.66s",
+   "evidence": "evidence/ci/pytest_linux_fixed.txt"
+  },
+  {
+   "id": "pytest_py311_collect_pythonpath_fixed_dev_only",
+   "command": "pytest -o pythonpath='src .' --collect-only -q (Python 3.11, [dev] only)",
+   "exit_code": "not captured (1 collection error reported)",
+   "result": "1554 collected, 1 error: No module named 'duckdb'",
+   "evidence": "evidence/ci/py311_collect_fixedpath.txt"
+  },
+  {
+   "id": "pytest_py311_full",
+   "command": "python -m pytest -q -o pythonpath='src .' --deselect tests/test_codex_expansion_registry.py --deselect tests/test_bioc_benchmark.py (Python 3.11, +duckdb,pandas)",
+   "started_utc": "2026-10-27T14:25:05Z",
+   "ended_utc": "2026-10-27T14:31:15Z",
+   "exit_code": 1,
+   "result": "1 failed (streamlit not installed), 1367 passed, 198 skipped",
+   "evidence": "evidence/ci/pytest_py3.11.txt"
+  },
+  {
+   "id": "pytest_py312_full",
+   "command": "same, Python 3.12",
+   "started_utc": "2026-10-27T14:31:15Z",
+   "ended_utc": "2026-10-27T14:37:38Z",
+   "exit_code": 1,
+   "result": "1 failed (streamlit not installed), 1367 passed, 198 skipped",
+   "evidence": "evidence/ci/pytest_py3.12.txt"
+  },
+  {
+   "id": "pytest_py313_full",
+   "command": "same, Python 3.13",
+   "started_utc": "2026-10-27T14:37:38Z",
+   "ended_utc": "2026-10-27T14:44Z (approx.)",
+   "exit_code": 1,
+   "result": "1 failed (streamlit not installed), 1367 passed, 198 skipped",
+   "evidence": "evidence/ci/pytest_py3.13.txt"
+  },
+  {
+   "id": "cargo_test_clippy_fmt",
+   "command": "cargo test --release; cargo clippy --release -- -D warnings; cargo fmt --check (native/)",
+   "exit_code": 0,
+   "result": "4 tests passed; clippy clean; fmt clean",
+   "evidence": "evidence/ci/cargo_test.txt, cargo_clippy.txt, cargo_fmt.txt"
+  },
+  {
+   "id": "maturin_build_and_native_tests",
+   "command": "maturin build --release; pip install wheel; pytest tests/test_native_parity.py tests/test_function_discovery.py tests/test_function_discovery_replay.py -o usefixtures=r01a_offline_guard",
+   "exit_code": 0,
+   "result": "wheel cran_knowledge_native-0.1.0-cp311-abi3-win_amd64.whl built in 7s; 108 passed with native module loaded",
+   "evidence": "evidence/probes/parity_python.json, parity_rust.json"
+  },
+  {
+   "id": "github_actions_api_read",
+   "command": "GET https://api.github.com/repos/menshikovs/R-Knowledge-MCP/actions/runs/40513710256 (+/jobs), unauthenticated",
+   "exit_code": 0,
+   "result": "run conclusion failure; test jobs fail at 'Run pytest'; docker and native success",
+   "evidence": "evidence/ci/github_actions_run.json"
+  },
+  {
+   "id": "analytics_rebuild_from_local_results",
+   "command": "python -B -m benchmarks.codex_r.analytics.import_results --database <scratch> --rebuild",
+   "exit_code": 0,
+   "result": "30 runs, 91 trials, 21 tables, 10.9 s",
+   "evidence": "evidence/benchmark/analytics_import.txt, bench_stats.txt, bench_err.txt, bench_d01.txt"
+  },
+  {
+   "id": "real_upstream_sampling",
+   "command": "probe_real.py, probe_sample.py, probe_parity.py (fetch) — see evidence/probe_sources",
+   "exit_code": 0,
+   "result": "14 packages vs R ground truth; 30-package seeded sample; 10-package Python/Rust parity",
+   "evidence": "evidence/real_discovery_vs_R.json, real_cran_sample.json, probes/parity_*.json"
+  },
+  {
+   "id": "mcp_spec_pages_read",
+   "command": "WebFetch modelcontextprotocol.io/specification/2025-11-25/server/tools and /basic/transports",
+   "exit_code": 0,
+   "result": "spec text used in MCP_PROTOCOL_AUDIT.md",
+   "evidence": "n/a"
+  }
+ ],
+ "recorded_command_runs": [
+  {
+   "id": "git_head",
+   "command": "git -C C:\\programming_pj\\cran-mcp rev-parse HEAD",
+   "cwd": "C:\\programming_pj\\cran-mcp",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:26.015423+00:00",
+   "ended_utc": "2026-10-27T14:46:26.039125+00:00",
+   "output_tail": "4d2266c994849ac460514ac2ae6df8a6fc5c180e"
+  },
+  {
+   "id": "git_branch",
+   "command": "git -C C:\\programming_pj\\cran-mcp branch --show-current",
+   "cwd": "C:\\programming_pj\\cran-mcp",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:26.039144+00:00",
+   "ended_utc": "2026-10-27T14:46:26.061638+00:00",
+   "output_tail": "2.0"
+  },
+  {
+   "id": "git_status_porcelain_lines",
+   "command": "git -C C:\\programming_pj\\cran-mcp status --short",
+   "cwd": "C:\\programming_pj\\cran-mcp",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:26.061655+00:00",
+   "ended_utc": "2026-10-27T14:46:26.091180+00:00",
+   "output_tail": "?? audits/"
+  },
+  {
+   "id": "git_ls_remote_2.0",
+   "command": "git -C C:\\programming_pj\\cran-mcp ls-remote origin 2.0",
+   "cwd": "C:\\programming_pj\\cran-mcp",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:26.091198+00:00",
+   "ended_utc": "2026-10-27T14:46:26.680306+00:00",
+   "output_tail": "4d2266c994849ac460514ac2ae6df8a6fc5c180e\trefs/heads/2.0"
+  },
+  {
+   "id": "clone_head",
+   "command": "git -C C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone rev-parse HEAD",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:26.680325+00:00",
+   "ended_utc": "2026-10-27T14:46:26.703437+00:00",
+   "output_tail": "4d2266c994849ac460514ac2ae6df8a6fc5c180e"
+  },
+  {
+   "id": "python_versions",
+   "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\python.exe --version",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:26.703454+00:00",
+   "ended_utc": "2026-10-27T14:46:26.719833+00:00",
+   "output_tail": "Python 3.14.4"
+  },
+  {
+   "id": "pip_list_audit_venv",
+   "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\python.exe -m pip list --format=freeze",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:26.719850+00:00",
+   "ended_utc": "2026-10-27T14:46:27.083863+00:00",
+   "output_tail": "anyio==4.15.1; coverage==7.17.0; cran-knowledge-mcp==0.1.0; duckdb==1.5.6; httpx==0.28.1; mcp==1.30.0; pandas==3.1.0; pydantic==2.14.1; pytest==9.1.1; pytest-asyncio==1.4.1; PyYAML==6.0.3; ruff==0.17.3; starlette==1.10.0; streamlit==1.66.1; uvicorn==0.54.0; vulture==2.16"
+  },
+  {
+   "id": "ruff_check_clone",
+   "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\ruff.exe check .",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:27.083880+00:00",
+   "ended_utc": "2026-10-27T14:46:27.209052+00:00",
+   "output_tail": "All checks passed!"
+  },
+  {
+   "id": "ruff_format_check_clone",
+   "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\ruff.exe format --check .",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:27.209072+00:00",
+   "ended_utc": "2026-10-27T14:46:27.326565+00:00",
+   "output_tail": "267 files already formatted"
+  },
+  {
+   "id": "pytest_collect_only_python_m",
+   "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\python.exe -m pytest --collect-only -q -p no:cacheprovider",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:27.326585+00:00",
+   "ended_utc": "2026-10-27T14:46:29.741876+00:00",
+   "output_tail": "\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1606 tests collected in 1.60s"
+  },
+  {
+   "id": "pytest_collect_only_console_script",
+   "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\pytest.exe --collect-only -q -p no:cacheprovider",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 2,
+   "started_utc": "2026-10-27T14:46:29.741897+00:00",
+   "ended_utc": "2026-10-27T14:46:32.001687+00:00",
+   "output_tail": "ERROR tests/test_telemetry_integration.py\n!!!!!!!!!!!!!!!!!! Interrupted: 23 errors during collection !!!!!!!!!!!!!!!!!!!\n1174 tests collected, 23 errors in 1.49s"
+  },
+  {
+   "id": "pytest_collect_only_pythonpath_fix",
+   "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\pytest.exe -o pythonpath=src . --collect-only -q -p no:cacheprovider",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:32.001708+00:00",
+   "ended_utc": "2026-10-27T14:46:34.317945+00:00",
+   "output_tail": "\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1606 tests collected in 1.49s"
+  },
+  {
+   "id": "cargo_fmt_check",
+   "command": "cargo fmt --check",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\native",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:34.317965+00:00",
+   "ended_utc": "2026-10-27T14:46:34.589591+00:00",
+   "output_tail": ""
+  },
+  {
+   "id": "rustc_version",
+   "command": "rustc --version",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:34.589610+00:00",
+   "ended_utc": "2026-10-27T14:46:34.666740+00:00",
+   "output_tail": "rustc 1.99.0 (b940084d7 2026-09-28)"
+  },
+  {
+   "id": "cargo_version",
+   "command": "cargo --version",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:34.666758+00:00",
+   "ended_utc": "2026-10-27T14:46:34.835425+00:00",
+   "output_tail": "cargo 1.99.0 (5f94df478 2026-08-27)"
+  },
+  {
+   "id": "docker_version",
+   "command": "docker --version",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:34.835444+00:00",
+   "ended_utc": "2026-10-27T14:46:34.947507+00:00",
+   "output_tail": "Docker version 29.8.2, build 7fc2dff"
+  },
+  {
+   "id": "docker_build",
+   "command": "docker build -q -t rkmcp-audit:test .",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:34.947527+00:00",
+   "ended_utc": "2026-10-27T14:46:47.525481+00:00",
+   "output_tail": "sha256:d33db1943c7ee9d070c07f5c4dfa6403e5a98c02c7e5f3166a64f291b30eed7c"
+  },
+  {
+   "id": "docker_run_help",
+   "command": "docker run --rm rkmcp-audit:test --help",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:47.525504+00:00",
+   "ended_utc": "2026-10-27T14:46:48.854788+00:00",
+   "output_tail": "usage: r-knowledge-mcp [-h] [--transport {stdio,streamable-http}]\n                       [--host HOST] [--port PORT]\n                       [--allowed-host ALLOWED_HOSTS]"
+  },
+  {
+   "id": "docker_run_id",
+   "command": "docker run --rm --entrypoint id rkmcp-audit:test",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:48.854825+00:00",
+   "ended_utc": "2026-10-27T14:46:49.381594+00:00",
+   "output_tail": "uid=10001(app) gid=10001(app) groups=10001(app)"
+  },
+  {
+   "id": "docker_image_inspect",
+   "command": "docker image inspect rkmcp-audit:test --format {{.Size}} bytes; user={{.Config.User}}; healthcheck={{.Config.Healthcheck}}",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:49.381630+00:00",
+   "ended_utc": "2026-10-27T14:46:49.585119+00:00",
+   "output_tail": "258573609 bytes; user=10001; healthcheck=<nil>"
+  },
+  {
+   "id": "docker_rmi",
+   "command": "docker rmi rkmcp-audit:test",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:49.585157+00:00",
+   "ended_utc": "2026-10-27T14:46:49.941195+00:00",
+   "output_tail": "Untagged: rkmcp-audit:test\nDeleted: sha256:d33db1943c7ee9d070c07f5c4dfa6403e5a98c02c7e5f3166a64f291b30eed7c"
+  },
+  {
+   "id": "pip_audit_runtime_closure",
+   "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venvrt\\Scripts\\python.exe -m pip_audit --local --progress-spinner off",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:49.941224+00:00",
+   "ended_utc": "2026-10-27T14:46:52.813488+00:00",
+   "output_tail": "------------------ ---------------------------------------------------------------------------------\ncran-knowledge-mcp Dependency not found on PyPI and could not be audited: cran-knowledge-mcp (0.1.0)\nNo known vulnerabilities found"
+  },
+  {
+   "id": "rscript_version",
+   "command": "Rscript --version",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:52.813509+00:00",
+   "ended_utc": "2026-10-27T14:46:52.853636+00:00",
+   "output_tail": "Rscript (R) version 4.5.2 (2025-10-31)"
+  },
+  {
+   "id": "rscript_ground_truth_vers",
+   "command": "Rscript C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\probes\\vers.R",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:52.853654+00:00",
+   "ended_utc": "2026-10-27T14:46:52.986774+00:00",
+   "output_tail": "1.0 == 1.0.0: TRUE | 1.0 < 1.0.0: FALSE \n2.10-1 == 2.10.1: TRUE \n2.10-01 == 2.10.1: TRUE "
+  },
+  {
+   "id": "uv_version",
+   "command": "uv --version",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:52.986793+00:00",
+   "ended_utc": "2026-10-27T14:46:53.004908+00:00",
+   "output_tail": "uv 0.13.5 (46776a95d 2026-10-21 x86_64-pc-windows-msvc)"
+  },
+  {
+   "id": "wsl_python",
+   "command": "wsl -d Ubuntu -- python3 --version",
+   "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:53.004933+00:00",
+   "ended_utc": "2026-10-27T14:46:53.103854+00:00",
+   "output_tail": "Python 3.14.4"
+  }
+ ],
+ "probe_runs": [
+  {
+   "name": "inspect_tools",
+   "script": "inspect_tools.py",
+   "args": [
+    "mcp"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:12.965993+00:00",
+   "ended_utc": "2026-10-27T14:44:13.997875+00:00",
+   "seconds": 1.0,
+   "public_network": false
+  },
+  {
+   "name": "probe_a_version_equivalence",
+   "script": "probe_a.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:13.998761+00:00",
+   "ended_utc": "2026-10-27T14:44:14.308534+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_b_bioc_provider_rebuild",
+   "script": "probe_b.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:14.309284+00:00",
+   "ended_utc": "2026-10-27T14:44:14.755937+00:00",
+   "seconds": 0.4,
+   "public_network": false
+  },
+  {
+   "name": "probe_c_prompt_score_ctx7_redaction",
+   "script": "probe_c.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:14.756724+00:00",
+   "ended_utc": "2026-10-27T14:44:15.074373+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_f_rdoc_fresh_install",
+   "script": "probe_f.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:15.075163+00:00",
+   "ended_utc": "2026-10-27T14:44:15.373979+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_stdio_protocol",
+   "script": "probe_stdio.py",
+   "args": [
+    "r-knowledge-mcp.exe"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:15.374710+00:00",
+   "ended_utc": "2026-10-27T14:44:22.234537+00:00",
+   "seconds": 6.9,
+   "public_network": false
+  },
+  {
+   "name": "probe_http_transport",
+   "script": "probe_http.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:22.235372+00:00",
+   "ended_utc": "2026-10-27T14:44:31.753153+00:00",
+   "seconds": 9.5,
+   "public_network": false
+  },
+  {
+   "name": "probe_mcp_shape",
+   "script": "probe_mcp_shape.py",
+   "args": [
+    "probes"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:31.753902+00:00",
+   "ended_utc": "2026-10-27T14:44:32.588580+00:00",
+   "seconds": 0.8,
+   "public_network": false
+  },
+  {
+   "name": "probe_inject",
+   "script": "probe_inject.py",
+   "args": [
+    "probes"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:32.589461+00:00",
+   "ended_utc": "2026-10-27T14:44:32.892030+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_logs",
+   "script": "probe_logs.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:32.892898+00:00",
+   "ended_utc": "2026-10-27T14:44:33.143096+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_conc",
+   "script": "probe_conc.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:33.144145+00:00",
+   "ended_utc": "2026-10-27T14:44:33.978002+00:00",
+   "seconds": 0.8,
+   "public_network": false
+  },
+  {
+   "name": "probe_redos",
+   "script": "probe_redos.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:33.978861+00:00",
+   "ended_utc": "2026-10-27T14:45:36.072352+00:00",
+   "seconds": 62.1,
+   "public_network": false
+  },
+  {
+   "name": "probe_static",
+   "script": "probe_static.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:36.073091+00:00",
+   "ended_utc": "2026-10-27T14:45:39.496752+00:00",
+   "seconds": 3.4,
+   "public_network": false
+  },
+  {
+   "name": "probe_intent",
+   "script": "probe_intent.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:39.498251+00:00",
+   "ended_utc": "2026-10-27T14:45:39.795057+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_flags",
+   "script": "probe_flags.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:39.795953+00:00",
+   "ended_utc": "2026-10-27T14:45:41.026857+00:00",
+   "seconds": 1.2,
+   "public_network": false
+  },
+  {
+   "name": "probe_secrets",
+   "script": "probe_secrets.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:41.027796+00:00",
+   "ended_utc": "2026-10-27T14:45:41.292249+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_pi_build",
+   "script": "probe_pi.py",
+   "args": [
+    "probes"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:41.293645+00:00",
+   "ended_utc": "2026-10-27T14:45:41.633368+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_pi_followup",
+   "script": "probe_pi2.py",
+   "args": [
+    "probes"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:41.634341+00:00",
+   "ended_utc": "2026-10-27T14:45:41.982650+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_pi_conflicts",
+   "script": "probe_pi3.py",
+   "args": [
+    "probes"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:41.983480+00:00",
+   "ended_utc": "2026-10-27T14:45:42.328527+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_archive_hostile",
+   "script": "probe_archive.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:42.329414+00:00",
+   "ended_utc": "2026-10-27T14:45:44.647214+00:00",
+   "seconds": 2.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_rss_hostile_archive",
+   "script": "probe_rss.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:44.648068+00:00",
+   "ended_utc": "2026-10-27T14:45:45.639834+00:00",
+   "seconds": 1.0,
+   "public_network": false
+  },
+  {
+   "name": "probe_perf",
+   "script": "probe_perf.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:45.640597+00:00",
+   "ended_utc": "2026-10-27T14:45:51.789431+00:00",
+   "seconds": 6.1,
+   "public_network": true
+  },
+  {
+   "name": "probe_framework",
+   "script": "probe_framework.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:51.790191+00:00",
+   "ended_utc": "2026-10-27T14:45:53.530317+00:00",
+   "seconds": 1.7,
+   "public_network": true
+  },
+  {
+   "name": "probe_real2_encoding_namespace",
+   "script": "probe_real2.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:53.531717+00:00",
+   "ended_utc": "2026-10-27T14:45:55.099225+00:00",
+   "seconds": 1.6,
+   "public_network": true
+  },
+  {
+   "name": "probe_real3_cluster_docs",
+   "script": "probe_real3.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:55.100025+00:00",
+   "ended_utc": "2026-10-27T14:45:56.389764+00:00",
+   "seconds": 1.3,
+   "public_network": true
+  },
+  {
+   "name": "probe_rdpartial",
+   "script": "probe_rdpartial.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:56.390548+00:00",
+   "ended_utc": "2026-10-27T14:45:58.147399+00:00",
+   "seconds": 1.8,
+   "public_network": true
+  },
+  {
+   "name": "probe_validate",
+   "script": "probe_validate.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:58.148732+00:00",
+   "ended_utc": "2026-10-27T14:45:59.495550+00:00",
+   "seconds": 1.3,
+   "public_network": true
+  },
+  {
+   "name": "probe_bioc",
+   "script": "probe_bioc.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:59.496328+00:00",
+   "ended_utc": "2026-10-27T14:46:01.884959+00:00",
+   "seconds": 2.4,
+   "public_network": true
+  },
+  {
+   "name": "probe_bioc_cost",
+   "script": "probe_bioc_cost.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:01.885739+00:00",
+   "ended_utc": "2026-10-27T14:46:03.098292+00:00",
+   "seconds": 1.2,
+   "public_network": true
+  }
+ ],
+ "probe_meta": {
+  "src_tree_sha256_installed_copy": "684910e59b46dcd326e373d24ccf6def9667829db5c4d824fa745376e0d0bf80",
+  "src_tree_sha256_audited_clone": "650b9e78db32bea7ec63b3ceb1491ebb0632976dd2935dc460d8f33815ab9c50",
+  "note": "the two hashes differ only by line endings (clone checked out CRLF on Windows, installed copy built from git archive LF); identical after LF normalisation (verified)"
+ },
+ "external_reads": [
+  {
+   "what": "CRAN PACKAGES(.gz), title catalogue, ~75 package source archives (sequential)",
+   "host": "cran.r-project.org",
+   "public": true
+  },
+  {
+   "what": "Bioconductor config.yaml, three PACKAGES indexes, three archives",
+   "host": "bioconductor.org",
+   "public": true
+  },
+  {
+   "what": "three fixed official framework documentation pages",
+   "host": "shiny.posit.co, quarto.org, positron.posit.co",
+   "public": true
+  },
+  {
+   "what": "GitHub Actions run summary and ls-remote",
+   "host": "api.github.com, github.com",
+   "public": true
+  },
+  {
+   "what": "MCP specification pages",
+   "host": "modelcontextprotocol.io",
+   "public": true
+  },
+  {
+   "what": "PyPI/OSV vulnerability data via pip-audit; Python/uv/crates downloads for toolchains",
+   "host": "pypi.org, osv.dev, crates.io, python-build-standalone",
+   "public": true
+  }
+ ],
+ "not_contacted": [
+  "paid model APIs",
+  "OpenAI Agents API",
+  "Context7",
+  "authenticated GitHub endpoints",
+  "any private service"
+ ],
+ "r_execution": "Rscript was run only on my own scripts (evidence/probe_sources/truth.R, vers.R) against the locally installed R 4.5.2 base/recommended libraries; no repository, package or benchmark R code, Rd expression or package script was executed",
+ "limitations": [
+  "Windows and WSL on one machine; no macOS",
+  "Full test runs on Python 3.11-3.13 are Windows-only",
+  "GitHub job logs not readable (authentication)",
+  "Benchmark results directory is git-ignored; statistics are reproducible only with the author's local files",
+  "Live GitHub AGENTS.md, Context7, R-manual refresh, third-party MCP clients, SDK 2.x, concurrent-client load: not tested",
+  "Five R/termr-dependent launcher tests failing under WSL were not attributed",
+  "Timing numbers are single-machine micro-measurements"
+ ]
+}

@@ -1,0 +1,83 @@
+All checks passed!
+269 files already formatted
+/home/user001/stage05/venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:300: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the "fixture" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to "function" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+1650 tests collected in 1.89s
+/home/user001/stage05/venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:300: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+The event loop scope for asynchronous fixtures will default to the "fixture" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to "function" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
+
+  warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
+...............ssss..ss...........................s..................... [  4%]
+.............................s.......................................... [  8%]
+........................................................................ [ 13%]
+........................................................................ [ 17%]
+........................................................................ [ 21%]
+........................................................................ [ 26%]
+........................................................................ [ 30%]
+................ssssss.............................................sssss [ 34%]
+sss..................................................................... [ 39%]
+........................................................................ [ 43%]
+........................................................................ [ 48%]
+........................................................................ [ 52%]
+...............s........................................................ [ 56%]
+........................................................................ [ 61%]
+........................................................................ [ 65%]
+........................................................................ [ 69%]
+................................ssssssssssssssssss...................... [ 74%]
+..................s..................................................... [ 78%]
+........................................................................ [ 82%]
+......s............................................sssssssssssssssssssss [ 87%]
+sss..................................................................... [ 91%]
+........................................................................ [ 96%]
+..................................................................       [100%]
+=============================== warnings summary ===============================
+../venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1636
+  /home/user001/stage05/venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1636: PytestConfigWarning: Unknown config option: cache_dir
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+tests/test_codex_launcher.py::test_real_terminal_ctrl_c_stops_gracefully_and_leaves_no_runner
+tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGTERM]
+tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGHUP]
+tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGKILL]
+tests/test_codex_launcher.py::test_real_entry_point_starts_blocks_without_keys_and_quits
+  /usr/lib/python3.14/pty.py:66: DeprecationWarning: This process (pid=17951) is multi-threaded, use of forkpty() may lead to deadlocks in the child.
+    pid, fd = os.forkpty()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+SKIPPED [1] tests/test_benchmark_analytics.py:256: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_analytics.py:275: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_analytics.py:295: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_analytics.py:306: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_analytics.py:458: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_analytics.py:471: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_analytics.py:1397: optional historical result directories are not available
+SKIPPED [1] tests/test_benchmark_telemetry.py:986: saved D01 run is not available in this checkout
+SKIPPED [3] tests/test_codex_docker_runtime.py:279: Set R_KNOWLEDGE_BENCH_IMAGE_ID to run real Docker integration tests
+SKIPPED [1] tests/test_codex_docker_runtime.py:298: Set R_KNOWLEDGE_CODEX_IMAGE_ID to test the pinned Codex image
+SKIPPED [1] tests/test_codex_docker_runtime.py:403: Set R_KNOWLEDGE_CODEX_IMAGE_ID to test the restricted executor boundary
+SKIPPED [1] tests/test_codex_docker_runtime.py:430: Set R_KNOWLEDGE_CODEX_IMAGE_ID to test Codex proxy transport
+SKIPPED [1] tests/test_codex_expansion_registry.py:28: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:55: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:76: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:89: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:99: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:109: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:123: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_expansion_registry.py:177: git-ignored benchmark_expansion_sources/ bundle is not present in this checkout; extract it at the repository root to run the bundle-backed registry tests
+SKIPPED [1] tests/test_codex_managed_agents_lifecycle.py:774: Pinned Codex/R image IDs and Docker are required
+SKIPPED [9] tests/test_function_discovery.py:45: cran_knowledge_native is not installed
+SKIPPED [9] tests/test_function_discovery.py:58: actual PyO3 module is unavailable; parity not verified
+SKIPPED [1] tests/test_function_discovery.py:405: PyO3 unavailable; binding checks not verified
+SKIPPED [1] tests/test_knowledge_pilot_v21.py:180: saved B1 run is not present
+SKIPPED [6] tests/test_native_parity.py:87: cran-knowledge-native is not installed
+SKIPPED [3] tests/test_native_parity.py:102: cran-knowledge-native is not installed
+SKIPPED [1] tests/test_native_parity.py:109: cran-knowledge-native is not installed
+SKIPPED [1] tests/test_native_parity.py:115: cran-knowledge-native is not installed
+SKIPPED [1] tests/test_native_parity.py:120: cran-knowledge-native is not installed
+SKIPPED [4] tests/test_native_parity.py:144: cran-knowledge-native is not installed
+SKIPPED [8] tests/test_native_parity.py:212: cran-knowledge-native is not installed
+1583 passed, 67 skipped, 6 warnings in 486.08s (0:08:06)

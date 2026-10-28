@@ -1,0 +1,12 @@
+# command: python -I probe_conc.py 
+# started_utc: 2026-10-27T14:44:33.144145+00:00
+# ended_utc: 2026-10-27T14:44:33.978002+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+50 concurrent identical fetches -> upstream requests: 1 (singleflight), same artifact object: True, 0.06s
+lock registry empty after completion: True
+waiter after leader cancelled: completed OK, upstream calls: 3
+lock registry empty after cancel: True
+in-flight upstream requests with 5 distinct hung paths (slots=4): see below
+semaphore value restored after cancellations: 4

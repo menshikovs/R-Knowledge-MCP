@@ -1,0 +1,953 @@
+...............ssss..ss...........................s..................... [  4%]
+.............................s..................F....................... [  8%]
+........................................................................ [ 13%]
+........................................................................ [ 17%]
+........................................................................ [ 22%]
+........................................................................ [ 26%]
+........................................................................ [ 31%]
+................ssssss.............................................FFFFF [ 35%]
+FFF...........................................................FFFFFs.... [ 40%]
+........................................................................ [ 44%]
+........................................................................ [ 49%]
+........................................................................ [ 53%]
+.......s....................................F..F........................ [ 58%]
+........................................................................ [ 62%]
+........................................................................ [ 67%]
+........................................................................ [ 71%]
+.........................ssssssssssssssssss............................. [ 76%]
+...........s............................................................ [ 80%]
+.......................................................................s [ 85%]
+..................................ssssssssssssssssssssssss.............. [ 89%]
+........................................................................ [ 94%]
+.........................................................F.............. [ 98%]
+......................                                                   [100%]
+=================================== FAILURES ===================================
+_______ test_e02_fixture_is_nonnegative_integer_nb_input_with_provenance _______
+
+    def test_e02_fixture_is_nonnegative_integer_nb_input_with_provenance():
+        metadata = pilot.provenance("E02")["fixture_provenance"]
+        path = pilot.PILOT / "fixtures/E02-counts.csv"
+        rows = list(csv.reader(path.read_text().splitlines()))
+        assert rows[0] == ["gene", "ctrl_1", "ctrl_2", "ctrl_3", "treat_1", "treat_2", "treat_3"]
+        assert len(rows) == 501 and len({row[0] for row in rows[1:]}) == 500
+        assert all(len(row) == 7 and all(int(value) >= 0 for value in row[1:]) for row in rows[1:])
+        assert metadata["seed"] == 20261025
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == metadata["counts_sha256"]
+        assert (
+            hashlib.sha256((pilot.PILOT / metadata["generator"]).read_bytes()).hexdigest()
+            == metadata["generator_sha256"]
+        )
+        # The trusted reference has not been changed to work around dispersion estimation.
+        reference = pilot.PILOT / "verifier/controls/E02/reference.R"
+        assert (
+            hashlib.sha256(reference.read_bytes()).hexdigest()
+            == "a4da84f1cc568105444085a7898b251aa7ebc4a2d78394e837736e1ad5a511ce"
+        )
+        for line in (pilot.PILOT / "metadata/E-source-snapshot.sha256").read_text().splitlines():
+            sha, relative = line.split("  ", 1)
+>           assert hashlib.sha256((pilot.PILOT / relative).read_bytes()).hexdigest() == sha
+E           AssertionError: assert 'e0ae527037d2...5d2c40a673584' == '6a3046f5d26e...ea33edcbcc4f0'
+E             
+E             - 6a3046f5d26ed1c0ee63ffedd3244daf6d306e49b7f186efadcea33edcbcc4f0
+E             + e0ae527037d20c97633b67b0899f9c890d120d5fce3f335b2365d2c40a673584
+
+tests/test_bioc_benchmark.py:39: AssertionError
+__________ test_registry_imports_all_source_specs_and_counts_by_suite __________
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks/codex_r/expansion/registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.14/pathlib/__init__.py:788: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+
+/usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+    def test_registry_imports_all_source_specs_and_counts_by_suite():
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_codex_expansion_registry.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+benchmarks/codex_r/expansion/registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+
+benchmarks/codex_r/expansion/registry.py:109: RegistryError
+_ test_hard_blueprint_mapping_is_explicit_and_does_not_overstate_revalidation __
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks/codex_r/expansion/registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.14/pathlib/__init__.py:788: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+
+/usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+    def test_hard_blueprint_mapping_is_explicit_and_does_not_overstate_revalidation():
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_codex_expansion_registry.py:42: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+benchmarks/codex_r/expansion/registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+
+benchmarks/codex_r/expansion/registry.py:109: RegistryError
+_____ test_legacy_crosswalk_keeps_thematic_links_separate_from_duplicates ______
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks/codex_r/expansion/registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.14/pathlib/__init__.py:788: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+
+/usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+    def test_legacy_crosswalk_keeps_thematic_links_separate_from_duplicates():
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_codex_expansion_registry.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+benchmarks/codex_r/expansion/registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+
+benchmarks/codex_r/expansion/registry.py:109: RegistryError
+_______________ test_registry_rejects_private_answer_key_sources _______________
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks/codex_r/expansion/registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.14/pathlib/__init__.py:788: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+
+/usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+    def test_registry_rejects_private_answer_key_sources():
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_codex_expansion_registry.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+benchmarks/codex_r/expansion/registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+
+benchmarks/codex_r/expansion/registry.py:109: RegistryError
+_________ test_hard_blueprint_exports_only_the_agent_visible_contract __________
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks/codex_r/expansion/registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.14/pathlib/__init__.py:788: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+
+/usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+    def test_hard_blueprint_exports_only_the_agent_visible_contract():
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_codex_expansion_registry.py:83: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+benchmarks/codex_r/expansion/registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+
+benchmarks/codex_r/expansion/registry.py:109: RegistryError
+_______ test_checked_in_json_artifacts_match_the_current_public_sources ________
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks/codex_r/expansion/registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.14/pathlib/__init__.py:788: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+
+/usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+    def test_checked_in_json_artifacts_match_the_current_public_sources():
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_codex_expansion_registry.py:92: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+benchmarks/codex_r/expansion/registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+
+benchmarks/codex_r/expansion/registry.py:109: RegistryError
+__________ test_prompt_export_contains_only_the_requested_public_task __________
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks/codex_r/expansion/registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.14/pathlib/__init__.py:788: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+
+/usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/tmp/pytest-of-user001/pytest-0/test_prompt_export_contains_on0')
+
+    def test_prompt_export_contains_only_the_requested_public_task(tmp_path):
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_codex_expansion_registry.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+benchmarks/codex_r/expansion/registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+
+benchmarks/codex_r/expansion/registry.py:109: RegistryError
+_______ test_prompt_export_rejects_unknown_or_in_repository_destinations _______
+
+tmp_path = PosixPath('/tmp/pytest-of-user001/pytest-0/test_prompt_export_rejects_unk0')
+
+    def test_prompt_export_rejects_unknown_or_in_repository_destinations(tmp_path):
+>       with pytest.raises(registry.RegistryError, match="Unknown expansion task"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'Unknown expansion task'
+E         Actual message: 'Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+
+tests/test_codex_expansion_registry.py:158: AssertionError
+___________________ test_r_unit_and_headless_ui_suite_passes ___________________
+
+    @needs_termr
+    def test_r_unit_and_headless_ui_suite_passes():
+        code = (
+            'library(testthat); r <- test_dir("%s", reporter="silent", stop_on_failure=FALSE); '
+            "d <- as.data.frame(r); cat(sum(d$failed), sum(d$error), sum(d$nb), sep=' ')"
+            % (LAUNCHER / "tests" / "testthat")
+        )
+        result = subprocess.run(
+            [RSCRIPT, "-e", code], capture_output=True, text=True, timeout=600, check=False
+        )
+        last = result.stdout.strip().splitlines()[-1].split() if result.stdout.strip() else []
+        failed, errors, expectations = (last + ["x", "x", "0"])[:3]
+>       assert (failed, errors) == ("0", "0"), result.stdout + result.stderr
+E       AssertionError: 22 5 259
+E         Attaching package: ‘termr’
+E         
+E         The following object is masked from ‘package:testthat’:
+E         
+E             watch
+E         
+E         
+E       assert ('22', '5') == ('0', '0')
+E         
+E         At index 0 diff: '22' != '0'
+E         Use -v to get more diff
+
+tests/test_codex_launcher.py:347: AssertionError
+_______ test_real_terminal_ctrl_c_stops_gracefully_and_leaves_no_runner ________
+
+    @needs_termr
+    def test_real_terminal_ctrl_c_stops_gracefully_and_leaves_no_runner():
+        drive = pty_module()
+        session = drive.Session("sigint")
+        try:
+            assert session.read(10, "READY")
+            session.send("f5")
+            assert session.read(5, "RUNNING")
+            runner = session.runner_pids()
+>           assert len(runner) == 1
+E           assert 0 == 1
+E            +  where 0 = len([])
+
+tests/test_codex_launcher.py:368: AssertionError
+____ test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGTERM] _____
+
+how = 'SIGTERM'
+
+    @needs_termr
+    @pytest.mark.parametrize("how", ["SIGTERM", "SIGHUP", "SIGKILL"])
+    def test_runner_is_interrupted_when_the_launcher_dies_abnormally(how):
+        import os
+        import signal
+        import time
+    
+        drive = pty_module()
+        session = drive.Session("sigint")
+        try:
+            assert session.read(10, "READY")
+            session.send("f5")
+            assert session.read(5, "RUNNING")
+            runner = session.runner_pids()
+>           assert len(runner) == 1
+E           assert 0 == 1
+E            +  where 0 = len([])
+
+tests/test_codex_launcher.py:398: AssertionError
+_____ test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGHUP] _____
+
+how = 'SIGHUP'
+
+    @needs_termr
+    @pytest.mark.parametrize("how", ["SIGTERM", "SIGHUP", "SIGKILL"])
+    def test_runner_is_interrupted_when_the_launcher_dies_abnormally(how):
+        import os
+        import signal
+        import time
+    
+        drive = pty_module()
+        session = drive.Session("sigint")
+        try:
+            assert session.read(10, "READY")
+            session.send("f5")
+            assert session.read(5, "RUNNING")
+            runner = session.runner_pids()
+>           assert len(runner) == 1
+E           assert 0 == 1
+E            +  where 0 = len([])
+
+tests/test_codex_launcher.py:398: AssertionError
+____ test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGKILL] _____
+
+how = 'SIGKILL'
+
+    @needs_termr
+    @pytest.mark.parametrize("how", ["SIGTERM", "SIGHUP", "SIGKILL"])
+    def test_runner_is_interrupted_when_the_launcher_dies_abnormally(how):
+        import os
+        import signal
+        import time
+    
+        drive = pty_module()
+        session = drive.Session("sigint")
+        try:
+            assert session.read(10, "READY")
+            session.send("f5")
+            assert session.read(5, "RUNNING")
+            runner = session.runner_pids()
+>           assert len(runner) == 1
+E           assert 0 == 1
+E            +  where 0 = len([])
+
+tests/test_codex_launcher.py:398: AssertionError
+_ test_trial_deletes_session_and_executor_before_scoring[R01-solution.R-environment_failed] _
+
+tmp_path = PosixPath('/tmp/pytest-of-user001/pytest-0/test_trial_deletes_session_and2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7611315483d0>
+outcome = 'environment_failed', task = 'R01', filename = 'solution.R'
+
+    @pytest.mark.skipif(sys.platform != "linux", reason="Runner uses Linux SIGALRM")
+    @pytest.mark.parametrize("outcome", ["completed", "failed", "environment_failed"])
+    @pytest.mark.parametrize(
+        ("task", "filename"), [("R01", "solution.R"), ("R02", "summarize_sales.R")]
+    )
+    def test_trial_deletes_session_and_executor_before_scoring(
+        tmp_path, monkeypatch, outcome, task, filename
+    ):
+        effects = []
+        executor_started = threading.Event()
+        succeeds = outcome == "completed"
+    
+        def respond(request):
+            path = request.url.path
+            if path.endswith("/sessions"):
+                return httpx.Response(
+                    200,
+                    json={
+                        "id": "sess_test",
+                        "agent": json.loads(request.content)["agent"],
+                        "environment": {
+                            "type": "self_hosted",
+                            "id": "env_test",
+                            "remote_url": "https://api.openai.com/v1/agents/api",
+                        },
+                    },
+                )
+            if request.method == "DELETE":
+                assert "logs_captured" in effects
+                effects.append("deleted")
+                return httpx.Response(200, json={"id": "sess_test", "deleted": True})
+            if path.endswith("/events") and request.method == "GET":
+                # Model delayed SSE headers: do not return any headers until Docker
+                # started. This failed when startup lived in on_stream_ready.
+                assert executor_started.wait(timeout=2), (
+                    "SSE headers waited, but executor never started"
+                )
+                if outcome == "environment_failed":
+                    events = [
+                        {
+                            "type": "agent.session.environment.failed",
+                            "environment": {
+                                "error": {
+                                    "code": "environment_connection_timeout",
+                                    "message": "Environment could not connect executor-test-key",
+                                }
+                            },
+                        }
+                    ]
+                else:
+                    events = [
+                        {"type": "agent.session.environment.connected"},
+                        {"type": f"agent.session.turn.{outcome}"},
+                    ]
+                return httpx.Response(
+                    200,
+                    headers={"Content-Type": "text/event-stream"},
+                    text="".join(f"data: {json.dumps(event)}\n\n" for event in events),
+                )
+            return httpx.Response(200, json={"usage": {"input_tokens": 55, "output_tokens": 9}})
+    
+        original_client = simple.SimpleClient
+        monkeypatch.setattr(
+            simple,
+            "SimpleClient",
+            lambda *keys: original_client(*keys, transport=httpx.MockTransport(respond)),
+        )
+    
+        def docker(*args, **kwargs):
+            if args[0] == "rm":
+                effects.append("container_removed")
+                assert "logs_captured" in effects
+            if args[0] == "inspect":
+                return subprocess.CompletedProcess(
+                    args, 0, '{"Running": true, "Status": "running"}', ""
+                )
+            if args[0] == "logs":
+                effects.append("logs_captured")
+                return subprocess.CompletedProcess(
+                    args, 0, "application-test-key", "network: connection refused executor-test-key"
+                )
+            return subprocess.CompletedProcess(args, 0, "", "")
+    
+        def start_executor(name, network, image, workspace, environment, key):
+            effects.append("executor_started")
+            workspace.joinpath(filename).write_text("# synthetic test artifact\n")
+            executor_started.set()
+    
+        def score(*args):
+            assert "deleted" in effects and effects.count("container_removed") == 2
+            assert args[1] == tmp_path / f"{task}-A-1/artifacts"
+            assert args[1].joinpath("solution.R").read_text() == "# synthetic test artifact\n"
+            effects.append("score")
+            return {"status": "scored", "passed": 4, "total": 4}
+    
+        monkeypatch.setattr(simple, "docker", docker)
+        monkeypatch.setattr(simple, "start_executor", start_executor)
+        monkeypatch.setattr(simple.bench, "score", score)
+        result = simple.run_trial(
+            Namespace(effort="high", timeout=30),
+            task,
+            "without-mcp",
+            1,
+            tmp_path,
+            ("application-test-key", "executor-test-key"),
+            {"executor": "test", "scorer": "test"},
+        )
+        assert result["session_deleted"] is True
+        assert result["usage"]["input_tokens"] == 55
+        assert result["status"] == ("scored" if succeeds else "error")
+        assert ("score" in effects) is succeeds
+        assert "connection refused" in result["executor_diagnostics"]["stderr"]
+        serialized = (tmp_path / f"{task}-A-1/result.json").read_text()
+        assert "application-test-key" not in serialized
+        assert "executor-test-key" not in serialized
+        if succeeds:
+            assert result["artifact_sources"] == {"solution.R": filename}
+        if outcome == "environment_failed":
+>           assert result["environment_error"]["code"] == "environment_connection_timeout"
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: string indices must be integers, not 'str'
+
+tests/test_codex_simple.py:331: TypeError
+----------------------------- Captured stdout call -----------------------------
+R01-A-1: session created [0.5s]
+R01-A-1: Docker executor started [0.5s]
+R01-A-1: session deleted [0.5s]
+R01-A-1: cleanup completed (confirmed) [0.5s]
+_ test_trial_deletes_session_and_executor_before_scoring[R02-summarize_sales.R-environment_failed] _
+
+tmp_path = PosixPath('/tmp/pytest-of-user001/pytest-0/test_trial_deletes_session_and5')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7610e3b93620>
+outcome = 'environment_failed', task = 'R02', filename = 'summarize_sales.R'
+
+    @pytest.mark.skipif(sys.platform != "linux", reason="Runner uses Linux SIGALRM")
+    @pytest.mark.parametrize("outcome", ["completed", "failed", "environment_failed"])
+    @pytest.mark.parametrize(
+        ("task", "filename"), [("R01", "solution.R"), ("R02", "summarize_sales.R")]
+    )
+    def test_trial_deletes_session_and_executor_before_scoring(
+        tmp_path, monkeypatch, outcome, task, filename
+    ):
+        effects = []
+        executor_started = threading.Event()
+        succeeds = outcome == "completed"
+    
+        def respond(request):
+            path = request.url.path
+            if path.endswith("/sessions"):
+                return httpx.Response(
+                    200,
+                    json={
+                        "id": "sess_test",
+                        "agent": json.loads(request.content)["agent"],
+                        "environment": {
+                            "type": "self_hosted",
+                            "id": "env_test",
+                            "remote_url": "https://api.openai.com/v1/agents/api",
+                        },
+                    },
+                )
+            if request.method == "DELETE":
+                assert "logs_captured" in effects
+                effects.append("deleted")
+                return httpx.Response(200, json={"id": "sess_test", "deleted": True})
+            if path.endswith("/events") and request.method == "GET":
+                # Model delayed SSE headers: do not return any headers until Docker
+                # started. This failed when startup lived in on_stream_ready.
+                assert executor_started.wait(timeout=2), (
+                    "SSE headers waited, but executor never started"
+                )
+                if outcome == "environment_failed":
+                    events = [
+                        {
+                            "type": "agent.session.environment.failed",
+                            "environment": {
+                                "error": {
+                                    "code": "environment_connection_timeout",
+                                    "message": "Environment could not connect executor-test-key",
+                                }
+                            },
+                        }
+                    ]
+                else:
+                    events = [
+                        {"type": "agent.session.environment.connected"},
+                        {"type": f"agent.session.turn.{outcome}"},
+                    ]
+                return httpx.Response(
+                    200,
+                    headers={"Content-Type": "text/event-stream"},
+                    text="".join(f"data: {json.dumps(event)}\n\n" for event in events),
+                )
+            return httpx.Response(200, json={"usage": {"input_tokens": 55, "output_tokens": 9}})
+    
+        original_client = simple.SimpleClient
+        monkeypatch.setattr(
+            simple,
+            "SimpleClient",
+            lambda *keys: original_client(*keys, transport=httpx.MockTransport(respond)),
+        )
+    
+        def docker(*args, **kwargs):
+            if args[0] == "rm":
+                effects.append("container_removed")
+                assert "logs_captured" in effects
+            if args[0] == "inspect":
+                return subprocess.CompletedProcess(
+                    args, 0, '{"Running": true, "Status": "running"}', ""
+                )
+            if args[0] == "logs":
+                effects.append("logs_captured")
+                return subprocess.CompletedProcess(
+                    args, 0, "application-test-key", "network: connection refused executor-test-key"
+                )
+            return subprocess.CompletedProcess(args, 0, "", "")
+    
+        def start_executor(name, network, image, workspace, environment, key):
+            effects.append("executor_started")
+            workspace.joinpath(filename).write_text("# synthetic test artifact\n")
+            executor_started.set()
+    
+        def score(*args):
+            assert "deleted" in effects and effects.count("container_removed") == 2
+            assert args[1] == tmp_path / f"{task}-A-1/artifacts"
+            assert args[1].joinpath("solution.R").read_text() == "# synthetic test artifact\n"
+            effects.append("score")
+            return {"status": "scored", "passed": 4, "total": 4}
+    
+        monkeypatch.setattr(simple, "docker", docker)
+        monkeypatch.setattr(simple, "start_executor", start_executor)
+        monkeypatch.setattr(simple.bench, "score", score)
+        result = simple.run_trial(
+            Namespace(effort="high", timeout=30),
+            task,
+            "without-mcp",
+            1,
+            tmp_path,
+            ("application-test-key", "executor-test-key"),
+            {"executor": "test", "scorer": "test"},
+        )
+        assert result["session_deleted"] is True
+        assert result["usage"]["input_tokens"] == 55
+        assert result["status"] == ("scored" if succeeds else "error")
+        assert ("score" in effects) is succeeds
+        assert "connection refused" in result["executor_diagnostics"]["stderr"]
+        serialized = (tmp_path / f"{task}-A-1/result.json").read_text()
+        assert "application-test-key" not in serialized
+        assert "executor-test-key" not in serialized
+        if succeeds:
+            assert result["artifact_sources"] == {"solution.R": filename}
+        if outcome == "environment_failed":
+>           assert result["environment_error"]["code"] == "environment_connection_timeout"
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           TypeError: string indices must be integers, not 'str'
+
+tests/test_codex_simple.py:331: TypeError
+----------------------------- Captured stdout call -----------------------------
+R02-A-1: session created [0.4s]
+R02-A-1: Docker executor started [0.4s]
+R02-A-1: session deleted [0.4s]
+R02-A-1: cleanup completed (confirmed) [0.4s]
+___________________ test_full_chain_with_real_mcp_container ____________________
+
+lab = <function lab.<locals>.make at 0x7610e0200bf0>
+
+    def test_full_chain_with_real_mcp_container(lab):
+        scenario = lab()
+        assert scenario.run() == 0
+        events, record = scenario.events, scenario.record
+    
+        # chain and ordering of runner-observed stages ---
+        kinds = [e["event_type"] for e in events]
+        runner_order = [
+            "benchmark.run.started",
+            "benchmark.trial.started",
+            "agent.session.created",
+            "agent.turn.started",
+            "agent.turn.completed",
+            "cleanup.started",  # the runner releases resources before it exports and scores
+            "artifact.export.completed",
+            "scorer.started",
+            "scorer.completed",
+        ]
+        positions = [kinds.index(name) for name in runner_order]
+        assert positions == sorted(positions)
+        assert kinds[-2:] == ["benchmark.trial.completed", "benchmark.run.completed"]
+        assert "mcp.discovery.started" not in kinds  # not observable, never invented
+        (discovery,) = [e for e in events if e["event_type"] == "mcp.discovery.completed"]
+        assert discovery["observation"] == "server_audit_after_trial"
+        assert discovery["list_tools_requests"] == 1  # the one tools/list the fake agent sent
+        assert scenario.record["mcp_server_audit"]["list_tools_requests"] == 1
+    
+        # schema, ids, uniqueness ---
+        assert schema.validate_stream(events) == []
+>       assert {e["schema_version"] for e in events} == {"1.1"}
+E       AssertionError: assert {'1.2'} == {'1.1'}
+E         
+E         Extra items in the left set:
+E         '1.2'
+E         Extra items in the right set:
+E         '1.1'
+E         Use -v to get more diff
+
+tests/test_telemetry_integration.py:388: AssertionError
+----------------------------- Captured stdout call -----------------------------
+D01-B-1: session created [1.6s]
+D01-B-1: Docker executor started [1.6s]
+D01-B-1: executor connected [1.6s]
+D01-B-1: turn started [1.6s]
+D01-B-1: turn completed [3.6s]
+D01-B-1: session deleted [3.6s]
+D01-B-1: scoring started [4.0s]
+D01-B-1: scoring completed [4.1s]
+D01-B-1: cleanup completed (confirmed) [4.1s]
+D01-B-1: scored score=4/4
+Results: /tmp/pytest-of-user001/pytest-0/test_full_chain_with_real_mcp_0/results/20261027T142258Z-0bbce9e4
+=============================== warnings summary ===============================
+../audit-ci-venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1464
+  /home/user001/audit-ci-venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+tests/test_codex_launcher.py::test_real_terminal_ctrl_c_stops_gracefully_and_leaves_no_runner
+tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGTERM]
+tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGHUP]
+tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGKILL]
+  /usr/lib/python3.14/pty.py:66: DeprecationWarning: This process (pid=4535) is multi-threaded, use of forkpty() may lead to deadlocks in the child.
+    pid, fd = os.forkpty()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_bioc_benchmark.py::test_e02_fixture_is_nonnegative_integer_nb_input_with_provenance
+FAILED tests/test_codex_expansion_registry.py::test_registry_imports_all_source_specs_and_counts_by_suite
+FAILED tests/test_codex_expansion_registry.py::test_hard_blueprint_mapping_is_explicit_and_does_not_overstate_revalidation
+FAILED tests/test_codex_expansion_registry.py::test_legacy_crosswalk_keeps_thematic_links_separate_from_duplicates
+FAILED tests/test_codex_expansion_registry.py::test_registry_rejects_private_answer_key_sources
+FAILED tests/test_codex_expansion_registry.py::test_hard_blueprint_exports_only_the_agent_visible_contract
+FAILED tests/test_codex_expansion_registry.py::test_checked_in_json_artifacts_match_the_current_public_sources
+FAILED tests/test_codex_expansion_registry.py::test_prompt_export_contains_only_the_requested_public_task
+FAILED tests/test_codex_expansion_registry.py::test_prompt_export_rejects_unknown_or_in_repository_destinations
+FAILED tests/test_codex_launcher.py::test_r_unit_and_headless_ui_suite_passes
+FAILED tests/test_codex_launcher.py::test_real_terminal_ctrl_c_stops_gracefully_and_leaves_no_runner
+FAILED tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGTERM]
+FAILED tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGHUP]
+FAILED tests/test_codex_launcher.py::test_runner_is_interrupted_when_the_launcher_dies_abnormally[SIGKILL]
+FAILED tests/test_codex_simple.py::test_trial_deletes_session_and_executor_before_scoring[R01-solution.R-environment_failed]
+FAILED tests/test_codex_simple.py::test_trial_deletes_session_and_executor_before_scoring[R02-summarize_sales.R-environment_failed]
+FAILED tests/test_telemetry_integration.py::test_full_chain_with_real_mcp_container
+17 failed, 1529 passed, 60 skipped, 5 warnings in 377.66s (0:06:17)
+exit=0
+2026-10-27T14:23:26Z

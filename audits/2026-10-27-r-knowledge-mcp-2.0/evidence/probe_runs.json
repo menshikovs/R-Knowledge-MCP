@@ -1,0 +1,312 @@
+{
+ "meta": {
+  "src_tree_sha256_installed_copy": "684910e59b46dcd326e373d24ccf6def9667829db5c4d824fa745376e0d0bf80",
+  "src_tree_sha256_audited_clone": "650b9e78db32bea7ec63b3ceb1491ebb0632976dd2935dc460d8f33815ab9c50"
+ },
+ "runs": [
+  {
+   "name": "inspect_tools",
+   "script": "inspect_tools.py",
+   "args": [
+    "mcp"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:12.965993+00:00",
+   "ended_utc": "2026-10-27T14:44:13.997875+00:00",
+   "seconds": 1.0,
+   "public_network": false
+  },
+  {
+   "name": "probe_a_version_equivalence",
+   "script": "probe_a.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:13.998761+00:00",
+   "ended_utc": "2026-10-27T14:44:14.308534+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_b_bioc_provider_rebuild",
+   "script": "probe_b.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:14.309284+00:00",
+   "ended_utc": "2026-10-27T14:44:14.755937+00:00",
+   "seconds": 0.4,
+   "public_network": false
+  },
+  {
+   "name": "probe_c_prompt_score_ctx7_redaction",
+   "script": "probe_c.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:14.756724+00:00",
+   "ended_utc": "2026-10-27T14:44:15.074373+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_f_rdoc_fresh_install",
+   "script": "probe_f.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:15.075163+00:00",
+   "ended_utc": "2026-10-27T14:44:15.373979+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_stdio_protocol",
+   "script": "probe_stdio.py",
+   "args": [
+    "r-knowledge-mcp.exe"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:15.374710+00:00",
+   "ended_utc": "2026-10-27T14:44:22.234537+00:00",
+   "seconds": 6.9,
+   "public_network": false
+  },
+  {
+   "name": "probe_http_transport",
+   "script": "probe_http.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:22.235372+00:00",
+   "ended_utc": "2026-10-27T14:44:31.753153+00:00",
+   "seconds": 9.5,
+   "public_network": false
+  },
+  {
+   "name": "probe_mcp_shape",
+   "script": "probe_mcp_shape.py",
+   "args": [
+    "probes"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:31.753902+00:00",
+   "ended_utc": "2026-10-27T14:44:32.588580+00:00",
+   "seconds": 0.8,
+   "public_network": false
+  },
+  {
+   "name": "probe_inject",
+   "script": "probe_inject.py",
+   "args": [
+    "probes"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:32.589461+00:00",
+   "ended_utc": "2026-10-27T14:44:32.892030+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_logs",
+   "script": "probe_logs.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:32.892898+00:00",
+   "ended_utc": "2026-10-27T14:44:33.143096+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_conc",
+   "script": "probe_conc.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:33.144145+00:00",
+   "ended_utc": "2026-10-27T14:44:33.978002+00:00",
+   "seconds": 0.8,
+   "public_network": false
+  },
+  {
+   "name": "probe_redos",
+   "script": "probe_redos.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:44:33.978861+00:00",
+   "ended_utc": "2026-10-27T14:45:36.072352+00:00",
+   "seconds": 62.1,
+   "public_network": false
+  },
+  {
+   "name": "probe_static",
+   "script": "probe_static.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:36.073091+00:00",
+   "ended_utc": "2026-10-27T14:45:39.496752+00:00",
+   "seconds": 3.4,
+   "public_network": false
+  },
+  {
+   "name": "probe_intent",
+   "script": "probe_intent.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:39.498251+00:00",
+   "ended_utc": "2026-10-27T14:45:39.795057+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_flags",
+   "script": "probe_flags.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:39.795953+00:00",
+   "ended_utc": "2026-10-27T14:45:41.026857+00:00",
+   "seconds": 1.2,
+   "public_network": false
+  },
+  {
+   "name": "probe_secrets",
+   "script": "probe_secrets.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:41.027796+00:00",
+   "ended_utc": "2026-10-27T14:45:41.292249+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_pi_build",
+   "script": "probe_pi.py",
+   "args": [
+    "probes"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:41.293645+00:00",
+   "ended_utc": "2026-10-27T14:45:41.633368+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_pi_followup",
+   "script": "probe_pi2.py",
+   "args": [
+    "probes"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:41.634341+00:00",
+   "ended_utc": "2026-10-27T14:45:41.982650+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_pi_conflicts",
+   "script": "probe_pi3.py",
+   "args": [
+    "probes"
+   ],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:41.983480+00:00",
+   "ended_utc": "2026-10-27T14:45:42.328527+00:00",
+   "seconds": 0.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_archive_hostile",
+   "script": "probe_archive.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:42.329414+00:00",
+   "ended_utc": "2026-10-27T14:45:44.647214+00:00",
+   "seconds": 2.3,
+   "public_network": false
+  },
+  {
+   "name": "probe_rss_hostile_archive",
+   "script": "probe_rss.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:44.648068+00:00",
+   "ended_utc": "2026-10-27T14:45:45.639834+00:00",
+   "seconds": 1.0,
+   "public_network": false
+  },
+  {
+   "name": "probe_perf",
+   "script": "probe_perf.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:45.640597+00:00",
+   "ended_utc": "2026-10-27T14:45:51.789431+00:00",
+   "seconds": 6.1,
+   "public_network": true
+  },
+  {
+   "name": "probe_framework",
+   "script": "probe_framework.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:51.790191+00:00",
+   "ended_utc": "2026-10-27T14:45:53.530317+00:00",
+   "seconds": 1.7,
+   "public_network": true
+  },
+  {
+   "name": "probe_real2_encoding_namespace",
+   "script": "probe_real2.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:53.531717+00:00",
+   "ended_utc": "2026-10-27T14:45:55.099225+00:00",
+   "seconds": 1.6,
+   "public_network": true
+  },
+  {
+   "name": "probe_real3_cluster_docs",
+   "script": "probe_real3.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:55.100025+00:00",
+   "ended_utc": "2026-10-27T14:45:56.389764+00:00",
+   "seconds": 1.3,
+   "public_network": true
+  },
+  {
+   "name": "probe_rdpartial",
+   "script": "probe_rdpartial.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:56.390548+00:00",
+   "ended_utc": "2026-10-27T14:45:58.147399+00:00",
+   "seconds": 1.8,
+   "public_network": true
+  },
+  {
+   "name": "probe_validate",
+   "script": "probe_validate.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:58.148732+00:00",
+   "ended_utc": "2026-10-27T14:45:59.495550+00:00",
+   "seconds": 1.3,
+   "public_network": true
+  },
+  {
+   "name": "probe_bioc",
+   "script": "probe_bioc.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:45:59.496328+00:00",
+   "ended_utc": "2026-10-27T14:46:01.884959+00:00",
+   "seconds": 2.4,
+   "public_network": true
+  },
+  {
+   "name": "probe_bioc_cost",
+   "script": "probe_bioc_cost.py",
+   "args": [],
+   "exit_code": 0,
+   "started_utc": "2026-10-27T14:46:01.885739+00:00",
+   "ended_utc": "2026-10-27T14:46:03.098292+00:00",
+   "seconds": 1.2,
+   "public_network": true
+  }
+ ]
+}

@@ -1,0 +1,6 @@
+a <- package_version("1.0"); b <- package_version("1.0.0")
+cat("1.0 == 1.0.0:", a == b, "| 1.0 < 1.0.0:", a < b, "\n")
+cat("2.10-1 == 2.10.1:", package_version("2.10-1") == package_version("2.10.1"), "\n")
+cat("2.10-01 == 2.10.1:", package_version("2.10-01") == package_version("2.10.1"), "\n")
+cat("1.2-3.0 == 1.2.3:", package_version("1.2-3.0") == package_version("1.2.3"), "\n")
+cat("packageVersion('MASS') prints:", format(packageVersion("MASS")), "\n")

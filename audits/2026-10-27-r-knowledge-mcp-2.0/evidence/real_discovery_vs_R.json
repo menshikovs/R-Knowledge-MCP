@@ -1,0 +1,389 @@
+[
+ {
+  "pkg": "MASS",
+  "installed": "7.3.65",
+  "cran": "7.3-66",
+  "same_version": false,
+  "status": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments"
+  ],
+  "patterns": [],
+  "R_exports": 77,
+  "srv_exports": 77,
+  "exports_missing": 0,
+  "exports_extra": 0,
+  "R_aliases": 248,
+  "srv_aliases": 248,
+  "aliases_missing": 0,
+  "aliases_extra": 0,
+  "calls": 19,
+  "secs": 6.13,
+  "miss_sample": [],
+  "extra_sample": [],
+  "amiss_sample": []
+ },
+ {
+  "pkg": "lattice",
+  "installed": "0.22.7",
+  "cran": "0.23-1",
+  "same_version": false,
+  "status": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments"
+  ],
+  "patterns": [],
+  "R_exports": 148,
+  "srv_exports": 147,
+  "exports_missing": 1,
+  "exports_extra": 0,
+  "R_aliases": 247,
+  "srv_aliases": 248,
+  "aliases_missing": 0,
+  "aliases_extra": 1,
+  "calls": 19,
+  "secs": 0.15,
+  "miss_sample": [
+   "parallel"
+  ],
+  "extra_sample": [],
+  "amiss_sample": []
+ },
+ {
+  "pkg": "cluster",
+  "installed": "2.1.8.1",
+  "cran": "2.1.8.3",
+  "same_version": false,
+  "status": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments",
+   "rd_encoding_unavailable"
+  ],
+  "patterns": [],
+  "R_exports": 25,
+  "srv_exports": 25,
+  "exports_missing": 0,
+  "exports_extra": 0,
+  "R_aliases": 84,
+  "srv_aliases": 83,
+  "aliases_missing": 1,
+  "aliases_extra": 0,
+  "calls": 7,
+  "secs": 0.1,
+  "miss_sample": [],
+  "extra_sample": [],
+  "amiss_sample": [
+   "plantTraits"
+  ]
+ },
+ {
+  "pkg": "rpart",
+  "installed": "4.1.24",
+  "cran": "4.1.27",
+  "same_version": false,
+  "status": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments"
+  ],
+  "patterns": [],
+  "R_exports": 14,
+  "srv_exports": 14,
+  "exports_missing": 0,
+  "exports_extra": 0,
+  "R_aliases": 37,
+  "srv_aliases": 37,
+  "aliases_missing": 0,
+  "aliases_extra": 0,
+  "calls": 3,
+  "secs": 0.08,
+  "miss_sample": [],
+  "extra_sample": [],
+  "amiss_sample": []
+ },
+ {
+  "pkg": "boot",
+  "installed": "1.3.32",
+  "cran": "1.3-32",
+  "same_version": true,
+  "status": "verified",
+  "issues": [],
+  "patterns": [],
+  "R_exports": 36,
+  "srv_exports": 36,
+  "exports_missing": 0,
+  "exports_extra": 0,
+  "R_aliases": 101,
+  "srv_aliases": 101,
+  "aliases_missing": 0,
+  "aliases_extra": 0,
+  "calls": 7,
+  "secs": 0.1,
+  "miss_sample": [],
+  "extra_sample": [],
+  "amiss_sample": []
+ },
+ {
+  "pkg": "nnet",
+  "installed": "7.3.20",
+  "cran": "7.3-21",
+  "same_version": false,
+  "status": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments"
+  ],
+  "patterns": [],
+  "R_exports": 7,
+  "srv_exports": 7,
+  "exports_missing": 0,
+  "exports_extra": 0,
+  "R_aliases": 27,
+  "srv_aliases": 27,
+  "aliases_missing": 0,
+  "aliases_extra": 0,
+  "calls": 3,
+  "secs": 0.07,
+  "miss_sample": [],
+  "extra_sample": [],
+  "amiss_sample": []
+ },
+ {
+  "pkg": "class",
+  "installed": "7.3.23",
+  "cran": "7.3-24",
+  "same_version": false,
+  "status": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments"
+  ],
+  "patterns": [],
+  "R_exports": 15,
+  "srv_exports": 15,
+  "exports_missing": 0,
+  "exports_extra": 0,
+  "R_aliases": 17,
+  "srv_aliases": 17,
+  "aliases_missing": 0,
+  "aliases_extra": 0,
+  "calls": 2,
+  "secs": 0.06,
+  "miss_sample": [],
+  "extra_sample": [],
+  "amiss_sample": []
+ },
+ {
+  "pkg": "codetools",
+  "installed": "0.2.20",
+  "cran": "0.2-20",
+  "same_version": true,
+  "status": "verified",
+  "issues": [],
+  "patterns": [],
+  "R_exports": 19,
+  "srv_exports": 19,
+  "exports_missing": 0,
+  "exports_extra": 0,
+  "R_aliases": 20,
+  "srv_aliases": 20,
+  "aliases_missing": 0,
+  "aliases_extra": 0,
+  "calls": 2,
+  "secs": 0.06,
+  "miss_sample": [],
+  "extra_sample": [],
+  "amiss_sample": []
+ },
+ {
+  "pkg": "foreign",
+  "installed": "0.8.90",
+  "cran": "0.8-92",
+  "same_version": false,
+  "status": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments"
+  ],
+  "patterns": [],
+  "R_exports": 17,
+  "srv_exports": 17,
+  "exports_missing": 0,
+  "exports_extra": 0,
+  "R_aliases": 17,
+  "srv_aliases": 17,
+  "aliases_missing": 0,
+  "aliases_extra": 0,
+  "calls": 2,
+  "secs": 0.07,
+  "miss_sample": [],
+  "extra_sample": [],
+  "amiss_sample": []
+ },
+ {
+  "pkg": "KernSmooth",
+  "installed": "2.23.26",
+  "cran": "2.23-27",
+  "same_version": false,
+  "status": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments"
+  ],
+  "patterns": [],
+  "R_exports": 7,
+  "srv_exports": 7,
+  "exports_missing": 0,
+  "exports_extra": 0,
+  "R_aliases": 7,
+  "srv_aliases": 7,
+  "aliases_missing": 0,
+  "aliases_extra": 0,
+  "calls": 1,
+  "secs": 0.06,
+  "miss_sample": [],
+  "extra_sample": [],
+  "amiss_sample": []
+ },
+ {
+  "pkg": "nlme",
+  "installed": "3.1.168",
+  "cran": "3.1-171",
+  "same_version": false,
+  "status": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments"
+  ],
+  "patterns": [],
+  "R_exports": 109,
+  "srv_exports": 109,
+  "exports_missing": 0,
+  "exports_extra": 0,
+  "R_aliases": 536,
+  "srv_aliases": 536,
+  "aliases_missing": 0,
+  "aliases_extra": 0,
+  "calls": 47,
+  "secs": 0.26,
+  "miss_sample": [],
+  "extra_sample": [],
+  "amiss_sample": []
+ },
+ {
+  "pkg": "Matrix",
+  "installed": "1.7.4",
+  "cran": "1.7-6",
+  "same_version": false,
+  "status": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments",
+   "rd_literal_coverage_partial"
+  ],
+  "patterns": [],
+  "R_exports": 417,
+  "srv_exports": 321,
+  "exports_missing": 215,
+  "exports_extra": 119,
+  "R_aliases": 2002,
+  "srv_aliases": 2002,
+  "aliases_missing": 0,
+  "aliases_extra": 0,
+  "calls": 89,
+  "secs": 0.45,
+  "miss_sample": [
+   ".__C__BunchKaufman",
+   ".__C__BunchKaufmanFactorization",
+   ".__C__CHMfactor",
+   ".__C__CHMsimpl",
+   ".__C__CHMsuper"
+  ],
+  "extra_sample": [
+   "!",
+   "%*%",
+   "+",
+   "BunchKaufmanFactorization",
+   "CHMfactor"
+  ],
+  "amiss_sample": []
+ },
+ {
+  "pkg": "survival",
+  "installed": "3.8.3",
+  "cran": "3.8-12",
+  "same_version": false,
+  "status": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments",
+   "namespace_unsupported_expression"
+  ],
+  "patterns": [],
+  "R_exports": 79,
+  "srv_exports": 80,
+  "exports_missing": 2,
+  "exports_extra": 3,
+  "R_aliases": 263,
+  "srv_aliases": 258,
+  "aliases_missing": 10,
+  "aliases_extra": 5,
+  "calls": 23,
+  "secs": 0.38,
+  "miss_sample": [
+   "Surv2data",
+   "totimeline"
+  ],
+  "extra_sample": [
+   "lvcf",
+   "nostutter",
+   "survfit_confint"
+  ],
+  "amiss_sample": [
+   "Surv2data",
+   "attrassign.default",
+   "attrassign.lm",
+   "coxph.getdata",
+   "coxph.penalty"
+  ]
+ },
+ {
+  "pkg": "mgcv",
+  "installed": "1.9.3",
+  "cran": "1.9-4",
+  "same_version": false,
+  "status": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments"
+  ],
+  "patterns": [],
+  "R_exports": 191,
+  "srv_exports": 195,
+  "exports_missing": 3,
+  "exports_extra": 7,
+  "R_aliases": 261,
+  "srv_aliases": 266,
+  "aliases_missing": 3,
+  "aliases_extra": 8,
+  "calls": 25,
+  "secs": 0.22,
+  "miss_sample": [
+   "Predict.matrix.sf",
+   "Predict.matrix.sw",
+   "full.score"
+  ],
+  "extra_sample": [
+   "Predict.matrix.sf.film",
+   "Predict.matrix.sf.wiggly",
+   "bcg",
+   "dppois",
+   "scasm"
+  ],
+  "amiss_sample": [
+   "Predict.matrix.sf",
+   "Predict.matrix.sw",
+   "full.score"
+  ]
+ },
+ {
+  "pkg": "termr",
+  "ver": "1.0.1",
+  "status": "partial",
+  "issues": [
+   "rd_literal_coverage_partial"
+  ],
+  "patterns": []
+ }
+]

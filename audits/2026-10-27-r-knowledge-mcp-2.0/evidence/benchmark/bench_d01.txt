@@ -1,0 +1,16 @@
+('without-mcp', '20261025T083653Z-ca1d5503', None, 'consolidated-v1', None, 2, 4, 0)
+('with-mcp', '20261025T083653Z-ca1d5503', None, 'consolidated-v1', None, 3, 4, 55)
+('without-mcp', '20261025T100740Z-9746f577', None, 'consolidated-v1.1', 'd-recommendation-2', 1, 4, 0)
+('with-mcp', '20261025T100740Z-9746f577', None, 'consolidated-v1.1', 'd-recommendation-2', 3, 4, 23)
+('without-mcp', '20261025T135949Z-9ff06c47', None, 'consolidated-v1.1', 'd-recommendation-2', 1, 4, 0)
+('with-mcp', '20261025T135949Z-9ff06c47', None, 'consolidated-v1.1', 'd-recommendation-2', 4, 4, 45)
+('without-mcp', '20261026T155642Z-05edb0df', None, 'consolidated-v1.1', 'd-recommendation-2', 2, 4, 0)
+('with-mcp', '20261026T155642Z-05edb0df', None, 'consolidated-v1.1', 'd-recommendation-2', 4, 4, 39)
+('with-mcp', '20261027T080622Z-16d73779', None, 'consolidated-v1.1', 'd-recommendation-2', 2, 4, 0)
+('with-mcp', '20261027T080923Z-f0bf06a8', None, 'consolidated-v1.1', 'd-recommendation-2', 4, 4, 15)
+('with-mcp', '20261027T091937Z-29e767cb', None, 'consolidated-v1.1', 'd-recommendation-2', 1, 4, 0)
+('with-mcp', '20261027T092234Z-5d712f1d', None, 'consolidated-v1.1', 'd-recommendation-2', 3, 4, 28)
+without n 4 mean 0.375 | with n 8 mean 0.75
+difference of means 0.375 | bootstrap 95% interval 0.156 to 0.562
+fully correct: without 0 / 4 | with 3 / 8
+with-MCP trials that used MCP: 6 mean 0.875 | that did not: 2 mean 0.375

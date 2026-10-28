@@ -1,0 +1,13 @@
+# command: python -I probe_validate.py 
+# started_utc: 2026-10-27T14:45:58.148732+00:00
+# ended_utc: 2026-10-27T14:45:59.495550+00:00
+# exit_code: 0
+# network_to_public_upstream: True
+
+validate current version: 1.1.7
+Rd files mentioning 'violations': ['validate/man/aggregate-validation-method.Rd', 'validate/man/compare.Rd', 'validate/man/barplot-validation-method.Rd', 'validate/man/sort-validation-method.Rd']
+validate/man/aggregate-validation-method.Rd aliases: ['aggregate,validation-method']
+validate/man/compare.Rd aliases: ['compare', 'compare,validator-method', 'compare,indicator-method']
+validate/man/barplot-validation-method.Rd aliases: ['barplot,validation-method']
+discovery(query=violations): [('violating', 'alias', 'fuzzy'), ('violating', 'export', 'fuzzy'), ('voptions', 'alias', 'fuzzy'), ('voptions', 'export', 'fuzzy'), ('voptions', 'topic', 'fuzzy'), ('validation', 'alias', 'fuzzy'), ('validate_options', 'alias', 'fuzzy'), ('validation-class', 'alias', 'fuzzy'), ('validate_options', 'export', 'fuzzy'), ('validation-class', 'topic', 'fuzzy')] partial ['namespace_nonliteral_arguments', 'rd_literal_coverage_partial']
+get_function_docs(violations): docs_not_found ['violating', 'voptions', 'validation', 'validate_options', 'validation-class', 'indication', 'print.validations', 'violating.default', 'summary.validations', 'indication-class']

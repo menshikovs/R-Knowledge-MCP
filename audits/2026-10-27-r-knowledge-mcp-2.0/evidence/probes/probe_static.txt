@@ -1,0 +1,33 @@
+# command: python -I probe_static.py 
+# started_utc: 2026-10-27T14:45:36.073091+00:00
+# ended_utc: 2026-10-27T14:45:39.496752+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+repeated ggplot( calls     ggplot      200.9 ms  verified
+repeated ggplot( calls     tidyr       176.7 ms  verified
+repeated ggplot( calls     knitr         3.6 ms  verified
+open parens                ggplot      366.3 ms  KnowledgeError:invalid_r_syntax
+open parens                tidyr       393.0 ms  KnowledgeError:invalid_r_syntax
+open parens                knitr        11.6 ms  verified
+nested calls f(f(f(        ggplot      268.3 ms  KnowledgeError:invalid_r_syntax
+nested calls f(f(f(        tidyr       291.4 ms  KnowledgeError:invalid_r_syntax
+nested calls f(f(f(        knitr         8.8 ms  verified
+pipe chain                 ggplot      152.9 ms  verified
+pipe chain                 tidyr       149.4 ms  verified
+pipe chain                 knitr         0.5 ms  verified
+long string                ggplot       21.0 ms  verified
+long string                tidyr        22.3 ms  verified
+long string                knitr         0.3 ms  verified
+many assignments           ggplot      107.2 ms  verified
+many assignments           tidyr       108.9 ms  verified
+many assignments           knitr        15.5 ms  verified
+unicode                    ggplot        7.1 ms  verified
+unicode                    tidyr         7.2 ms  verified
+unicode                    knitr         0.4 ms  verified
+backticks                  ggplot       94.7 ms  verified
+backticks                  tidyr        90.0 ms  verified
+backticks                  knitr         1.9 ms  verified
+brackets [[ [[             ggplot      313.5 ms  KnowledgeError:invalid_r_syntax
+brackets [[ [[             tidyr       319.3 ms  KnowledgeError:invalid_r_syntax
+brackets [[ [[             knitr         9.5 ms  verified

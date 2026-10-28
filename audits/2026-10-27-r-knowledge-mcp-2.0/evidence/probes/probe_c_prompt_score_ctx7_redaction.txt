@@ -1,0 +1,19 @@
+# command: python -I probe_c.py 
+# started_utc: 2026-10-27T14:44:14.756724+00:00
+# ended_utc: 2026-10-27T14:44:15.074373+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+== C1 structural score gaming
+  sensible       score=35  dims={'objective': False, 'deliverables': True, 'technical_context': False, 'constraints': True, 'versions': False, 'testing': True, 'acceptance': False, 'safety_reproducibility': False}
+  keyword salad  score=40  dims={'objective': False, 'deliverables': True, 'technical_context': True, 'constraints': True, 'versions': True, 'testing': False, 'acceptance': False, 'safety_reproducibility': False}
+  one-liner      score=10  dims={'objective': True, 'deliverables': False, 'technical_context': False, 'constraints': False, 'versions': False, 'testing': False, 'acceptance': False, 'safety_reproducibility': False}
+  wrong-task     score=50  dims={'objective': True, 'deliverables': True, 'technical_context': True, 'constraints': True, 'versions': True, 'testing': False, 'acceptance': False, 'safety_reproducibility': False}
+== D Context7 redaction false positives
+   'How does token refresh work in httr2 OAuth?' -> 'How does [REDACTED] work in httr2 OAuth?'
+   'How do I manage a secret in httr2?' -> 'How do I manage a secret in httr2?'
+   'password hashing with sodium: how to use password argument' -> '[REDACTED] with sodium: how to use [REDACTED]'
+   'What is the api key argument of googleway?' -> 'What is the api key argument of googleway?'
+   'how to set apikey header in httr2 request' -> 'how to set [REDACTED] in httr2 request'
+== F r-documentation on a fresh install (no index file)
+  search -> {"verification_status": null, "error": null}

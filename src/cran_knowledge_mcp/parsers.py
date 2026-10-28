@@ -1,5 +1,6 @@
 """Parse data only. Never extract archives to disk, run R, or evaluate Rd macros."""
 
+import codecs
 import gzip
 import io
 import re
@@ -11,21 +12,31 @@ from .errors import KnowledgeError
 
 
 def dcf(text: str) -> list[dict[str, str]]:
+    """Parse Debian-control-format records in linear time.
+
+    Continuation lines are collected as parts and joined once per field; repeatedly appending to a
+    growing string made a long continuation field quadratic in its length. The result is identical
+    to joining each continuation (stripped) onto the value with one leading space.
+    """
     records: list[dict[str, str]] = []
-    record: dict[str, str] = {}
+    record: dict[str, list[str]] = {}
     key = ""
+
+    def finish() -> None:
+        if record:
+            records.append({name: "".join(parts) for name, parts in record.items()})
+
     for line in text.splitlines() + [""]:
         if not line.strip():
-            if record:
-                records.append(record)
+            finish()
             record, key = {}, ""
         elif line[0].isspace() and key:
-            record[key] += " " + line.strip()
+            record[key].append(" " + line.strip())
         elif ":" in line:
             key, value = line.split(":", 1)
             if key in record:
                 raise KnowledgeError("invalid_source", "Duplicate DCF field")
-            record[key] = value.strip()
+            record[key] = [value.strip()]
         else:
             raise KnowledgeError("invalid_source", "Malformed CRAN DCF data")
     return records
@@ -126,6 +137,50 @@ def decode(body: bytes, encoding: str = "UTF-8") -> str:
         return body.decode(encoding)
     except (UnicodeError, LookupError) as exc:
         raise KnowledgeError("unsupported_encoding", "Source text encoding is unsupported") from exc
+
+
+# An Rd file may declare its own encoding (`\encoding{latin1}`); R applies that declaration to the
+# file in preference to the package's DESCRIPTION `Encoding`. The declaration is plain ASCII, so it
+# can be located in the raw bytes before the file is decoded. Commented (`%`) lines are ignored.
+_RD_ENCODING_DECLARATION = re.compile(rb"(?m)^[^%\r\n]*?\\encoding\{([^}\r\n]{1,40})\}")
+
+
+def rd_declared_encoding(body: bytes) -> str | None:
+    r"""Return the Python codec named by a file's `\encoding{}` declaration, or None if absent.
+
+    `unknown` counts as no declaration (R's own meaning). A declared but unrecognised name raises
+    `unsupported_encoding` instead of being guessed.
+    """
+    match = _RD_ENCODING_DECLARATION.search(body)
+    if match is None:
+        return None
+    try:
+        name = match[1].decode("ascii").strip()
+    except UnicodeDecodeError as exc:
+        raise KnowledgeError("unsupported_encoding", "Rd encoding declaration is invalid") from exc
+    if name.casefold() in {"", "unknown"}:
+        return None
+    try:
+        return codecs.lookup(name).name
+    except LookupError as exc:
+        raise KnowledgeError(
+            "unsupported_encoding", "Rd file declares an unsupported encoding"
+        ) from exc
+
+
+def decode_rd(body: bytes, package_encoding: str | None = None) -> tuple[str, str, str]:
+    r"""Decode one Rd file; return (text, encoding, source).
+
+    Precedence follows R: the file's own `\encoding{}` declaration, then the DESCRIPTION
+    `Encoding`, then UTF-8. `source` is `rd_declaration`, `description` or `default`. Undecodable
+    bytes raise `unsupported_encoding`; nothing is replaced or guessed.
+    """
+    declared = rd_declared_encoding(body)
+    if declared is not None:
+        return decode(body, declared), declared, "rd_declaration"
+    if package_encoding:
+        return decode(body, package_encoding), package_encoding, "description"
+    return decode(body, "UTF-8"), "UTF-8", "default"
 
 
 def description_text(body: bytes) -> str:

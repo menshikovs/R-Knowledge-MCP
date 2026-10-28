@@ -13,9 +13,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: python -m pip install -e '.[dev]'
+      # The analytics extra (duckdb, pandas, streamlit) is imported by tests that are meant to run.
+      - run: python -m pip install -e '.[dev,analytics]'
       - run: ruff check .
       - run: ruff format --check .
+      # Report collection problems (import errors) separately from test failures.
+      - run: pytest --collect-only -q
       - run: pytest
       - name: Build and install wheel
         run: |
@@ -23,6 +26,28 @@ jobs:
           python -m pip install --no-deps dist/*.whl
       - name: Check installed CLI
         run: r-knowledge-mcp --help
+  # The launcher tests skip when R, termr or testthat are missing, so the main matrix does not run
+  # them. This job installs those prerequisites and fails if the tests would still be skipped.
+  launcher:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - run: Rscript -e 'install.packages(c("termr", "testthat"), repos = "https://cloud.r-project.org")'
+      - run: Rscript -e 'stopifnot(requireNamespace("termr"), requireNamespace("testthat"))'
+      - run: python -m pip install -e '.[dev,analytics]'
+      - run: echo "BENCH_PYTHON=$(command -v python)" >> "$GITHUB_ENV"
+      - name: Run launcher tests (a skip is a failure here)
+        run: |
+          set -o pipefail
+          pytest tests/test_codex_launcher.py -q -rs | tee launcher.log
+          ! grep -q skipped launcher.log
+
   docker:
     runs-on: ubuntu-latest
     steps:

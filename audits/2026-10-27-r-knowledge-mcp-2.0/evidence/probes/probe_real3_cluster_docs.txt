@@ -1,0 +1,10 @@
+# command: python -I probe_real3.py 
+# started_utc: 2026-10-27T14:45:55.100025+00:00
+# ended_utc: 2026-10-27T14:45:56.389764+00:00
+# exit_code: 0
+# network_to_public_upstream: True
+
+cluster::agnes -> ('unsupported_encoding', 'Source text encoding is unsupported')
+cluster::plantTraits -> ('unsupported_encoding', 'Source text encoding is unsupported')
+cluster::daisy -> ('unsupported_encoding', 'Source text encoding is unsupported')
+MASS::lm.ridge -> OK

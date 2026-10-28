@@ -1,0 +1,617 @@
+...............ssss..ss...........................s..................... [  4%]
+......................sss....s.F................F....................... [  8%]
+......F................................................................. [ 13%]
+.............................ssssss..................................... [ 17%]
+........................................................................ [ 22%]
+..................................................ss.sssssssssssssssss.s [ 26%]
+ssssssssssss..sssssssss.....sssssss..ssss..ssss.s....................... [ 31%]
+..............s.ssssss.............................................FFFFF [ 35%]
+FFF............................s................ssssssssssssssssssss.... [ 40%]
+........................................................................ [ 44%]
+........................................................................ [ 49%]
+...................................................................s.... [ 53%]
+.....s.s..................................ssssss.....ssss..sssssssssssss [ 58%]
+ssssssssssssssss....................s................................... [ 62%]
+........................................................................ [ 67%]
+........................................................................ [ 71%]
+.........................ssssssssssssssssss............................. [ 76%]
+...........s............................................................ [ 80%]
+.......................................................................s [ 85%]
+..................................ssssssssssssssssssssssss.............. [ 89%]
+........................................................................ [ 94%]
+.........................................................ssssss......... [ 98%]
+......................                                                   [100%]
+================================== FAILURES ===================================
+__________ test_experiment_record_identifies_sources_without_secrets __________
+
+tmp_path = WindowsPath('C:/Users/User001/AppData/Local/Temp/cran-mcp-pytest-d56962529ba14099817c93fc58cc9597/pytest-10dedcbd3bbb4213b265c4b9897e63bd/test_experiment_record_identif0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x0000027C9F28F460>
+
+    def test_experiment_record_identifies_sources_without_secrets(tmp_path, monkeypatch):
+        from benchmarks.codex_r.runner import bench
+    
+        monkeypatch.setenv("OPENAI_API_KEY", "must-never-appear-0123456789")
+        state = experiment.git_state(bench.REPO)
+        assert set(state) >= {"revision", "dirty", "changed_paths"}
+        assert state["revision"] is None or len(state["revision"]) == 40
+>       assert (state["working_tree_sha256"] is None) == (state["dirty"] is False)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'working_tree_sha256'
+
+tests\test_benchmark_telemetry.py:1033: KeyError
+______ test_e02_fixture_is_nonnegative_integer_nb_input_with_provenance _______
+
+    def test_e02_fixture_is_nonnegative_integer_nb_input_with_provenance():
+        metadata = pilot.provenance("E02")["fixture_provenance"]
+        path = pilot.PILOT / "fixtures/E02-counts.csv"
+        rows = list(csv.reader(path.read_text().splitlines()))
+        assert rows[0] == ["gene", "ctrl_1", "ctrl_2", "ctrl_3", "treat_1", "treat_2", "treat_3"]
+        assert len(rows) == 501 and len({row[0] for row in rows[1:]}) == 500
+        assert all(len(row) == 7 and all(int(value) >= 0 for value in row[1:]) for row in rows[1:])
+        assert metadata["seed"] == 20261025
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == metadata["counts_sha256"]
+        assert (
+            hashlib.sha256((pilot.PILOT / metadata["generator"]).read_bytes()).hexdigest()
+            == metadata["generator_sha256"]
+        )
+        # The trusted reference has not been changed to work around dispersion estimation.
+        reference = pilot.PILOT / "verifier/controls/E02/reference.R"
+        assert (
+            hashlib.sha256(reference.read_bytes()).hexdigest()
+            == "a4da84f1cc568105444085a7898b251aa7ebc4a2d78394e837736e1ad5a511ce"
+        )
+        for line in (pilot.PILOT / "metadata/E-source-snapshot.sha256").read_text().splitlines():
+            sha, relative = line.split("  ", 1)
+>           assert hashlib.sha256((pilot.PILOT / relative).read_bytes()).hexdigest() == sha
+E           AssertionError: assert 'e0ae527037d2...5d2c40a673584' == '6a3046f5d26e...ea33edcbcc4f0'
+E             
+E             - 6a3046f5d26ed1c0ee63ffedd3244daf6d306e49b7f186efadcea33edcbcc4f0
+E             + e0ae527037d20c97633b67b0899f9c890d120d5fce3f335b2365d2c40a673584
+
+tests\test_bioc_benchmark.py:39: AssertionError
+_________ test_e02_reproduction_and_standard_workflow_in_both_images __________
+
+images = {'scorer': 'sha256:a4e959f2ed9af8141ecec5d95d727880fd5dfc325efc19cb55032d6d34899161', 'executor': 'sha256:ab9eefda7d00d6872d1e62f5e3fba2a683317f6969b3ac3ab5bfa94f42c9976d'}
+
+    @pytest.mark.docker
+    def test_e02_reproduction_and_standard_workflow_in_both_images(images):
+>       report = full_selftest.fixture_and_workflow(images["scorer"], images["executor"])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_bioc_benchmark.py:302: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+benchmarks\codex_r\full_selftest.py:154: in fixture_and_workflow
+    networkless(
+benchmarks\codex_r\full_selftest.py:59: in networkless
+    return docker(*flags, image, *args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+benchmarks\codex_r\full_selftest.py:27: in docker
+    return subprocess.check_output(["docker", *map(str, args)], text=True, timeout=120)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C:\Python314\Lib\subprocess.py:473: in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+input = None, capture_output = False, timeout = 120, check = True
+popenargs = (['docker', 'run', '--rm', '--pull=never', '--network', 'none', ...],)
+kwargs = {'stdout': -1, 'text': True}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['docker', 'run', '--rm', '--pull=never', '--network', 'none', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges', '--cpus=2', '--memory=2048m', '--memory-swap=2048m', '--pids-limit=256', '--tmpfs', '/tmp:rw,nosuid,size=256m,mode=1777', '--env', 'HOME=/tmp', '--env', 'CODEX_HOME=/tmp', '--mount', 'type=bind,src=C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clean\\benchmarks\\codex_r\\knowledge_pilot\\verifier\\controls\\E02\\reference.R,dst=/reference.R,readonly', '--mount', 'type=bind,src=C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clean\\benchmarks\\codex_r\\knowledge_pilot\\fixtures\\E02-counts.csv,dst=/counts.csv,readonly', '--mount', 'type=bind,src=C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clean\\benchmarks\\codex_r\\knowledge_pilot\\fixtures\\E02-samples.csv,dst=/samples.csv,readonly', '--entrypoint', 'Rscript', 'sha256:a4e959f2ed9af8141ecec5d95d727880fd5dfc325efc19cb55032d6d34899161', '--vanilla', '-e', '\nsource("/reference.R")\ncounts <- read.csv("/counts.csv", row.names=1, check.names=FALSE)\nsamples <- read.csv("/samples.csv", row.names=1)\nx <- run_rnaseq(counts, samples)\nstopifnot(nrow(x$dds)==500L, ncol(x$dds)==6L,\n  attr(DESeq2::dispersionFunction(x$dds), "fitType")=="parametric",\n  all(is.finite(DESeq2::dispersions(x$dds))),\n  x$results$log2FoldChange[x$results$gene=="gene_1"]>0,\n  x$results$log2FoldChange[x$results$gene=="gene_11"]<0)\ncat(jsonlite::toJSON(list(fit_type=attr(DESeq2::dispersionFunction(x$dds), "fitType"),\n  dispersion_range=range(DESeq2::dispersions(x$dds)), results=x$results),\n  auto_unbox=TRUE, digits=16, na="null"))\n']' returned non-zero exit status 1.
+
+C:\Python314\Lib\subprocess.py:578: CalledProcessError
+---------------------------- Captured stderr call -----------------------------
+Error in file(filename, "r", encoding = encoding) : 
+  cannot open the connection
+Calls: source -> file
+In addition: Warning message:
+In file(filename, "r", encoding = encoding) :
+  cannot open file '/reference.R': Input/output error
+Execution halted
+_________ test_registry_imports_all_source_specs_and_counts_by_suite __________
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks\codex_r\expansion\registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Python314\Lib\pathlib\__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clean\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+
+C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+    def test_registry_imports_all_source_specs_and_counts_by_suite():
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_codex_expansion_registry.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+benchmarks\codex_r\expansion\registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clean\benchmark_expansion_sources\SOURCE_MANIFEST.json
+
+benchmarks\codex_r\expansion\registry.py:109: RegistryError
+_ test_hard_blueprint_mapping_is_explicit_and_does_not_overstate_revalidation _
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks\codex_r\expansion\registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Python314\Lib\pathlib\__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clean\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+
+C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+    def test_hard_blueprint_mapping_is_explicit_and_does_not_overstate_revalidation():
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_codex_expansion_registry.py:42: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+benchmarks\codex_r\expansion\registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clean\benchmark_expansion_sources\SOURCE_MANIFEST.json
+
+benchmarks\codex_r\expansion\registry.py:109: RegistryError
+_____ test_legacy_crosswalk_keeps_thematic_links_separate_from_duplicates _____
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks\codex_r\expansion\registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Python314\Lib\pathlib\__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clean\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+
+C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+    def test_legacy_crosswalk_keeps_thematic_links_separate_from_duplicates():
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_codex_expansion_registry.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+benchmarks\codex_r\expansion\registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clean\benchmark_expansion_sources\SOURCE_MANIFEST.json
+
+benchmarks\codex_r\expansion\registry.py:109: RegistryError
+______________ test_registry_rejects_private_answer_key_sources _______________
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks\codex_r\expansion\registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Python314\Lib\pathlib\__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clean\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+
+C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+    def test_registry_rejects_private_answer_key_sources():
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_codex_expansion_registry.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+benchmarks\codex_r\expansion\registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clean\benchmark_expansion_sources\SOURCE_MANIFEST.json
+
+benchmarks\codex_r\expansion\registry.py:109: RegistryError
+_________ test_hard_blueprint_exports_only_the_agent_visible_contract _________
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks\codex_r\expansion\registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Python314\Lib\pathlib\__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clean\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+
+C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+    def test_hard_blueprint_exports_only_the_agent_visible_contract():
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_codex_expansion_registry.py:83: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+benchmarks\codex_r\expansion\registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clean\benchmark_expansion_sources\SOURCE_MANIFEST.json
+
+benchmarks\codex_r\expansion\registry.py:109: RegistryError
+_______ test_checked_in_json_artifacts_match_the_current_public_sources _______
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks\codex_r\expansion\registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Python314\Lib\pathlib\__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clean\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+
+C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+    def test_checked_in_json_artifacts_match_the_current_public_sources():
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_codex_expansion_registry.py:92: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+benchmarks\codex_r\expansion\registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clean\benchmark_expansion_sources\SOURCE_MANIFEST.json
+
+benchmarks\codex_r\expansion\registry.py:109: RegistryError
+_________ test_prompt_export_contains_only_the_requested_public_task __________
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+>           value = json.loads(path.read_text(encoding="utf-8"))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+benchmarks\codex_r\expansion\registry.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+C:\Python314\Lib\pathlib\__init__.py:787: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clean\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+
+C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = WindowsPath('C:/Users/User001/AppData/Local/Temp/cran-mcp-pytest-d56962529ba14099817c93fc58cc9597/pytest-10dedcbd3bbb4213b265c4b9897e63bd/test_prompt_export_contains_on0')
+
+    def test_prompt_export_contains_only_the_requested_public_task(tmp_path):
+>       catalog = registry.build_registry()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_codex_expansion_registry.py:105: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+benchmarks\codex_r\expansion\registry.py:304: in build_registry
+    hashes = _source_hashes(repo)
+             ^^^^^^^^^^^^^^^^^^^^
+benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
+    manifest = _read_json(manifest_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clean/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+
+    def _read_json(path: Path) -> dict[str, Any]:
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+>           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clean\benchmark_expansion_sources\SOURCE_MANIFEST.json
+
+benchmarks\codex_r\expansion\registry.py:109: RegistryError
+______ test_prompt_export_rejects_unknown_or_in_repository_destinations _______
+
+tmp_path = WindowsPath('C:/Users/User001/AppData/Local/Temp/cran-mcp-pytest-d56962529ba14099817c93fc58cc9597/pytest-10dedcbd3bbb4213b265c4b9897e63bd/test_prompt_export_rejects_unk0')
+
+    def test_prompt_export_rejects_unknown_or_in_repository_destinations(tmp_path):
+>       with pytest.raises(registry.RegistryError, match="Unknown expansion task"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'Unknown expansion task'
+E         Actual message: 'Cannot read JSON manifest: C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clean\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+
+tests\test_codex_expansion_registry.py:158: AssertionError
+=========================== short test summary info ===========================
+FAILED tests/test_benchmark_telemetry.py::test_experiment_record_identifies_sources_without_secrets
+FAILED tests/test_bioc_benchmark.py::test_e02_fixture_is_nonnegative_integer_nb_input_with_provenance
+FAILED tests/test_bioc_benchmark.py::test_e02_reproduction_and_standard_workflow_in_both_images
+FAILED tests/test_codex_expansion_registry.py::test_registry_imports_all_source_specs_and_counts_by_suite
+FAILED tests/test_codex_expansion_registry.py::test_hard_blueprint_mapping_is_explicit_and_does_not_overstate_revalidation
+FAILED tests/test_codex_expansion_registry.py::test_legacy_crosswalk_keeps_thematic_links_separate_from_duplicates
+FAILED tests/test_codex_expansion_registry.py::test_registry_rejects_private_answer_key_sources
+FAILED tests/test_codex_expansion_registry.py::test_hard_blueprint_exports_only_the_agent_visible_contract
+FAILED tests/test_codex_expansion_registry.py::test_checked_in_json_artifacts_match_the_current_public_sources
+FAILED tests/test_codex_expansion_registry.py::test_prompt_export_contains_only_the_requested_public_task
+FAILED tests/test_codex_expansion_registry.py::test_prompt_export_rejects_unknown_or_in_repository_destinations
+11 failed, 1400 passed, 195 skipped in 424.76s (0:07:04)
+exit=1

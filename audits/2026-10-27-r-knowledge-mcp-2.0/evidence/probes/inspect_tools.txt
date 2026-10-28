@@ -1,0 +1,8 @@
+# command: python -I inspect_tools.py mcp
+# started_utc: 2026-10-27T14:44:12.965993+00:00
+# ended_utc: 2026-10-27T14:44:13.997875+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+consolidated 16 2 3 14
+legacy 35 2 3 14

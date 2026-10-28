@@ -5,11 +5,12 @@ import hashlib
 import json
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
-from benchmarks.codex_r import full_selftest
+from benchmarks.codex_r import full_selftest, line_endings
 from benchmarks.codex_r import knowledge_pilot as pilot
 from benchmarks.codex_r import run_simple as simple
 from benchmarks.codex_r.telemetry import schema
@@ -23,20 +24,19 @@ def test_e02_fixture_is_nonnegative_integer_nb_input_with_provenance():
     assert len(rows) == 501 and len({row[0] for row in rows[1:]}) == 500
     assert all(len(row) == 7 and all(int(value) >= 0 for value in row[1:]) for row in rows[1:])
     assert metadata["seed"] == 20261025
-    assert hashlib.sha256(path.read_bytes()).hexdigest() == metadata["counts_sha256"]
-    assert (
-        hashlib.sha256((pilot.PILOT / metadata["generator"]).read_bytes()).hexdigest()
-        == metadata["generator_sha256"]
+    # Pins hold for the canonical (LF) and the legacy (CRLF) form of the same content (CI-004).
+    assert line_endings.pin_matches(path, metadata["counts_sha256"])
+    assert line_endings.pin_matches(
+        pilot.PILOT / metadata["generator"], metadata["generator_sha256"]
     )
     # The trusted reference has not been changed to work around dispersion estimation.
     reference = pilot.PILOT / "verifier/controls/E02/reference.R"
-    assert (
-        hashlib.sha256(reference.read_bytes()).hexdigest()
-        == "a4da84f1cc568105444085a7898b251aa7ebc4a2d78394e837736e1ad5a511ce"
+    assert line_endings.pin_matches(
+        reference, "a4da84f1cc568105444085a7898b251aa7ebc4a2d78394e837736e1ad5a511ce"
     )
     for line in (pilot.PILOT / "metadata/E-source-snapshot.sha256").read_text().splitlines():
         sha, relative = line.split("  ", 1)
-        assert hashlib.sha256((pilot.PILOT / relative).read_bytes()).hexdigest() == sha
+        assert line_endings.pin_matches(pilot.PILOT / relative, sha)
 
 
 @pytest.mark.parametrize("failed", ["one_failed_check", ["one_failed_check"], [], None])
@@ -297,7 +297,22 @@ def test_bioc_executor_contract_versions_and_library_boundary(images):
         assert boundary["hidden_paths_absent"] is True
 
 
+def _unmountable_checkout_depth():
+    """Docker Desktop (Windows) fails with "Input/output error" when bind-mounting a file whose host
+    path has more than 16 components after the drive (measured: 16 mounts, 17 fails). The workflow
+    mounts files from deep inside the checkout, so a deeply nested checkout cannot run it."""
+    mounted = pilot.PILOT / "verifier/controls/E02/reference.R"
+    return len(mounted.resolve().parts) - 1 if sys.platform == "win32" else 0
+
+
 @pytest.mark.docker
+@pytest.mark.skipif(
+    _unmountable_checkout_depth() > 16,
+    reason=(
+        f"checkout path has {_unmountable_checkout_depth()} components after the drive; "
+        "Docker Desktop cannot bind-mount files deeper than 16"
+    ),
+)
 def test_e02_reproduction_and_standard_workflow_in_both_images(images):
     report = full_selftest.fixture_and_workflow(images["scorer"], images["executor"])
     assert report["two_generated_files_equal"] is True

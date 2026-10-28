@@ -1,0 +1,54 @@
+trials: [(91, 25, 22)]
+by mode/status: [('with-mcp', 'interrupted', 2), ('with-mcp', 'scored', 43), ('with-mcp', 'smoke_transport_observed', 1), ('with-mcp', 'unsupported_for_automatic_scoring', 6), ('without-mcp', 'error', 6), ('without-mcp', 'scored', 33)]
+model/effort: [('gpt-6-luna', 'medium', 91)]
+usage_status: [('observed', 1), ('unavailable', 90)]
+cost_status: [('unavailable', 91)]
+scorer_version: [('r-knowledge-tool-value-v1', 22), ('d-recommendation-2', 18), ('r-knowledge-mcp-hard-v1', 6), ('knowledge-pilot-v2', 10), ('e-compatibility-1', 6), (None, 23), ('codex-r-pilot-v1', 2), ('legacy', 4)]
+trials with mcp_calls_observed>0 among with-mcp scored: [(9, 43)]
+
+per-task scored means (fraction of checks), n per arm:
+  B01: without n=1 mean=1.00 | with n=1 mean=1.00 (trials with >=1 MCP call: 0/1)
+  B02: without n=1 mean=1.00 | with n=1 mean=1.00 (trials with >=1 MCP call: 0/1)
+  B03: without n=1 mean=1.00 | with n=1 mean=1.00 (trials with >=1 MCP call: 0/1)
+  C01: without n=2 mean=1.00 | with n=6 mean=1.00 (trials with >=1 MCP call: 0/6)
+  C02: without n=1 mean=1.00 | with n=1 mean=1.00 (trials with >=1 MCP call: 0/1)
+  C03: without n=1 mean=1.00 | with n=1 mean=1.00 (trials with >=1 MCP call: 0/1)
+  C04: without n=1 mean=1.00 | with n=1 mean=1.00 (trials with >=1 MCP call: 0/1)
+  C05: without n=1 mean=1.00 | with n=1 mean=1.00 (trials with >=1 MCP call: 0/1)
+  D01: without n=4 mean=0.38 | with n=8 mean=0.75 (trials with >=1 MCP call: 6/8)
+  D02: without n=2 mean=0.38 | with n=2 mean=0.25 (trials with >=1 MCP call: 1/2)
+  D03: without n=2 mean=0.50 | with n=2 mean=0.50 (trials with >=1 MCP call: 0/2)
+  E01: without n=1 mean=0.00 | with n=1 mean=0.00 (trials with >=1 MCP call: 0/1)
+  E02: without n=1 mean=1.00 | with n=1 mean=1.00 (trials with >=1 MCP call: 0/1)
+  E03: without n=1 mean=1.00 | with n=1 mean=1.00 (trials with >=1 MCP call: 0/1)
+  E04: without n=1 mean=0.00 | with n=1 mean=0.20 (trials with >=1 MCP call: 0/1)
+  E05: without n=1 mean=0.20 | with n=1 mean=0.20 (trials with >=1 MCP call: 0/1)
+  H01: without n=2 mean=1.00 | with n=2 mean=1.00 (trials with >=1 MCP call: 0/2)
+  H04: without n=2 mean=1.00 | with n=3 mean=1.00 (trials with >=1 MCP call: 0/3)
+  H10: without n=2 mean=1.00 | with n=2 mean=0.94 (trials with >=1 MCP call: 0/2)
+  R01: without n=4 mean=1.00 | with n=3 mean=1.00 (trials with >=1 MCP call: 0/3)
+  R02: without n=1 mean=1.00 | with n=1 mean=1.00 (trials with >=1 MCP call: 0/1)
+
+tasks with both arms: 21 | tasks with any difference: 4 [('D01', 0.38), ('D02', -0.12), ('E04', 0.2), ('H10', -0.06)]
+sign test (one-sided, ties dropped): +2/4, p=0.688
+
+max repetitions per (task,mode): [(10,)]
+task/mode cells with n=1: [(26,)] of [(42,)]
+
+replicated cells (n, min, max fraction):
+   ('C01', 'with-mcp', 6, 1.0, 1.0)
+   ('C01', 'without-mcp', 2, 1.0, 1.0)
+   ('D01', 'with-mcp', 8, 0.25, 1.0)
+   ('D01', 'without-mcp', 4, 0.25, 0.5)
+   ('D02', 'with-mcp', 2, 0.25, 0.25)
+   ('D02', 'without-mcp', 2, 0.25, 0.5)
+   ('D03', 'with-mcp', 2, 0.5, 0.5)
+   ('D03', 'without-mcp', 2, 0.5, 0.5)
+   ('H01', 'with-mcp', 2, 1.0, 1.0)
+   ('H01', 'without-mcp', 2, 1.0, 1.0)
+   ('H04', 'with-mcp', 3, 1.0, 1.0)
+   ('H04', 'without-mcp', 2, 1.0, 1.0)
+   ('H10', 'with-mcp', 2, 0.9444444444444444, 0.9444444444444444)
+   ('H10', 'without-mcp', 2, 1.0, 1.0)
+   ('R01', 'with-mcp', 3, 1.0, 1.0)
+   ('R01', 'without-mcp', 4, 1.0, 1.0)

@@ -17,6 +17,7 @@ from ..parsers import (
     aliases,
     dcf,
     decode,
+    decode_rd,
     description_text,
     source_files,
 )
@@ -222,7 +223,8 @@ class SourceRepository(ABC):
                     )
             try:
                 files = await asyncio.to_thread(source_files, artifact.body, package)
-                descriptions = dcf(description_text(files[f"{package}/DESCRIPTION"]))
+                description = files[f"{package}/DESCRIPTION"]
+                descriptions = await asyncio.to_thread(lambda: dcf(description_text(description)))
             except KnowledgeError as exc:
                 raise KnowledgeError(exc.code, str(exc), artifact.source_url) from exc
             if len(descriptions) != 1:
@@ -237,19 +239,35 @@ class SourceRepository(ABC):
             self._store_source(artifact, metadata, files)
         return metadata, files, artifact, index
 
-    def _alias_index(self, artifact, metadata, files) -> dict[str, list[str]]:
-        """Map each literal Rd alias to its archive members, once per verified archive."""
+    def _alias_index(
+        self, artifact, metadata, files
+    ) -> tuple[dict[str, list[str]], tuple[str, ...]]:
+        """Map each literal Rd alias to its archive members, once per verified archive.
+
+        Each Rd file is decoded with its own `encoding` declaration (then the DESCRIPTION
+        `Encoding`). A file that cannot be decoded is skipped and reported in the second element,
+        so one unreadable file never hides the documentation of unrelated aliases.
+        """
         entry = self._cached_source(artifact)
         if entry is not None and entry["aliases"] is not None:
             return entry["aliases"]
         index: dict[str, list[str]] = {}
+        unreadable: list[str] = []
+        package_encoding = metadata.get("Encoding")
         for name, body in files.items():
-            if name.endswith(".Rd"):
-                for alias in aliases(decode(body, metadata.get("Encoding", "UTF-8"))):
-                    index.setdefault(alias, []).append(name)
+            if not name.endswith(".Rd"):
+                continue
+            try:
+                text, _, _ = decode_rd(body, package_encoding)
+            except KnowledgeError:
+                unreadable.append(name)
+                continue
+            for alias in aliases(text):
+                index.setdefault(alias, []).append(name)
+        result = (index, tuple(sorted(unreadable)))
         if entry is not None:
-            entry["aliases"] = index
-        return index
+            entry["aliases"] = result
+        return result
 
     async def _discovery_index(self, package, metadata, files, artifact):
         async with self._discovery_lock:
@@ -399,9 +417,11 @@ class SourceRepository(ABC):
                 "invalid_input", "Use a function alias (1..160 chars), offset >= 0"
             )
         metadata, files, artifact, index = await self.source(package)
-        alias_index = await asyncio.to_thread(self._alias_index, artifact, metadata, files)
+        alias_index, unreadable = await asyncio.to_thread(
+            self._alias_index, artifact, metadata, files
+        )
         matches = [
-            (name, decode(files[name], metadata.get("Encoding", "UTF-8")))
+            (name, *decode_rd(files[name], metadata.get("Encoding")))
             for name in alias_index.get(function, [])
         ]
         if not matches:
@@ -429,6 +449,15 @@ class SourceRepository(ABC):
                     "repository": self.repository,
                     "bioc_version": self.bioc_version,
                     "lookup_stage": "literal_rd_alias",
+                    **(
+                        {
+                            "alias_index_complete": False,
+                            "unreadable_rd_members": len(unreadable),
+                            "unreadable_rd_member_names": list(unreadable[:20]),
+                        }
+                        if unreadable
+                        else {}
+                    ),
                     "suggestions": suggestions,
                     "discovery_status": discovery_status,
                     "callability": "not_checked",
@@ -438,7 +467,7 @@ class SourceRepository(ABC):
             raise KnowledgeError(
                 "ambiguous_docs", "Multiple Rd files define this alias", artifact.source_url
             )
-        name, text = matches[0]
+        name, text, rd_encoding, rd_encoding_source = matches[0]
         if offset > len(text):
             raise KnowledgeError("invalid_input", "Documentation offset exceeds text length")
         end = min(offset + 8000, len(text))
@@ -451,6 +480,8 @@ class SourceRepository(ABC):
             else "selected_bioconductor_release",
             "format": "text/x-r-doc (raw Rd; macros not evaluated)",
             "archive_member": name,
+            "rd_encoding": {"encoding": rd_encoding, "source": rd_encoding_source},
+            **({"unreadable_rd_members_in_package": len(unreadable)} if unreadable else {}),
             "text": text[offset:end],
             "offset": offset,
             "total_characters": len(text),

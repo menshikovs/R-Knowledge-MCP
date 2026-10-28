@@ -1,0 +1,450 @@
+[
+ {
+  "pkg": "runner",
+  "version": "0.4.6",
+  "needs_compilation": "yes",
+  "discovery": "partial",
+  "issues": [
+   "rd_literal_coverage_partial"
+  ],
+  "n_exports": 13,
+  "n_aliases": 27,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "partial",
+  "docs_first_alias": "ok",
+  "secs": 0.09
+ },
+ {
+  "pkg": "DIVINE",
+  "version": "0.1.2",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 6,
+  "n_aliases": 20,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.08
+ },
+ {
+  "pkg": "ggnext",
+  "version": "0.1.0",
+  "needs_compilation": "no",
+  "discovery": "partial",
+  "issues": [
+   "rd_literal_coverage_partial"
+  ],
+  "n_exports": 169,
+  "n_aliases": 170,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "partial",
+  "docs_first_alias": "ok",
+  "secs": 0.15
+ },
+ {
+  "pkg": "mditools",
+  "version": "0.1.1",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 26,
+  "n_aliases": 30,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.08
+ },
+ {
+  "pkg": "ipsfs",
+  "version": "1.0.0",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 70,
+  "n_aliases": 70,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.08
+ },
+ {
+  "pkg": "Rcan",
+  "version": "1.3.92",
+  "needs_compilation": "no",
+  "discovery": "partial",
+  "issues": [
+   "export_patterns_not_expanded"
+  ],
+  "n_exports": 0,
+  "n_aliases": 21,
+  "patterns": 1,
+  "ns": "partial",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.47
+ },
+ {
+  "pkg": "seecolor",
+  "version": "0.2.0",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 5,
+  "n_aliases": 5,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.29
+ },
+ {
+  "pkg": "EWOC.Comb",
+  "version": "1.0",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 4,
+  "n_aliases": 21,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.07
+ },
+ {
+  "pkg": "SBI",
+  "version": "0.1.2",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 1,
+  "n_aliases": 1,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.06
+ },
+ {
+  "pkg": "climenu",
+  "version": "0.2.0",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 3,
+  "n_aliases": 3,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.07
+ },
+ {
+  "pkg": "modelimpact",
+  "version": "1.1.0",
+  "needs_compilation": "no",
+  "discovery": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments"
+  ],
+  "n_exports": 24,
+  "n_aliases": 38,
+  "patterns": 0,
+  "ns": "partial",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.3
+ },
+ {
+  "pkg": "essential8",
+  "version": "0.2.0",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 1,
+  "n_aliases": 3,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.12
+ },
+ {
+  "pkg": "checkglobals",
+  "version": "0.1.4",
+  "needs_compilation": "yes",
+  "discovery": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments"
+  ],
+  "n_exports": 5,
+  "n_aliases": 21,
+  "patterns": 0,
+  "ns": "partial",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.07
+ },
+ {
+  "pkg": "TSEtools",
+  "version": "1.0.0",
+  "needs_compilation": "no",
+  "discovery": "partial",
+  "issues": [
+   "export_patterns_not_expanded"
+  ],
+  "n_exports": 1,
+  "n_aliases": 17,
+  "patterns": 1,
+  "ns": "partial",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.07
+ },
+ {
+  "pkg": "RBMRB",
+  "version": "3.0.0",
+  "needs_compilation": "no",
+  "discovery": "partial",
+  "issues": [
+   "rd_literal_coverage_partial"
+  ],
+  "n_exports": 36,
+  "n_aliases": 38,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "partial",
+  "docs_first_alias": "ok",
+  "secs": 0.18
+ },
+ {
+  "pkg": "tidyREDCap",
+  "version": "2.1.0",
+  "needs_compilation": "no",
+  "discovery": "partial",
+  "issues": [
+   "rd_literal_coverage_partial"
+  ],
+  "n_exports": 12,
+  "n_aliases": 12,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "partial",
+  "docs_first_alias": "ok",
+  "secs": 0.42
+ },
+ {
+  "pkg": "nptest",
+  "version": "1.2",
+  "needs_compilation": "no",
+  "discovery": "partial",
+  "issues": [
+   "export_patterns_not_expanded"
+  ],
+  "n_exports": 0,
+  "n_aliases": 74,
+  "patterns": 1,
+  "ns": "partial",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.08
+ },
+ {
+  "pkg": "mcglm",
+  "version": "0.9.0",
+  "needs_compilation": "yes",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 36,
+  "n_aliases": 96,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.25
+ },
+ {
+  "pkg": "AdvBinomApps",
+  "version": "1.0",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 11,
+  "n_aliases": 13,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.07
+ },
+ {
+  "pkg": "rSEA",
+  "version": "2.1.2",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 5,
+  "n_aliases": 6,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.07
+ },
+ {
+  "pkg": "ipd",
+  "version": "0.4.1",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 33,
+  "n_aliases": 70,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.43
+ },
+ {
+  "pkg": "fabletools",
+  "version": "0.8.0",
+  "needs_compilation": "no",
+  "discovery": "partial",
+  "issues": [
+   "rd_literal_coverage_partial"
+  ],
+  "n_exports": 102,
+  "n_aliases": 204,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "partial",
+  "docs_first_alias": "ok",
+  "secs": 0.1
+ },
+ {
+  "pkg": "gamesGA",
+  "version": "1.1.3.7",
+  "needs_compilation": "yes",
+  "discovery": "partial",
+  "issues": [
+   "namespace_nonliteral_arguments"
+  ],
+  "n_exports": 7,
+  "n_aliases": 8,
+  "patterns": 0,
+  "ns": "partial",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.07
+ },
+ {
+  "pkg": "einops",
+  "version": "0.2.1",
+  "needs_compilation": "no",
+  "discovery": "partial",
+  "issues": [
+   "rd_literal_coverage_partial"
+  ],
+  "n_exports": 11,
+  "n_aliases": 50,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "partial",
+  "docs_first_alias": "ok",
+  "secs": 0.25
+ },
+ {
+  "pkg": "torchvisionlib",
+  "version": "0.8.0",
+  "needs_compilation": "yes",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 7,
+  "n_aliases": 7,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.12
+ },
+ {
+  "pkg": "smdocker",
+  "version": "0.1.4",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 4,
+  "n_aliases": 4,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.07
+ },
+ {
+  "pkg": "swCRTdesign",
+  "version": "4.1",
+  "needs_compilation": "no",
+  "discovery": "partial",
+  "issues": [
+   "export_patterns_not_expanded"
+  ],
+  "n_exports": 0,
+  "n_aliases": 14,
+  "patterns": 1,
+  "ns": "partial",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.18
+ },
+ {
+  "pkg": "visxhclust",
+  "version": "1.1.0",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 17,
+  "n_aliases": 23,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.5
+ },
+ {
+  "pkg": "ggmr",
+  "version": "0.1.1",
+  "needs_compilation": "no",
+  "discovery": "partial",
+  "issues": [
+   "export_patterns_not_expanded"
+  ],
+  "n_exports": 1,
+  "n_aliases": 1,
+  "patterns": 1,
+  "ns": "partial",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.06
+ },
+ {
+  "pkg": "rcprd",
+  "version": "0.0.2",
+  "needs_compilation": "no",
+  "discovery": "verified",
+  "issues": [],
+  "n_exports": 19,
+  "n_aliases": 35,
+  "patterns": 0,
+  "ns": "verified",
+  "rd": "verified",
+  "docs_first_alias": "ok",
+  "secs": 0.21
+ }
+]

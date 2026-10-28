@@ -1,0 +1,15 @@
+markdown files: 102 relative links: 80 broken: 12
+   ('benchmarks/codex_r/README.md', '../../docs/CODEX_MCP_BENCHMARK.md')
+   ('benchmarks/codex_r/reports/baseline_root_cause_audit.md', '../results/20261025T135949Z-9ff06c47/results.json')
+   ('benchmarks/codex_r/reports/baseline_root_cause_audit.md', '../results/20261025T135949Z-9ff06c47/experiment.json')
+   ('benchmarks/codex_r/reports/baseline_root_cause_audit.md', '../results/20261025T135949Z-9ff06c47/D01-A-1/artifacts/answer.json')
+   ('benchmarks/codex_r/reports/baseline_root_cause_audit.md', '../results/20261025T135949Z-9ff06c47/D01-B-1/artifacts/answer.json')
+   ('benchmarks/codex_r/reports/baseline_root_cause_audit.md', '../results/20261025T135949Z-9ff06c47/D02-A-1/artifacts/answer.json')
+   ('benchmarks/codex_r/reports/baseline_root_cause_audit.md', '../results/20261025T135949Z-9ff06c47/D02-B-1/artifacts/answer.json')
+   ('benchmarks/codex_r/reports/baseline_root_cause_audit.md', '../results/20261025T135949Z-9ff06c47/E01-A-1/artifacts/answer.json')
+   ('benchmarks/codex_r/reports/baseline_root_cause_audit.md', '../results/20261025T135949Z-9ff06c47/E01-B-1/artifacts/answer.json')
+   ('benchmarks/codex_r/reports/baseline_root_cause_audit.md', '../results/20261025T135949Z-9ff06c47/E05-A-1/artifacts/answer.json')
+   ('benchmarks/codex_r/reports/baseline_root_cause_audit.md', '../results/20261025T135949Z-9ff06c47/E05-B-1/artifacts/answer.json')
+   ('benchmarks/codex_r/reports/full-offline-readiness-20261025/README.md', 'experiment.json')
+   mentions untracked doc CODEX_MCP_BENCHMARK.md in benchmarks/codex_r/README.md
+   mentions untracked doc CODEX_MCP_BENCHMARK.md in benchmarks/codex_r/reports/PULL_REQUEST.md

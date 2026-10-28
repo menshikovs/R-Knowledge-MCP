@@ -39,11 +39,6 @@ def cache_bytes() -> int:
     return positive_int("CACHE_MAX_BYTES", 64 << 20, 256 << 20)
 
 
-def context7_api_key() -> str | None:
-    value = os.environ.get("CONTEXT7_API_KEY", "").strip()
-    return value or None
-
-
 def github_token() -> str | None:
     """Optional server-side token; raises GitHub API limits from 60 to 5000 requests/hour."""
     value = os.environ.get("GITHUB_TOKEN", "").strip()

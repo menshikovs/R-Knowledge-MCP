@@ -1,0 +1,59 @@
+# command: python -I probe_redos.py 
+# started_utc: 2026-10-27T14:44:33.978861+00:00
+# ended_utc: 2026-10-27T14:45:36.072352+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+== DCF continuation-line growth (DESCRIPTION limit is 2 MiB = 2097152 bytes; 698000 lines is just under it)
+dcf: 5000 continuation lines (0.02 MB)                                1.3 ms  ok
+dcf: 20000 continuation lines (0.06 MB)                               9.5 ms  ok
+dcf: 40000 continuation lines (0.12 MB)                              32.8 ms  ok
+dcf: 80000 continuation lines (0.24 MB)                             117.0 ms  ok
+dcf: 350000 continuation lines (1.05 MB)                           2104.8 ms  ok
+dcf: 698000 continuation lines (2.09 MB)                          57633.1 ms  ok
+== credential-like text detector on adversarial input (8000-char prompt cap)
+input_safety: a_ x4000                                                0.5 ms  ok
+input_safety: token x1600                                             0.4 ms  ok
+input_safety: api_key= + long                                         0.2 ms  ok
+input_safety: access token then spaces                                0.8 ms  ok
+input_safety: x- x 4000                                               1.8 ms  ok
+input_safety: (a_a_)* x 2000                                          0.5 ms  ok
+== intent / quality on 8000-char adversarial prompts
+classify_request: repeat 'csv '                                      29.7 ms  ok
+detect_packages: repeat 'csv '                                        9.3 ms  ok
+validate_prompt: repeat 'csv '                                        5.6 ms  ok
+classify_request: repeat 'data '                                     16.2 ms  ok
+detect_packages: repeat 'data '                                       4.5 ms  ok
+validate_prompt: repeat 'data '                                       5.6 ms  ok
+classify_request: repeat 'sql query '                                15.0 ms  ok
+detect_packages: repeat 'sql query '                                  3.5 ms  ok
+validate_prompt: repeat 'sql query '                                  4.5 ms  ok
+classify_request: repeat 'import read '                               8.8 ms  ok
+detect_packages: repeat 'import read '                                4.0 ms  ok
+validate_prompt: repeat 'import read '                                4.5 ms  ok
+== Context7 redaction on 500-char adversarial input
+safe_query: secret x                                                  0.1 ms  ok
+safe_query: token a b                                                 0.1 ms  ok
+safe_query: password pass                                             0.1 ms  ok
+== Rd parsing on 2 MiB attacker-controlled member
+aliases(): alias{ never closed                                       13.2 ms  ok
+rd_index_record(): alias{ never closed                               26.2 ms  ok
+_rd_complete(): alias{ never closed                                   0.1 ms  ok
+aliases(): nested braces                                             15.2 ms  ok
+rd_index_record(): nested braces                                    195.5 ms  ok
+_rd_complete(): nested braces                                       161.0 ms  ok
+aliases(): backslash run                                             16.0 ms  ok
+rd_index_record(): backslash run                                    109.9 ms  ok
+_rd_complete(): backslash run                                        78.2 ms  ok
+aliases(): many aliases                                             123.6 ms  ok
+rd_index_record(): many aliases                                     311.7 ms  ok
+_rd_complete(): many aliases                                        167.7 ms  ok
+aliases(): percent comments                                           2.8 ms  ok
+rd_index_record(): percent comments                                  11.6 ms  ok
+_rd_complete(): percent comments                                      6.7 ms  ok
+== NAMESPACE parse on 256 KiB attacker-controlled text
+parse_namespace: many export()                                      309.4 ms  KnowledgeError:source_too_large
+parse_namespace: deep parens                                        167.1 ms  ok
+parse_namespace: long string                                         61.3 ms  ok
+parse_namespace: unterminated string                                 20.4 ms  ok
+parse_namespace: comments                                             0.1 ms  KnowledgeError:source_too_large

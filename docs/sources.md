@@ -14,17 +14,16 @@ their original retrieval time.
 | Function documentation | `man/*.Rd` inside the checked source archive | Literal Rd aliases; macros and examples are not evaluated or rendered |
 | Vignettes | Official package page for the selected package/release | Version is checked against the index; links are listed, linked content is not claimed as fetched |
 | Agent guidance | GitHub REST API for the metadata-declared repository at an explicitly requested ref | Ref is pinned to commit SHA; complete tree required to assert absence; text is untrusted |
-| Indexed documentation | Optional Context7 API | Library identity must match the official package GitHub repository; version scope is reported; secondary source |
 | Shiny framework guidance | Fixed pages on `shiny.posit.co` | Current official articles; not version-pinned |
 | Positron guidance | Fixed pages on `positron.posit.co` | Current official IDE docs; no GUI/session access |
 | Quarto guidance | Fixed pages on `quarto.org` | Current official authoring/project docs; not version-pinned |
 
 Framework catalog pages were checked against the official documentation on
 2026-10-22. A topic lookup fails explicitly when the upstream page is missing or
-unavailable; it never substitutes Context7 or another framework's page.
+unavailable; it never substitutes another framework's page or a third-party service.
 
 Official package metadata and version-specific package documentation take
-precedence over GitHub guidance and Context7 snippets. Context7 is never silently
+precedence over GitHub guidance. Third-party documentation is never silently
 substituted for official docs. Each returned fragment carries its own origin and
 version information where the source provides it.
 
@@ -68,7 +67,7 @@ been retrieved and checked, even if the metadata assurance is only
 because the optional DESCRIPTION route is absent. Consumers should inspect the
 assurance level and `metadata_fields_missing`, not infer it from the broad status.
 
-GitHub AGENTS.md, Context7 repository matching, `get_package_knowledge`, Prompt
+GitHub AGENTS.md, `get_package_knowledge`, Prompt
 Intelligence package grounding, and exact function Rd docs retain deep archive
 verification by default. Dependencies and compatibility use repository indices.
 Vignette links retain their version-checked official package-page contract.
@@ -101,7 +100,7 @@ archive history for old versions. It does not parse `renv.lock`, determine a
 user's installed packages, solve transitive dependencies, or validate platform
 binaries/system libraries. Bioconductor compatibility is a conservative check
 of the official R/release mapping and direct required dependency metadata.
-Context7 does not index every R package. A missing package or unavailable
+A missing package or unavailable
 source is reported explicitly and is not filled with inferred content.
 
 See [architecture](ARCHITECTURE.md) and [security model](security.md) for

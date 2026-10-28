@@ -1,0 +1,28 @@
+# command: python -I probe_perf.py 
+# started_utc: 2026-10-27T14:45:45.640597+00:00
+# ended_utc: 2026-10-27T14:45:51.789431+00:00
+# exit_code: 0
+# network_to_public_upstream: True
+
+native accelerators loaded: False
+real PACKAGES expanded: 7.4 MB; catalog 4.2 MB
+CRAN _parse_index: 25531 records; median/min/max ms = (95.68, 94.51, 102.27)
+PackageSearchIndex build ms: (40.99, 39.07, 47.19) entries 25531
+search 'ggplot' ms: (29.09, 28.55, 29.31) hits 249
+search 'time series forecasting' ms: (29.85, 29.17, 30.04) hits 58
+search 'a' ms: (17.06, 16.79, 17.33) hits 2624
+-- synthetic 500 Rd files; tarball 0.01 MB
+source_files ms: (8.62, 8.51, 8.74) | parsed bytes: 1050030
+build_discovery_index: 500 ms (under tracemalloc), entries=2500 est_bytes=813912 peak_traced=3.6 MB
+page(no query) ms: (2.27, 2.22, 2.36)
+page(fuzzy query) ms: (11.38, 11.35, 11.54) | fuzzy_complete: False
+page(deep offset) ms: (2.25, 2.24, 2.29)
+-- synthetic 1800 Rd files; tarball 0.05 MB
+source_files ms: (28.05, 27.56, 28.32) | parsed bytes: 3785330
+build_discovery_index: 1790 ms (under tracemalloc), entries=9000 est_bytes=2950713 peak_traced=12.6 MB
+page(no query) ms: (4.65, 4.61, 5.05)
+page(fuzzy query) ms: (14.9, 14.7, 15.27) | fuzzy_complete: False
+page(deep offset) ms: (4.49, 4.48, 4.54)
+service cold discovery 455 ms; warm query 12 ms; 40 concurrent docs 105 ms; ok=40/40
+event-loop heartbeat gaps (5ms tick): max 105 ms, p99 105 ms, n=19
+discovery status: verified issues [] total 9000 response bytes 17106

@@ -9,7 +9,7 @@ from collections import OrderedDict
 from collections.abc import Awaitable
 from datetime import UTC, datetime
 
-from .config import cache_ttl, context7_api_key, github_token
+from .config import cache_ttl, github_token
 from .diagnostics import awaitable_operation_id, log_internal_failure
 from .errors import KnowledgeError
 from .http import BioconductorHTTP, CranHTTP, package_name, version_parts
@@ -27,7 +27,6 @@ from .project_analysis import (
 )
 from .providers import BioconductorProvider, CranProvider, PackageRepository
 from .providers.bioconductor import CATEGORIES
-from .providers.context7 import Context7Provider
 from .providers.framework_docs import DOCS as FRAMEWORK_DOCS
 from .providers.framework_docs import FrameworkDocsProvider
 from .providers.github_agents import GitHubAgentsProvider
@@ -136,7 +135,7 @@ VISUALIZATION_WORKFLOWS = {
 }
 
 
-PACKAGE_SECTIONS = ("metadata", "dependencies", "vignettes", "agent_guidance", "context7")
+PACKAGE_SECTIONS = ("metadata", "dependencies", "vignettes", "agent_guidance")
 _LOCK_OPTIONS = frozenset({"package_versions", "renv_lock"})
 # kind -> (accepted schema names, accepted optional arguments)
 SOURCE_ANALYZERS = {
@@ -188,7 +187,6 @@ class KnowledgeService:
         http: CranHTTP,
         providers: dict[str, PackageRepository] | None = None,
         agents_provider: GitHubAgentsProvider | None = None,
-        context7_provider: Context7Provider | None = None,
         framework_docs_provider: FrameworkDocsProvider | None = None,
         r_documentation_provider: RDocumentationProvider | None = None,
     ):
@@ -199,9 +197,6 @@ class KnowledgeService:
         self._bioc: OrderedDict[str, BioconductorProvider] = OrderedDict()
         self.agents = agents_provider or GitHubAgentsProvider(
             http.client, ttl=cache_ttl(3600), token=github_token()
-        )
-        self.context7 = context7_provider or Context7Provider(
-            http.client, context7_api_key(), ttl=cache_ttl(21600)
         )
         self.framework_docs = framework_docs_provider or FrameworkDocsProvider(http.client)
         self.r_documentation = r_documentation_provider or RDocumentationProvider(http.client)
@@ -486,17 +481,6 @@ class KnowledgeService:
             provider.bioc_version,
         )
 
-    async def get_context7_docs(self, package, question, repository="cran", bioc_version=None):
-        provider, info = await self._external_package_metadata(package, repository, bioc_version)
-        return await self.context7.get_context7_docs(
-            package,
-            info["package_version"],
-            info.get("urls"),
-            question,
-            repository,
-            provider.bioc_version,
-        )
-
     async def search_r_documentation(self, query, manuals=None, limit=5, r_version=None):
         """Search the local official R manual index; this method never fetches sources."""
         return await self.r_documentation.asearch(query, manuals, limit, r_version)
@@ -523,7 +507,6 @@ class KnowledgeService:
         package,
         repository="cran",
         bioc_version=None,
-        question=None,
         revision=None,
     ):
         if repository == "all":
@@ -537,10 +520,6 @@ class KnowledgeService:
         sections = {"package_info": info, "dependencies": dependencies}
         if "error" in info:
             sections["agent_guidance"] = {
-                "status": "not_attempted",
-                "reason": "package metadata could not be verified",
-            }
-            sections["context7_docs"] = {
                 "status": "not_attempted",
                 "reason": "package metadata could not be verified",
             }
@@ -563,25 +542,6 @@ class KnowledgeService:
                 sections["agent_guidance"] = {
                     "status": "not_requested",
                     "reason": "Specify revision (branch, tag or commit ref) to inspect AGENTS.md",
-                }
-            if question:
-                try:
-                    sections["context7_docs"] = await self.context7.get_context7_docs(
-                        package,
-                        info["package_version"],
-                        info.get("urls"),
-                        question,
-                        repository,
-                        provider.bioc_version,
-                    )
-                except KnowledgeError as exc:
-                    sections["context7_docs"] = failure(
-                        exc, package, repository, provider.bioc_version
-                    )
-            else:
-                sections["context7_docs"] = {
-                    "status": "not_requested",
-                    "reason": "Supply a concrete question to retrieve indexed documentation",
                 }
         errors = [
             {"section": name, "error": result["error"]}
@@ -1592,7 +1552,6 @@ class KnowledgeService:
         verify_archive=False,
         resolve_repositories=False,
         revision=None,
-        question=None,
     ):
         include = list(dict.fromkeys(include or ["metadata"]))
         unknown = set(include) - set(PACKAGE_SECTIONS)
@@ -1600,21 +1559,17 @@ class KnowledgeService:
             raise KnowledgeError(
                 "invalid_input", f"include must name sections from: {', '.join(PACKAGE_SECTIONS)}"
             )
-        if repository == "all" and {"agent_guidance", "context7"} & set(include):
+        if repository == "all" and "agent_guidance" in include:
             raise KnowledgeError(
                 "invalid_input",
-                "agent_guidance and context7 need one repository so the package identity is unique",
+                "agent_guidance needs one repository so the package identity is unique",
             )
         if "agent_guidance" in include and not revision:
             raise KnowledgeError(
                 "invalid_input", "agent_guidance needs revision (a branch, tag or commit ref)"
             )
-        if "context7" in include and not question:
-            raise KnowledgeError("invalid_input", "context7 needs a concrete question")
         if revision and "agent_guidance" not in include:
             raise KnowledgeError("invalid_input", "revision is used only with agent_guidance")
-        if question and "context7" not in include:
-            raise KnowledgeError("invalid_input", "question is used only with context7")
         package_name(package)
         operations = {
             "metadata": lambda: self.get_package_info(
@@ -1627,7 +1582,6 @@ class KnowledgeService:
             "agent_guidance": lambda: self.get_package_agent_guidance(
                 package, revision, repository, bioc_version
             ),
-            "context7": lambda: self.get_context7_docs(package, question, repository, bioc_version),
         }
 
         async def section(name):

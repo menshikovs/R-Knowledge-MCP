@@ -15,7 +15,7 @@ from cran_knowledge_mcp.service import KnowledgeService
 
 @pytest.fixture(autouse=True)
 def legacy_toolset(monkeypatch):
-    """These contract tests cover the original 35-tool surface kept for MCP_TOOLSET=legacy."""
+    """These contract tests cover the legacy 34-tool surface kept for MCP_TOOLSET=legacy."""
     monkeypatch.setenv("MCP_TOOLSET", "legacy")
 
 
@@ -113,24 +113,13 @@ async def test_sdk_argument_validation_and_internal_exception_are_sanitized(monk
         assert "ValidationError" not in invalid_result.content[0].text
 
 
-async def test_function_docs_context7_and_prompt_tools_have_consistent_results(service):
+async def test_function_docs_guidance_and_prompt_tools_have_consistent_results(service):
     api, _, _ = service
     async with await _session(api) as session:
         missing_docs = await session.call_tool(
             "get_function_docs", {"package": "ExamplePkg", "function": "not_an_alias"}
         )
         _assert_error_response(missing_docs, "docs_not_found")
-
-        context7 = await session.call_tool(
-            "get_context7_docs", {"package": "ExamplePkg", "question": "How to use it?"}
-        )
-        assert context7.isError is True
-        assert context7.structuredContent["error"]["code"] in {
-            "integration_disabled",
-            "context7_not_configured",
-            "not_configured",
-            "repository_not_verified",
-        }
 
         guidance = await session.call_tool(
             "get_package_agent_guidance",
@@ -148,13 +137,14 @@ async def test_function_docs_context7_and_prompt_tools_have_consistent_results(s
 
         knowledge = await session.call_tool(
             "get_package_knowledge",
-            {"package": "ExamplePkg", "question": "How to use it?"},
+            {"package": "ExamplePkg", "revision": "v1.0.0"},
         )
         assert knowledge.isError is False
         assert knowledge.structuredContent["verification_status"] == "partial"
         assert knowledge.structuredContent["sections"]["package_info"]["package_version"]
+        assert "context7_docs" not in knowledge.structuredContent["sections"]
         assert any(
-            error["section"] == "context7_docs" for error in knowledge.structuredContent["errors"]
+            error["section"] == "agent_guidance" for error in knowledge.structuredContent["errors"]
         )
 
         invalid_prompt = await session.call_tool("build_r_prompt", {"request": ""})
@@ -204,24 +194,39 @@ async def test_repository_all_failure_is_error_without_partial_data(service):
     assert json.loads(result.content[0].text) == result.structuredContent
 
 
-async def test_partial_context7_failure_does_not_fail_overall_tool(service, monkeypatch):
+async def test_partial_agent_guidance_failure_does_not_fail_overall_tool(service, monkeypatch):
     api, _, _ = service
 
     async def unavailable(*_args, **_kwargs):
-        raise KnowledgeError("context7_unavailable", "Context7 is temporarily unavailable")
+        raise KnowledgeError("source_unavailable", "GitHub is temporarily unavailable")
 
-    monkeypatch.setattr(api.context7, "get_context7_docs", unavailable)
+    monkeypatch.setattr(api.agents, "get_package_agent_guidance", unavailable)
     async with await _session(api) as session:
         result = await session.call_tool(
             "get_package_knowledge",
-            {"package": "ExamplePkg", "question": "Show an example"},
+            {"package": "ExamplePkg", "revision": "v1.0.0"},
         )
     assert result.isError is False
     assert result.structuredContent["verification_status"] == "partial"
     assert result.structuredContent["sections"]["package_info"]["package_version"] == "2.10-1"
-    assert result.structuredContent["sections"]["context7_docs"]["error"]["code"] == (
-        "context7_unavailable"
+    assert result.structuredContent["sections"]["agent_guidance"]["error"]["code"] == (
+        "source_unavailable"
     )
+
+
+async def test_context7_tool_and_section_are_removed_and_never_contacted(service):
+    api, _, calls = service
+    async with await _session(api) as session:
+        names = {tool.name for tool in (await session.list_tools()).tools}
+        assert "get_context7_docs" not in names
+        gone = await session.call_tool(
+            "get_context7_docs", {"package": "ExamplePkg", "question": "How to use it?"}
+        )
+        _assert_error_response(gone, "tool_not_found")
+        knowledge = await session.call_tool("get_package_knowledge", {"package": "ExamplePkg"})
+        assert "context7_docs" not in knowledge.structuredContent["sections"]
+    assert not hasattr(api, "context7")
+    assert all("context7" not in str(request.url).casefold() for request in calls)
 
 
 async def test_optional_cran_description_404_remains_a_partial_success(service):

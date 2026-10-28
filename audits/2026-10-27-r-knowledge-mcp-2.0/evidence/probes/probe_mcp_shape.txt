@@ -1,0 +1,49 @@
+# command: python -I probe_mcp_shape.py probes
+# started_utc: 2026-10-27T14:44:31.753902+00:00
+# ended_utc: 2026-10-27T14:44:32.588580+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+outputSchema (get_package): {"additionalProperties": true, "title": "get_packageDictOutput", "type": "object"}
+inputSchema additionalProperties: None
+inputSchema (list_package_functions) keys: ['bioc_version', 'limit', 'offset', 'package', 'package_version', 'query', 'repository', 'snapshot', 'verbosity']
+get_package              isError=False text_bytes=1481 structured_bytes=1182 identical=False wire_bytes=2914
+get_function_docs        isError=False text_bytes=1007 structured_bytes=863 identical=False wire_bytes=2075
+list_package_functions   isError=False text_bytes=5312 structured_bytes=3924 identical=False wire_bytes=10006
+get_package              isError=False text_bytes=1888 structured_bytes=1470 identical=False wire_bytes=3642
+bad enum -> isError: True | code: invalid_input
+missing required arg -> isError: True | code: invalid_input
+package not found -> isError: True | status: failed | top-level keys: ['bioc_version', 'checked_at', 'errors', 'package', 'package_version', 'repository', 'response_mode', 'sections', 'source_url', 'sources', 'verification_status'] | errors: [('metadata', 'package_not_found')]
+resource cran://Ex/man/ex -> {"package":"Ex","function":"ex","package_version":"2.10-1","version_scope":"late
+resource missing alias (no isError channel) -> docs_not_found
+prompt csv-import: messages 1 chars 2303
+
+--- stderr ---
+Processing request of type ListToolsRequest
+Processing request of type CallToolRequest
+Tool call: get_package
+HTTP Request: GET https://cran.r-project.org/src/contrib/PACKAGES.gz "HTTP/1.1 200 OK"
+HTTP Request: GET https://cran.r-project.org/web/packages/Ex/DESCRIPTION "HTTP/1.1 200 OK"
+RKMCP_BENCH_TELEMETRY {"run_id":"unknown","trial_id":"unknown","tool_name":"get_package","protocol_call_id":"2","call_number":1,"status":"ok","request_bytes":51,"response_bytes":2914,"response_tokens_estimate":729,"response_token_estimate_method":"ceil(UTF-8 result JSON bytes / 4)","duration_ms":4.829,"error_code":null,"error_codes":[],"error_type":null,"truncated":false,"argument_fingerprint":"695d713abcc3","repeat_count":0,"repeat_kind":"first","timestamp_utc":"2026-10-27T14:44:32.500Z","process_offset_ms":106.755,"cache_hits":0,"cache_network_requests":2,"result_bytes":2914,"verification_status":"verified","source_count":2,"partial":false,"version_mismatch":false,"output_truncated":false,"page_truncated":false,"repository":"cran","package":"Ex","structured_bytes":1182,"text_content_bytes":1481,"content_duplicates_structured":true,"useful_bytes":1481}
+Processing request of type CallToolRequest
+Tool call: get_function_docs
+HTTP Request: GET https://cran.r-project.org/src/contrib/Ex_2.10-1.tar.gz "HTTP/1.1 200 OK"
+RKMCP_BENCH_TELEMETRY {"run_id":"unknown","trial_id":"unknown","tool_name":"get_function_docs","protocol_call_id":"3","call_number":2,"status":"ok","request_bytes":73,"response_bytes":2075,"response_tokens_estimate":519,"response_token_estimate_method":"ceil(UTF-8 result JSON bytes / 4)","duration_ms":2.208,"error_code":null,"error_codes":[],"error_type":null,"truncated":false,"argument_fingerprint":"6a029f41062c","repeat_count":0,"repeat_kind":"first","timestamp_utc":"2026-10-27T14:44:32.504Z","process_offset_ms":110.076,"cache_hits":1,"cache_network_requests":1,"result_bytes":2075,"verification_status":"verified","source_count":2,"partial":false,"version_mismatch":false,"output_truncated":false,"page_truncated":false,"repository":"cran","package":"Ex","structured_bytes":863,"text_content_bytes":1007,"content_duplicates_structured":true,"useful_bytes":1007}
+Processing request of type CallToolRequest
+Tool call: list_package_functions
+RKMCP_BENCH_TELEMETRY {"run_id":"unknown","trial_id":"unknown","tool_name":"list_package_functions","protocol_call_id":"4","call_number":3,"status":"ok","request_bytes":73,"response_bytes":10006,"response_tokens_estimate":2502,"response_token_estimate_method":"ceil(UTF-8 result JSON bytes / 4)","duration_ms":1.379,"error_code":null,"error_codes":[],"error_type":null,"truncated":false,"argument_fingerprint":"f2607a8c1813","repeat_count":0,"repeat_kind":"first","timestamp_utc":"2026-10-27T14:44:32.506Z","process_offset_ms":112.34,"cache_hits":2,"cache_network_requests":0,"result_bytes":10006,"verification_status":"partial","source_count":2,"partial":true,"version_mismatch":false,"output_truncated":false,"page_truncated":false,"repository":"cran","package":"Ex","structured_bytes":3924,"text_content_bytes":5312,"content_duplicates_structured":true,"useful_bytes":5312}
+Processing request of type CallToolRequest
+Tool call: get_package
+RKMCP_BENCH_TELEMETRY {"run_id":"unknown","trial_id":"unknown","tool_name":"get_package","protocol_call_id":"5","call_number":4,"status":"ok","request_bytes":70,"response_bytes":3642,"response_tokens_estimate":911,"response_token_estimate_method":"ceil(UTF-8 result JSON bytes / 4)","duration_ms":0.381,"error_code":null,"error_codes":[],"error_type":null,"truncated":false,"argument_fingerprint":"53a2b9f70e4e","repeat_count":0,"repeat_kind":"similar","timestamp_utc":"2026-10-27T14:44:32.507Z","process_offset_ms":113.646,"cache_hits":2,"cache_network_requests":0,"result_bytes":3642,"verification_status":"verified","source_count":2,"partial":false,"version_mismatch":false,"output_truncated":false,"page_truncated":false,"repository":"cran","package":"Ex","structured_bytes":1470,"text_content_bytes":1888,"content_duplicates_structured":true,"useful_bytes":1888}
+Processing request of type CallToolRequest
+Tool call: get_package
+RKMCP_BENCH_TELEMETRY {"run_id":"unknown","trial_id":"unknown","tool_name":"get_package","protocol_call_id":"6","call_number":5,"status":"error","request_bytes":70,"response_bytes":717,"response_tokens_estimate":180,"response_token_estimate_method":"ceil(UTF-8 result JSON bytes / 4)","duration_ms":0.254,"error_code":"invalid_input","error_codes":["invalid_input"],"error_type":"ValidationError","truncated":false,"argument_fingerprint":"01afa7b1ea1f","repeat_count":0,"repeat_kind":"similar","timestamp_utc":"2026-10-27T14:44:32.508Z","process_offset_ms":114.757,"cache_hits":0,"cache_network_requests":0,"result_bytes":717,"verification_status":"failed","source_count":0,"partial":null,"version_mismatch":false,"output_truncated":false,"page_truncated":false,"repository":null,"package":null,"structured_bytes":303,"text_content_bytes":303,"content_duplicates_structured":true,"useful_bytes":303}
+Processing request of type CallToolRequest
+Tool call: get_function_docs
+RKMCP_BENCH_TELEMETRY {"run_id":"unknown","trial_id":"unknown","tool_name":"get_function_docs","protocol_call_id":"7","call_number":6,"status":"error","request_bytes":57,"response_bytes":717,"response_tokens_estimate":180,"response_token_estimate_method":"ceil(UTF-8 result JSON bytes / 4)","duration_ms":0.151,"error_code":"invalid_input","error_codes":["invalid_input"],"error_type":"ValidationError","truncated":false,"argument_fingerprint":"5e95a14c2981","repeat_count":0,"repeat_kind":"similar","timestamp_utc":"2026-10-27T14:44:32.509Z","process_offset_ms":115.282,"cache_hits":0,"cache_network_requests":0,"result_bytes":717,"verification_status":"failed","source_count":0,"partial":null,"version_mismatch":false,"output_truncated":false,"page_truncated":false,"repository":null,"package":null,"structured_bytes":303,"text_content_bytes":303,"content_duplicates_structured":true,"useful_bytes":303}
+Processing request of type CallToolRequest
+Tool call: get_package
+RKMCP_BENCH_TELEMETRY {"run_id":"unknown","trial_id":"unknown","tool_name":"get_package","protocol_call_id":"8","call_number":7,"status":"error","request_bytes":53,"response_bytes":2287,"response_tokens_estimate":572,"response_token_estimate_method":"ceil(UTF-8 result JSON bytes / 4)","duration_ms":0.298,"error_code":"package_not_found","error_codes":["package_not_found"],"error_type":null,"truncated":false,"argument_fingerprint":"c62aa72ef12c","repeat_count":0,"repeat_kind":"first","timestamp_utc":"2026-10-27T14:44:32.510Z","process_offset_ms":116.131,"cache_hits":1,"cache_network_requests":0,"result_bytes":2287,"verification_status":"failed","source_count":0,"partial":null,"version_mismatch":false,"output_truncated":false,"page_truncated":false,"repository":"cran","package":null,"structured_bytes":916,"text_content_bytes":1162,"content_duplicates_structured":true,"useful_bytes":1162}
+Processing request of type ReadResourceRequest
+Processing request of type ReadResourceRequest
+Processing request of type GetPromptRequest

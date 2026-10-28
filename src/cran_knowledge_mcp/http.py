@@ -334,7 +334,7 @@ def make_client() -> httpx.AsyncClient:
         follow_redirects=False,
         timeout=timeout,
         # Each repository route caps itself at 4 concurrent downloads; the extra
-        # headroom keeps GitHub, Context7 and docs requests from waiting on archives.
+        # headroom keeps GitHub and docs requests from waiting on archives.
         limits=httpx.Limits(max_connections=12, max_keepalive_connections=6),
         headers={"User-Agent": http_user_agent()},
     )

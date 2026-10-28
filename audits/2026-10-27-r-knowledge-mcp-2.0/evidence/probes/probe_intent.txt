@@ -1,0 +1,21 @@
+# command: python -I probe_intent.py 
+# started_utc: 2026-10-27T14:45:39.498251+00:00
+# ended_utc: 2026-10-27T14:45:39.795057+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+category accuracy: 21/30
+  MISS: ('Run a hypothesis test comparing two groups and report the p-value', 'statistical_modeling', 'testing')
+  MISS: ("Fix the error: object 'x' not found in my dplyr pipeline", 'debugging', 'data_transformation')
+  MISS: ('Fix the failing Shiny app that crashes on startup', 'debugging', 'shiny_development')
+  MISS: ('Speed up this slow loop over a data frame', 'performance_optimization', 'data_analysis')
+  MISS: ('Pivot a wide table to long format', 'data_transformation', 'data_analysis')
+  MISS: ('Validate the input columns before processing', 'data_validation', 'data_analysis')
+  MISS: ('Test whether the data is normally distributed', 'statistical_modeling', 'testing')
+  MISS: ('Explore the iris dataset', 'data_analysis', 'csv_analysis')
+  MISS: ('Merge two data frames by id', 'data_transformation', 'data_analysis')
+package detection false positives on ordinary English:
+   'Validate the input columns before processing' -> ['validate']
+   'Set a target for the quarterly goals in my script' -> []
+   'Use a bench of test cases' -> ['bench']
+   'Check the janitor reports' -> ['janitor']

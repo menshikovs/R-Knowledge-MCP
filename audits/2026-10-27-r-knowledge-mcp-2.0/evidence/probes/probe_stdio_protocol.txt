@@ -1,0 +1,19 @@
+# command: python -I probe_stdio.py r-knowledge-mcp.exe
+# started_utc: 2026-10-27T14:44:15.374710+00:00
+# ended_utc: 2026-10-27T14:44:22.234537+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+  requested '2025-11-25'   -> 2025-11-25
+  tools/list count: 16
+  invalid-arg call isError: True {"code": "invalid_input", "message": "Invalid R package name", "source_url": null, "attempted_at": "2026-10-27T14:44:16.540765+00:00"}
+  unknown tool: {"content": [{"type": "text", "text": "{\"package\":null,\"repository\":null,\"package_version\":null,\"bioc_version\":null,\"source_url\":null,\"checked_at\":null,\"verification_status\":\"failed\",\"sources\":[],\"error\":{\"code\":\"tool_not_found\",\"message\":\"The requested tool is not availab
+  bad enum: {"content": [{"type": "text", "text": "{\"package\":\"ok\",\"repository\":null,\"package_version\":null,\"bioc_version\":null,\"source_url\":null,\"checked_at\":null,\"verification_status\":\"failed\",\"sources\":[],\"error\":{\"code\":\"invalid_input\",\"message\":\"Tool arguments failed validation
+  resources: ['r-knowledge://framework-docs', 'r-knowledge://prompt-templates']
+  prompts/get ok: True 2552
+  ping: {}
+  stderr lines: 14 | sample: ['INFO:mcp.server.lowlevel.server:Processing request of type ListToolsRequest', 'INFO:mcp.server.lowlevel.server:Processing request of type CallToolRequest', 'INFO:cran_knowledge_mcp.server:Tool call: get_package']
+  requested '2025-06-18'   -> 2025-06-18
+  requested '2025-03-26'   -> 2025-03-26
+  requested '2024-11-05'   -> 2024-11-05
+  requested '2099-01-01'   -> 2025-11-25

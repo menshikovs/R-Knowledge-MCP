@@ -287,6 +287,23 @@ def _telemetry_truncated(value: Any) -> bool:
     return False
 
 
+# Tools that used to accept `question` (Context7). FastMCP ignores unknown arguments by default,
+# which would silently drop a stale client's input, so these tools reject them explicitly.
+REMOVED_PARAMETER_TOOLS = ("get_package", "get_package_knowledge")
+
+
+def _reject_unknown_arguments(server: FastMCP, *names: str) -> None:
+    """Make the named tools fail with invalid_input on any argument outside their schema."""
+    for name in names:
+        tool = server._tool_manager.get_tool(name)
+        if tool is None:
+            continue
+        model = tool.fn_metadata.arg_model
+        model.model_config["extra"] = "forbid"
+        model.model_rebuild(force=True)
+        tool.parameters["additionalProperties"] = False
+
+
 def create_server(
     host: str = "127.0.0.1",
     port: int = 8000,
@@ -330,6 +347,7 @@ def create_server(
         _register_legacy_tools(server)
     else:
         _register_tools(server)
+    _reject_unknown_arguments(server, *REMOVED_PARAMETER_TOOLS)
     _register_resources(server)
     if prompt_intelligence_enabled():
         register_native_prompts(server)
@@ -626,36 +644,17 @@ def _register_legacy_tools(server: FastMCP) -> None:
         )
 
     @server.tool(annotations=annotations)
-    async def get_context7_docs(
-        package: str,
-        question: str,
-        ctx: Context,
-        repository: Literal["cran", "bioconductor"] = "cran",
-        bioc_version: str | None = None,
-    ) -> dict[str, Any]:
-        """Fetch Context7 docs after matching its ID to verified package metadata."""
-        return await bounded(
-            ctx.request_context.lifespan_context.get_context7_docs(
-                package, question, repository, bioc_version
-            ),
-            package=package,
-            repository=repository,
-            bioc_version=bioc_version,
-        )
-
-    @server.tool(annotations=annotations)
     async def get_package_knowledge(
         package: str,
         ctx: Context,
         repository: Literal["cran", "bioconductor"] = "cran",
         bioc_version: str | None = None,
-        question: str | None = None,
         revision: str | None = None,
     ) -> dict[str, Any]:
-        """Combine package metadata with requested AGENTS.md and Context7 material."""
+        """Combine package metadata with requested AGENTS.md material."""
         return await bounded(
             ctx.request_context.lifespan_context.get_package_knowledge(
-                package, repository, bioc_version, question, revision
+                package, repository, bioc_version, revision
             ),
             package=package,
             repository=repository,
@@ -1043,14 +1042,12 @@ def _register_tools(server: FastMCP) -> None:
         package: PackageName,
         ctx: Context,
         include: Annotated[
-            list[Literal["metadata", "dependencies", "vignettes", "agent_guidance", "context7"]]
-            | None,
+            list[Literal["metadata", "dependencies", "vignettes", "agent_guidance"]] | None,
             Field(
                 description=(
                     "Sections to return (default ['metadata']). dependencies: verbatim direct "
                     "DESCRIPTION fields; vignettes: links from the official page; "
-                    "agent_guidance: AGENTS.md at a GitHub ref (needs revision); context7: "
-                    "third-party indexed docs (needs question)."
+                    "agent_guidance: AGENTS.md at a GitHub ref (needs revision)."
                 )
             ),
         ] = None,
@@ -1073,13 +1070,9 @@ def _register_tools(server: FastMCP) -> None:
             str | None,
             Field(description="agent_guidance only: GitHub branch, tag or commit ref."),
         ] = None,
-        question: Annotated[
-            str | None,
-            Field(description="context7 only: concrete question, max 500 chars; secrets redacted."),
-        ] = None,
         verbosity: Verbosity = "compact",
     ) -> dict[str, Any]:
-        """Get package metadata and optional dependencies, vignettes, AGENTS.md, Context7 docs."""
+        """Get package metadata and optional dependencies, vignettes and AGENTS.md."""
         return await bounded(
             _service(ctx).get_package(
                 package,
@@ -1089,7 +1082,6 @@ def _register_tools(server: FastMCP) -> None:
                 verify_archive,
                 resolve_repositories,
                 revision,
-                question,
             ),
             compact=verbosity == "compact",
             package=package,

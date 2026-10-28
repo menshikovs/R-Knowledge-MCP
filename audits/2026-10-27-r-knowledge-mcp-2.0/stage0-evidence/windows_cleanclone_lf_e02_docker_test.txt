@@ -1,0 +1,3 @@
+=========================== short test summary info ===========================
+FAILED tests/test_bioc_benchmark.py::test_e02_reproduction_and_standard_workflow_in_both_images
+1 failed, 31 passed, 1 warning in 75.15s (0:01:15)
