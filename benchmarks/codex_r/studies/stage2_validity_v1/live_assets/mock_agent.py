@@ -191,8 +191,9 @@ def main() -> int:
             report["model"] = model_call(os.environ.get("CODEX_API_KEY", ""))
             if spec["mcp_expected"]:
                 report["mcp"] = mcp_workflow(spec["tool_call"] if spec["call_tool"] else None)
-            with open("/candidate/answer.json", "w", encoding="utf-8") as handle:
-                json.dump(spec["answer"], handle)
+            if spec["answer"] is not None:  # None: the candidate produces no artifact
+                with open("/candidate/answer.json", "w", encoding="utf-8") as handle:
+                    json.dump(spec["answer"], handle)
     except Exception as exc:  # report the failure rather than crash silently
         report["agent_error"] = f"{type(exc).__name__}: {exc}"
         report["traceback_tail"] = traceback.format_exc()[-600:]

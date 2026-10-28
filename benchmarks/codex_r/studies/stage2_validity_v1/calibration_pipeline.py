@@ -7,7 +7,8 @@ Provides versioned, deterministic pipelines for:
 4. Defining the authorized pilot specification (gated on explicit budget authorization).
 5. Evaluating the 5 formal research readiness gates.
 
-Zero real model API calls or credentials are used in this module.
+Zero real model API calls or credentials are used in this module. Live (real-model)
+calibration is fail-closed and currently unavailable; see ``live_execution_blockers``.
 """
 
 from __future__ import annotations
@@ -18,52 +19,13 @@ import math
 from pathlib import Path
 from typing import Any
 
-from . import calibration, manifest, records, runner
+from . import calibration, design, manifest, records, runner, spend_control
 
 STUDY_ROOT = Path(__file__).resolve().parent
 CODEX_ROOT = STUDY_ROOT.parents[1]
 
-# Pinned candidate task pool for Stage 2.7 baseline calibration (Arm A only)
-CANDIDATE_TASKS_S2 = (
-    "R01",
-    "R02",
-    "R03",
-    "R04",
-    "R05",
-    "R06",
-    "R07",
-    "R08",
-    "R09",
-    "R10",
-    "R11",
-    "R12",
-    "C03",
-    "C04",
-    "H01",
-    "H04",
-    "H10",
-)
-
-RECALIBRATION_TASKS_RC = (
-    "C01",
-    "C02",
-    "C05",
-    "D01",
-    "D02",
-    "D03",
-    "E04",
-    "E05",
-)
-
-QUARANTINED_TASKS_Q = (
-    "B01",
-    "B02",
-    "B03",
-    "E01",
-    "E02",
-    "E03",
-)
-
+# Candidate, recalibration and quarantine sets are derived from task_catalog.json (the
+# provisional strata) by audit_task_eligibility(); they are deliberately not hard-coded here.
 MODEL_IDENTITY = "gpt-6-luna"
 RUNTIME_IMAGE = "rkmcp-codex-runtime:codex-0.163.0"
 TIMEOUT_SECONDS = 900
@@ -77,6 +39,21 @@ def _file_sha256(path: Path) -> str | None:
     if not path.is_file():
         return None
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+# Stratum meanings are the preregistered ones (manifest confirmatory_task_rule.strata):
+# S1 target, S2 control (tool-use tax), RC recalibrate, Q quarantined. S1 needs a target task by
+# its text (calibration.target_by_features) *and* an in-range Arm-A screen, so calibration can
+# move RC tasks into S1 but never S2 controls.
+STRATUM_LABELS = {
+    "S1": "S1_target_confirmatory_core",
+    "S2": "S2_control_tool_use_tax",
+    "RC": "RC_recalibration_required",
+    "Q": "Q_quarantined_scorer_revision_required",
+}
+# Every non-quarantined task is calibrated: RC to decide S1 membership, S2 to measure the
+# baseline difficulty of the controls. Q stays out until its scorer is revised (BEN-002).
+CALIBRATION_STRATA = ("RC", "S2")
 
 
 def audit_task_eligibility() -> dict[str, Any]:
@@ -96,19 +73,14 @@ def audit_task_eligibility() -> dict[str, Any]:
         catalog_data = json.loads(catalog_path.read_text(encoding="utf-8"))
 
     tasks = catalog_data["tasks"]
-    total_tasks = len(tasks)
-
     evaluated: list[dict[str, Any]] = []
-    strata_counts: dict[str, int] = {
-        "S1_confirmatory_core": 0,
-        "S2_calibration_needed": 0,
-        "RC_recalibration_required": 0,
-        "Q_quarantined_or_smoke": 0,
-    }
+    strata_counts = {label: 0 for label in STRATUM_LABELS.values()}
 
     for entry in tasks:
         tid = entry["task"]
         strat = entry.get("provisional_stratum", "Q")
+        if strat not in STRATUM_LABELS:
+            strat = "Q"
         screen_res = entry.get("historical_arm_a_screen", {})
         mean_a = screen_res.get("mean_arm_a")
         n_a = screen_res.get("n", 0)
@@ -125,32 +97,10 @@ def audit_task_eligibility() -> dict[str, Any]:
         if n_a < 3:
             exclusions.append("insufficient_historical_arm_a_observations_lt_3")
 
-        if strat == "Q":
-            full_stratum = "Q_quarantined_or_smoke"
-            eligible_confirmatory = False
-            eligible_calibration = False
-        elif strat == "RC":
-            full_stratum = "RC_recalibration_required"
-            eligible_confirmatory = False
-            eligible_calibration = False
-        elif strat == "S2":
-            full_stratum = "S2_calibration_needed"
-            eligible_confirmatory = False
-            eligible_calibration = True
-        elif strat == "S1":
-            full_stratum = "S1_confirmatory_core"
-            eligible_confirmatory = True
-            eligible_calibration = False
-        else:
-            full_stratum = "Q_quarantined_or_smoke"
-            eligible_confirmatory = False
-            eligible_calibration = False
-
-        strata_counts[full_stratum] += 1
-
+        label = STRATUM_LABELS[strat]
+        strata_counts[label] += 1
+        target = calibration.target_by_features(entry)
         meta = runner._task_and_scorer_meta(tid)
-        task_sha = meta["task_sha256"]
-        scorer_sha = meta["scorer_sha256"]
 
         evaluated.append(
             {
@@ -158,11 +108,13 @@ def audit_task_eligibility() -> dict[str, Any]:
                 "suite": entry.get("suite"),
                 "title": entry.get("title"),
                 "scorer": entry.get("scorer"),
-                "task_sha256": task_sha,
-                "scorer_sha256": scorer_sha,
-                "provisional_stratum": full_stratum,
-                "eligible_for_confirmatory": eligible_confirmatory,
-                "eligible_for_calibration": eligible_calibration,
+                "task_sha256": meta["task_sha256"],
+                "scorer_sha256": meta["scorer_sha256"],
+                "provisional_stratum": label,
+                "target_by_features": target,
+                "eligible_for_confirmatory": strat == "S1",
+                "eligible_for_calibration": strat in CALIBRATION_STRATA,
+                "can_enter_s1_via_calibration": strat == "RC",
                 "historical_arm_a_screen": {
                     "observations": n_a,
                     "mean_score": mean_a,
@@ -174,33 +126,72 @@ def audit_task_eligibility() -> dict[str, Any]:
         )
 
     return {
-        "schema_version": "stage27-eligibility-v1.0",
-        "total_benchmark_tasks": total_tasks,
+        "schema_version": "stage27-eligibility-v1.1",
+        "stratum_meanings": {
+            "S1": "target: MCP plausibly useful by task text and Arm-A screen in range",
+            "S2": "control (tool-use tax): MCP not expected to help; can never become S1",
+            "RC": "target by task text; Arm-A screen insufficient, ceiling or floor",
+            "Q": "quarantined until the scorer is revised and revalidated (BEN-002)",
+        },
+        "total_benchmark_tasks": len(tasks),
         "strata_counts": strata_counts,
-        "confirmatory_eligible_count": strata_counts["S1_confirmatory_core"],
-        "calibration_needed_count": strata_counts["S2_calibration_needed"],
-        "recalibration_required_count": strata_counts["RC_recalibration_required"],
-        "quarantined_count": strata_counts["Q_quarantined_or_smoke"],
+        "confirmatory_eligible_count": strata_counts[STRATUM_LABELS["S1"]],
+        "control_count": strata_counts[STRATUM_LABELS["S2"]],
+        "recalibration_required_count": strata_counts[STRATUM_LABELS["RC"]],
+        "quarantined_count": strata_counts[STRATUM_LABELS["Q"]],
+        "calibration_candidate_count": sum(1 for t in evaluated if t["eligible_for_calibration"]),
         "selection_rule": {
             "screen": "Arm A baseline observations only",
             "minimum_repetitions": 3,
             "variance_target": [0.10, 0.90],
             "mcp_arms_conditioned": False,
+            "calibrated_strata": list(CALIBRATION_STRATA),
         },
         "tasks": evaluated,
     }
 
 
-def validate_calibration_schedule(schedule: dict[str, Any]) -> list[str]:
+SCHEDULE_VERSION = "stage27-calibration-schedule-v1.1"
+EXECUTOR_MODES = ("mock", "docker-mock-model", "live")
+EVIDENCE_SYNTHETIC = "synthetic_not_baseline_evidence"
+
+
+class LiveExecutionUnavailable(RuntimeError):
+    """No real-model calibration executor exists; nothing was started or written."""
+
+    def __init__(self, blockers: list[dict[str, Any]]) -> None:
+        self.blockers = blockers
+        super().__init__(
+            "live calibration executor unavailable: " + "; ".join(b["id"] for b in blockers)
+        )
+
+
+class SyntheticEvidenceError(ValueError):
+    """Synthetic or unverifiable records were offered as baseline evidence."""
+
+
+def calibration_candidate_tasks() -> list[str]:
+    """Tasks eligible for Arm-A calibration: catalogue strata in ``CALIBRATION_STRATA``."""
+    return sorted(
+        t["task_id"] for t in audit_task_eligibility()["tasks"] if t["eligible_for_calibration"]
+    )
+
+
+def validate_calibration_schedule(
+    schedule: dict[str, Any], *, allow_ineligible_tasks: bool = False
+) -> list[str]:
     """Validate structural and methodological integrity of a baseline calibration schedule.
 
+    Pinned task/scorer digests and scorer versions are compared with the files as they are now;
+    a schedule prepared against other task or scorer content is rejected before anything runs.
+    ``allow_ineligible_tasks`` admits other tasks for synthetic infrastructure tests only.
     Returns a list of problems (empty if valid).
     """
     problems: list[str] = []
     if not isinstance(schedule, dict):
         return ["schedule must be a dictionary"]
 
-    if schedule.get("schedule_version") != "stage27-calibration-schedule-v1.0":
+    if schedule.get("schedule_version") != SCHEDULE_VERSION:
         problems.append("invalid or missing schedule_version")
 
     arms = schedule.get("arms")
@@ -210,19 +201,26 @@ def validate_calibration_schedule(schedule: dict[str, Any]) -> list[str]:
     tasks = schedule.get("candidate_tasks")
     if not isinstance(tasks, list) or not tasks:
         problems.append("candidate_tasks must be a non-empty list")
+        tasks = None
     elif len(set(tasks)) != len(tasks):
         problems.append("duplicate tasks in candidate_tasks")
+    elif not allow_ineligible_tasks:
+        eligible = set(calibration_candidate_tasks())
+        outside = sorted(set(tasks) - eligible)
+        if outside:
+            problems.append(f"tasks not eligible for calibration (catalogue stratum): {outside}")
 
     reps = schedule.get("repetitions_per_task")
-    if not isinstance(reps, int) or reps < 1:
+    if isinstance(reps, bool) or not isinstance(reps, int) or reps < 1:
         problems.append("repetitions_per_task must be an integer >= 1")
+        reps = None
 
     trials = schedule.get("trials")
     if not isinstance(trials, list):
         problems.append("trials must be a list")
         return problems
 
-    if isinstance(tasks, list) and isinstance(reps, int):
+    if tasks is not None and reps is not None:
         expected_count = len(tasks) * reps
         if len(trials) != expected_count:
             problems.append(
@@ -230,7 +228,12 @@ def validate_calibration_schedule(schedule: dict[str, Any]) -> list[str]:
                 f"got {len(trials)}"
             )
 
+    measured: dict[str, dict[str, str] | None] = {}
     trial_ids: set[str] = set()
+    block_ids: set[str] = set()
+    task_reps: set[tuple[Any, Any]] = set()
+    indices: list[Any] = []
+    shared = {"model": set(), "runtime_image": set(), "timeout_seconds": set()}
     for idx, trial in enumerate(trials, start=1):
         if not isinstance(trial, dict):
             problems.append(f"trial {idx} is not a dictionary")
@@ -242,9 +245,13 @@ def validate_calibration_schedule(schedule: dict[str, Any]) -> list[str]:
             problems.append(f"duplicate trial_id: {tid}")
         else:
             trial_ids.add(tid)
+        block = trial.get("block_id")
+        if not block or block in block_ids:
+            problems.append(f"trial {idx} ({tid}) has a missing or duplicate block_id")
+        block_ids.add(block)
 
         task = trial.get("task")
-        if not task or (isinstance(tasks, list) and task not in tasks):
+        if not task or (tasks is not None and task not in tasks):
             problems.append(f"trial {idx} has invalid task: {task!r}")
 
         arm = trial.get("arm")
@@ -252,49 +259,80 @@ def validate_calibration_schedule(schedule: dict[str, Any]) -> list[str]:
             problems.append(f"trial {idx} ({tid}) specifies arm {arm!r}, expected 'A'")
 
         rep = trial.get("repetition")
-        if not isinstance(rep, int) or rep < 1 or (isinstance(reps, int) and rep > reps):
+        if not isinstance(rep, int) or rep < 1 or (reps is not None and rep > reps):
             problems.append(f"trial {idx} ({tid}) has invalid repetition: {rep!r}")
+        elif (task, rep) in task_reps:
+            problems.append(f"trial {idx} ({tid}) duplicates task {task} repetition {rep}")
+        task_reps.add((task, rep))
+
+        indices.append(trial.get("execution_index"))
+        if trial.get("position_in_block") != 1 or trial.get("fresh_context") is not True:
+            problems.append(f"trial {idx} ({tid}) must be a fresh single-trial block")
+        if isinstance(trial.get("trial_seed"), bool) or not isinstance(
+            trial.get("trial_seed"), int
+        ):
+            problems.append(f"trial {idx} ({tid}) missing integer trial_seed")
+        for key in shared:
+            shared[key].add(json.dumps(trial.get(key)))
 
         for key in ("scorer_version", "task_sha256", "scorer_sha256"):
             if not trial.get(key):
                 problems.append(f"trial {idx} ({tid}) missing required metadata key: {key}")
+        if isinstance(task, str) and task not in measured:
+            try:
+                measured[task] = runner._task_and_scorer_meta(task)
+            except ValueError:
+                measured[task] = None
+                problems.append(f"trial {idx} ({tid}) names unknown task {task!r}")
+        current = measured.get(task) if isinstance(task, str) else None
+        if current is not None:
+            for key in ("scorer_version", "task_sha256", "scorer_sha256"):
+                if trial.get(key) and trial.get(key) != current[key]:
+                    problems.append(
+                        f"trial {idx} ({tid}) {key} does not match the current repository files"
+                    )
 
+    if sorted(i for i in indices if isinstance(i, int)) != list(range(1, len(trials) + 1)):
+        problems.append("execution_index values must be exactly 1..N")
+    for key, values in shared.items():
+        if len(values) > 1:
+            problems.append(f"trials disagree on {key}")
     return problems
 
 
-def build_calibration_schedule(seed: int = 20261028) -> dict[str, Any]:
+def build_calibration_schedule(
+    seed: int = 20261028,
+    *,
+    tasks: list[str] | None = None,
+    repetitions: int = BASELINE_REPETITIONS,
+) -> dict[str, Any]:
     """Generate the deterministic Arm-A-only baseline calibration schedule.
 
-    Covers 17 S2 candidate tasks with 3 baseline repetitions each (51 trials total).
-    No model calls or network connections are made.
+    By default covers every calibration candidate (catalogue RC and S2) with 3 baseline
+    repetitions each. ``tasks`` builds a subset (or, for infrastructure tests only, a schedule of
+    other tasks that validation rejects unless explicitly allowed). No model calls are made.
     """
+    candidates = sorted(tasks) if tasks is not None else calibration_candidate_tasks()
     trials: list[dict[str, Any]] = []
     trial_idx = 1
 
-    for rep in range(1, BASELINE_REPETITIONS + 1):
-        for tid in sorted(CANDIDATE_TASKS_S2):
+    for rep in range(1, repetitions + 1):
+        for tid in candidates:
             meta = runner._task_and_scorer_meta(tid)
-            task_sha = meta["task_sha256"]
-            scorer_sha = meta["scorer_sha256"]
-            scorer_name = meta["scorer_version"]
-
             trial_seed = (seed + trial_idx * 1009) & 0xFFFFFFFF
-            trial_id = f"cal-A-{tid}-r{rep}-{trial_idx:03d}"
-            block_id = f"cal-block-{trial_idx:03d}"
-
             trials.append(
                 {
-                    "trial_id": trial_id,
-                    "block_id": block_id,
+                    "trial_id": f"cal-A-{tid}-r{rep}-{trial_idx:03d}",
+                    "block_id": f"cal-block-{trial_idx:03d}",
                     "task": tid,
                     "arm": "A",
                     "repetition": rep,
                     "execution_index": trial_idx,
                     "position_in_block": 1,
                     "fresh_context": True,
-                    "scorer_version": scorer_name,
-                    "task_sha256": task_sha,
-                    "scorer_sha256": scorer_sha,
+                    "scorer_version": meta["scorer_version"],
+                    "task_sha256": meta["task_sha256"],
+                    "scorer_sha256": meta["scorer_sha256"],
                     "randomization_seed": trial_seed,
                     "trial_seed": trial_seed,
                     "model": MODEL_IDENTITY,
@@ -324,200 +362,372 @@ def build_calibration_schedule(seed: int = 20261028) -> dict[str, Any]:
     total_hours = round((len(trials) * ESTIMATED_SECONDS_PER_TRIAL) / 3600.0, 2)
 
     return {
-        "schedule_version": "stage27-calibration-schedule-v1.0",
+        "schedule_version": SCHEDULE_VERSION,
         "study_id": "stage27_baseline_calibration",
         "status": "PREPARED_NOT_EXECUTED",
         "seed": seed,
-        "candidate_tasks": sorted(CANDIDATE_TASKS_S2),
-        "candidate_task_count": len(CANDIDATE_TASKS_S2),
+        "candidate_source": "task_catalog.json provisional_stratum in "
+        + "/".join(CALIBRATION_STRATA),
+        "candidates_that_can_enter_s1": [
+            t for t in candidates if calibration_strata_by_task().get(t) == "RC"
+        ],
+        "candidate_tasks": candidates,
+        "candidate_task_count": len(candidates),
         "arms": ["A"],
-        "repetitions_per_task": BASELINE_REPETITIONS,
+        "repetitions_per_task": repetitions,
         "total_planned_trials": len(trials),
         "resource_estimates": {
             "total_prompt_tokens": total_prompt,
             "total_completion_tokens": total_completion,
             "expected_wall_clock_hours": total_hours,
             "timeout_ceiling_hours": round((len(trials) * TIMEOUT_SECONDS) / 3600.0, 2),
+            "basis": "planning estimates, not usage caps; no price is assumed for any model",
         },
         "model_execution_authorized": False,
         "trials": trials,
     }
 
 
+def calibration_strata_by_task() -> dict[str, str]:
+    catalogue = json.loads((STUDY_ROOT / "task_catalog.json").read_text(encoding="utf-8"))
+    return {e["task"]: e["provisional_stratum"] for e in catalogue["tasks"]}
+
+
+def schedule_to_plan(schedule: dict[str, Any]) -> dict[str, Any]:
+    """Express a validated schedule as a Stage 2 plan (single-arm blocks) for the ledger."""
+    canonical = json.dumps(schedule, sort_keys=True, separators=(",", ":")).encode()
+    plan = {
+        "study_id": schedule.get("study_id", "stage27_baseline_calibration"),
+        "algorithm": "stage27-arm-a-calibration-schedule",
+        "schedule_sha256": hashlib.sha256(canonical).hexdigest(),
+        "seed": schedule["seed"],
+        "tasks": list(schedule["candidate_tasks"]),
+        "arms": ["A"],
+        "repetitions": schedule["repetitions_per_task"],
+        "trials": [
+            {
+                key: t[key]
+                for key in (
+                    "trial_id",
+                    "block_id",
+                    "task",
+                    "repetition",
+                    "arm",
+                    "execution_index",
+                    "position_in_block",
+                    "fresh_context",
+                    "trial_seed",
+                    "task_sha256",
+                    "scorer_sha256",
+                )
+            }
+            for t in sorted(schedule["trials"], key=lambda t: t["execution_index"])
+        ],
+    }
+    plan["plan_sha256"] = design.plan_digest(plan)
+    return plan
+
+
+def live_execution_blockers(schedule: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    """Why a real-model calibration cannot run, computed from the code that would run it."""
+    from . import live_network, live_runner
+
+    schedule = schedule if schedule is not None else build_calibration_schedule()
+    blockers: list[dict[str, Any]] = []
+    if live_network.WORKLOAD_SCRIPT.endswith("mock_agent.py"):
+        blockers.append(
+            {
+                "id": "no_real_model_workload",
+                "detail": (
+                    f"the candidate container runs {live_network.WORKLOAD_SCRIPT} in "
+                    f"{live_network.PYTHON_IMAGE}; no code path starts the agent runtime "
+                    f"{schedule['trials'][0]['runtime_image']} inside the isolated topology"
+                ),
+            }
+        )
+    if live_network.MODEL_UPSTREAM_SCRIPT.endswith("mock_model_server.py"):
+        blockers.append(
+            {
+                "id": "no_real_model_upstream_or_credential_path",
+                "detail": (
+                    f"the gateway tunnels {live_network.MODEL_AUTHORITY} only to the local "
+                    f"{live_network.MODEL_UPSTREAM_SCRIPT}; OPENAI_API_KEY is withheld from every "
+                    "container and nothing injects a real credential outside the candidate"
+                ),
+            }
+        )
+    scheduled = sorted({(t["task"], t["scorer_version"]) for t in schedule["trials"]})
+    unscorable = [task for task, scorer in scheduled if not live_runner.host_scorable(task, scorer)]
+    if unscorable:
+        blockers.append(
+            {
+                "id": "scorer_container_not_integrated",
+                "detail": (
+                    f"{len(unscorable)} of {len(scheduled)} scheduled tasks need the R scorer "
+                    "container, which the live runner does not run; they could only produce "
+                    "infrastructure failures"
+                ),
+                "tasks": unscorable,
+            }
+        )
+    return blockers
+
+
+class _CalibrationController:
+    """Spend ceiling (optional) plus the schedule's infrastructure failure-rate stop.
+
+    The rate counts trials whose final allowed attempt was an infrastructure failure, so a
+    retried attempt that later succeeds does not count; the run stops once the count exceeds
+    ``max_failure_rate`` x planned trials, i.e. once the schedule can no longer meet it.
+    """
+
+    def __init__(
+        self,
+        guard: spend_control.SpendGuard | None,
+        *,
+        planned_trials: int,
+        max_failure_rate: float,
+        max_attempts: int,
+    ) -> None:
+        self.guard = guard
+        self.max_infra_failures = max_failure_rate * planned_trials
+        self.max_attempts = max_attempts
+        self.infra_failures = 0
+
+    def _final_infra_failure(self, attempt_index: int, outcome_kind: str) -> bool:
+        return outcome_kind == "infrastructure_failure" and attempt_index >= self.max_attempts
+
+    def restore(self, journal: list[dict[str, Any]]) -> None:
+        if self.guard is not None:
+            self.guard.restore(journal)
+        self.infra_failures = sum(
+            1
+            for e in journal
+            if e.get("event") == "attempt_accounted"
+            and self._final_infra_failure(e["attempt_index"], e["outcome_kind"])
+        )
+
+    def before_attempt(self, trial_id: str, attempt_id: str) -> str | None:
+        if self.guard is not None:
+            return self.guard.before_attempt(trial_id, attempt_id)
+        return None
+
+    def after_attempt(
+        self, trial_id: str, attempt_id: str, record: dict[str, Any]
+    ) -> tuple[dict[str, Any], str | None]:
+        fields: dict[str, Any] = {}
+        stop = None
+        if self.guard is not None:
+            fields, stop = self.guard.after_attempt(trial_id, attempt_id, record)
+        attempt_index = int(attempt_id.rsplit("__att", 1)[1])
+        if self._final_infra_failure(attempt_index, record["outcome_kind"]):
+            self.infra_failures += 1
+            if stop is None and self.infra_failures > self.max_infra_failures:
+                stop = "max_infrastructure_failure_rate_exceeded"
+        return fields, stop
+
+
 def execute_calibration(
     schedule: dict[str, Any] | Path,
     out_dir: Path,
     *,
+    executor_mode: str,
     authorize_spend: bool = False,
-    mock: bool = False,
-    seed: int = 20261028,
+    spend_ceiling: spend_control.SpendCeiling | None = None,
     executor: runner.TrialAttemptExecutor | None = None,
+    docker_settings: Any = None,
+    allow_ineligible_tasks: bool = False,
 ) -> dict[str, Any]:
-    """Execute the Arm-A-only baseline calibration schedule.
+    """Execute the Arm-A-only baseline calibration schedule through the Stage 2 ledger.
 
-    Safety & authorization contract:
-    - Never executes paid model API calls without explicit `authorize_spend=True` AND
-      a valid `OPENAI_API_KEY` in the host environment.
-    - If `mock=True`, executes deterministically offline using `runner.make_mock_trial_executor`.
-    - Persists Stage 2 schema-compliant `trial_records.jsonl` and append-only
-      `ledger_journal.jsonl`.
-    - Resumes idempotently: trials already finalized are not re-executed.
+    ``executor_mode``:
+
+    * ``mock``: in-process deterministic executor (``runner.make_mock_trial_executor``).
+    * ``docker-mock-model``: the real Stage 2.6 Docker topology (internal network, egress
+      gateway, canary, fresh workspace) with the local mock model and mock agent.
+    * ``live``: real model. Requires ``authorize_spend`` *and* a valid ``spend_ceiling``, and
+      then raises ``LiveExecutionUnavailable`` listing ``live_execution_blockers()``: no
+      real-model executor exists, so nothing is started and nothing is written.
+
+    Every record produced here is synthetic and labelled so; ``evaluate_baseline_difficulty``
+    refuses such records as baseline evidence. Resume, staging recovery, duplicate-line
+    quarantine, retry linkage and stop conditions are the unchanged ``runner`` contracts.
     """
+    if executor_mode not in EXECUTOR_MODES:
+        raise ValueError(f"executor_mode must be one of {EXECUTOR_MODES}, got {executor_mode!r}")
     if isinstance(schedule, (str, Path)):
-        schedule_path = Path(schedule)
-        schedule_data = json.loads(schedule_path.read_text(encoding="utf-8"))
+        schedule_data = json.loads(Path(schedule).read_text(encoding="utf-8"))
     else:
         schedule_data = schedule
 
-    problems = validate_calibration_schedule(schedule_data)
+    live = executor_mode == "live"
+    if live and (allow_ineligible_tasks or executor is not None):
+        raise ValueError("live execution accepts neither test executors nor ineligible tasks")
+    problems = validate_calibration_schedule(
+        schedule_data, allow_ineligible_tasks=allow_ineligible_tasks
+    )
     if problems:
         raise ValueError(f"Invalid calibration schedule: {problems}")
+    if spend_ceiling is not None and spend_ceiling.problems():
+        raise ValueError(f"Invalid spend ceiling: {spend_ceiling.problems()}")
 
-    if not authorize_spend and not mock:
-        raise RuntimeError(
-            "Model execution budget not authorized. Pass --authorize-spend to confirm "
-            "budget allocation and run live trials, or pass --mock to run isolated mock validation."
-        )
-
-    if authorize_spend and not mock:
-        import os
-
-        if not os.environ.get("OPENAI_API_KEY"):
+    if live:
+        if not authorize_spend:
             raise RuntimeError(
-                "OPENAI_API_KEY is not set in the host environment. Real model calibration "
-                "requires a valid API key in the host environment."
+                "Model execution not authorized: live mode requires --authorize-spend "
+                "and an explicit spend ceiling."
             )
-        raise NotImplementedError(
-            "Live paid model calibration execution is gated pending project owner authorization "
-            "and backend harness integration."
+        if spend_ceiling is None:
+            raise RuntimeError(
+                "Spend authorization without a ceiling is refused: pass --max-spend-usd, "
+                "--input-usd-per-mtok, --output-usd-per-mtok and --per-trial-reserve-usd."
+            )
+        raise LiveExecutionUnavailable(live_execution_blockers(schedule_data))
+    if authorize_spend:
+        raise ValueError("--authorize-spend applies only to --executor live")
+    if executor_mode == "docker-mock-model" and executor is None:
+        from . import live_runner
+
+        unscorable = sorted(
+            {
+                t["task"]
+                for t in schedule_data["trials"]
+                if not live_runner.host_scorable(t["task"], t["scorer_version"])
+            }
         )
+        if unscorable:
+            raise ValueError(
+                f"docker-mock-model cannot score {len(unscorable)} of "
+                f"{len(schedule_data['candidate_tasks'])} scheduled tasks {unscorable} (R scorer "
+                "container not integrated); it would record only infrastructure failures"
+            )
+
+    first = schedule_data["trials"][0]
+    cfg = runner.StudyExecutionConfig(
+        study_id=schedule_data.get("study_id", "stage27_baseline_calibration"),
+        stage=f"baseline_calibration_{executor_mode.replace('-', '_')}",
+        model=first["model"],
+        timeout_seconds=first["timeout_seconds"],
+        max_infra_retries=first["retry_policy"]["max_retries"],
+        stop_on_invalidating_violation=True,
+        max_consecutive_infra_failures=first["stop_conditions"][
+            "max_consecutive_infrastructure_failures"
+        ],
+        synthetic=True,
+    )
+    plan = schedule_to_plan(schedule_data)
 
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    staging_dir = out_dir / "staging"
-    staging_dir.mkdir(parents=True, exist_ok=True)
-    workspaces_dir = out_dir / "workspaces"
-    workspaces_dir.mkdir(parents=True, exist_ok=True)
-    records_path = out_dir / "trial_records.jsonl"
-    journal_path = out_dir / "ledger_journal.jsonl"
-
-    (out_dir / "schedule.json").write_text(
-        json.dumps(schedule_data, indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-
-    cfg = runner.StudyExecutionConfig(
-        study_id=schedule_data.get("study_id", "stage27_baseline_calibration"),
-        stage="baseline_calibration_mock",
-        timeout_seconds=TIMEOUT_SECONDS,
-        max_infra_retries=0,
-        stop_on_invalidating_violation=True,
-        synthetic=True,
-    )
-    (out_dir / "run_config.json").write_text(
-        json.dumps(cfg.to_dict(), indent=2, sort_keys=True) + "\n", encoding="utf-8"
-    )
-
-    finalized: dict[str, dict[str, Any]] = {}
-    if records_path.exists():
-        for line in records_path.read_text(encoding="utf-8").splitlines():
-            line = line.strip()
-            if line:
-                rec = json.loads(line)
-                finalized[rec["trial_id"]] = rec
-
-    def _emit_journal(event: str, **fields: Any) -> None:
-        entry = {"timestamp_utc": runner._utc_now(), "event": event, **fields}
-        with journal_path.open("a", encoding="utf-8") as h:
-            h.write(json.dumps(entry, sort_keys=True) + "\n")
-
-    if executor is None:
-        executor = runner.make_mock_trial_executor(effect_b=0.0, effect_c_over_b=0.0)
-
-    ordered_trials = sorted(schedule_data["trials"], key=lambda t: t["execution_index"])
-    for planned_trial in ordered_trials:
-        tid = planned_trial["trial_id"]
-        if tid in finalized:
-            _emit_journal("trial_skipped_already_finalized", trial_id=tid)
-            continue
-
-        attempt_id = f"{tid}__att01"
-        workspace_dir = workspaces_dir / attempt_id
-        workspace_dir.mkdir(parents=True, exist_ok=True)
-
-        spec = runner.build_trial_invocation_spec(planned_trial, cfg)
-        staging_marker = staging_dir / f"{tid}.staging.json"
-        staging_marker.write_text(
-            json.dumps({"trial_id": tid, "attempt_id": attempt_id, "stage": "executing"}),
-            encoding="utf-8",
-        )
-        _emit_journal(
-            "trial_attempt_started",
-            trial_id=tid,
-            attempt_id=attempt_id,
-            task=planned_trial["task"],
-            arm="A",
-            repetition=planned_trial["repetition"],
-        )
-
-        raw_out = executor(spec, 1, workspace_dir)
-        runner_record = raw_out["runner_record"]
-        telemetry_events = raw_out.get("telemetry_events", [])
-        expected = cfg.expected_contract(spec["scorer_version"])
-        stage2_rec = records.from_runner_result(
-            planned_trial, runner_record, telemetry_events, expected
-        )
-        stage2_rec["synthetic"] = True
-
-        staging_marker.write_text(
-            json.dumps(
-                {"trial_id": tid, "attempt_id": attempt_id, "stage": "scored_pending_commit"}
-            ),
-            encoding="utf-8",
-        )
-
-        with records_path.open("a", encoding="utf-8") as h:
-            h.write(json.dumps(stage2_rec, sort_keys=True) + "\n")
-
-        if staging_marker.exists():
-            staging_marker.unlink()
-
-        finalized[tid] = stage2_rec
-        _emit_journal(
-            "trial_attempt_committed",
-            trial_id=tid,
-            attempt_id=attempt_id,
-            outcome_kind=stage2_rec["outcome_kind"],
-            score=stage2_rec["score"],
-        )
-
-    complete_dataset = [
-        finalized[t["trial_id"]] for t in ordered_trials if t["trial_id"] in finalized
-    ]
-    dataset_problems = records.validate_dataset(
-        complete_dataset, [t["trial_id"] for t in ordered_trials]
-    )
-
-    return {
-        "study_id": cfg.study_id,
-        "stage": cfg.stage,
-        "synthetic": True,
-        "total_planned": len(ordered_trials),
-        "finalized_count": len(finalized),
-        "dataset_problems": dataset_problems,
-        "records_path": str(records_path),
-        "journal_path": str(journal_path),
-        "records": complete_dataset,
+    binding = {
+        "executor_mode": executor_mode,
+        "spend_ceiling": spend_ceiling.to_dict() if spend_ceiling else None,
+        "evidence_status": EVIDENCE_SYNTHETIC,
+        "baseline_evidence": False,
     }
+    binding_path = out_dir / "calibration_run.json"
+    if binding_path.exists():
+        saved = json.loads(binding_path.read_text(encoding="utf-8"))
+        if saved != binding:
+            raise ValueError(
+                "Resume rejected: executor mode or spend ceiling differs from the original run"
+            )
+    else:
+        binding_path.write_text(json.dumps(binding, indent=2, sort_keys=True) + "\n", "utf-8")
+    schedule_copy = out_dir / "schedule.json"
+    if not schedule_copy.exists():
+        schedule_copy.write_text(
+            json.dumps(schedule_data, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+
+    guard = spend_control.SpendGuard(spend_ceiling) if spend_ceiling else None
+    controller = _CalibrationController(
+        guard,
+        planned_trials=len(plan["trials"]),
+        max_failure_rate=first["stop_conditions"]["max_failure_rate"],
+        max_attempts=1 + cfg.max_infra_retries,
+    )
+    if executor_mode == "mock":
+        result = runner.execute_study_plan(
+            plan,
+            cfg,
+            out_dir,
+            executor or runner.make_mock_trial_executor(effect_b=0.0, effect_c_over_b=0.0),
+            attempt_controller=controller,
+        )
+    else:
+        from . import live_runner
+
+        result = live_runner.execute_live_study(
+            plan, cfg, out_dir, docker_settings, executor=executor, attempt_controller=controller
+        )
+    result.update(
+        executor_mode=executor_mode,
+        evidence_status=EVIDENCE_SYNTHETIC,
+        total_planned=result["planned_count"],
+        records_path=str(out_dir / "trial_records.jsonl"),
+        journal_path=str(out_dir / "ledger_journal.jsonl"),
+        spend=guard.summary() if guard else None,
+    )
+    return result
+
+
+def load_baseline_evidence(
+    records_path: Path, *, allow_synthetic: bool = False
+) -> list[dict[str, Any]]:
+    """Read records for baseline evaluation, refusing synthetic runs unless explicitly allowed.
+
+    Besides each record's own ``synthetic`` flag, the run directory's ``run_config.json`` and
+    ``calibration_run.json`` are consulted, so editing the flag in the JSONL alone is not enough.
+    """
+    records_path = Path(records_path)
+    lines = records_path.read_text(encoding="utf-8").splitlines()
+    recs = [json.loads(x) for x in lines if x.strip()]
+    if allow_synthetic:
+        return recs
+    run_dir = records_path.parent
+    for name, key, bad in (
+        ("run_config.json", "synthetic", True),
+        ("calibration_run.json", "baseline_evidence", False),
+    ):
+        path = run_dir / name
+        if path.is_file() and json.loads(path.read_text(encoding="utf-8")).get(key) is bad:
+            raise SyntheticEvidenceError(f"{name} marks this run as synthetic")
+    _require_baseline_evidence(recs)
+    return recs
+
+
+def _require_baseline_evidence(trial_records: list[dict[str, Any]]) -> None:
+    synthetic = [r.get("trial_id") for r in trial_records if r.get("synthetic") is not False]
+    if synthetic:
+        raise SyntheticEvidenceError(
+            f"{len(synthetic)} record(s) are synthetic or lack synthetic=false "
+            f"(first: {synthetic[0]!r}); they are not baseline evidence"
+        )
+    invalid = [r.get("trial_id") for r in trial_records if records.validate_record(r)]
+    if invalid:
+        raise SyntheticEvidenceError(
+            f"{len(invalid)} record(s) fail the Stage 2 record schema (first: {invalid[0]!r})"
+        )
 
 
 def evaluate_baseline_difficulty(
     trial_records: list[dict[str, Any]],
+    *,
+    allow_synthetic: bool = False,
 ) -> dict[str, Any]:
     """Calculate baseline-only difficulty, variance, and uncertainty statistics.
 
     Evaluates whether tasks meet the preregistered non-degeneracy condition (0.10 <= mean <= 0.90)
     using Arm A observations only. Accounts for sample-size uncertainty when R=3.
+
+    By default every record must declare ``synthetic: false`` and satisfy the Stage 2 record
+    schema; otherwise ``SyntheticEvidenceError`` is raised. ``allow_synthetic`` computes the same
+    statistics for pipeline checks and labels the report as not being baseline evidence.
     """
+    if not allow_synthetic:
+        _require_baseline_evidence(trial_records)
+    any_synthetic = any(r.get("synthetic") is not False for r in trial_records)
     by_task: dict[str, list[float]] = {}
     perfect_by_task: dict[str, list[bool]] = {}
 
@@ -593,7 +803,11 @@ def evaluate_baseline_difficulty(
         }
 
     return {
-        "assessment_version": "stage27-baseline-difficulty-v1.0",
+        "assessment_version": "stage27-baseline-difficulty-v1.1",
+        "evidence_status": (
+            EVIDENCE_SYNTHETIC if any_synthetic else "records_declared_non_synthetic"
+        ),
+        "baseline_evidence": not any_synthetic,
         "evaluated_tasks": len(summary),
         "tasks": summary,
     }
@@ -610,7 +824,8 @@ def build_pilot_specification() -> dict[str, Any]:
         "study_id": "stage2_validity_v1_pilot",
         "status": "NOT_AUTHORIZED_FOR_EXECUTION",
         "authorization_requirement": (
-            "Explicit human project owner budget allocation and model key configuration"
+            "Explicit owner budget allocation with a spend ceiling, model key "
+            "configuration, and a real-model live executor (none exists yet)"
         ),
         "authorized_budget_usd": None,
         "candidate_tasks": pilot_tasks,
@@ -640,8 +855,100 @@ def build_pilot_specification() -> dict[str, Any]:
     }
 
 
+def confirmatory_feasibility(eligibility: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Upper bounds on the confirmatory (S1) core given the current catalogue.
+
+    The preregistered minimum (``manifest`` ``confirmatory_task_rule.minimum_tasks``) is read,
+    never adjusted. S1 requires a target task by its text, so S2 controls cannot qualify however
+    they calibrate; only RC tasks can, and Q tasks only after a scorer revision. Bounds assume
+    every such task calibrates in range, which is the best case.
+    """
+    elig = eligibility or audit_task_eligibility()
+    required = manifest.build_manifest()["confirmatory_task_rule"]["minimum_tasks"]
+    s1 = elig["confirmatory_eligible_count"]
+    rc = elig["recalibration_required_count"]
+    q = elig["quarantined_count"]
+    q_target = sum(
+        1
+        for t in elig["tasks"]
+        if t["provisional_stratum"] == STRATUM_LABELS["Q"] and t["target_by_features"]
+    )
+    after_calibration = s1 + rc
+    after_scorer_revision = after_calibration + q_target
+    return {
+        "preregistered_minimum_tasks": required,
+        "catalogue_tasks": elig["total_benchmark_tasks"],
+        "quarantined_tasks": q,
+        "non_quarantined_tasks": elig["total_benchmark_tasks"] - q,
+        "current_s1_tasks": s1,
+        "control_tasks_never_s1": elig["control_count"],
+        "recalibration_tasks": rc,
+        "scheduled_calibration_tasks": elig["calibration_candidate_count"],
+        "max_s1_after_calibration_best_case": after_calibration,
+        "max_s1_if_q_scorers_are_also_revised": after_scorer_revision,
+        "shortfall_after_calibration_best_case": max(0, required - after_calibration),
+        "min_new_target_tasks_required": max(0, required - after_scorer_revision),
+        "reachable_with_current_catalogue": after_scorer_revision >= required,
+        "threshold_modified": False,
+        "resolution": (
+            "Add new, independently specified target tasks (S1 by task text), or amend the "
+            "preregistration through a documented, dated protocol change made before any "
+            "confirmatory data are seen. The threshold is not lowered to pass a gate."
+        ),
+    }
+
+
+def execution_readiness(schedule: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Four separate statuses; none implies the next."""
+    sched = schedule if schedule is not None else build_calibration_schedule()
+    blockers = live_execution_blockers(sched)
+    feasibility = confirmatory_feasibility()
+    return {
+        "mock_ready": {
+            "status": "READY",
+            "meaning": (
+                "Calibration schedules run end to end through the Stage 2 ledger with the "
+                "in-process mock executor and through the real Docker topology with the local "
+                "mock model; every record is synthetic"
+            ),
+            "commands": [
+                "execute-calibration --executor mock",
+                "execute-calibration --executor docker-mock-model",
+            ],
+        },
+        "live_executor_ready": {
+            "status": "NOT_READY" if blockers else "READY",
+            "blockers": blockers,
+        },
+        "calibration_authorized": {
+            "status": "NOT_AUTHORIZED",
+            "detail": (
+                "No owner-approved spend ceiling is recorded (schedule "
+                "model_execution_authorized=false). Authorization would require --authorize-spend "
+                "plus an explicit ceiling, and is moot while the live executor is not ready"
+            ),
+        },
+        "confirmatory_ready": {
+            "status": "NOT_READY",
+            "detail": (
+                f"{feasibility['current_s1_tasks']} S1 tasks; at most "
+                f"{feasibility['max_s1_after_calibration_best_case']} after calibration (RC "
+                f"only; the {feasibility['control_tasks_never_s1']} S2 controls cannot qualify) "
+                f"and {feasibility['max_s1_if_q_scorers_are_also_revised']} if the Q scorers are "
+                "also revised, against a preregistered minimum of "
+                f"{feasibility['preregistered_minimum_tasks']}"
+            ),
+            "feasibility": feasibility,
+        },
+    }
+
+
 def evaluate_readiness_gates(has_docker: bool = True) -> dict[str, Any]:
     """Evaluate the 5 research readiness gates with prerequisites and actual evidence."""
+    schedule = build_calibration_schedule()
+    readiness = execution_readiness(schedule)
+    blockers = readiness["live_executor_ready"]["blockers"]
+    feasibility = readiness["confirmatory_ready"]["feasibility"]
     gates = [
         {
             "gate_id": "gate_1_offline_research_infrastructure",
@@ -652,47 +959,46 @@ def evaluate_readiness_gates(has_docker: bool = True) -> dict[str, Any]:
             ),
             "verification_command": (
                 "pytest tests/test_stage2_validity.py tests/test_stage2_artifacts.py "
-                "-m 'not docker'"
+                "tests/test_stage26_live_runner.py tests/test_stage27_calibration.py "
+                "-m 'not docker' && python -m benchmarks.codex_r.studies.stage2_validity_v1.cli "
+                "frozen --verify"
             ),
-            "actual_evidence": (
-                "114 offline validity and artifact tests pass; 279 frozen files match SHA-256 "
-                "with 0 differences; 31 offline runner unit tests pass"
-            ),
+            "actual_evidence": "Recorded in STAGE27_CALIBRATION_READINESS.md section 6",
             "remaining_blockers": "None",
         },
         {
             "gate_id": "gate_2_docker_experiment_infrastructure",
-            "name": "Real Docker Experiment Infrastructure",
+            "name": "Docker Experiment Infrastructure (mock model only)",
             "status": "PASS" if has_docker else "UNKNOWN",
             "prerequisites": (
                 "Docker --internal, CONNECT forward proxy allowlist, mock model server, "
                 "non-root candidate user, canary probe enforcement, leftover sweeping"
             ),
-            "verification_command": "pytest tests/test_stage26_live_runner.py -m docker",
-            "actual_evidence": (
-                "9 live Docker end-to-end integration tests pass (186.2s); 3-trial live CLI "
-                "smoke test passes on D01 with 12/12 checks and clean Docker teardown"
+            "verification_command": (
+                "pytest tests/test_stage26_live_runner.py tests/test_stage27_calibration.py "
+                "-m docker"
             ),
-            "remaining_blockers": "None for infrastructure harness",
+            "actual_evidence": "Recorded in STAGE27_CALIBRATION_READINESS.md section 6",
+            "remaining_blockers": (
+                "Covers the mock model and mock agent only; it is not evidence of a real-model "
+                "executor (gate 3)"
+            ),
         },
         {
             "gate_id": "gate_3_calibration_execution",
             "name": "Baseline Model Calibration Execution",
             "status": "BLOCKED",
             "prerequisites": (
-                "Project owner authorization to spend model credits, host API key "
-                "provisioning, execution of 51 Arm A baseline trials"
+                "A real-model executor inside the isolated topology, scorer-container "
+                "integration for the scheduled tasks, an owner-approved spend ceiling, and "
+                f"execution of the {len(schedule['trials'])} scheduled Arm A trials"
             ),
             "verification_command": (
-                "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration"
+                "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration "
+                "--executor live ... (currently exits 3: UNAVAILABLE)"
             ),
-            "actual_evidence": (
-                "Calibration schedule prepared (51 trials across 17 S2 tasks); "
-                "0 model calls executed"
-            ),
-            "remaining_blockers": (
-                "Awaiting explicit human spend authorization; no model API credits authorized"
-            ),
+            "actual_evidence": "0 model calls executed; live mode refuses before any side effect",
+            "remaining_blockers": [b["id"] for b in blockers] + ["spend_not_authorized"],
         },
         {
             "gate_id": "gate_4_pilot_execution",
@@ -701,37 +1007,35 @@ def evaluate_readiness_gates(has_docker: bool = True) -> dict[str, Any]:
             "prerequisites": (
                 "Completion of Gate 3 calibration, pilot budget approval, 90 planned trials (A/B/C)"
             ),
-            "verification_command": (
-                "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-pilot"
-            ),
+            "verification_command": "none: no pilot execution command exists",
             "actual_evidence": "Pilot specification prepared (90 trials); 0 model calls executed",
-            "remaining_blockers": "Awaiting Gate 3 calibration and human budget authorization",
+            "remaining_blockers": "Gate 3, the same live-executor blockers, and budget approval",
         },
         {
             "gate_id": "gate_5_confirmatory_experiment_eligibility",
             "name": "Confirmatory Experiment Eligibility",
             "status": "BLOCKED",
             "prerequisites": (
-                "At least 30 qualified tasks in S1_confirmatory_core (variance in [0.10, 0.90], "
-                "zero BEN-002 coupling), frozen registration commit"
+                f"At least {feasibility['preregistered_minimum_tasks']} qualified tasks in "
+                "S1_confirmatory_core (Arm A mean in [0.10, 0.90], zero BEN-002 coupling), "
+                "frozen registration commit"
             ),
             "verification_command": (
-                "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli "
-                "verify-confirmatory-eligibility"
+                "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli readiness-gates"
             ),
-            "actual_evidence": (
-                "Currently 0 tasks meet S1 eligibility due to historical ceiling effects and "
-                "BEN-002 coupling"
-            ),
+            "actual_evidence": readiness["confirmatory_ready"]["detail"],
             "remaining_blockers": (
-                "Requires baseline calibration data from Gate 3 to identify and qualify >= 30 tasks"
+                "Not reachable with the current catalogue: at least "
+                f"{feasibility['min_new_target_tasks_required']} new target tasks "
+                "even in the best case (realistically more, after calibration attrition)"
             ),
         },
     ]
 
-    all_passed = all(g["status"] == "PASS" for g in gates[:2])
     return {
-        "report_version": "stage27-readiness-gates-v1.0",
-        "infrastructure_ready_for_calibration": all_passed,
+        "report_version": "stage27-readiness-gates-v1.1",
+        "mock_infrastructure_ready": all(g["status"] == "PASS" for g in gates[:2]),
+        "live_calibration_ready": False,
+        "execution_readiness": readiness,
         "gates": gates,
     }

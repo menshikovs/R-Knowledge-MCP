@@ -1,20 +1,34 @@
 # Stage 2.7: Independent Review, Integration and Pilot Calibration Preparation Report
 
-**Date**: October 28, 2026  
+**Date**: October 28, 2026 (pre-merge correction the same day)  
 **Repository**: `https://github.com/menshikovs/R-Knowledge-MCP`  
 **Base Branch**: `2.0`  
 **Working Branch**: `feature/stage2-benchmark-validity`  
 **Baseline Commit**: `08ef9e9e2711e1174ed6796b3e3e60bf0ad7ca58`  
 **Pull Request**: `https://github.com/menshikovs/R-Knowledge-MCP/pull/28` (#28)  
-**Final Status**: `STAGE 2.7 READY FOR CALIBRATION`
+**Final Status**: `MOCK-READY` · live executor `NOT READY` · calibration `NOT AUTHORIZED` · confirmatory `NOT READY`
+
+> **Correction notice.** An earlier revision of this report declared `STAGE 2.7 READY FOR
+> CALIBRATION` and documented an `execute-calibration --authorize-spend` command for a live
+> 51-trial run. That command always raised `NotImplementedError`: no real-model executor exists.
+> The earlier revision also mislabelled the S2 *control* stratum as "calibration needed", listed
+> strata that contradict `task_catalog.json`, and quoted a cost estimate at another model's prices.
+> Sections 4–8 replace those statements.
+
+| Status | Value | Meaning |
+| :--- | :--- | :--- |
+| **Mock-ready** | **YES** | Calibration schedules run end to end through the Stage 2 ledger with the in-process mock executor and through the real Docker topology with a local mock model. Every record is `synthetic: true`. |
+| **Live-executor-ready** | **NO** | No real-model workload, upstream or credential path exists. All 25 scheduled tasks need the R scorer container, which the live runner does not run (§7). |
+| **Calibration-authorized** | **NO** | No owner-approved spend ceiling exists. `--authorize-spend` alone is refused. |
+| **Confirmatory-ready** | **NO** | 0 S1 tasks. At most 8 after calibration, and 14 if the Q scorers are also revised, against the preregistered 30 (§4.3). |
 
 ---
 
 ## 1. Executive Summary
 
-Stage 2.7 delivers an independent scientific and architectural review of the entire Stage 2–2.6 implementation, provides automated task eligibility pipelines and baseline difficulty evaluation procedures, prepares an Arm-A-only calibration schedule (51 planned trials) without consuming model API credits, establishes the 5 formal research readiness gates, and packages the complete research platform into a reviewed Pull Request targeting `2.0`.
+Stage 2.7 delivers an independent scientific and architectural review of the Stage 2–2.6 implementation. It adds a task eligibility pipeline and a baseline difficulty evaluation, prepares an Arm-A-only calibration schedule (25 tasks × 3 = 75 planned trials, not executed), adds a fail-closed spend ceiling, defines the 5 research readiness gates, and keeps the real-model execution path explicitly unavailable.
 
-No paid model API calls were executed. No empirical benefit claims are made based on mock data.
+No model API calls were executed. No empirical benefit claims are made based on mock data.
 
 ---
 
@@ -61,110 +75,126 @@ No paid model API calls were executed. No empirical benefit claims are made base
 
 ### 4.1 Reconstructed Task Catalogue (31 Tasks Total)
 
-From [`calibration_eligibility_report.json`](file:///c:/programming_pj/cran-mcp/benchmarks/codex_r/studies/stage2_validity_v1/calibration_eligibility_report.json):
-- **`S1_confirmatory_core` (0 tasks)**: 0 tasks currently qualify under the preregistered variance rule ($n_A \ge 3$, $0.10 \le \bar{Y}_A \le 0.90$, zero `BEN-002` coupling).
-- **`S2_calibration_needed` (17 tasks)**: `R01`–`R12`, `C03`, `C04`, `H01`, `H04`, `H10`. Eligible for Arm-A baseline calibration.
-- **`RC_recalibration_required` (8 tasks)**: `C01`, `C02`, `C05` (ceiling saturation); `D01`, `D02`, `D03` (`BEN-002` frozen candidate list); `E04`, `E05` (`BEN-002` unprompted schema key requirements).
-- **`Q_quarantined_or_smoke` (6 tasks)**: `B01`, `B02`, `B03`, `E01`, `E02`, `E03` (historical unsupported or environment coupling).
+Source: [`task_catalog.json`](task_catalog.json), which `calibration.build_catalog` reproduces exactly from history, and [`calibration_eligibility_report.json`](calibration_eligibility_report.json). The stratum meanings are the preregistered ones (`experiment_manifest.json` → `confirmatory_task_rule.strata`). S1 requires a **target task by its text** (`calibration.target_by_features`, classified before any trial) **and** an in-range Arm-A screen.
 
-### 4.2 Baseline Calibration Schedule (`calibration_schedule.json`)
+| Stratum | Preregistered meaning | Tasks | Count | Can become S1? |
+| :--- | :--- | :--- | ---: | :--- |
+| `S1` | target | none | 0 | — |
+| `S2` | control (tool-use tax) | `R01–R10`, `R12`, `B01–B03`, `H01`, `H04`, `H10` | 17 | **Never.** Not a target by task text. |
+| `RC` | recalibrate | `R11`, `C02–C05`, `E02`, `E03` (n_A < 3); `C01` (ceiling, n_A = 3) | 8 | Yes, if the Arm-A screen lands in [0.10, 0.90] |
+| `Q` | quarantined | `D01–D03`, `E01`, `E04`, `E05` (BEN-002) | 6 | Only after scorer revision and revalidation |
 
-- **Design**: Arm A only (baseline control).
-- **Candidate Tasks**: 17 tasks from $S2$.
-- **Repetitions**: $R = 3$ per task.
-- **Total Planned Trials**: $17 \times 3 = 51$ trials.
-- **Resource Estimates**:
-  - Estimated prompt tokens: ~612,000 tokens.
-  - Estimated completion tokens: ~127,500 tokens.
-  - Estimated cost (GPT-4o rates): ~\$3.00 – \$4.50 USD.
-  - Expected wall-clock runtime: ~1.2 hours.
-- **Status**: `PREPARED_NOT_EXECUTED`. Zero real model API calls have been run.
+### 4.2 Baseline Calibration Schedule (`calibration_schedule.json`, v1.1)
 
-### 4.3 Mathematical and Methodological Feasibility Analysis for Confirmatory Quota ($K \ge 30$)
+- **Selection rule**: every non-quarantined task (`CALIBRATION_STRATA = ("RC", "S2")`). RC tasks determine S1 membership. S2 controls get a baseline difficulty screen. Q stays excluded until its scorers are revised.
+- **Design**: Arm A only, 3 repetitions, **25 tasks × 3 = 75 planned trials**. The 8 RC tasks are listed in `candidates_that_can_enter_s1`.
+- **Change from v1.0**: v1.0 hard-coded 17 tasks (14 S2 controls plus RC `R11`, `C03`, `C04`). It omitted `B01–B03` and five RC tasks, and called the whole set "S2". That list is a strict subset of v1.1. Validation rejects v1.0 schedules (`schedule_version`). **This composition is a design choice for the project owner.** `build_calibration_schedule(tasks=...)` narrows it, for example to the 8 RC tasks only.
+- **Resource planning estimates** (not caps): about 900,000 prompt and 187,500 completion tokens; about 1.7 h expected wall clock. **No cost estimate is given.** No price for `gpt-6-luna` is recorded in this repository, and the earlier "GPT-4o rates" figure has been withdrawn.
+- **Status**: `PREPARED_NOT_EXECUTED`, `model_execution_authorized: false`.
 
-A rigorous audit of the benchmark catalogue reveals fundamental mathematical and methodological blockers to reaching the preregistered confirmatory core threshold ($K \ge 30$ tasks in $S1$):
+### 4.3 Reconciling the Preregistered Minimum (30) With the Catalogue
 
-1. **Schedule Upper-Bound Blocker ($\max(|S1|) = 17 \ll 30$)**:
-   - Current confirmatory core count: $|S1| = 0$.
-   - The calibration schedule tests only the 17 $S2$ candidate tasks.
-   - Even under a theoretical 100% pass rate where all 17 tasks exhibit non-degenerate baseline variance ($\bar{Y}_A \in [0.10, 0.90]$), the maximum possible yield is $0 + 17 = 17$ tasks.
-   - This leaves a deterministic deficit of at least $13$ tasks ($43.3\%$ short of the required 30).
-2. **Whole-Catalogue Blocker ($\text{Total Usable Non-Quarantined Tasks} = 25 < 30$)**:
-   - Total benchmark tasks: $N = 31$.
-   - 6 tasks ($B01$–$B03$, $E01$–$E03$) are quarantined ($Q$) due to historical verifier failures and schema issues.
-   - Total non-quarantined tasks: $31 - 6 = 25$ tasks ($17\ S2 + 8\ RC$).
-   - Even if all 8 $RC$ (recalibration/decoupling) tasks were fully repaired and added to the calibration pool, the entire usable task pool is $25 < 30$.
-   - **Conclusion**: Reaching $K = 30$ confirmatory tasks from the existing 31-task catalogue is mathematically impossible. The benchmark must be expanded by at least $+5$ tasks (and realistically $+15$ to $+20$ tasks to absorb empirical attrition), or the minimum confirmatory threshold must be formally re-specified in the protocol.
-3. **Statistical Attrition Reality (~50%–70% Yield)**:
-   - Historical R-Knowledge-MCP evaluations indicate substantial saturation on either floor ($0.0$) or ceiling ($1.0$).
-   - In realistic empirical calibration, only ~8 to 12 of the 17 $S2$ candidate tasks are expected to fall within $[0.10, 0.90]$.
-4. **Sample-Size Uncertainty at $R = 3$**:
-   - With $R = 3$ observations per task, the Wilson 95% confidence interval for a task with $1/3$ success is $[0.061, 0.792]$ (crosses the $0.10$ floor), and for $2/3$ is $[0.208, 0.939]$ (crosses the $0.90$ ceiling).
-   - Tasks scoring $1/3$ or $2/3$ are flagged as `"inconclusive_sample_size_limited"`. Robust qualification requires $R \ge 5$ baseline repetitions per task.
+Computed by `calibration_pipeline.confirmatory_feasibility()`. The threshold is read from the manifest and **is not modified**.
+
+| Quantity | Value |
+| :--- | ---: |
+| Preregistered minimum confirmatory (S1) tasks | 30 |
+| Catalogue tasks / quarantined / non-quarantined | 31 / 6 / 25 |
+| Current S1 tasks | 0 |
+| S2 controls (can never be S1) | 17 |
+| Max S1 after calibration, best case (every RC task in range) | **8** |
+| Max S1 if the 6 Q scorers are also revised (all are targets by text) | **14** |
+| Shortfall after calibration, best case | 22 |
+| Minimum **new target tasks** required, even in the best case | **16** |
+| Reachable with the current catalogue | **No** |
+
+The earlier claims ("max 17 after calibration", "+5 tasks suffices") counted S2 controls as confirmatory candidates. That contradicts the preregistered S1 definition. Realistic attrition makes the deficit larger. With R = 3, Wilson intervals for 1/3 and 2/3 cross the 0.10 / 0.90 bounds, so such tasks are reported as `inconclusive_sample_size_limited`.
+
+**Resolution options (owner decision):** add new, independently specified target tasks, or amend the preregistration through a documented, dated protocol change made before any confirmatory data are seen. Lowering the threshold to pass Gate 5 is not an option this report takes.
 
 ---
 
 ## 5. Formal Research Readiness Gates
 
+Generated by `cli readiness-gates` into [`readiness_gates_report.json`](readiness_gates_report.json). The report now separates `mock_infrastructure_ready` (true) from `live_calibration_ready` (false), and carries the four statuses above under `execution_readiness`.
+
 | Gate | Description | Status | Evidence & Blockers |
 | :--- | :--- | :--- | :--- |
-| **Gate 1** | Offline Research Infrastructure | **`PASS`** | 156 offline validity, artifact, runner, and calibration tests pass; 279 frozen evidence files verified with 0 differences. |
-| **Gate 2** | Real Docker Experiment Infrastructure | **`PASS`** | 9 live Docker tests pass (186.2s); 3-trial live CLI smoke test passes on D01 with 12/12 checks and clean teardown. |
-| **Gate 3** | Baseline Model Calibration Execution | **`BLOCKED`** | Awaiting explicit project owner spend authorization; no model API credits authorized. |
-| **Gate 4** | Three-Arm Pilot Execution | **`BLOCKED`** | Awaiting completion of Gate 3 baseline calibration and human pilot spend authorization. |
-| **Gate 5** | Confirmatory Experiment Eligibility | **`BLOCKED`** | Currently 0 tasks meet S1 confirmatory criteria; requires Gate 3 baseline data to qualify $\ge 30$ tasks. |
+| **Gate 1** | Offline Research Infrastructure | **`PASS`** | §6 |
+| **Gate 2** | Docker Experiment Infrastructure (**mock model only**) | **`PASS`** | §6. Not evidence of a real-model executor. |
+| **Gate 3** | Baseline Model Calibration Execution | **`BLOCKED`** | `no_real_model_workload`, `no_real_model_upstream_or_credential_path`, `scorer_container_not_integrated`, `spend_not_authorized` |
+| **Gate 4** | Three-Arm Pilot Execution | **`BLOCKED`** | Gate 3, the same executor blockers, and budget approval. No pilot execution command exists. |
+| **Gate 5** | Confirmatory Experiment Eligibility | **`BLOCKED`** | At most 14 of 30 reachable. At least 16 new target tasks needed (§4.3). |
 
 ---
 
-## 6. Offline Verification Summary
+## 6. Verification Evidence (pre-merge correction, Windows 11, Docker 29.8.2)
 
-```
-============================== 156 passed, 9 deselected in 28.50s ==============================
-- tests/test_stage2_validity.py: 73 passed
-- tests/test_stage2_artifacts.py: 41 passed
-- tests/test_stage26_live_runner.py: 31 passed (offline)
-- tests/test_stage27_calibration.py: 11 passed (eligibility, schedule validation, mock execution, CLI commands, blockers)
-- tests/test_stage26_live_runner.py (live Docker): 9 passed (verified in Phase 4 / Stage 2.6)
-- ruff check . & ruff format --check .: 318 files checked, 0 errors, all formatted
-- cli.py frozen --verify: 279 frozen files, 0 differences
-```
+| Check | Result |
+| :--- | :--- |
+| `ruff check .` / `ruff format --check .` | All checks passed / 321 files already formatted |
+| `pytest -m "not docker"` (full suite) | 1890 passed, 130 skipped, 0 failed |
+| Stage 2 / 2.5 / 2.6 / 2.7 offline subset | 190 passed |
+| `pytest tests/test_stage27_docker_calibration.py tests/test_stage26_live_runner.py -m docker` | 14 passed (268.7 s); 0 leftover containers, 0 leftover networks |
+| `cli frozen --verify` | 279 frozen files; 0 differences |
+| Manifest / generated-artifact consistency (10 checks: manifest, preregistration render, catalogue reproduction, study specs, eligibility, schedule and its validation, pilot spec, gates, single confirmatory minimum) | 10/10 equal |
+| `execute-calibration --executor mock` on the 75-trial schedule with a ceiling | Runs end to end; all records `synthetic: true`; `evaluate-baseline` refuses them (exit 2) |
+| `execute-calibration --executor docker-mock-model` on the real schedule | Refused before Docker is touched: none of the 25 tasks is host-scorable |
+| `execute-calibration --executor live` | Exit 2 without `--authorize-spend` or without a full ceiling. Exit 3 `UNAVAILABLE` with both. **No files written, no network, no key read.** |
+
+The Docker calibration tests run real topologies (internal network, CONNECT gateway, canary, fresh workspace, mock agent, mock model server, verified teardown). They use D01 because it is the only host-scorable task with a deterministic mock answer. They cover: usage billed against the ceiling and refusal when the ceiling is reached; partial usage telemetry charged at the full reserve; an infrastructure failure retried with linkage, while a candidate failure is not retried; a scorer digest change at execution time detected and stopping the run; and an interruption with its reserve charge, resume without re-running, and quarantine of a duplicated record line.
 
 ---
 
-## 7. Execution Commands for Authorized Calibration (Future Phase)
+## 7. Live (Real-Model) Execution: Integration Blockers
 
-The calibration execution adapter is fully implemented in `calibration_pipeline.py` and exposed via `cli.py`:
+`calibration_pipeline.live_execution_blockers()` computes these from the code that would run. `execute-calibration --executor live` prints them and exits 3.
 
-1. **Review Readiness Gates**:
-   ```bash
-   python -m benchmarks.codex_r.studies.stage2_validity_v1.cli readiness-gates
-   ```
+1. **`no_real_model_workload`**: `live_network.TrialTopology` always runs `live_assets/mock_agent.py` in `python:3.11-slim`. No code path starts the agent runtime named in the schedule (`rkmcp-codex-runtime:codex-0.163.0`) inside the isolated topology, and that image is not present locally (only a `-bioc` variant is).
+2. **`no_real_model_upstream_or_credential_path`**: the gateway tunnels `api.openai.com:443` only to `mock_model_server.py` on the private upstream network. `OPENAI_API_KEY` is in `HOST_SECRET_NAMES` and withheld from every container. A real run needs an upstream route plus credential injection **outside** the candidate container, for example at the gateway, so the key never enters the workload. Neither exists, and adding them requires a separate security review.
+3. **`scorer_container_not_integrated`**: the live runner scores only on the host, with `knowledge-pilot-v2` (D01–D03, E01, E04, E05) and `knowledge-pilot-v2.1` (D01, D03 only). All 25 scheduled tasks use R verifiers (`legacy`, `hard-v1`, knowledge-pilot `.R`) that need the scorer container. Before this correction, the live runner also **crashed** with uncaught exceptions on such tasks. It now records `scorer_container_required` before creating any container.
+4. **Spend is accounted, not metered.** The ceiling is enforced per attempt over *reported* usage (§8). A real integration must also confirm that the upstream reports usage for every request. Otherwise every trial is charged its full reserve.
 
-2. **Offline Mock Calibration Run (Zero Cost, No Network)**:
-   ```bash
-   python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration \
-     --schedule benchmarks/codex_r/studies/stage2_validity_v1/calibration_schedule.json \
-     --out-dir benchmarks/codex_r/studies/stage2_validity_v1/calibration_runs_mock \
-     --mock
-   ```
+---
 
-3. **Live 51-Trial Baseline Calibration (Arm A only, Requires Spend Authorization)**:
-   ```bash
-   # Requires OPENAI_API_KEY exported in host shell (never inside containers)
-   export OPENAI_API_KEY="sk-..."
+## 8. Spend Control (`spend_control.py`)
 
-   python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration \
-     --schedule benchmarks/codex_r/studies/stage2_validity_v1/calibration_schedule.json \
-     --out-dir benchmarks/codex_r/studies/stage2_validity_v1/calibration_runs \
-     --authorize-spend
-   ```
+`--authorize-spend` alone is refused. Live mode also requires `--max-spend-usd`, `--input-usd-per-mtok`, `--output-usd-per-mtok` and `--per-trial-reserve-usd`, all finite and > 0, with the reserve no larger than the ceiling. Prices come from the owner. None is assumed.
 
-4. **Evaluate Difficulty & Uncertainty on Calibration Results**:
-   ```bash
-   python -m benchmarks.codex_r.studies.stage2_validity_v1.cli evaluate-baseline \
-     --records benchmarks/codex_r/studies/stage2_validity_v1/calibration_runs/trial_records.jsonl \
-     --out benchmarks/codex_r/studies/stage2_validity_v1/baseline_difficulty_report.json
-   ```
+- **Before each attempt**: refuse if `spent + reserve > ceiling`. The run stops with `spend_ceiling_reached`, and the remaining trials are materialised as `not_executed`. If a retry is refused, the preceding infrastructure failure is committed rather than dropped.
+- **After each attempt**: observed usage is priced. Unavailable or partial usage is charged the **full reserve**. Observed cost above the reserve stops the run (`per_trial_reserve_exceeded`), as does cumulative spend above the ceiling.
+- **On resume**: the journal is replayed (`attempt_accounted`). Every started attempt without an accounting entry, meaning an interruption, is charged the full reserve. Resuming with a different ceiling or executor mode is rejected (`calibration_run.json`).
+- **Stop conditions from the schedule**: 1 infrastructure retry, stop after 3 consecutive infrastructure failures, and stop once trials whose final attempt failed for infrastructure reasons exceed 20 % of the planned trials.
+- **Limits**: this is accounting over reported tokens, not provider billing, and nothing can cut off a request mid-flight. The reserve must be chosen with the provider's own limits in mind.
 
-5. **Select Qualified Tasks for S1 Confirmatory Core**:
-   Qualify tasks exhibiting empirical baseline difficulty $\bar{Y}_A \in [0.10, 0.90]$ and non-degenerate variance until $K \ge 30$ tasks are qualified (addressing catalogue expansion requirements).
+### Synthetic vs. baseline evidence
+
+`evaluate-baseline` / `evaluate_baseline_difficulty` refuse records unless every record declares `synthetic: false` and passes the Stage 2 record schema. The CLI also refuses a run directory whose `run_config.json` says `synthetic: true` or whose `calibration_run.json` says `baseline_evidence: false`, so editing the JSONL flag alone is not enough. `--allow-synthetic` exists for pipeline checks, and its report is labelled `synthetic_not_baseline_evidence`. These checks guard against accidental use, not deliberate tampering with every provenance file.
+
+---
+
+## 9. Commands
+
+```bash
+python -m benchmarks.codex_r.studies.stage2_validity_v1.cli calibration-pipeline   # regenerate eligibility, schedule, pilot spec
+python -m benchmarks.codex_r.studies.stage2_validity_v1.cli readiness-gates        # four statuses + five gates
+
+# Mock-ready: in-process, no network, synthetic records
+python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration \
+  --executor mock --out-dir /tmp/cal-mock \
+  --max-spend-usd 1 --input-usd-per-mtok 2 --output-usd-per-mtok 8 --per-trial-reserve-usd 0.05
+
+# Mock-ready through real Docker isolation: only host-scorable schedules (see tests); the
+# 75-trial schedule is refused because none of its tasks is host-scorable
+python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration --executor docker-mock-model
+
+# Live: validates authorization and ceiling, then exits 3 (UNAVAILABLE). Nothing runs.
+python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration --executor live \
+  --authorize-spend --max-spend-usd <USD> --input-usd-per-mtok <USD> \
+  --output-usd-per-mtok <USD> --per-trial-reserve-usd <USD>
+
+# Baseline evaluation refuses synthetic records (exit 2); --allow-synthetic labels the report
+python -m benchmarks.codex_r.studies.stage2_validity_v1.cli evaluate-baseline --records <run>/trial_records.jsonl
+```
+
+Exit codes of `execute-calibration`: 0 ok, 1 dataset problems, 2 refused input or blocked environment, 3 live execution unavailable. `--mock` remains as a deprecated alias for `--executor mock`.

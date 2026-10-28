@@ -33,12 +33,12 @@ From [`historical_calibration_summary.json`](file:///c:/programming_pj/cran-mcp/
 
 The executable repository contains **31 tasks**: `R01–R12` (12), `B01–B03` (3), `C01–C05` (5), `D01–D03` (3), `E01–E05` (5), and `H01, H04, H10` (3). **No integrated ANOVA tasks exist in the repository.** (`H10` tests Rubin's rules for pooled multiple-imputation $t$-intervals.)
 
-Under the Arm-A-only screening rule (`calibration.classify_task`):
+Under the Arm-A-only screening rule (`calibration.stratum`, recorded in `task_catalog.json`; corrected 2026-10-28 — an earlier version of this list did not match the catalogue):
 
-- **`S1_confirmatory_core` (0 tasks)**: None (`0` tasks currently have $n_A \ge 3$, $0.10 \le \bar{Y}_A \le 0.90$, and no `BEN-002`/unsupported flags).
-- **`S2_calibration_needed` (17 tasks)**: `R01–R12`, `C03`, `C04`, `H01`, `H04`, `H10` (fewer than 3 scored Arm A runs).
-- **`RC_recalibration_required` (8 tasks)**: `C01`, `C02`, `C05` (Arm A ceiling `1.0` with $n_A = 3$); `D01`, `D02`, `D03` (`BEN-002` frozen candidate list); `E04`, `E05` (`BEN-002` hidden JSON contract + floor `0.0`).
-- **`Q_quarantined_or_smoke` (6 tasks)**: `B01`, `B02`, `B03`, `E01`, `E02`, `E03` (historical `unsupported_for_automatic_scoring` records and/or `BEN-002`).
+- **`S1` target (0 tasks)**: None (`0` target tasks currently have $n_A \ge 3$ and $0.10 \le \bar{Y}_A \le 0.90$).
+- **`S2` control, tool-use tax (17 tasks)**: `R01–R10`, `R12`, `B01–B03`, `H01`, `H04`, `H10`. MCP is not expected to help by task text; these can never become S1.
+- **`RC` recalibrate (8 tasks)**: `R11`, `C02`–`C05`, `E02`, `E03` (fewer than 3 Arm A runs) and `C01` (Arm A ceiling `1.0` with $n_A = 3$). Target tasks by text: the only route into S1 through Arm-A calibration.
+- **`Q` quarantined (6 tasks)**: `D01–D03` (`BEN-002` frozen candidate list), `E01`, `E04`, `E05` (`BEN-002` hidden JSON contract).
 
 ---
 

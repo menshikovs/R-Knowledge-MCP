@@ -17,6 +17,15 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 PORT = 8443
 EXPECTED = os.environ.get("MOCK_MODEL_TOKEN", "")
+# "partial" drops output_tokens so callers can exercise incomplete usage telemetry.
+PARTIAL = os.environ.get("MOCK_MODEL_USAGE") == "partial"
+
+
+def _usage(body_bytes: int) -> dict:
+    usage = {"input_tokens": 1000 + body_bytes, "output_tokens": 42}
+    if PARTIAL:
+        del usage["output_tokens"]
+    return usage
 
 
 def _log(**fields) -> None:
@@ -50,7 +59,7 @@ class Handler(BaseHTTPRequestHandler):
                 {
                     "id": "mock-response",
                     "output_text": "mock model reply",
-                    "usage": {"input_tokens": 1000 + len(body), "output_tokens": 42},
+                    "usage": _usage(len(body)),
                 },
                 200,
             )

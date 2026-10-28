@@ -139,6 +139,10 @@ def build_trial_invocation_spec(
     session_isolation_id = hashlib.sha256(
         f"{config.study_id}|{planned_trial['trial_id']}|{planned_trial['trial_seed']}".encode()
     ).hexdigest()[:24]
+    # A plan that pins digests (the calibration schedule) is authoritative: the executor
+    # re-measures the files and must see these values, not ones recomputed at spec time.
+    task_sha256 = planned_trial.get("task_sha256") or task_meta["task_sha256"]
+    scorer_sha256 = planned_trial.get("scorer_sha256") or task_meta["scorer_sha256"]
 
     return {
         "trial_id": planned_trial["trial_id"],
@@ -164,8 +168,8 @@ def build_trial_invocation_spec(
         "effort": config.effort,
         "timeout_seconds": config.timeout_seconds,
         "scorer_version": scorer_version,
-        "task_sha256": task_meta["task_sha256"],
-        "scorer_sha256": task_meta["scorer_sha256"],
+        "task_sha256": task_sha256,
+        "scorer_sha256": scorer_sha256,
         "instructions": instructions,
         "instructions_sha256": instructions_sha256,
         "mcp_container_started": arm.mcp_available,
@@ -185,6 +189,23 @@ class TrialAttemptExecutor(Protocol):
     ) -> dict[str, Any]:
         """Execute one trial attempt and return `runner_record` + `telemetry_events`."""
         ...
+
+
+class AttemptController(Protocol):
+    """Optional gate around every attempt (spend ceiling, failure-rate stop).
+
+    ``restore`` sees the whole journal before any attempt so state survives resume. A non-None
+    reason from ``before_attempt`` refuses the attempt; ``after_attempt`` returns journal fields
+    and an optional stop reason. Both stop the run fail-closed.
+    """
+
+    def restore(self, journal: list[dict[str, Any]]) -> None: ...
+
+    def before_attempt(self, trial_id: str, attempt_id: str) -> str | None: ...
+
+    def after_attempt(
+        self, trial_id: str, attempt_id: str, record: dict[str, Any]
+    ) -> tuple[dict[str, Any], str | None]: ...
 
 
 class InterruptionSimulated(KeyboardInterrupt):
@@ -459,6 +480,7 @@ def execute_study_plan(
     executor: TrialAttemptExecutor,
     *,
     before_commit_hook: Callable[[str, int], None] | None = None,
+    attempt_controller: AttemptController | None = None,
 ) -> dict[str, Any]:
     """Execute or resume a Stage 2 / 2.5 study plan using an injected ``executor``.
 
@@ -472,10 +494,14 @@ def execute_study_plan(
       because they are outcomes of the evaluated condition (ITT score 0.0).
     - Every planned trial has a valid record in the returned dataset (`not_executed`
       if stopped early or interrupted).
+    - An ``attempt_controller`` may refuse an attempt or stop the run after one; a refused
+      retry commits the preceding infrastructure failure instead of dropping it.
     """
     ledger = TrialLedger(run_dir)
     ledger.initialize_or_verify(plan, config)
     finalized = ledger.recover(plan)
+    if attempt_controller is not None:
+        attempt_controller.restore(ledger.journal_events())
 
     ordered_trials = sorted(plan["trials"], key=lambda t: t["execution_index"])
     consecutive_infra_failures = 0
@@ -509,8 +535,34 @@ def execute_study_plan(
             )
             continue
 
+        pending: tuple[str, int, dict[str, Any]] | None = None
         for attempt_idx in range(start_attempt_idx, max_attempts + 1):
             attempt_id = f"{tid}__att{attempt_idx:02d}"
+            if attempt_controller is not None:
+                refusal = attempt_controller.before_attempt(tid, attempt_id)
+                if refusal is not None:
+                    ledger.emit_journal(
+                        "attempt_refused_by_controller",
+                        trial_id=tid,
+                        attempt_id=attempt_id,
+                        attempt_index=attempt_idx,
+                        reason=refusal,
+                    )
+                    stopped_reason = refusal
+                    if pending is not None:
+                        prev_id, prev_idx, prev_rec = pending
+                        ledger.append_finalized_record(prev_rec)
+                        finalized[tid] = prev_rec
+                        ledger.emit_journal(
+                            "trial_attempt_committed",
+                            trial_id=tid,
+                            attempt_id=prev_id,
+                            attempt_index=prev_idx,
+                            outcome_kind=prev_rec["outcome_kind"],
+                            score=prev_rec["score"],
+                            committed_because=refusal,
+                        )
+                    break
             spec = build_trial_invocation_spec(planned_trial, config)
             workspace_dir = ledger.run_dir / "workspaces" / attempt_id
             workspace_dir.mkdir(parents=True, exist_ok=True)
@@ -582,6 +634,21 @@ def execute_study_plan(
                         }
                     )
 
+                controller_stop: str | None = None
+                if attempt_controller is not None:
+                    accounting, controller_stop = attempt_controller.after_attempt(
+                        tid, attempt_id, stage2_rec
+                    )
+                    ledger.emit_journal(
+                        "attempt_accounted",
+                        trial_id=tid,
+                        attempt_id=attempt_id,
+                        attempt_index=attempt_idx,
+                        outcome_kind=stage2_rec["outcome_kind"],
+                        stop_reason=controller_stop,
+                        **accounting,
+                    )
+
                 ledger.write_staging(
                     tid,
                     {
@@ -611,7 +678,12 @@ def execute_study_plan(
             primary_code = (
                 (runner_record.get("error_summary") or {}).get("primary_error") or {}
             ).get("source_code")
-            if outcome_kind == "infrastructure_failure" and attempt_idx < max_attempts:
+            if (
+                outcome_kind == "infrastructure_failure"
+                and attempt_idx < max_attempts
+                and controller_stop is None
+            ):
+                pending = (attempt_id, attempt_idx, stage2_rec)
                 ledger.emit_journal(
                     "trial_attempt_infra_failure_retrying",
                     trial_id=tid,
@@ -651,6 +723,8 @@ def execute_study_plan(
                 v.get("invalidating") for v in stage2_rec["violations"]
             ):
                 stopped_reason = f"invalidating_protocol_violation_in_{tid}"
+            elif controller_stop is not None:
+                stopped_reason = controller_stop
             elif consecutive_infra_failures >= config.max_consecutive_infra_failures:
                 stopped_reason = "max_consecutive_infrastructure_failures_exceeded"
             break

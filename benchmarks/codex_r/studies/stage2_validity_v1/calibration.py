@@ -307,6 +307,19 @@ def screen(history_a: dict | None) -> dict:
     return {"status": status, "n": history_a["n"], "mean_arm_a": mean}
 
 
+def target_by_features(entry: dict) -> bool:
+    """S1 eligibility by task text alone: MCP plausibly useful and a feature need >= 2."""
+    features = entry["dimensions"]
+    return entry["expected_mcp_usefulness"] in ("plausible", "high") and (
+        max(
+            features["version_sensitivity"],
+            features["documentation_dependence"],
+            features["package_api_verification_need"],
+        )
+        >= 2
+    )
+
+
 def stratum(entry: dict, screen_result: dict) -> str:
     """Provisional stratum from non-outcome features plus the arm-A screen.
 
@@ -316,21 +329,12 @@ def stratum(entry: dict, screen_result: dict) -> str:
     RC  needs re-calibration: S1 by features but ceiling/floor/insufficient arm-A data.
     Q   quarantined until the scorer is revised and revalidated (known contract issues).
     """
-    features = entry["dimensions"]
-    target_by_features = entry["expected_mcp_usefulness"] in ("plausible", "high") and (
-        max(
-            features["version_sensitivity"],
-            features["documentation_dependence"],
-            features["package_api_verification_need"],
-        )
-        >= 2
-    )
     if entry["task"] in ("E01", "E04", "E05", "D01", "D02", "D03"):
         # BEN-002: scorers accept only frozen constants / hidden JSON contracts. D-tasks may be
         # piloted to measure variance, but are not confirmatory until a scorer revision passes the
         # alternative-solution calibration in SCORING_VALIDITY.md.
         return "Q"
-    if not target_by_features:
+    if not target_by_features(entry):
         return "S2"
     return "S1" if screen_result["status"] == "in_range" else "RC"
 

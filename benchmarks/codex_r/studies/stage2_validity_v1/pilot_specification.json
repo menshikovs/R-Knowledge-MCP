@@ -2,7 +2,7 @@
   "specification_version": "stage27-pilot-specification-v1.0",
   "study_id": "stage2_validity_v1_pilot",
   "status": "NOT_AUTHORIZED_FOR_EXECUTION",
-  "authorization_requirement": "Explicit human project owner budget allocation and model key configuration",
+  "authorization_requirement": "Explicit owner budget allocation with a spend ceiling, model key configuration, and a real-model live executor (none exists yet)",
   "authorized_budget_usd": null,
   "candidate_tasks": [
     "D01",

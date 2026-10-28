@@ -25,6 +25,16 @@ Every task in `calibration.py::TASK_DIMENSIONS` is classified along 8 explicit o
 
 ## 3. Arm-A-Only Screening Rule (Anti-Cherry-Picking Contract)
 
+> **Correction (2026-10-28, Stage 2.7 pre-merge review).** The stratum lists and the
+> `classify_task()` reference in this section and the table below do not match the code or the
+> preregistration. The authoritative classification is `calibration.stratum()` as recorded in
+> [`task_catalog.json`](task_catalog.json) (reproduced from history by `build_catalog`), with the
+> preregistered meanings S1 = target, **S2 = control (tool-use tax)**, RC = recalibrate,
+> Q = quarantined. It yields S1 = 0; S2 = `R01–R10`, `R12`, `B01–B03`, `H01`, `H04`, `H10` (17);
+> RC = `R11`, `C01–C05`, `E02`, `E03` (8); Q = `D01–D03`, `E01`, `E04`, `E05` (6, BEN-002).
+> S2 is not "calibration needed": S2 controls can never become S1, because S1 requires a target
+> task by its text. See `STAGE27_CALIBRATION_READINESS.md` §4.
+
 To prevent selecting tasks based on whether R-Knowledge-MCP happened to win or lose historically, `calibration.classify_task()` assigns tasks to strata using **Arm A (`without-mcp`) observations and structural audit flags only**. Arm B (`with-mcp`) scores are never consulted by the stratification rule.
 
 The four mutually exclusive strata are:

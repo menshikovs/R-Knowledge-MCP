@@ -1,4 +1,8 @@
-"""Command line for study stage2_validity_v1. None of these commands runs a model or a container.
+"""Command line for study stage2_validity_v1. None of these commands runs a real model.
+
+Only ``live-smoke`` and ``execute-calibration --executor docker-mock-model`` start Docker
+containers, and those use a local mock model. ``execute-calibration --executor live`` validates
+its inputs and spend ceiling, then exits 3 (UNAVAILABLE): no real-model executor exists.
 
 python -m benchmarks.codex_r.studies.stage2_validity_v1.cli <command> [options]
 
@@ -11,6 +15,10 @@ dry-run            run the synthetic scenarios end to end and write the evidence
 reanalyze          recompute a dry-run analysis from its preserved inputs and compare digests
 power              run the design-sensitivity simulation
 analyze            run the preregistered analysis on a plan + trial_records.jsonl of a real study
+calibration-pipeline, readiness-gates, execute-calibration, evaluate-baseline: Stage 2.7
+
+Exit codes of execute-calibration: 0 ok, 1 dataset problems, 2 refused input or blocked
+environment, 3 live execution unavailable.
 """
 
 from __future__ import annotations
@@ -39,6 +47,7 @@ from . import (  # noqa: E402
     prereg,
     protocol,
     scorer_calibration,
+    spend_control,
     study_configs,
 )
 
@@ -105,7 +114,7 @@ def main(argv: list[str] | None = None) -> int:
     rg.add_argument("--out", type=Path, default=STUDY / "readiness_gates_report.json")
     ec = sub.add_parser(
         "execute-calibration",
-        help="Execute the Arm-A baseline calibration schedule with mock or authorized models",
+        help="Run the Arm-A calibration schedule (mock executors only; live is unavailable)",
     )
     ec.add_argument(
         "--schedule",
@@ -120,20 +129,30 @@ def main(argv: list[str] | None = None) -> int:
         help="Directory to persist calibration records and journal",
     )
     ec.add_argument(
-        "--mock",
-        action="store_true",
-        help="Execute using offline mock model executor without network or API calls",
+        "--executor",
+        choices=calibration_pipeline.EXECUTOR_MODES,
+        help=(
+            "mock: in-process, no network; docker-mock-model: real Docker isolation with a "
+            "local mock model; live: real model (currently UNAVAILABLE, exits 3)"
+        ),
     )
+    ec.add_argument("--mock", action="store_true", help="Deprecated alias for --executor mock")
     ec.add_argument(
         "--authorize-spend",
         action="store_true",
-        help="Explicitly authorize model API spend (requires OPENAI_API_KEY)",
+        help="Live only. Not sufficient on its own: an explicit spend ceiling is also required",
+    )
+    ec.add_argument("--max-spend-usd", type=float, help="Hard ceiling on accounted spend (USD)")
+    ec.add_argument(
+        "--input-usd-per-mtok", type=float, help="Owner-supplied price per 1M input tokens"
     )
     ec.add_argument(
-        "--seed",
-        type=int,
-        default=20261028,
-        help="Randomization seed",
+        "--output-usd-per-mtok", type=float, help="Owner-supplied price per 1M output tokens"
+    )
+    ec.add_argument(
+        "--per-trial-reserve-usd",
+        type=float,
+        help="Maximum cost one attempt may incur; charged in full when usage is unobservable",
     )
     eb = sub.add_parser(
         "evaluate-baseline",
@@ -150,6 +169,11 @@ def main(argv: list[str] | None = None) -> int:
         type=Path,
         default=STUDY / "baseline_difficulty_report.json",
         help="Output path for baseline difficulty report JSON",
+    )
+    eb.add_argument(
+        "--allow-synthetic",
+        action="store_true",
+        help="Evaluate synthetic records anyway; the report is labelled as not baseline evidence",
     )
     # Alias evaluate-calibration to evaluate-baseline for documented compatibility
     ec_eval = sub.add_parser(
@@ -168,6 +192,7 @@ def main(argv: list[str] | None = None) -> int:
         default=STUDY / "baseline_difficulty_report.json",
         help="Output path for baseline difficulty report JSON",
     )
+    ec_eval.add_argument("--allow-synthetic", action="store_true", help="See evaluate-baseline")
     args = parser.parse_args(argv)
 
     if args.command == "summarize-history":
@@ -309,34 +334,89 @@ def main(argv: list[str] | None = None) -> int:
             print(f"[{g['status']}] {g['gate_id']}: {g['name']}")
         return 0
     elif args.command == "execute-calibration":
-        res = calibration_pipeline.execute_calibration(
-            schedule=args.schedule,
-            out_dir=args.out_dir,
-            authorize_spend=args.authorize_spend,
-            mock=args.mock,
-            seed=args.seed,
-        )
-        print(
-            f"Executed calibration: {res['finalized_count']}/{res['total_planned']} trials "
-            f"persisted to {res['records_path']}"
-        )
-        if res["dataset_problems"]:
-            for prob in res["dataset_problems"][:10]:
-                print(f"  [ERROR] {prob}", file=sys.stderr)
-            return 1
-        return 0
+        return _execute_calibration(args)
     elif args.command in ("evaluate-baseline", "evaluate-calibration"):
-        lines = [x for x in args.records.read_text(encoding="utf-8").splitlines() if x.strip()]
-        recs = [json.loads(x) for x in lines]
-        res = calibration_pipeline.evaluate_baseline_difficulty(recs)
+        try:
+            recs = calibration_pipeline.load_baseline_evidence(
+                args.records, allow_synthetic=args.allow_synthetic
+            )
+            res = calibration_pipeline.evaluate_baseline_difficulty(
+                recs, allow_synthetic=args.allow_synthetic
+            )
+        except calibration_pipeline.SyntheticEvidenceError as exc:
+            print(
+                f"REFUSED: {exc}. --allow-synthetic is for pipeline checks only.", file=sys.stderr
+            )
+            return 2
         _dump(args.out, res)
-        print(f"Evaluated baseline difficulty for {res['evaluated_tasks']} tasks -> {args.out}")
+        print(
+            f"Evaluated baseline difficulty for {res['evaluated_tasks']} tasks -> {args.out} "
+            f"[{res['evidence_status']}]"
+        )
         for tid, tinfo in res["tasks"].items():
             print(
                 f"  {tid}: mean={tinfo['mean_score']} status={tinfo['uncertainty_status']} "
                 f"class={tinfo['classification']}"
             )
         return 0
+    return 0
+
+
+def _execute_calibration(args: argparse.Namespace) -> int:
+    mode = args.executor or ("mock" if args.mock else None)
+    if mode is None or (args.mock and args.executor not in (None, "mock")):
+        print(
+            "REFUSED: choose exactly one --executor {mock,docker-mock-model,live}", file=sys.stderr
+        )
+        return 2
+    prices = (
+        args.max_spend_usd,
+        args.input_usd_per_mtok,
+        args.output_usd_per_mtok,
+        args.per_trial_reserve_usd,
+    )
+    ceiling = None
+    if any(v is not None for v in prices):
+        if any(v is None for v in prices):
+            print(
+                "REFUSED: a spend ceiling needs all of --max-spend-usd, --input-usd-per-mtok, "
+                "--output-usd-per-mtok and --per-trial-reserve-usd",
+                file=sys.stderr,
+            )
+            return 2
+        ceiling = spend_control.SpendCeiling(*prices)
+    from . import live_network
+
+    try:
+        res = calibration_pipeline.execute_calibration(
+            schedule=args.schedule,
+            out_dir=args.out_dir,
+            executor_mode=mode,
+            authorize_spend=args.authorize_spend,
+            spend_ceiling=ceiling,
+        )
+    except calibration_pipeline.LiveExecutionUnavailable as exc:
+        print("UNAVAILABLE: live calibration executor is not implemented; nothing ran.")
+        for blocker in exc.blockers:
+            print(f"  - {blocker['id']}: {blocker['detail']}")
+        return 3
+    except live_network.DockerUnavailable as exc:
+        print(f"BLOCKED: live Docker verification unavailable: {exc}", file=sys.stderr)
+        return 2
+    except (ValueError, RuntimeError) as exc:
+        print(f"REFUSED: {exc}", file=sys.stderr)
+        return 2
+    print(
+        f"Executed calibration [{res['executor_mode']}, {res['evidence_status']}]: "
+        f"{res['finalized_count']}/{res['total_planned']} trials persisted to "
+        f"{res['records_path']}; stopped_reason={res['stopped_reason']}"
+    )
+    if res["spend"] is not None:
+        print(f"  accounted spend: {res['spend']['accounted_spend_usd']} USD (synthetic usage)")
+    if res["dataset_problems"]:
+        for prob in res["dataset_problems"][:10]:
+            print(f"  [ERROR] {prob}", file=sys.stderr)
+        return 1
     return 0
 
 

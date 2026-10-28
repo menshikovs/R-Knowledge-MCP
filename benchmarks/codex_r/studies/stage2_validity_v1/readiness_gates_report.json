@@ -1,51 +1,136 @@
 {
-  "report_version": "stage27-readiness-gates-v1.0",
-  "infrastructure_ready_for_calibration": true,
+  "report_version": "stage27-readiness-gates-v1.1",
+  "mock_infrastructure_ready": true,
+  "live_calibration_ready": false,
+  "execution_readiness": {
+    "mock_ready": {
+      "status": "READY",
+      "meaning": "Calibration schedules run end to end through the Stage 2 ledger with the in-process mock executor and through the real Docker topology with the local mock model; every record is synthetic",
+      "commands": [
+        "execute-calibration --executor mock",
+        "execute-calibration --executor docker-mock-model"
+      ]
+    },
+    "live_executor_ready": {
+      "status": "NOT_READY",
+      "blockers": [
+        {
+          "id": "no_real_model_workload",
+          "detail": "the candidate container runs /opt/stage26/mock_agent.py in python:3.11-slim; no code path starts the agent runtime rkmcp-codex-runtime:codex-0.163.0 inside the isolated topology"
+        },
+        {
+          "id": "no_real_model_upstream_or_credential_path",
+          "detail": "the gateway tunnels api.openai.com:443 only to the local /opt/stage26/mock_model_server.py; OPENAI_API_KEY is withheld from every container and nothing injects a real credential outside the candidate"
+        },
+        {
+          "id": "scorer_container_not_integrated",
+          "detail": "25 of 25 scheduled tasks need the R scorer container, which the live runner does not run; they could only produce infrastructure failures",
+          "tasks": [
+            "B01",
+            "B02",
+            "B03",
+            "C01",
+            "C02",
+            "C03",
+            "C04",
+            "C05",
+            "E02",
+            "E03",
+            "H01",
+            "H04",
+            "H10",
+            "R01",
+            "R02",
+            "R03",
+            "R04",
+            "R05",
+            "R06",
+            "R07",
+            "R08",
+            "R09",
+            "R10",
+            "R11",
+            "R12"
+          ]
+        }
+      ]
+    },
+    "calibration_authorized": {
+      "status": "NOT_AUTHORIZED",
+      "detail": "No owner-approved spend ceiling is recorded (schedule model_execution_authorized=false). Authorization would require --authorize-spend plus an explicit ceiling, and is moot while the live executor is not ready"
+    },
+    "confirmatory_ready": {
+      "status": "NOT_READY",
+      "detail": "0 S1 tasks; at most 8 after calibration (RC only; the 17 S2 controls cannot qualify) and 14 if the Q scorers are also revised, against a preregistered minimum of 30",
+      "feasibility": {
+        "preregistered_minimum_tasks": 30,
+        "catalogue_tasks": 31,
+        "quarantined_tasks": 6,
+        "non_quarantined_tasks": 25,
+        "current_s1_tasks": 0,
+        "control_tasks_never_s1": 17,
+        "recalibration_tasks": 8,
+        "scheduled_calibration_tasks": 25,
+        "max_s1_after_calibration_best_case": 8,
+        "max_s1_if_q_scorers_are_also_revised": 14,
+        "shortfall_after_calibration_best_case": 22,
+        "min_new_target_tasks_required": 16,
+        "reachable_with_current_catalogue": false,
+        "threshold_modified": false,
+        "resolution": "Add new, independently specified target tasks (S1 by task text), or amend the preregistration through a documented, dated protocol change made before any confirmatory data are seen. The threshold is not lowered to pass a gate."
+      }
+    }
+  },
   "gates": [
     {
       "gate_id": "gate_1_offline_research_infrastructure",
       "name": "Offline Research Infrastructure",
       "status": "PASS",
       "prerequisites": "Frozen digests, manifest, statistical tests, synthetic dry runs, unit test suite",
-      "verification_command": "pytest tests/test_stage2_validity.py tests/test_stage2_artifacts.py -m 'not docker'",
-      "actual_evidence": "114 offline validity and artifact tests pass; 279 frozen files match SHA-256 with 0 differences; 31 offline runner unit tests pass",
+      "verification_command": "pytest tests/test_stage2_validity.py tests/test_stage2_artifacts.py tests/test_stage26_live_runner.py tests/test_stage27_calibration.py -m 'not docker' && python -m benchmarks.codex_r.studies.stage2_validity_v1.cli frozen --verify",
+      "actual_evidence": "Recorded in STAGE27_CALIBRATION_READINESS.md section 6",
       "remaining_blockers": "None"
     },
     {
       "gate_id": "gate_2_docker_experiment_infrastructure",
-      "name": "Real Docker Experiment Infrastructure",
+      "name": "Docker Experiment Infrastructure (mock model only)",
       "status": "PASS",
       "prerequisites": "Docker --internal, CONNECT forward proxy allowlist, mock model server, non-root candidate user, canary probe enforcement, leftover sweeping",
-      "verification_command": "pytest tests/test_stage26_live_runner.py -m docker",
-      "actual_evidence": "9 live Docker end-to-end integration tests pass (186.2s); 3-trial live CLI smoke test passes on D01 with 12/12 checks and clean Docker teardown",
-      "remaining_blockers": "None for infrastructure harness"
+      "verification_command": "pytest tests/test_stage26_live_runner.py tests/test_stage27_calibration.py -m docker",
+      "actual_evidence": "Recorded in STAGE27_CALIBRATION_READINESS.md section 6",
+      "remaining_blockers": "Covers the mock model and mock agent only; it is not evidence of a real-model executor (gate 3)"
     },
     {
       "gate_id": "gate_3_calibration_execution",
       "name": "Baseline Model Calibration Execution",
       "status": "BLOCKED",
-      "prerequisites": "Project owner authorization to spend model credits, host API key provisioning, execution of 51 Arm A baseline trials",
-      "verification_command": "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration",
-      "actual_evidence": "Calibration schedule prepared (51 trials across 17 S2 tasks); 0 model calls executed",
-      "remaining_blockers": "Awaiting explicit human spend authorization; no model API credits authorized"
+      "prerequisites": "A real-model executor inside the isolated topology, scorer-container integration for the scheduled tasks, an owner-approved spend ceiling, and execution of the 75 scheduled Arm A trials",
+      "verification_command": "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration --executor live ... (currently exits 3: UNAVAILABLE)",
+      "actual_evidence": "0 model calls executed; live mode refuses before any side effect",
+      "remaining_blockers": [
+        "no_real_model_workload",
+        "no_real_model_upstream_or_credential_path",
+        "scorer_container_not_integrated",
+        "spend_not_authorized"
+      ]
     },
     {
       "gate_id": "gate_4_pilot_execution",
       "name": "Three-Arm Pilot Execution",
       "status": "BLOCKED",
       "prerequisites": "Completion of Gate 3 calibration, pilot budget approval, 90 planned trials (A/B/C)",
-      "verification_command": "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-pilot",
+      "verification_command": "none: no pilot execution command exists",
       "actual_evidence": "Pilot specification prepared (90 trials); 0 model calls executed",
-      "remaining_blockers": "Awaiting Gate 3 calibration and human budget authorization"
+      "remaining_blockers": "Gate 3, the same live-executor blockers, and budget approval"
     },
     {
       "gate_id": "gate_5_confirmatory_experiment_eligibility",
       "name": "Confirmatory Experiment Eligibility",
       "status": "BLOCKED",
-      "prerequisites": "At least 30 qualified tasks in S1_confirmatory_core (variance in [0.10, 0.90], zero BEN-002 coupling), frozen registration commit",
-      "verification_command": "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli verify-confirmatory-eligibility",
-      "actual_evidence": "Currently 0 tasks meet S1 eligibility due to historical ceiling effects and BEN-002 coupling",
-      "remaining_blockers": "Requires baseline calibration data from Gate 3 to identify and qualify >= 30 tasks"
+      "prerequisites": "At least 30 qualified tasks in S1_confirmatory_core (Arm A mean in [0.10, 0.90], zero BEN-002 coupling), frozen registration commit",
+      "verification_command": "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli readiness-gates",
+      "actual_evidence": "0 S1 tasks; at most 8 after calibration (RC only; the 17 S2 controls cannot qualify) and 14 if the Q scorers are also revised, against a preregistered minimum of 30",
+      "remaining_blockers": "Not reachable with the current catalogue: at least 16 new target tasks even in the best case (realistically more, after calibration attrition)"
     }
   ]
 }

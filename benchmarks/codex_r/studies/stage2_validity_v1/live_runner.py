@@ -14,8 +14,9 @@ Scope, stated plainly:
   synthetic and every record produced here is labelled synthetic by the study config.
 * The workload is a deterministic mock agent, not the Codex Managed Agents executor. Wiring the
   real executor into this topology is the remaining pilot blocker (see the readiness report).
-* Only JSON-answer tasks (frozen ``knowledge-pilot-v2``/``v2.1`` scorers) are scored here; R
-  verifier tasks need the scorer container and are reported as an infrastructure failure.
+* Only tasks the frozen host JSON scorers accept (``HOST_SCORABLE``) are scored here; R verifier
+  tasks need the scorer container and are recorded as an infrastructure failure before any
+  container is created. None of the Stage 2.7 calibration candidates is host-scorable.
 * ``benchmarks/codex_r/run_simple.py`` is untouched; this module never changes legacy behaviour.
 """
 
@@ -40,6 +41,18 @@ MOCK_TOOL_CALL = {
     "name": "validate_r_prompt",
     "arguments": {"prompt_text": "Write R code that reads a CSV file and prints a summary."},
 }
+
+
+# Mirrors the task guards inside the frozen scorers (knowledge_pilot_v2.contract_path and
+# knowledge_pilot_v21.score); a test keeps the two in step.
+HOST_SCORABLE: dict[str, frozenset[str]] = {
+    "knowledge-pilot-v2": frozenset({"D01", "D02", "D03", "E01", "E04", "E05"}),
+    "knowledge-pilot-v2.1": frozenset({"D01", "D03"}),
+}
+
+
+def host_scorable(task: str, scorer_version: str) -> bool:
+    return task in HOST_SCORABLE.get(scorer_version, frozenset())
 
 
 class TrialScoringUnavailable(RuntimeError):
@@ -136,6 +149,8 @@ def mock_gold_answer(task: str) -> dict[str, Any]:
 
 def score_workspace(task: str, scorer_version: str, workspace: Path) -> dict[str, Any]:
     """Run the frozen JSON scorer on the host over the produced artifact directory."""
+    if not host_scorable(task, scorer_version):
+        raise TrialScoringUnavailable(f"{task} / {scorer_version} needs the scorer container")
     if scorer_version == "knowledge-pilot-v2.1":
         return knowledge_pilot_v21.score(task, workspace)
     if scorer_version == "knowledge-pilot-v2":
@@ -242,8 +257,14 @@ def make_docker_trial_executor(
     interrupt_before_workload: set[tuple[str, int]] | None = None,
     topology_faults: dict[tuple[str, int], str] | None = None,
     on_topology: Callable[[live_network.TrialTopology], None] | None = None,
+    answer_provider: Callable[[dict[str, Any]], dict[str, Any] | None] | None = None,
 ) -> runner.TrialAttemptExecutor:
-    """Build the live executor. The keyword hooks exist for fault-injection tests only."""
+    """Build the live executor. The keyword hooks exist for fault-injection tests only.
+
+    ``answer_provider`` returns the mock agent's answer for a spec (``None``: the agent writes no
+    artifact). By default only the deterministic D01-D03 gold answers exist; any other task is an
+    infrastructure failure rather than an invented candidate outcome.
+    """
     cfg = settings or LiveExecutorSettings()
     interrupts = interrupt_before_workload or set()
     faults = topology_faults or {}
@@ -279,6 +300,31 @@ def make_docker_trial_executor(
                     origin="runner",
                     category="workspace",
                     code="workspace_not_fresh",
+                    live=live,
+                ),
+                "telemetry_events": [],
+            }
+        # Decided before any container exists: an unscorable trial must not consume resources.
+        if not host_scorable(spec["task"], spec["scorer_version"]):
+            return {
+                "runner_record": _error_record(
+                    spec,
+                    origin="runner",
+                    category="scorer",
+                    code="scorer_container_required",
+                    live=live,
+                ),
+                "telemetry_events": [],
+            }
+        try:
+            answer = (answer_provider or (lambda s: mock_gold_answer(s["task"])))(spec)
+        except TrialScoringUnavailable:
+            return {
+                "runner_record": _error_record(
+                    spec,
+                    origin="runner",
+                    category="workload",
+                    code="mock_answer_unavailable",
                     live=live,
                 ),
                 "telemetry_events": [],
@@ -340,7 +386,7 @@ def make_docker_trial_executor(
                             "mcp_expected": spec["mcp_container_started"],
                             "call_tool": call,
                             "tool_call": MOCK_TOOL_CALL,
-                            "answer": mock_gold_answer(spec["task"]),
+                            "answer": answer,
                         },
                         workspace_dir,
                         cfg.workload_timeout_seconds,
@@ -507,6 +553,7 @@ def execute_live_study(
     *,
     before_commit_hook: Callable[[str, int], None] | None = None,
     executor: runner.TrialAttemptExecutor | None = None,
+    attempt_controller: runner.AttemptController | None = None,
 ) -> dict[str, Any]:
     """Run a plan against real Docker topologies with a mock model (opt-in entry point)."""
     cfg = settings or LiveExecutorSettings(
@@ -528,6 +575,7 @@ def execute_live_study(
         run_dir,
         executor or make_docker_trial_executor(cfg),
         before_commit_hook=before_commit_hook,
+        attempt_controller=attempt_controller,
     )
     result["resource_cleanup"] = {
         "run_label": cfg.run_label,

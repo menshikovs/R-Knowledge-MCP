@@ -45,6 +45,10 @@ GATEWAY_ALIAS, GATEWAY_PORT = "egress-gateway", 3128
 MODEL_ALIAS, MODEL_PORT = "model-upstream", 8443
 MODEL_AUTHORITY = "api.openai.com:443"
 MCP_ALIAS, MCP_PORT = "r-knowledge-mcp", 8000
+# The only workload and model upstream this topology can run. Both are local mocks; there is no
+# real-model executor or credential path (see calibration_pipeline.live_execution_blockers).
+WORKLOAD_SCRIPT = "/opt/stage26/mock_agent.py"
+MODEL_UPSTREAM_SCRIPT = "/opt/stage26/mock_model_server.py"
 # Names that must never reach any container started by this module.
 HOST_SECRET_NAMES = frozenset(
     {
@@ -62,6 +66,7 @@ FAULTS = frozenset(
         "gateway_policy_invalid",
         "candidate_on_upstream_network",
         "mcp_in_arm_a",
+        "model_usage_partial",
     }
 )
 
@@ -291,11 +296,13 @@ class TrialTopology:
             *self._hardening("128m", 64),
             "--env",
             "MOCK_MODEL_TOKEN",
+            "--env",
+            f"MOCK_MODEL_USAGE={'partial' if self.fault == 'model_usage_partial' else 'full'}",
             *self._assets_mount(),
             *labels,
             self.python_image,
             "python",
-            "/opt/stage26/mock_model_server.py",
+            MODEL_UPSTREAM_SCRIPT,
             env=token_env,
         )
         self.containers.append(self.c_model)
@@ -456,7 +463,7 @@ class TrialTopology:
         if workspace is not None:
             args += ["--mount", f"type=bind,source={workspace},target=/candidate"]
             args += ["--workdir", "/candidate"]
-        args += [self.python_image, "python", "/opt/stage26/mock_agent.py"]
+        args += [self.python_image, "python", WORKLOAD_SCRIPT]
         docker(*args, env=_clean_env({"CODEX_API_KEY": self.token} if with_token else None))
         self.containers.append(name)
         for extra in networks[1:]:
