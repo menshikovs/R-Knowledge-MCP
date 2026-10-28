@@ -1,0 +1,473 @@
+{
+  "synthetic_probes": {
+    "synthetic_probe_suite": true,
+    "live_docker_isolation_established": false,
+    "all_policy_invariants_satisfied": true,
+    "arms": {
+      "A": {
+        "policy": {
+          "arm": "A",
+          "policy_id": "stage25-internal-net-arm-a-v1",
+          "docker_network_internal": true,
+          "egress_proxy_required": true,
+          "egress_proxy_authority": "egress-proxy:3128",
+          "mcp_container_attached": false,
+          "mcp_authority": null,
+          "allowed_connect_hosts": [
+            "api.openai.com",
+            "codex-cloud-environments.chatgpt.com"
+          ],
+          "blocked_external_hosts": [
+            "cloud.r-project.org",
+            "cran.r-project.org",
+            "bioconductor.org",
+            "api.github.com",
+            "github.com"
+          ]
+        },
+        "mcp_reachable": false,
+        "model_endpoints_permitted": true,
+        "unauthorized_egress_rejected": true,
+        "invariants_satisfied": true,
+        "attempts": [
+          {
+            "arm": "A",
+            "channel": "mcp_internal",
+            "method": "POST",
+            "authority": "r-knowledge-mcp:8000",
+            "permitted": false,
+            "reason_code": "mcp_not_attached_in_arm_a",
+            "violation_code": null
+          },
+          {
+            "arm": "A",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "api.openai.com:443",
+            "permitted": true,
+            "reason_code": "allowed_model_endpoint",
+            "violation_code": null
+          },
+          {
+            "arm": "A",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "codex-cloud-environments.chatgpt.com:443",
+            "permitted": true,
+            "reason_code": "allowed_model_endpoint",
+            "violation_code": null
+          },
+          {
+            "arm": "A",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "cloud.r-project.org:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "A",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "cran.r-project.org:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "A",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "bioconductor.org:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "A",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "api.github.com:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "A",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "github.com:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "A",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "example.com:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": null
+          },
+          {
+            "arm": "A",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "93.184.216.34:443",
+            "permitted": false,
+            "reason_code": "ip_literal_denied",
+            "violation_code": null
+          },
+          {
+            "arm": "A",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "api.openai.com:444",
+            "permitted": false,
+            "reason_code": "port_denied",
+            "violation_code": null
+          },
+          {
+            "arm": "A",
+            "channel": "egress_proxy_connect",
+            "method": "GET",
+            "authority": "api.openai.com:443",
+            "permitted": false,
+            "reason_code": "connect_only",
+            "violation_code": null
+          },
+          {
+            "arm": "A",
+            "channel": "direct_unproxied",
+            "method": "TCP",
+            "authority": "cran.r-project.org:443",
+            "permitted": false,
+            "reason_code": "blocked_by_internal_docker_network",
+            "violation_code": null
+          }
+        ]
+      },
+      "B": {
+        "policy": {
+          "arm": "B",
+          "policy_id": "stage25-internal-net-arm-b-v1",
+          "docker_network_internal": true,
+          "egress_proxy_required": true,
+          "egress_proxy_authority": "egress-proxy:3128",
+          "mcp_container_attached": true,
+          "mcp_authority": "r-knowledge-mcp:8000",
+          "allowed_connect_hosts": [
+            "api.openai.com",
+            "codex-cloud-environments.chatgpt.com"
+          ],
+          "blocked_external_hosts": [
+            "cloud.r-project.org",
+            "cran.r-project.org",
+            "bioconductor.org",
+            "api.github.com",
+            "github.com"
+          ]
+        },
+        "mcp_reachable": true,
+        "model_endpoints_permitted": true,
+        "unauthorized_egress_rejected": true,
+        "invariants_satisfied": true,
+        "attempts": [
+          {
+            "arm": "B",
+            "channel": "mcp_internal",
+            "method": "POST",
+            "authority": "r-knowledge-mcp:8000",
+            "permitted": true,
+            "reason_code": "mcp_internal_allowed",
+            "violation_code": null
+          },
+          {
+            "arm": "B",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "api.openai.com:443",
+            "permitted": true,
+            "reason_code": "allowed_model_endpoint",
+            "violation_code": null
+          },
+          {
+            "arm": "B",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "codex-cloud-environments.chatgpt.com:443",
+            "permitted": true,
+            "reason_code": "allowed_model_endpoint",
+            "violation_code": null
+          },
+          {
+            "arm": "B",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "cloud.r-project.org:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "B",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "cran.r-project.org:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "B",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "bioconductor.org:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "B",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "api.github.com:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "B",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "github.com:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "B",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "example.com:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": null
+          },
+          {
+            "arm": "B",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "93.184.216.34:443",
+            "permitted": false,
+            "reason_code": "ip_literal_denied",
+            "violation_code": null
+          },
+          {
+            "arm": "B",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "api.openai.com:444",
+            "permitted": false,
+            "reason_code": "port_denied",
+            "violation_code": null
+          },
+          {
+            "arm": "B",
+            "channel": "egress_proxy_connect",
+            "method": "GET",
+            "authority": "api.openai.com:443",
+            "permitted": false,
+            "reason_code": "connect_only",
+            "violation_code": null
+          },
+          {
+            "arm": "B",
+            "channel": "direct_unproxied",
+            "method": "TCP",
+            "authority": "cran.r-project.org:443",
+            "permitted": false,
+            "reason_code": "blocked_by_internal_docker_network",
+            "violation_code": null
+          }
+        ]
+      },
+      "C": {
+        "policy": {
+          "arm": "C",
+          "policy_id": "stage25-internal-net-arm-c-v1",
+          "docker_network_internal": true,
+          "egress_proxy_required": true,
+          "egress_proxy_authority": "egress-proxy:3128",
+          "mcp_container_attached": true,
+          "mcp_authority": "r-knowledge-mcp:8000",
+          "allowed_connect_hosts": [
+            "api.openai.com",
+            "codex-cloud-environments.chatgpt.com"
+          ],
+          "blocked_external_hosts": [
+            "cloud.r-project.org",
+            "cran.r-project.org",
+            "bioconductor.org",
+            "api.github.com",
+            "github.com"
+          ]
+        },
+        "mcp_reachable": true,
+        "model_endpoints_permitted": true,
+        "unauthorized_egress_rejected": true,
+        "invariants_satisfied": true,
+        "attempts": [
+          {
+            "arm": "C",
+            "channel": "mcp_internal",
+            "method": "POST",
+            "authority": "r-knowledge-mcp:8000",
+            "permitted": true,
+            "reason_code": "mcp_internal_allowed",
+            "violation_code": null
+          },
+          {
+            "arm": "C",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "api.openai.com:443",
+            "permitted": true,
+            "reason_code": "allowed_model_endpoint",
+            "violation_code": null
+          },
+          {
+            "arm": "C",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "codex-cloud-environments.chatgpt.com:443",
+            "permitted": true,
+            "reason_code": "allowed_model_endpoint",
+            "violation_code": null
+          },
+          {
+            "arm": "C",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "cloud.r-project.org:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "C",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "cran.r-project.org:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "C",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "bioconductor.org:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "C",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "api.github.com:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "C",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "github.com:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": "forbidden_host_contacted"
+          },
+          {
+            "arm": "C",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "example.com:443",
+            "permitted": false,
+            "reason_code": "host_denied",
+            "violation_code": null
+          },
+          {
+            "arm": "C",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "93.184.216.34:443",
+            "permitted": false,
+            "reason_code": "ip_literal_denied",
+            "violation_code": null
+          },
+          {
+            "arm": "C",
+            "channel": "egress_proxy_connect",
+            "method": "CONNECT",
+            "authority": "api.openai.com:444",
+            "permitted": false,
+            "reason_code": "port_denied",
+            "violation_code": null
+          },
+          {
+            "arm": "C",
+            "channel": "egress_proxy_connect",
+            "method": "GET",
+            "authority": "api.openai.com:443",
+            "permitted": false,
+            "reason_code": "connect_only",
+            "violation_code": null
+          },
+          {
+            "arm": "C",
+            "channel": "direct_unproxied",
+            "method": "TCP",
+            "authority": "cran.r-project.org:443",
+            "permitted": false,
+            "reason_code": "blocked_by_internal_docker_network",
+            "violation_code": null
+          }
+        ]
+      }
+    },
+    "fault_injection_probes": {
+      "mcp_unavailable_in_arm_b": {
+        "arm": "B",
+        "channel": "mcp_internal",
+        "method": "POST",
+        "authority": "r-knowledge-mcp:8000",
+        "permitted": false,
+        "reason_code": "mcp_server_unavailable",
+        "violation_code": "treatment_arm_mcp_unavailable"
+      },
+      "plain_bridge_bypass_in_arm_a": {
+        "arm": "A",
+        "channel": "direct_unproxied",
+        "method": "TCP",
+        "authority": "cran.r-project.org:443",
+        "permitted": true,
+        "reason_code": "unrestricted_bridge_bypass",
+        "violation_code": "egress_not_restricted"
+      }
+    }
+  },
+  "legacy_runner_audit": {
+    "runner_file": "benchmarks/codex_r/run_simple.py",
+    "arm_a_omits_mcp_container": true,
+    "creates_plain_docker_bridge": true,
+    "uses_docker_internal_network_flag": false,
+    "wires_egress_proxy_container": false,
+    "live_egress_isolation_enforced": false,
+    "blocker_summary": "run_simple.py omits the MCP container in without-mcp mode, preventing Arm A from reaching R-Knowledge-MCP over the container network, but creates a plain Docker bridge network (`docker('network', 'create', network)`) without `--internal` or `egress_proxy.py`. Therefore, candidate R processes in any arm can reach live CRAN/Bioconductor/GitHub unless `--internal` + `egress_proxy` is wired into the live container runtime."
+  }
+}

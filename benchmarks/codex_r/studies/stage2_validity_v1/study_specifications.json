@@ -1,0 +1,243 @@
+{
+  "schema_version": 1,
+  "study_id": "stage2_validity_v1",
+  "minimum_confirmatory_s1_tasks": 30,
+  "current_eligible_s1_task_count": 0,
+  "confirmatory_ready": false,
+  "configurations": {
+    "smoke_mock": {
+      "config_id": "smoke_mock",
+      "title": "Small Infrastructure Smoke Test (Mock Models)",
+      "study_id": "stage2_validity_v1",
+      "execution_mode": "offline_mock",
+      "ready_to_execute": true,
+      "blockers": [],
+      "tasks": [
+        "R03",
+        "C03",
+        "D01",
+        "H10"
+      ],
+      "task_count": 4,
+      "repetitions": 1,
+      "arms": [
+        "A",
+        "B",
+        "C"
+      ],
+      "planned_trials": 12,
+      "model_sessions": 0,
+      "timeout_seconds_per_trial": 60,
+      "wall_clock_budget": {
+        "expected_serial_hours_at_median_76_4s": 0.25,
+        "conservative_serial_hours_at_p90_186_0s": 0.62,
+        "hard_ceiling_serial_hours_at_timeout": 0.2
+      },
+      "resource_requirements": {
+        "executor_cpus": 2,
+        "executor_memory_mb": 2048,
+        "mcp_memory_mb": 512,
+        "scorer_memory_mb": 2048,
+        "docker_internal_network_required": true,
+        "egress_proxy_required": true
+      },
+      "token_measurement_limitations": "Only 1 of 103 historical runs (0.97%) recorded observed API token usage (`usage.status == 'observed'`). Missing token counts must remain explicitly `unavailable` (`null`), never coerced to zero.",
+      "retry_allowance": {
+        "max_infra_retries_per_trial": 1,
+        "candidate_failure_retried": false,
+        "scoring_error_retried": false,
+        "retry_linkage": "Every retry logs `retry_of_attempt_id` in `ledger_journal.jsonl`."
+      },
+      "stop_conditions": {
+        "stop_on_invalidating_protocol_violation": true,
+        "max_consecutive_infrastructure_failures": 3,
+        "abort_on_corrupt_frozen_evidence_digest": true
+      },
+      "estimated_cost_formula": {
+        "verified_unit_prices_available": false,
+        "monetary_estimate_usd": 0.0,
+        "formula": "0 USD (offline mock execution)"
+      }
+    },
+    "pilot_real_spec": {
+      "config_id": "pilot_real_spec",
+      "title": "Limited Real-Model 3-Arm Pilot Specification",
+      "study_id": "stage2_validity_v1",
+      "execution_mode": "live_model_requires_authorization",
+      "ready_to_execute": false,
+      "blockers": [
+        "Live Docker executor in `run_simple.py` creates a plain bridge network without `--internal` and `egress_proxy.py`.",
+        "Live `run_simple.py` CLI only accepts 2 modes (`without-mcp`, `with-mcp`) and must be invoked through the Stage 2.5 3-arm adapter or updated to wire Arm C.",
+        "Paid model execution requires explicit human owner spend authorization."
+      ],
+      "tasks": [
+        "D01",
+        "D02",
+        "D03",
+        "C01",
+        "C04",
+        "E02",
+        "E03",
+        "E05",
+        "R01",
+        "H10"
+      ],
+      "task_count": 10,
+      "repetitions": 2,
+      "arms": [
+        "A",
+        "B",
+        "C"
+      ],
+      "planned_trials": 60,
+      "model_sessions": 60,
+      "timeout_seconds_per_trial": 300,
+      "wall_clock_budget": {
+        "expected_serial_hours_at_median_76_4s": 1.27,
+        "conservative_serial_hours_at_p90_186_0s": 3.1,
+        "hard_ceiling_serial_hours_at_timeout": 5.0
+      },
+      "resource_requirements": {
+        "executor_cpus": 2,
+        "executor_memory_mb": 2048,
+        "mcp_memory_mb": 512,
+        "scorer_memory_mb": 2048,
+        "docker_internal_network_required": true,
+        "egress_proxy_required": true
+      },
+      "token_measurement_limitations": "Only 1 of 103 historical runs (0.97%) recorded observed API token usage (`usage.status == 'observed'`). Missing token counts must remain explicitly `unavailable` (`null`), never coerced to zero.",
+      "retry_allowance": {
+        "max_infra_retries_per_trial": 1,
+        "candidate_failure_retried": false,
+        "scoring_error_retried": false,
+        "retry_linkage": "Every retry logs `retry_of_attempt_id` in `ledger_journal.jsonl`."
+      },
+      "stop_conditions": {
+        "stop_on_invalidating_protocol_violation": true,
+        "max_consecutive_infrastructure_failures": 3,
+        "abort_on_corrupt_frozen_evidence_digest": true
+      },
+      "estimated_cost_formula": {
+        "verified_unit_prices_available": false,
+        "monetary_estimate_usd": null,
+        "formula": "Total_Cost_USD = sum_{i=1..N_sessions} (input_tokens_i * P_in_per_token + cached_input_tokens_i * P_cache_per_token + output_tokens_i * P_out_per_token), where N_sessions = 3 * K * R * (1 + r_infra). Monetary values are intentionally null until official `gpt-6-luna` API unit prices and spend authorization are supplied."
+      }
+    },
+    "confirmatory_spec": {
+      "config_id": "confirmatory_spec",
+      "title": "Preregistered Confirmatory 3-Arm Experiment Specification",
+      "study_id": "stage2_validity_v1",
+      "execution_mode": "live_model_requires_registration_and_authorization",
+      "ready_to_execute": false,
+      "blockers": [
+        "Confirmatory eligibility requires >= 30 tasks in `S1_confirmatory_core`; currently 0 tasks qualify.",
+        "Live container network isolation (`--internal` + `egress_proxy.py`) must be verified end-to-end before confirmatory trials.",
+        "Preregistration commit hash must be frozen on Git before deriving the confirmatory randomization seed.",
+        "Paid model execution requires explicit human owner spend authorization."
+      ],
+      "tasks": [],
+      "task_count": 0,
+      "repetitions": 3,
+      "arms": [
+        "A",
+        "B",
+        "C"
+      ],
+      "planned_trials": 0,
+      "model_sessions": 0,
+      "timeout_seconds_per_trial": 600,
+      "wall_clock_budget": {
+        "expected_serial_hours_at_median_76_4s": 0.0,
+        "conservative_serial_hours_at_p90_186_0s": 0.0,
+        "hard_ceiling_serial_hours_at_timeout": 0.0
+      },
+      "resource_requirements": {
+        "executor_cpus": 2,
+        "executor_memory_mb": 2048,
+        "mcp_memory_mb": 512,
+        "scorer_memory_mb": 2048,
+        "docker_internal_network_required": true,
+        "egress_proxy_required": true
+      },
+      "token_measurement_limitations": "Only 1 of 103 historical runs (0.97%) recorded observed API token usage (`usage.status == 'observed'`). Missing token counts must remain explicitly `unavailable` (`null`), never coerced to zero.",
+      "retry_allowance": {
+        "max_infra_retries_per_trial": 1,
+        "candidate_failure_retried": false,
+        "scoring_error_retried": false,
+        "retry_linkage": "Every retry logs `retry_of_attempt_id` in `ledger_journal.jsonl`."
+      },
+      "stop_conditions": {
+        "stop_on_invalidating_protocol_violation": true,
+        "max_consecutive_infrastructure_failures": 3,
+        "abort_on_corrupt_frozen_evidence_digest": true
+      },
+      "estimated_cost_formula": {
+        "verified_unit_prices_available": false,
+        "monetary_estimate_usd": null,
+        "formula": "Total_Cost_USD = sum_{i=1..N_sessions} (input_tokens_i * P_in_per_token + cached_input_tokens_i * P_cache_per_token + output_tokens_i * P_out_per_token), where N_sessions = 3 * K * R * (1 + r_infra). Monetary values are intentionally null until official `gpt-6-luna` API unit prices and spend authorization are supplied."
+      },
+      "target_design_envelope": {
+        "target_tasks_k": 30,
+        "target_repetitions_r": 3,
+        "target_arms": 3,
+        "target_planned_trials": 270,
+        "target_expected_serial_hours_at_median_76_4s": 5.73,
+        "target_conservative_serial_hours_at_p90_186_0s": 13.95
+      }
+    }
+  },
+  "task_graduation_backlog": [
+    {
+      "stratum": "S2_calibration_needed",
+      "task_count": 17,
+      "tasks": [
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "R07",
+        "R08",
+        "R09",
+        "R10",
+        "R12",
+        "B01",
+        "B02",
+        "B03",
+        "H01",
+        "H04",
+        "H10"
+      ],
+      "required_action": "Run >= 3 baseline-only (Arm A) calibration trials per task under the pinned runtime image. Tasks with observed Arm A mean score in [0.10, 0.90] graduate directly to `S1_confirmatory_core` without inspecting Arm B/C outcomes."
+    },
+    {
+      "stratum": "RC_recalibration_required",
+      "task_count": 8,
+      "tasks": [
+        "R11",
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "E02",
+        "E03"
+      ],
+      "required_action": "For ceiling-saturated tasks (`C01`, `C02`, `C05`), harden edge-case requirements in a new task version. For `D01`\u2013`D03` and `E04`\u2013`E05` (`BEN-002`), decouple the scorer from narrow frozen package lists / extra-claim abstentions in a `knowledge-pilot-v2.2` revision, then re-screen on Arm A."
+    },
+    {
+      "stratum": "Q_quarantined_or_smoke",
+      "task_count": 6,
+      "tasks": [
+        "D01",
+        "D02",
+        "D03",
+        "E01",
+        "E04",
+        "E05"
+      ],
+      "required_action": "For `B01`\u2013`B03` and `E02`\u2013`E03`, execute Arm-A-only verification with the R container scorer (fixing historical `unsupported_for_automatic_scoring` runs) and harden difficulty if Arm A saturates at 1.0. For `E01`, resolve `BEN-002` extra-package abstention in `v2.2`."
+    }
+  ]
+}

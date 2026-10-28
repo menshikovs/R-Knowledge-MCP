@@ -1,0 +1,318 @@
+{
+  "study_id": "stage2_validity_v1",
+  "version": "1.0.0",
+  "status": "DRAFT - not registered; no confirmatory run is authorised",
+  "baseline_commit": "08ef9e9e2711e1174ed6796b3e3e60bf0ad7ca58",
+  "research_question": "Does making R-Knowledge-MCP available improve an agent's task performance compared with an otherwise equivalent agent without it?",
+  "primary_hypothesis": {
+    "H0": "mean within-task score difference (B - A) over the task population is 0",
+    "H1": "it is not 0 (two-sided); the direction is not assumed"
+  },
+  "primary_estimand": "Average over tasks of the within-task mean score difference B - A, by assignment of tool access (intention to treat); never conditioned on whether a tool was called.",
+  "primary_outcome": {
+    "metric": "task score = passed checks / total checks of the preregistered scorer, in [0,1]",
+    "aggregation": "mean over blocks within task, then mean over tasks (equal task weights)",
+    "candidate_failure": "scored as 0",
+    "missing": [
+      "infrastructure_failure",
+      "scoring_error",
+      "not_executed"
+    ]
+  },
+  "secondary_outcomes": [
+    "C - B",
+    "C - A",
+    "B - A fully_correct",
+    "adoption",
+    "cost",
+    "latency"
+  ],
+  "arms": {
+    "A": {
+      "label": "baseline",
+      "mcp_available": false,
+      "encouraged": false,
+      "instructions_sha256": "e275f7d098de3ef4a478d0ae6eba62d1fb8082381df62421babbcd606c026f78",
+      "description": "R-Knowledge-MCP unavailable: no MCP container, no MCP tool in the allow-list."
+    },
+    "B": {
+      "label": "mcp-voluntary",
+      "mcp_available": true,
+      "encouraged": false,
+      "instructions_sha256": "e275f7d098de3ef4a478d0ae6eba62d1fb8082381df62421babbcd606c026f78",
+      "description": "R-Knowledge-MCP available; instructions byte-identical to arm A (primary treatment)."
+    },
+    "C": {
+      "label": "mcp-encouraged",
+      "mcp_available": true,
+      "encouraged": true,
+      "instructions_sha256": "1b861607634c863d66dfaabd7d21101897dab19990e2619027c7f0f58d026e56",
+      "description": "As B plus one fixed sentence encouraging verification via the MCP tools; no call forced."
+    }
+  },
+  "shared_instruction_sha256": "e275f7d098de3ef4a478d0ae6eba62d1fb8082381df62421babbcd606c026f78",
+  "encouragement_sentence": "When R-Knowledge-MCP tools are connected, use them to verify package, function and version facts before relying on memory; do not call them when they cannot help.",
+  "model": {
+    "identity": "gpt-6-luna",
+    "effort": "medium",
+    "note": "historical default; the exact model version string must be pinned at registration"
+  },
+  "tools": {
+    "mcp": {
+      "toolset": "consolidated",
+      "tools": [
+        "analyze_r_project",
+        "analyze_r_source",
+        "build_r_prompt",
+        "check_package_version",
+        "check_r_compatibility",
+        "get_framework_docs",
+        "get_function_docs",
+        "get_package",
+        "get_r_documentation_section",
+        "get_r_prompt_context",
+        "get_r_workflow_guidance",
+        "list_package_functions",
+        "recommend_technology_stack",
+        "search_packages",
+        "search_r_documentation",
+        "validate_r_prompt"
+      ],
+      "surface_sha256": "ddbf572e5fd18cc671f0d8e8a692f5e7d11dc38f7766c564e9288e6c14ee1c39"
+    },
+    "other_tools": "identical executor tools in every arm"
+  },
+  "egress_policy": {
+    "all_arms": "internal network with an observing allow-list proxy",
+    "arm_A": [
+      "model-api"
+    ],
+    "arms_B_C": [
+      "model-api",
+      "r-knowledge-mcp"
+    ],
+    "violation_codes": [
+      "egress_not_restricted",
+      "egress_unverified",
+      "egress_unexpected_destination"
+    ],
+    "implementation_status": "NOT IMPLEMENTED in the runner (plain bridge network)"
+  },
+  "randomization": {
+    "algorithm": "blocked-latin-permutations-v1",
+    "block": "task x repetition",
+    "seed": null,
+    "seed_rule": "derive_seed(sha256(core manifest), registration commit)",
+    "fresh_context_per_trial": true
+  },
+  "designs": {
+    "pilot": {
+      "tasks": 10,
+      "repetitions": 3,
+      "arms": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    "recommended_confirmatory": {
+      "tasks": 30,
+      "repetitions": 3,
+      "arms": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    "higher_confidence": {
+      "tasks": 40,
+      "repetitions": 5,
+      "arms": [
+        "A",
+        "B",
+        "C"
+      ]
+    }
+  },
+  "pilot_tasks": [
+    {
+      "task": "D01",
+      "role": "exploratory_replication",
+      "suite": "knowledge-D",
+      "scorer": "knowledge-pilot-v2.1",
+      "files": {
+        "benchmarks/codex_r/knowledge_pilot/tasks/D01.md": "e0a92d2d234eac2fe80f83262b7382eca7b6f5fa24239f7f0d1358a8afd3b0e9",
+        "benchmarks/codex_r/knowledge_pilot/metadata/D01.json": "86ac0a4c6f2efd5c005373978a3e02a1782a050105063066a34155347aa92b60"
+      }
+    },
+    {
+      "task": "D02",
+      "role": "exploratory_replication",
+      "suite": "knowledge-D",
+      "scorer": "knowledge-pilot-v2.1",
+      "files": {
+        "benchmarks/codex_r/knowledge_pilot/tasks/D02.md": "72ba8265c4df23812958e6f22ea1a23860ac7431b56a23877875c55a2f2fa20b",
+        "benchmarks/codex_r/knowledge_pilot/metadata/D02.json": "3ab899f88a8c38f7a7e1a75450e1c9f6bae3978d680cd1d3d243282fe060775b"
+      }
+    },
+    {
+      "task": "D03",
+      "role": "exploratory_replication",
+      "suite": "knowledge-D",
+      "scorer": "knowledge-pilot-v2.1",
+      "files": {
+        "benchmarks/codex_r/knowledge_pilot/tasks/D03.md": "5df2fd3b36d5a180258fbdbec50e8979701d33814fc8e9398ed61a899356e617",
+        "benchmarks/codex_r/knowledge_pilot/metadata/D03.json": "be20f9c48b4e1017f6eee0b238e81f53392efb4ae773d021660b9d8333d0973e"
+      }
+    },
+    {
+      "task": "C01",
+      "role": "recalibration",
+      "suite": "knowledge-C",
+      "scorer": "knowledge-pilot-v2.1",
+      "files": {
+        "benchmarks/codex_r/knowledge_pilot/tasks/C01.md": "5e7b9250a52d9a6dd28e6e07f2073b9739838e7a89ca4cacf8e0920a970e6dac",
+        "benchmarks/codex_r/knowledge_pilot/metadata/C01.json": "51e22f854614c28e76bbb5778a0e74c572b3ee5c32ad9b745417ab5a4721cf5d",
+        "benchmarks/codex_r/knowledge_pilot/verifier/C01.R": "3b8022e757c14b7a0433b9622b27d893cb81409f1b229aed2f07c80e7d9210c7"
+      }
+    },
+    {
+      "task": "C04",
+      "role": "recalibration",
+      "suite": "knowledge-C",
+      "scorer": "knowledge-pilot-v2.1",
+      "files": {
+        "benchmarks/codex_r/knowledge_pilot/tasks/C04.md": "ae01dc4939c898f523663b13f36d86f40970bf24c6ff6b2e31bf2ecc25eb3489",
+        "benchmarks/codex_r/knowledge_pilot/metadata/C04.json": "2fa1533fe08ad8d0fdd8562e845aa2b62261ca31f156fc6b1d6a5146348d7059",
+        "benchmarks/codex_r/knowledge_pilot/verifier/C04.R": "0067eed9a3792a556ac99da353c560a6ec3179238baa2f037f33a200bd03ad08"
+      }
+    },
+    {
+      "task": "E02",
+      "role": "recalibration",
+      "suite": "knowledge-E",
+      "scorer": "knowledge-pilot-v2.1",
+      "files": {
+        "benchmarks/codex_r/knowledge_pilot/tasks/E02.md": "57d0a3cbe86d38f4faed3b32d957421eb59b3e5b8960c3f1b6eee52fef2d8bde",
+        "benchmarks/codex_r/knowledge_pilot/metadata/E02.json": "1bc5801814afeda97d16a3dcf740fb04e05cd8e2052eee5ed02f41cb3a123250",
+        "benchmarks/codex_r/knowledge_pilot/verifier/E02.R": "e85004acdd78e6fbf0b807cbe53319001d04b0ae78fa50804cc84943b13d3d0e"
+      }
+    },
+    {
+      "task": "E03",
+      "role": "recalibration",
+      "suite": "knowledge-E",
+      "scorer": "knowledge-pilot-v2.1",
+      "files": {
+        "benchmarks/codex_r/knowledge_pilot/tasks/E03.md": "5e7ea57a1d234a59e4630127c62743cdbdc2639d7d2a13c3a788f07c803ac41e",
+        "benchmarks/codex_r/knowledge_pilot/metadata/E03.json": "701af8490dd3f1ab91d9699f2734267279f1d88ea4d3eba1ccd7e1d35ddb8b44",
+        "benchmarks/codex_r/knowledge_pilot/verifier/E03.R": "5e8d1909b85d31b14dd87cc1b6bf3fc9215397a8f5e24406d32ad5d7bb099087"
+      }
+    },
+    {
+      "task": "E05",
+      "role": "scorer_reliability",
+      "suite": "knowledge-E",
+      "scorer": "knowledge-pilot-v2.1",
+      "files": {
+        "benchmarks/codex_r/knowledge_pilot/tasks/E05.md": "130587efdbbfc0bbbb94944bc5066349f9ab5c42cb57e7241f37b7a98306269b",
+        "benchmarks/codex_r/knowledge_pilot/metadata/E05.json": "910dd79851966befa9495297aaabbc006f388bcdfe7a4b78a0958660f2c89aad"
+      }
+    },
+    {
+      "task": "R01",
+      "role": "control",
+      "suite": "legacy-R",
+      "scorer": "legacy",
+      "files": {
+        "benchmarks/codex_r/tasks/R01/task.md": "7ed1dd81045c19f55af4f18780a2661cc99708ff226f115991e700a3e7b09436",
+        "benchmarks/codex_r/oracle/R01.R": "1488e1cbe546eeb3d647755d3c812b992724d3e0bcfcd5b95b1f1336194f30d5"
+      }
+    },
+    {
+      "task": "H10",
+      "role": "control",
+      "suite": "hard",
+      "scorer": "hard-v1",
+      "files": {
+        "benchmarks/codex_r/hard/tasks/H10/prompt.md": "d298b344069a119ba7fcc117356324630db5218038860ddf860809ad040d0333",
+        "benchmarks/codex_r/hard/tasks/H10/metadata.json": "46a3d624c43defac235e63784d5e29751de912cc28b95088e2adffb33fea9c85",
+        "benchmarks/codex_r/hard/verifier/H10.R": "11b5b1809af40176c0fba2eb873fcedbb3b2cfe5bff2e6fe229f9abb4e93e972"
+      }
+    }
+  ],
+  "confirmatory_task_rule": {
+    "minimum_tasks": 30,
+    "eligibility": [
+      "verifier kept private (only its SHA-256 is committed until the study ends)",
+      "reference solution and >= 3 wrong strategies pass/fail as expected",
+      ">= 5 independently written correct alternatives all pass (0 false negatives)",
+      "dimensions classified before any trial from task text only",
+      "arm-A calibration screen: mean in [0.10, 0.90] over >= 3 trials",
+      "outcomes of arms with MCP access never used for inclusion"
+    ],
+    "strata": {
+      "S1": "target",
+      "S2": "control (tool-use tax)",
+      "RC": "recalibrate",
+      "Q": "quarantined"
+    },
+    "current_eligible_tasks": 0
+  },
+  "scorers": {
+    "modules": {
+      "knowledge_pilot.py": "3d773055e5fbbfc12d524525d6f0df7b370bac10c6a8397eb2e2195d8398d345",
+      "knowledge_pilot_v2.py": "687fc668751305861e2b01ec3fcab4aad682c7c48d8ba422e430c045bf4bfea2",
+      "knowledge_pilot_v21.py": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "hard/suite.py": "e695cbd1505c381d7361f113c62c8194630fc96c5dc35ebc63930854056da487"
+    },
+    "versions": [
+      "knowledge-pilot-v2.1",
+      "hard-v1",
+      "legacy"
+    ]
+  },
+  "analysis": {
+    "plan": "STATISTICAL_ANALYSIS_PLAN.md",
+    "primary_test": "task-level sign-flip test on task mean differences (exact <= 16 tasks, else Monte Carlo); block-level flip as sensitivity analysis",
+    "interval": "two-stage percentile bootstrap (tasks, then blocks within task)",
+    "alpha": 0.05,
+    "secondary_correction": "Holm over C-B, C-A, B-A fully_correct",
+    "monte_carlo_permutations": 19999,
+    "bootstrap_resamples": 5000
+  },
+  "exclusions": {
+    "invalidating_violations": [
+      "arm_a_mcp_reachable",
+      "arm_a_mcp_called",
+      "treatment_not_delivered",
+      "instructions_mismatch",
+      "model_mismatch",
+      "effort_mismatch",
+      "scorer_version_mismatch",
+      "egress_not_restricted",
+      "egress_unverified",
+      "egress_unexpected_destination",
+      "tool_allowlist_unrecorded"
+    ],
+    "rule": "excluded from the primary analysis, reported, and bounded by sensitivity analyses"
+  },
+  "failure_handling": {
+    "retry_allowance": "one re-run per infrastructure failure, same assignment, at most 10% of trials",
+    "never": "a failed or missing trial is never deleted or replaced by a different task"
+  },
+  "stopping": "fixed sample size; no interim looks; stop only for budget exhaustion or a safety issue",
+  "budget": {
+    "model_spend_limit": null,
+    "status": "not authorised - a limit must be set and approved before any paid run",
+    "timeout_seconds_per_trial": 900
+  },
+  "exploratory_analyses": [
+    "per-stratum and per-task effects",
+    "adoption by task",
+    "descriptive comparison of trials with and without tool calls (confounded)",
+    "tool-result use proxy",
+    "token and latency tradeoffs"
+  ],
+  "core_sha256": "4eaee4975f9b7f7cd94ed875ab1464e4b35dcb7f57c52f8a3a2a60c20fcf603e"
+}

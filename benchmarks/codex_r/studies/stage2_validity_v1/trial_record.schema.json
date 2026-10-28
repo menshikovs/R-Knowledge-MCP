@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stage2_validity_v1/trial_record.schema.json",
+  "title": "Trial record, study stage2_validity_v1",
+  "description": "One row per planned trial. A trial that produced no outcome still has a record (non-scored outcome_kind); rows are never deleted. Semantic rules that a schema cannot express (score = passed / total, completed + errored <= attempted) are enforced by records.validate_record.",
+  "type": "object",
+  "required": [
+    "trial_id", "block_id", "task", "arm", "repetition", "execution_index", "model", "effort",
+    "scorer_version", "outcome_kind", "score", "mcp", "usage", "violations"
+  ],
+  "properties": {
+    "trial_id": {"type": "string", "minLength": 1},
+    "block_id": {"type": "string", "minLength": 1},
+    "task": {"type": "string", "minLength": 1},
+    "arm": {"enum": ["A", "B", "C"]},
+    "repetition": {"type": "integer", "minimum": 1},
+    "execution_index": {"type": "integer", "minimum": 1},
+    "model": {"type": "string"},
+    "effort": {"type": "string"},
+    "scorer_version": {"type": "string"},
+    "outcome_kind": {
+      "enum": ["scored", "candidate_failure", "infrastructure_failure", "scoring_error", "not_executed"]
+    },
+    "score": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "checks_passed": {"type": ["integer", "null"], "minimum": 0},
+    "checks_total": {"type": ["integer", "null"], "minimum": 1},
+    "mcp": {
+      "type": "object",
+      "required": ["available", "listed", "attempted", "completed", "errored", "correlation"],
+      "properties": {
+        "available": {"type": "boolean"},
+        "listed": {"type": ["boolean", "null"]},
+        "attempted": {"type": "integer", "minimum": 0},
+        "completed": {"type": "integer", "minimum": 0},
+        "errored": {"type": "integer", "minimum": 0},
+        "never_completed": {"type": "integer", "minimum": 0},
+        "delivered": {"type": "integer", "minimum": 0},
+        "correlation": {
+          "enum": ["confirmed_protocol_id", "ordinal_unconfirmed", "unmatched", "not_applicable"]
+        }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"enum": ["observed", "unavailable"]},
+        "input_tokens": {"type": "integer", "minimum": 0},
+        "output_tokens": {"type": "integer", "minimum": 0}
+      }
+    },
+    "violations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "detail", "invalidating"],
+        "properties": {
+          "code": {"type": "string"},
+          "detail": {"type": "string"},
+          "invalidating": {"type": "boolean"}
+        }
+      }
+    },
+    "synthetic": {"type": "boolean", "description": "true only for dry-run records"}
+  }
+}

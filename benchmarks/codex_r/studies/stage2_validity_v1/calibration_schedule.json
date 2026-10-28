@@ -1,0 +1,2685 @@
+{
+  "schedule_version": "stage27-calibration-schedule-v1.1",
+  "study_id": "stage27_baseline_calibration",
+  "status": "PREPARED_NOT_EXECUTED",
+  "seed": 20261028,
+  "candidate_source": "task_catalog.json provisional_stratum in RC/S2",
+  "candidates_that_can_enter_s1": [
+    "C01",
+    "C02",
+    "C03",
+    "C04",
+    "C05",
+    "E02",
+    "E03",
+    "R11"
+  ],
+  "candidate_tasks": [
+    "B01",
+    "B02",
+    "B03",
+    "C01",
+    "C02",
+    "C03",
+    "C04",
+    "C05",
+    "E02",
+    "E03",
+    "H01",
+    "H04",
+    "H10",
+    "R01",
+    "R02",
+    "R03",
+    "R04",
+    "R05",
+    "R06",
+    "R07",
+    "R08",
+    "R09",
+    "R10",
+    "R11",
+    "R12"
+  ],
+  "candidate_task_count": 25,
+  "arms": [
+    "A"
+  ],
+  "repetitions_per_task": 3,
+  "total_planned_trials": 75,
+  "resource_estimates": {
+    "total_prompt_tokens": 900000,
+    "total_completion_tokens": 187500,
+    "expected_wall_clock_hours": 1.72,
+    "timeout_ceiling_hours": 18.75,
+    "basis": "planning estimates, not usage caps; no price is assumed for any model"
+  },
+  "model_execution_authorized": false,
+  "trials": [
+    {
+      "trial_id": "cal-A-B01-r1-001",
+      "block_id": "cal-block-001",
+      "task": "B01",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 1,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "244d1dbaf2d3e46269dbec4e302df3f3283c04881da1dc0e6f5391edcd42c7c1",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20262037,
+      "trial_seed": 20262037,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-B02-r1-002",
+      "block_id": "cal-block-002",
+      "task": "B02",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 2,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "c25aacee7e73bbedc45e342f63a1956fc663a0658e421272cdf67570b5b20113",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20263046,
+      "trial_seed": 20263046,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-B03-r1-003",
+      "block_id": "cal-block-003",
+      "task": "B03",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 3,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "1dab31a726921d09e03138e7a0eab008eca6e6fe4da800349c855a83456c2e12",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20264055,
+      "trial_seed": 20264055,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C01-r1-004",
+      "block_id": "cal-block-004",
+      "task": "C01",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 4,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "a983d6d1a34ec73b1b71462d56a66f5d6cbee7e10aede42699587d66c5a932c6",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20265064,
+      "trial_seed": 20265064,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C02-r1-005",
+      "block_id": "cal-block-005",
+      "task": "C02",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 5,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "96d6c320e302cd1a0be668c44edd492131a66f6849fbf31d98db1ebb28c8c340",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20266073,
+      "trial_seed": 20266073,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C03-r1-006",
+      "block_id": "cal-block-006",
+      "task": "C03",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 6,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "b46caed57fa5f7a85e15c26899e8b8e996a7ccd59817301f9252d07ffc0c85ab",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20267082,
+      "trial_seed": 20267082,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C04-r1-007",
+      "block_id": "cal-block-007",
+      "task": "C04",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 7,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "fdef1656106911dfbfb40743804440fc9163224cd6d9e4982706ac1a6ef13610",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20268091,
+      "trial_seed": 20268091,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C05-r1-008",
+      "block_id": "cal-block-008",
+      "task": "C05",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 8,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "8b419210da67133148e1fcf68c7bb7ff10c39d62110b92b7215893388158c614",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20269100,
+      "trial_seed": 20269100,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-E02-r1-009",
+      "block_id": "cal-block-009",
+      "task": "E02",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 9,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "1b089c8b21a3bd84920ceeee098679a8cbb2c859070ce49b3f07726ff33a9d76",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20270109,
+      "trial_seed": 20270109,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-E03-r1-010",
+      "block_id": "cal-block-010",
+      "task": "E03",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 10,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "98a28e6d64a05f82f201e2144771731cb214fc2b01f41ba8649a187c23c48920",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20271118,
+      "trial_seed": 20271118,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-H01-r1-011",
+      "block_id": "cal-block-011",
+      "task": "H01",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 11,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "hard-v1",
+      "task_sha256": "96c5945034cfe9827d87614cf453b49914a56c6b7f05587889ccbb1b15c35fad",
+      "scorer_sha256": "e695cbd1505c381d7361f113c62c8194630fc96c5dc35ebc63930854056da487",
+      "randomization_seed": 20272127,
+      "trial_seed": 20272127,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-H04-r1-012",
+      "block_id": "cal-block-012",
+      "task": "H04",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 12,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "hard-v1",
+      "task_sha256": "b1e5ebca0166502ea583193d3755e81b2314563a86ae8b62c3461c575650b635",
+      "scorer_sha256": "e695cbd1505c381d7361f113c62c8194630fc96c5dc35ebc63930854056da487",
+      "randomization_seed": 20273136,
+      "trial_seed": 20273136,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-H10-r1-013",
+      "block_id": "cal-block-013",
+      "task": "H10",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 13,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "hard-v1",
+      "task_sha256": "e329c39105c03bda244b36e710b1306674cea13d26720035d3fc69739bbacbda",
+      "scorer_sha256": "e695cbd1505c381d7361f113c62c8194630fc96c5dc35ebc63930854056da487",
+      "randomization_seed": 20274145,
+      "trial_seed": 20274145,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R01-r1-014",
+      "block_id": "cal-block-014",
+      "task": "R01",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 14,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "edce33dbc11525b022065bd743427e4271b46a0dfe51f93df216b693871e917a",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20275154,
+      "trial_seed": 20275154,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R02-r1-015",
+      "block_id": "cal-block-015",
+      "task": "R02",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 15,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "bb41c1ca951dc0c0e5d61fb4867d535bb1de4688333ab56d1c1d345646a06f0f",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20276163,
+      "trial_seed": 20276163,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R03-r1-016",
+      "block_id": "cal-block-016",
+      "task": "R03",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 16,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "785c028cd927fbf00e80c8bb239c4eca4554e8aaa5f51f46ee4eca6af0d693e1",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20277172,
+      "trial_seed": 20277172,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R04-r1-017",
+      "block_id": "cal-block-017",
+      "task": "R04",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 17,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "8fd4f2a0142cdaa7c32b8c6bb9777a63d32d55328fa4a5b124dbb6e327e6f696",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20278181,
+      "trial_seed": 20278181,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R05-r1-018",
+      "block_id": "cal-block-018",
+      "task": "R05",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 18,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "0665c801accdf3d1db6384ad4ee8b940d297d9a369808acab1d39b85190cbce0",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20279190,
+      "trial_seed": 20279190,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R06-r1-019",
+      "block_id": "cal-block-019",
+      "task": "R06",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 19,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "3fb0046e0734a3dd1fe382513a62faead86fe4316db30b98c8234c03268fb31a",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20280199,
+      "trial_seed": 20280199,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R07-r1-020",
+      "block_id": "cal-block-020",
+      "task": "R07",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 20,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "04eff6e7751eda726dcd1e31d9a5618a50cdb3766a510c7a1ae21a34fba3240a",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20281208,
+      "trial_seed": 20281208,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R08-r1-021",
+      "block_id": "cal-block-021",
+      "task": "R08",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 21,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "2c0c52136f91ed537d793e0f5537117711c18b7af6a379bc7e7de202240cd508",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20282217,
+      "trial_seed": 20282217,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R09-r1-022",
+      "block_id": "cal-block-022",
+      "task": "R09",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 22,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "870608abf3ac55b32bcba4f627bc01ac32df8f2faf4097db7a11a156bafb432d",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20283226,
+      "trial_seed": 20283226,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R10-r1-023",
+      "block_id": "cal-block-023",
+      "task": "R10",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 23,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "72ad66c6749fcd62ed6c216b8bc950f3d70066fa82fdd3209df0c1e65bcdb37e",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20284235,
+      "trial_seed": 20284235,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R11-r1-024",
+      "block_id": "cal-block-024",
+      "task": "R11",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 24,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "6e38e81d91b7d6e7ecc94be824a5edbed9f7b43e43270e45ed25ecf9cdb4aac7",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20285244,
+      "trial_seed": 20285244,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R12-r1-025",
+      "block_id": "cal-block-025",
+      "task": "R12",
+      "arm": "A",
+      "repetition": 1,
+      "execution_index": 25,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "af7720b30584f2951a89094e087618618ef84f12c9311aed7611a0465fed5b43",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20286253,
+      "trial_seed": 20286253,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-B01-r2-026",
+      "block_id": "cal-block-026",
+      "task": "B01",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 26,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "244d1dbaf2d3e46269dbec4e302df3f3283c04881da1dc0e6f5391edcd42c7c1",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20287262,
+      "trial_seed": 20287262,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-B02-r2-027",
+      "block_id": "cal-block-027",
+      "task": "B02",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 27,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "c25aacee7e73bbedc45e342f63a1956fc663a0658e421272cdf67570b5b20113",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20288271,
+      "trial_seed": 20288271,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-B03-r2-028",
+      "block_id": "cal-block-028",
+      "task": "B03",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 28,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "1dab31a726921d09e03138e7a0eab008eca6e6fe4da800349c855a83456c2e12",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20289280,
+      "trial_seed": 20289280,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C01-r2-029",
+      "block_id": "cal-block-029",
+      "task": "C01",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 29,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "a983d6d1a34ec73b1b71462d56a66f5d6cbee7e10aede42699587d66c5a932c6",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20290289,
+      "trial_seed": 20290289,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C02-r2-030",
+      "block_id": "cal-block-030",
+      "task": "C02",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 30,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "96d6c320e302cd1a0be668c44edd492131a66f6849fbf31d98db1ebb28c8c340",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20291298,
+      "trial_seed": 20291298,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C03-r2-031",
+      "block_id": "cal-block-031",
+      "task": "C03",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 31,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "b46caed57fa5f7a85e15c26899e8b8e996a7ccd59817301f9252d07ffc0c85ab",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20292307,
+      "trial_seed": 20292307,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C04-r2-032",
+      "block_id": "cal-block-032",
+      "task": "C04",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 32,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "fdef1656106911dfbfb40743804440fc9163224cd6d9e4982706ac1a6ef13610",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20293316,
+      "trial_seed": 20293316,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C05-r2-033",
+      "block_id": "cal-block-033",
+      "task": "C05",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 33,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "8b419210da67133148e1fcf68c7bb7ff10c39d62110b92b7215893388158c614",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20294325,
+      "trial_seed": 20294325,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-E02-r2-034",
+      "block_id": "cal-block-034",
+      "task": "E02",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 34,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "1b089c8b21a3bd84920ceeee098679a8cbb2c859070ce49b3f07726ff33a9d76",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20295334,
+      "trial_seed": 20295334,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-E03-r2-035",
+      "block_id": "cal-block-035",
+      "task": "E03",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 35,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "98a28e6d64a05f82f201e2144771731cb214fc2b01f41ba8649a187c23c48920",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20296343,
+      "trial_seed": 20296343,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-H01-r2-036",
+      "block_id": "cal-block-036",
+      "task": "H01",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 36,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "hard-v1",
+      "task_sha256": "96c5945034cfe9827d87614cf453b49914a56c6b7f05587889ccbb1b15c35fad",
+      "scorer_sha256": "e695cbd1505c381d7361f113c62c8194630fc96c5dc35ebc63930854056da487",
+      "randomization_seed": 20297352,
+      "trial_seed": 20297352,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-H04-r2-037",
+      "block_id": "cal-block-037",
+      "task": "H04",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 37,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "hard-v1",
+      "task_sha256": "b1e5ebca0166502ea583193d3755e81b2314563a86ae8b62c3461c575650b635",
+      "scorer_sha256": "e695cbd1505c381d7361f113c62c8194630fc96c5dc35ebc63930854056da487",
+      "randomization_seed": 20298361,
+      "trial_seed": 20298361,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-H10-r2-038",
+      "block_id": "cal-block-038",
+      "task": "H10",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 38,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "hard-v1",
+      "task_sha256": "e329c39105c03bda244b36e710b1306674cea13d26720035d3fc69739bbacbda",
+      "scorer_sha256": "e695cbd1505c381d7361f113c62c8194630fc96c5dc35ebc63930854056da487",
+      "randomization_seed": 20299370,
+      "trial_seed": 20299370,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R01-r2-039",
+      "block_id": "cal-block-039",
+      "task": "R01",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 39,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "edce33dbc11525b022065bd743427e4271b46a0dfe51f93df216b693871e917a",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20300379,
+      "trial_seed": 20300379,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R02-r2-040",
+      "block_id": "cal-block-040",
+      "task": "R02",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 40,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "bb41c1ca951dc0c0e5d61fb4867d535bb1de4688333ab56d1c1d345646a06f0f",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20301388,
+      "trial_seed": 20301388,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R03-r2-041",
+      "block_id": "cal-block-041",
+      "task": "R03",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 41,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "785c028cd927fbf00e80c8bb239c4eca4554e8aaa5f51f46ee4eca6af0d693e1",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20302397,
+      "trial_seed": 20302397,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R04-r2-042",
+      "block_id": "cal-block-042",
+      "task": "R04",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 42,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "8fd4f2a0142cdaa7c32b8c6bb9777a63d32d55328fa4a5b124dbb6e327e6f696",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20303406,
+      "trial_seed": 20303406,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R05-r2-043",
+      "block_id": "cal-block-043",
+      "task": "R05",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 43,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "0665c801accdf3d1db6384ad4ee8b940d297d9a369808acab1d39b85190cbce0",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20304415,
+      "trial_seed": 20304415,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R06-r2-044",
+      "block_id": "cal-block-044",
+      "task": "R06",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 44,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "3fb0046e0734a3dd1fe382513a62faead86fe4316db30b98c8234c03268fb31a",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20305424,
+      "trial_seed": 20305424,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R07-r2-045",
+      "block_id": "cal-block-045",
+      "task": "R07",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 45,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "04eff6e7751eda726dcd1e31d9a5618a50cdb3766a510c7a1ae21a34fba3240a",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20306433,
+      "trial_seed": 20306433,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R08-r2-046",
+      "block_id": "cal-block-046",
+      "task": "R08",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 46,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "2c0c52136f91ed537d793e0f5537117711c18b7af6a379bc7e7de202240cd508",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20307442,
+      "trial_seed": 20307442,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R09-r2-047",
+      "block_id": "cal-block-047",
+      "task": "R09",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 47,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "870608abf3ac55b32bcba4f627bc01ac32df8f2faf4097db7a11a156bafb432d",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20308451,
+      "trial_seed": 20308451,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R10-r2-048",
+      "block_id": "cal-block-048",
+      "task": "R10",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 48,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "72ad66c6749fcd62ed6c216b8bc950f3d70066fa82fdd3209df0c1e65bcdb37e",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20309460,
+      "trial_seed": 20309460,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R11-r2-049",
+      "block_id": "cal-block-049",
+      "task": "R11",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 49,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "6e38e81d91b7d6e7ecc94be824a5edbed9f7b43e43270e45ed25ecf9cdb4aac7",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20310469,
+      "trial_seed": 20310469,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R12-r2-050",
+      "block_id": "cal-block-050",
+      "task": "R12",
+      "arm": "A",
+      "repetition": 2,
+      "execution_index": 50,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "af7720b30584f2951a89094e087618618ef84f12c9311aed7611a0465fed5b43",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20311478,
+      "trial_seed": 20311478,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-B01-r3-051",
+      "block_id": "cal-block-051",
+      "task": "B01",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 51,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "244d1dbaf2d3e46269dbec4e302df3f3283c04881da1dc0e6f5391edcd42c7c1",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20312487,
+      "trial_seed": 20312487,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-B02-r3-052",
+      "block_id": "cal-block-052",
+      "task": "B02",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 52,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "c25aacee7e73bbedc45e342f63a1956fc663a0658e421272cdf67570b5b20113",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20313496,
+      "trial_seed": 20313496,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-B03-r3-053",
+      "block_id": "cal-block-053",
+      "task": "B03",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 53,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "1dab31a726921d09e03138e7a0eab008eca6e6fe4da800349c855a83456c2e12",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20314505,
+      "trial_seed": 20314505,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C01-r3-054",
+      "block_id": "cal-block-054",
+      "task": "C01",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 54,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "a983d6d1a34ec73b1b71462d56a66f5d6cbee7e10aede42699587d66c5a932c6",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20315514,
+      "trial_seed": 20315514,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C02-r3-055",
+      "block_id": "cal-block-055",
+      "task": "C02",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 55,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "96d6c320e302cd1a0be668c44edd492131a66f6849fbf31d98db1ebb28c8c340",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20316523,
+      "trial_seed": 20316523,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C03-r3-056",
+      "block_id": "cal-block-056",
+      "task": "C03",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 56,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "b46caed57fa5f7a85e15c26899e8b8e996a7ccd59817301f9252d07ffc0c85ab",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20317532,
+      "trial_seed": 20317532,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C04-r3-057",
+      "block_id": "cal-block-057",
+      "task": "C04",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 57,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "fdef1656106911dfbfb40743804440fc9163224cd6d9e4982706ac1a6ef13610",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20318541,
+      "trial_seed": 20318541,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-C05-r3-058",
+      "block_id": "cal-block-058",
+      "task": "C05",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 58,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "8b419210da67133148e1fcf68c7bb7ff10c39d62110b92b7215893388158c614",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20319550,
+      "trial_seed": 20319550,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-E02-r3-059",
+      "block_id": "cal-block-059",
+      "task": "E02",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 59,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "1b089c8b21a3bd84920ceeee098679a8cbb2c859070ce49b3f07726ff33a9d76",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20320559,
+      "trial_seed": 20320559,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-E03-r3-060",
+      "block_id": "cal-block-060",
+      "task": "E03",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 60,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "knowledge-pilot-v2.1",
+      "task_sha256": "98a28e6d64a05f82f201e2144771731cb214fc2b01f41ba8649a187c23c48920",
+      "scorer_sha256": "e714f14d915dcff42b4fb62fba62f860066a0300ef527930e1f2ca9ecc2978af",
+      "randomization_seed": 20321568,
+      "trial_seed": 20321568,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-H01-r3-061",
+      "block_id": "cal-block-061",
+      "task": "H01",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 61,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "hard-v1",
+      "task_sha256": "96c5945034cfe9827d87614cf453b49914a56c6b7f05587889ccbb1b15c35fad",
+      "scorer_sha256": "e695cbd1505c381d7361f113c62c8194630fc96c5dc35ebc63930854056da487",
+      "randomization_seed": 20322577,
+      "trial_seed": 20322577,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-H04-r3-062",
+      "block_id": "cal-block-062",
+      "task": "H04",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 62,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "hard-v1",
+      "task_sha256": "b1e5ebca0166502ea583193d3755e81b2314563a86ae8b62c3461c575650b635",
+      "scorer_sha256": "e695cbd1505c381d7361f113c62c8194630fc96c5dc35ebc63930854056da487",
+      "randomization_seed": 20323586,
+      "trial_seed": 20323586,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-H10-r3-063",
+      "block_id": "cal-block-063",
+      "task": "H10",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 63,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "hard-v1",
+      "task_sha256": "e329c39105c03bda244b36e710b1306674cea13d26720035d3fc69739bbacbda",
+      "scorer_sha256": "e695cbd1505c381d7361f113c62c8194630fc96c5dc35ebc63930854056da487",
+      "randomization_seed": 20324595,
+      "trial_seed": 20324595,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R01-r3-064",
+      "block_id": "cal-block-064",
+      "task": "R01",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 64,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "edce33dbc11525b022065bd743427e4271b46a0dfe51f93df216b693871e917a",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20325604,
+      "trial_seed": 20325604,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R02-r3-065",
+      "block_id": "cal-block-065",
+      "task": "R02",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 65,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "bb41c1ca951dc0c0e5d61fb4867d535bb1de4688333ab56d1c1d345646a06f0f",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20326613,
+      "trial_seed": 20326613,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R03-r3-066",
+      "block_id": "cal-block-066",
+      "task": "R03",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 66,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "785c028cd927fbf00e80c8bb239c4eca4554e8aaa5f51f46ee4eca6af0d693e1",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20327622,
+      "trial_seed": 20327622,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R04-r3-067",
+      "block_id": "cal-block-067",
+      "task": "R04",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 67,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "8fd4f2a0142cdaa7c32b8c6bb9777a63d32d55328fa4a5b124dbb6e327e6f696",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20328631,
+      "trial_seed": 20328631,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R05-r3-068",
+      "block_id": "cal-block-068",
+      "task": "R05",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 68,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "0665c801accdf3d1db6384ad4ee8b940d297d9a369808acab1d39b85190cbce0",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20329640,
+      "trial_seed": 20329640,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R06-r3-069",
+      "block_id": "cal-block-069",
+      "task": "R06",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 69,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "3fb0046e0734a3dd1fe382513a62faead86fe4316db30b98c8234c03268fb31a",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20330649,
+      "trial_seed": 20330649,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R07-r3-070",
+      "block_id": "cal-block-070",
+      "task": "R07",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 70,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "04eff6e7751eda726dcd1e31d9a5618a50cdb3766a510c7a1ae21a34fba3240a",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20331658,
+      "trial_seed": 20331658,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R08-r3-071",
+      "block_id": "cal-block-071",
+      "task": "R08",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 71,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "2c0c52136f91ed537d793e0f5537117711c18b7af6a379bc7e7de202240cd508",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20332667,
+      "trial_seed": 20332667,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R09-r3-072",
+      "block_id": "cal-block-072",
+      "task": "R09",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 72,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "870608abf3ac55b32bcba4f627bc01ac32df8f2faf4097db7a11a156bafb432d",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20333676,
+      "trial_seed": 20333676,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R10-r3-073",
+      "block_id": "cal-block-073",
+      "task": "R10",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 73,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "72ad66c6749fcd62ed6c216b8bc950f3d70066fa82fdd3209df0c1e65bcdb37e",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20334685,
+      "trial_seed": 20334685,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R11-r3-074",
+      "block_id": "cal-block-074",
+      "task": "R11",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 74,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "6e38e81d91b7d6e7ecc94be824a5edbed9f7b43e43270e45ed25ecf9cdb4aac7",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20335694,
+      "trial_seed": 20335694,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    },
+    {
+      "trial_id": "cal-A-R12-r3-075",
+      "block_id": "cal-block-075",
+      "task": "R12",
+      "arm": "A",
+      "repetition": 3,
+      "execution_index": 75,
+      "position_in_block": 1,
+      "fresh_context": true,
+      "scorer_version": "legacy",
+      "task_sha256": "af7720b30584f2951a89094e087618618ef84f12c9311aed7611a0465fed5b43",
+      "scorer_sha256": "749f99c230f5997ca198d38da2ceb863151857376b141c047e6f0a90abad2888",
+      "randomization_seed": 20336703,
+      "trial_seed": 20336703,
+      "model": "gpt-6-luna",
+      "runtime_image": "rkmcp-codex-runtime:codex-0.163.0",
+      "timeout_seconds": 900,
+      "estimated_tokens": {
+        "prompt_tokens": 12000,
+        "completion_tokens": 2500
+      },
+      "estimated_duration_seconds": 82.6,
+      "retry_policy": {
+        "max_retries": 1,
+        "retry_on": [
+          "infrastructure_failure"
+        ],
+        "retry_on_candidate_failure": false
+      },
+      "stop_conditions": {
+        "max_consecutive_infrastructure_failures": 3,
+        "max_failure_rate": 0.2,
+        "abort_on_isolation_canary_failure": true
+      }
+    }
+  ]
+}
