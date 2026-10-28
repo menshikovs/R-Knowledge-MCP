@@ -15,6 +15,15 @@
 > strata that contradict `task_catalog.json`, and quoted a cost estimate at another model's prices.
 > Sections 4–8 replace those statements.
 
+> **Superseded in part by Stage 3A (2026-10-28).** See
+> [`STAGE3A_REAL_EXECUTION.md`](STAGE3A_REAL_EXECUTION.md). `execute-calibration --executor live`
+> now runs on the existing benchmark runner (`run_simple.run_trial`) after authorization and a
+> spend ceiling; it no longer exits 3 for the current schedule. The live executor status is
+> `IMPLEMENTED_NOT_EMPIRICALLY_VERIFIED`. The live-executor statements and commands in §1, §6, §7
+> and §9 below describe the Stage 2.7 state. The dimension aggregation described in §2.4 and §3
+> item 2 was removed (see the corrections there). The calibration schedule's scorer digests were
+> re-pinned to the scorers that actually execute.
+
 | Status | Value | Meaning |
 | :--- | :--- | :--- |
 | **Mock-ready** | **YES** | Calibration schedules run end to end through the Stage 2 ledger with the in-process mock executor and through the real Docker topology with a local mock model. Every record is `synthetic: true`. |
@@ -55,7 +64,7 @@ No model API calls were executed. No empirical benefit claims are made based on 
 
 ### 2.4 Scorer Contracts and Dimension Aggregation
 - For multidimensional scorers (`knowledge-pilot-v2` and `knowledge-pilot-v2.1` on tasks `D01`–`D03`, `E01`–`E05`), top-level `passed` and `total` are `null` in the canonical JSON output.
-- `records.from_runner_result` aggregates `passed` and `total` across evaluated subdimensions (`schema_validity`, `factual_correctness`, `version_repository_identity`, `source_quality`, `unsupported_claims`), yielding normalized scores in $[0, 1]$ matching benchmark checks.
+- ~~`records.from_runner_result` aggregates `passed` and `total` across evaluated subdimensions …~~ **Corrected in Stage 3A.** The canonical scorers deliberately report no `passed`/`total` and no overall score (`overall_score: null`), and they abstain (`fully_correct: null`) on unknown claims. Summing the dimensions invented an aggregate the scorer refuses to make, and could call an abstention "fully correct". The preregistered primary outcome (passed/total) is therefore *undefined* for these scorers. Such a trial is a missing outcome (`scoring_error`), and the scorer's own verdict is kept in `scorer_result`. Only D01 and D03 are scored by v2.1; the other knowledge-pilot tasks are scored by the knowledge-pilot `legacy` scorer (`scorer_bindings.py`).
 - Candidate failures (timeouts, exit code errors) receive $0.0$ in ITT analysis. Infrastructure failures, scoring errors, and missing outcomes receive `None` and are bounded via Manski sensitivity bounds.
 
 ---
@@ -63,7 +72,7 @@ No model API calls were executed. No empirical benefit claims are made based on 
 ## 3. Corrections and Hardening Applied
 
 1. **Confirmatory Task Minimum Unified to 30**: Aligned `MINIMUM_CONFIRMATORY_S1_TASKS = 30` in `study_configs.py` with `manifest.py` and `PREREGISTRATION.md`.
-2. **Multidimensional Scorer Contract Handling**: Resolved false `infrastructure_failure` classifications by aggregating dimension-level checks when top-level fields are `None`.
+2. **Multidimensional Scorer Contract Handling**: Resolved false `infrastructure_failure` classifications ~~by aggregating dimension-level checks when top-level fields are `None`~~. *Stage 3A correction:* such results are now a missing primary outcome (`scoring_error`), with the canonical result preserved, rather than an invented sum (see §2.4).
 3. **Attempt Artifact Journaling**: Added raw attempt output preservation in `runner.py`'s `TrialLedger.write_attempt_evidence` to preserve crash/failure context.
 4. **Baseline Difficulty Uncertainty Decision Rule**: Implemented uncertainty-aware classification in `calibration_pipeline.py` recognizing that $R=3$ repetitions yield wide confidence intervals, categorizing borderline tasks as `"inconclusive_sample_size_limited"`.
 5. **Readiness Gates Verification**: Added formal evaluation of the 5 research readiness gates via CLI command `readiness-gates`.
