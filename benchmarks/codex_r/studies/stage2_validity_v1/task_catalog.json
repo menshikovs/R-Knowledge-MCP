@@ -1,0 +1,763 @@
+{
+  "schema_version": 1,
+  "classification_basis": "dimensions read from task statements/metadata, not outcomes",
+  "screen_rule": {
+    "uses": "arm A (baseline) trials only",
+    "min_trials": 3,
+    "in_range": [
+      0.1,
+      0.9
+    ]
+  },
+  "stratum_counts": {
+    "Q": 6,
+    "RC": 8,
+    "S2": 17
+  },
+  "tasks": [
+    {
+      "task": "R01",
+      "suite": "legacy-R",
+      "title": "Base R validation (clean_records)",
+      "dimensions": {
+        "r_knowledge_depth": 1,
+        "version_sensitivity": 0,
+        "documentation_dependence": 0,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "none",
+      "scorer": "legacy",
+      "notes": "Base R; typed edge cases.",
+      "historical_arm_a_screen": {
+        "status": "ceiling",
+        "n": 4,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "R02",
+      "suite": "legacy-R",
+      "title": "dplyr grouped sales",
+      "dimensions": {
+        "r_knowledge_depth": 1,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "legacy",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 1,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "R03",
+      "suite": "legacy-R",
+      "title": "readr malformed typed CSV",
+      "dimensions": {
+        "r_knowledge_depth": 1,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "legacy",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 0,
+        "mean_arm_a": null
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "R04",
+      "suite": "legacy-R",
+      "title": "ggplot2 grouped log plot",
+      "dimensions": {
+        "r_knowledge_depth": 1,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "legacy",
+      "notes": "Plot semantics checked structurally, not by pixels.",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 0,
+        "mean_arm_a": null
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "R05",
+      "suite": "legacy-R",
+      "title": "tidyr irregular visits",
+      "dimensions": {
+        "r_knowledge_depth": 1,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "legacy",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 0,
+        "mean_arm_a": null
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "R06",
+      "suite": "legacy-R",
+      "title": "Parameterized SQLite lookup",
+      "dimensions": {
+        "r_knowledge_depth": 1,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "none",
+      "scorer": "legacy",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 0,
+        "mean_arm_a": null
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "R07",
+      "suite": "legacy-R",
+      "title": "Safe SQL aggregation",
+      "dimensions": {
+        "r_knowledge_depth": 1,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "none",
+      "scorer": "legacy",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 0,
+        "mean_arm_a": null
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "R08",
+      "suite": "legacy-R",
+      "title": "Shiny reactive filtering",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 1,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "legacy",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 0,
+        "mean_arm_a": null
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "R09",
+      "suite": "legacy-R",
+      "title": "Reusable Shiny module",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 1,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "legacy",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 0,
+        "mean_arm_a": null
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "R10",
+      "suite": "legacy-R",
+      "title": "Reproducible Quarto report",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 1,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "legacy",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 0,
+        "mean_arm_a": null
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "R11",
+      "suite": "legacy-R",
+      "title": "IRanges interval summary (Bioc 3.22)",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "scorer": "legacy",
+      "notes": "Pinned Bioconductor release.",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 0,
+        "mean_arm_a": null
+      },
+      "provisional_stratum": "RC"
+    },
+    {
+      "task": "R12",
+      "suite": "legacy-R",
+      "title": "CSV to validated report workflow",
+      "dimensions": {
+        "r_knowledge_depth": 1,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "none",
+      "scorer": "legacy",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 0,
+        "mean_arm_a": null
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "B01",
+      "suite": "knowledge-B",
+      "title": "Repair ledger summary",
+      "dimensions": {
+        "r_knowledge_depth": 1,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 1,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "B02",
+      "suite": "knowledge-B",
+      "title": "Carry device state across batches",
+      "dimensions": {
+        "r_knowledge_depth": 1,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 1,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "B03",
+      "suite": "knowledge-B",
+      "title": "Repair invoice revision handling",
+      "dimensions": {
+        "r_knowledge_depth": 1,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 1,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "C01",
+      "suite": "knowledge-C",
+      "title": "dplyr 1.2.1 closest-prior join",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 3,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "Documented-syntax task.",
+      "historical_arm_a_screen": {
+        "status": "ceiling",
+        "n": 3,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "RC"
+    },
+    {
+      "task": "C02",
+      "suite": "knowledge-C",
+      "title": "tidyr 1.3.2 widen with duplicates",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "plausible",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 2,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "RC"
+    },
+    {
+      "task": "C03",
+      "suite": "knowledge-C",
+      "title": "readr 2.2.0 European amounts",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "plausible",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 2,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "RC"
+    },
+    {
+      "task": "C04",
+      "suite": "knowledge-C",
+      "title": "cranlogs 2.1.1 date-range repair",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 3,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "Follows the official package documentation.",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 1,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "RC"
+    },
+    {
+      "task": "C05",
+      "suite": "knowledge-C",
+      "title": "cranlogs total downloads",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 3,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "Injected fetch function; no network in scoring.",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 1,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "RC"
+    },
+    {
+      "task": "D01",
+      "suite": "knowledge-D",
+      "title": "Choose a terminal-UI package",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 0,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "Names termr explicitly; accepts only candidates in a frozen list (BEN-002).",
+      "historical_arm_a_screen": {
+        "status": "in_range",
+        "n": 5,
+        "mean_arm_a": 0.4
+      },
+      "provisional_stratum": "Q"
+    },
+    {
+      "task": "D02",
+      "suite": "knowledge-D",
+      "title": "Choose an HTTP-testing package",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 0,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "Same scorer family and caveat as D01.",
+      "historical_arm_a_screen": {
+        "status": "in_range",
+        "n": 3,
+        "mean_arm_a": 0.3333
+      },
+      "provisional_stratum": "Q"
+    },
+    {
+      "task": "D03",
+      "suite": "knowledge-D",
+      "title": "Choose a data-validation package",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 0,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "Same scorer family and caveat as D01.",
+      "historical_arm_a_screen": {
+        "status": "in_range",
+        "n": 3,
+        "mean_arm_a": 0.5
+      },
+      "provisional_stratum": "Q"
+    },
+    {
+      "task": "E01",
+      "suite": "knowledge-E",
+      "title": "Repair a CRAN/Bioconductor lock conflict",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 3,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "Hidden JSON contract (BEN-002): floor attributed to the scorer.",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 1,
+        "mean_arm_a": 0.0
+      },
+      "provisional_stratum": "Q"
+    },
+    {
+      "task": "E02",
+      "suite": "knowledge-E",
+      "title": "Small compatible RNA-seq workflow",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 2,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 2,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "DESeq2 on a pinned fixture; statistical method fixed by the task.",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 1,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "RC"
+    },
+    {
+      "task": "E03",
+      "suite": "knowledge-E",
+      "title": "Repair a relocated Bioconductor API call",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 3,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 1,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "RC"
+    },
+    {
+      "task": "E04",
+      "suite": "knowledge-E",
+      "title": "Resolve mixed CRAN/Bioconductor dependencies",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 3,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 0,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "Exact-equality gates (BEN-002).",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 1,
+        "mean_arm_a": 0.0
+      },
+      "provisional_stratum": "Q"
+    },
+    {
+      "task": "E05",
+      "suite": "knowledge-E",
+      "title": "Classify compatibility with evidence",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 3,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 0,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "scorer": "knowledge-pilot-v2.1",
+      "notes": "Exact-equality gates (BEN-002).",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 1,
+        "mean_arm_a": 0.2
+      },
+      "provisional_stratum": "Q"
+    },
+    {
+      "task": "H01",
+      "suite": "hard",
+      "title": "Dynamic weighted group summaries (tidy evaluation)",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "hard-v1",
+      "notes": "Behavioural hidden-style verifier with wrong-strategy controls.",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 2,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "H04",
+      "suite": "hard",
+      "title": "Point-in-time quote matching",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "hard-v1",
+      "notes": "data.table substituted by dplyr in the pinned image.",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 2,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "S2"
+    },
+    {
+      "task": "H10",
+      "suite": "hard",
+      "title": "Rubin's rules pooling",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "scorer": "hard-v1",
+      "notes": "Statistical inference; closest existing stand-in for ANOVA-style validity.",
+      "historical_arm_a_screen": {
+        "status": "insufficient_data",
+        "n": 2,
+        "mean_arm_a": 1.0
+      },
+      "provisional_stratum": "S2"
+    }
+  ]
+}

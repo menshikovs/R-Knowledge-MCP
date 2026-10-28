@@ -1,0 +1,346 @@
+{
+ "analysis": {
+  "alpha": 0.05,
+  "descriptive_use_B": {
+   "arm": "B",
+   "label": "descriptive, confounded, not an estimate of the effect of tool use",
+   "not_used": {
+    "mean": 0.31612903225806455,
+    "n": 31
+   },
+   "used": {
+    "mean": 0.2777777777777778,
+    "n": 54
+   }
+  },
+  "primary": {
+   "ci": {
+    "high": -0.07666666666666667,
+    "level": 0.95,
+    "low": -0.26333333333333336,
+    "method": "two-stage percentile bootstrap (tasks, then blocks within task)",
+    "n_boot": 1000
+   },
+   "contrast": "B-A",
+   "estimate": -0.17333333333333334,
+   "ledger": {
+    "blocks_analysed": 81,
+    "blocks_planned": 90,
+    "dropped": {
+     "infrastructure_failure": 5,
+     "not_executed": 3,
+     "scoring_error": 1
+    }
+   },
+   "n_tasks": 30,
+   "outcome": "score",
+   "p_value": 0.0003333333333333333,
+   "standardized_effect": -0.7670432465883881,
+   "task_effect_sd": 0.22597595911870108,
+   "task_effects": {
+    "S01": -0.0666666666666667,
+    "S02": -0.19999999999999998,
+    "S03": -0.13333333333333333,
+    "S04": -0.2,
+    "S05": -0.26666666666666666,
+    "S06": -0.19999999999999998,
+    "S07": 0.19999999999999998,
+    "S08": 0.06666666666666667,
+    "S09": 0.06666666666666665,
+    "S10": -0.26666666666666666,
+    "S11": -0.26666666666666666,
+    "S12": -0.06666666666666667,
+    "S13": -0.8,
+    "S14": -0.20000000000000004,
+    "S15": -2.7755575615628914e-17,
+    "S16": -0.30000000000000004,
+    "S17": -0.13333333333333333,
+    "S18": -0.3,
+    "S19": -0.09999999999999998,
+    "S20": 0.19999999999999998,
+    "S21": 1.850371707708594e-17,
+    "S22": 0.1333333333333333,
+    "S23": -0.4000000000000001,
+    "S24": -0.5333333333333333,
+    "S25": -0.30000000000000004,
+    "S26": 0.06666666666666667,
+    "S27": -0.4,
+    "S28": -0.20000000000000004,
+    "S29": -0.5333333333333333,
+    "S30": -0.06666666666666665
+   },
+   "test": {
+    "method": "monte_carlo",
+    "n_permutations": 2999,
+    "n_units": 30,
+    "p": 0.0003333333333333333,
+    "unit": "task"
+   },
+   "test_block_level_sharp_null": {
+    "method": "monte_carlo",
+    "n_permutations": 2999,
+    "n_units": 81,
+    "p": 0.0003333333333333333,
+    "unit": "block"
+   }
+  },
+  "primary_decision": "reject_null_at_alpha",
+  "secondary": {
+   "B-A:fully_correct": {
+    "ci": {
+     "high": 0.022222222222222223,
+     "level": 0.95,
+     "low": -0.13333333333333333,
+     "method": "two-stage percentile bootstrap (tasks, then blocks within task)",
+     "n_boot": 1000
+    },
+    "contrast": "B-A",
+    "estimate": -0.04444444444444444,
+    "ledger": {
+     "blocks_analysed": 81,
+     "blocks_planned": 90,
+     "dropped": {
+      "infrastructure_failure": 5,
+      "not_executed": 3,
+      "scoring_error": 1
+     }
+    },
+    "n_tasks": 30,
+    "outcome": "fully_correct",
+    "p_holm": 0.628,
+    "p_value": 0.5126666666666667,
+    "standardized_effect": -0.21204065721006787,
+    "task_effect_sd": 0.20960340827661883,
+    "task_effects": {
+     "S01": 0.0,
+     "S02": 0.0,
+     "S03": 0.0,
+     "S04": 0.0,
+     "S05": 0.0,
+     "S06": 0.0,
+     "S07": 0.0,
+     "S08": 0.0,
+     "S09": 0.0,
+     "S10": 0.0,
+     "S11": 0.0,
+     "S12": 0.0,
+     "S13": -1.0,
+     "S14": 0.0,
+     "S15": 0.0,
+     "S16": 0.0,
+     "S17": 0.0,
+     "S18": 0.0,
+     "S19": 0.0,
+     "S20": 0.0,
+     "S21": 0.0,
+     "S22": 0.3333333333333333,
+     "S23": -0.3333333333333333,
+     "S24": -0.3333333333333333,
+     "S25": 0.0,
+     "S26": 0.0,
+     "S27": 0.0,
+     "S28": 0.0,
+     "S29": 0.0,
+     "S30": 0.0
+    },
+    "test": {
+     "method": "monte_carlo",
+     "n_permutations": 2999,
+     "n_units": 30,
+     "p": 0.5126666666666667,
+     "unit": "task"
+    },
+    "test_block_level_sharp_null": {
+     "method": "monte_carlo",
+     "n_permutations": 2999,
+     "n_units": 81,
+     "p": 0.2633333333333333,
+     "unit": "block"
+    }
+   },
+   "C-A": {
+    "ci": {
+     "high": -0.06777777777777777,
+     "level": 0.95,
+     "low": -0.22333333333333333,
+     "method": "two-stage percentile bootstrap (tasks, then blocks within task)",
+     "n_boot": 1000
+    },
+    "contrast": "C-A",
+    "estimate": -0.14555555555555555,
+    "ledger": {
+     "blocks_analysed": 81,
+     "blocks_planned": 90,
+     "dropped": {
+      "infrastructure_failure": 7,
+      "not_executed": 2
+     }
+    },
+    "n_tasks": 30,
+    "outcome": "score",
+    "p_holm": 0.001,
+    "p_value": 0.0003333333333333333,
+    "standardized_effect": -0.9981954607332665,
+    "task_effect_sd": 0.1458186911094863,
+    "task_effects": {
+     "S01": -0.2,
+     "S02": -0.06666666666666667,
+     "S03": -0.13333333333333333,
+     "S04": -0.13333333333333333,
+     "S05": -0.20000000000000004,
+     "S06": -0.06666666666666665,
+     "S07": -0.06666666666666667,
+     "S08": 0.0,
+     "S09": -1.850371707708594e-17,
+     "S10": -0.39999999999999997,
+     "S11": -0.26666666666666666,
+     "S12": -0.13333333333333333,
+     "S13": -0.19999999999999998,
+     "S14": -0.4,
+     "S15": -0.09999999999999998,
+     "S16": -0.13333333333333333,
+     "S17": 0.0666666666666667,
+     "S18": -0.13333333333333333,
+     "S19": 0.0,
+     "S20": 0.1,
+     "S21": 0.13333333333333333,
+     "S22": -0.26666666666666666,
+     "S23": -0.4,
+     "S24": -0.20000000000000004,
+     "S25": -0.30000000000000004,
+     "S26": 0.0,
+     "S27": -0.2,
+     "S28": -0.13333333333333333,
+     "S29": -0.39999999999999997,
+     "S30": -0.13333333333333328
+    },
+    "test": {
+     "method": "monte_carlo",
+     "n_permutations": 2999,
+     "n_units": 30,
+     "p": 0.0003333333333333333,
+     "unit": "task"
+    },
+    "test_block_level_sharp_null": {
+     "method": "monte_carlo",
+     "n_permutations": 2999,
+     "n_units": 81,
+     "p": 0.0003333333333333333,
+     "unit": "block"
+    }
+   },
+   "C-B": {
+    "ci": {
+     "high": 0.11555555555555556,
+     "level": 0.95,
+     "low": -0.058888888888888886,
+     "method": "two-stage percentile bootstrap (tasks, then blocks within task)",
+     "n_boot": 1000
+    },
+    "contrast": "C-B",
+    "estimate": 0.03333333333333333,
+    "ledger": {
+     "blocks_analysed": 80,
+     "blocks_planned": 90,
+     "dropped": {
+      "infrastructure_failure": 6,
+      "not_executed": 3,
+      "scoring_error": 1
+     }
+    },
+    "n_tasks": 30,
+    "outcome": "score",
+    "p_holm": 0.628,
+    "p_value": 0.314,
+    "standardized_effect": 0.18828787198963798,
+    "task_effect_sd": 0.17703388423853322,
+    "task_effects": {
+     "S01": 0.1,
+     "S02": 0.13333333333333333,
+     "S03": 0.0,
+     "S04": 0.2,
+     "S05": 0.06666666666666667,
+     "S06": 0.13333333333333333,
+     "S07": -0.26666666666666666,
+     "S08": -0.06666666666666667,
+     "S09": -0.06666666666666667,
+     "S10": -0.13333333333333333,
+     "S11": -1.850371707708594e-17,
+     "S12": -0.06666666666666667,
+     "S13": 0.5,
+     "S14": -0.09999999999999998,
+     "S15": 0.20000000000000007,
+     "S16": 0.0,
+     "S17": 0.20000000000000004,
+     "S18": 0.0,
+     "S19": 0.1333333333333333,
+     "S20": -0.13333333333333333,
+     "S21": 0.13333333333333333,
+     "S22": -0.4000000000000001,
+     "S23": 0.20000000000000004,
+     "S24": 0.3333333333333333,
+     "S25": -0.06666666666666667,
+     "S26": -0.06666666666666667,
+     "S27": -0.1,
+     "S28": 0.06666666666666667,
+     "S29": 0.13333333333333333,
+     "S30": -0.06666666666666665
+    },
+    "test": {
+     "method": "monte_carlo",
+     "n_permutations": 2999,
+     "n_units": 30,
+     "p": 0.314,
+     "unit": "task"
+    },
+    "test_block_level_sharp_null": {
+     "method": "monte_carlo",
+     "n_permutations": 2999,
+     "n_units": 80,
+     "p": 0.359,
+     "unit": "block"
+    }
+   }
+  },
+  "secondary_family_correction": "Holm over C-B, C-A, B-A:fully_correct",
+  "sensitivity": {
+   "include_protocol_violation_trials": -0.17333333333333334,
+   "leave_one_task_out_range": [
+    -0.18620689655172415,
+    -0.1517241379310345
+   ],
+   "missing_best_case_for_treatment": -0.10666666666666667,
+   "missing_worst_case_for_treatment": -0.20666666666666667,
+   "primary_point_estimate": -0.17333333333333334
+  }
+ },
+ "arm_position_balance": {
+  "A": {
+   "1": 31,
+   "2": 28,
+   "3": 31
+  },
+  "B": {
+   "1": 27,
+   "2": 33,
+   "3": 30
+  },
+  "C": {
+   "1": 32,
+   "2": 29,
+   "3": 29
+  }
+ },
+ "n_records": 270,
+ "n_trials_planned": 270,
+ "outcome_kinds": {
+  "candidate_failure": 6,
+  "infrastructure_failure": 9,
+  "not_executed": 4,
+  "scored": 250,
+  "scoring_error": 1
+ },
+ "plan_sha256": "de5a1e127b6e9b6161f79eb7c7c51c60c81a0791534140363868a9b163b2ceab",
+ "synthetic": true,
+ "violation_codes": {}
+}

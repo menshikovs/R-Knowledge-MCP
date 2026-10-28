@@ -37,3 +37,7 @@ extend-exclude = [".venv", "upstream", ".test-tmp", ".pytest-windows-tmp", "audi
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.per-file-ignores]
+# Markdown template: long prose lines are the document, not code.
+"benchmarks/codex_r/studies/stage2_validity_v1/prereg.py" = ["E501"]

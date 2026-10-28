@@ -1,0 +1,353 @@
+{
+ "analysis": {
+  "alpha": 0.05,
+  "descriptive_use_B": {
+   "arm": "B",
+   "label": "descriptive, confounded, not an estimate of the effect of tool use",
+   "not_used": {
+    "mean": 0.475,
+    "n": 40
+   },
+   "used": {
+    "mean": 0.48444444444444446,
+    "n": 45
+   }
+  },
+  "primary": {
+   "ci": {
+    "high": 0.11555555555555556,
+    "level": 0.95,
+    "low": -0.10444444444444444,
+    "method": "two-stage percentile bootstrap (tasks, then blocks within task)",
+    "n_boot": 1000
+   },
+   "contrast": "B-A",
+   "estimate": 0.010000000000000002,
+   "ledger": {
+    "blocks_analysed": 56,
+    "blocks_planned": 90,
+    "dropped": {
+     "infrastructure_failure": 5,
+     "invalidating_protocol_violation": 26,
+     "not_executed": 2,
+     "scoring_error": 1
+    }
+   },
+   "n_tasks": 30,
+   "outcome": "score",
+   "p_value": 0.8873333333333333,
+   "standardized_effect": 0.0341172010852536,
+   "task_effect_sd": 0.29310727966844496,
+   "task_effects": {
+    "S01": 0.06666666666666665,
+    "S02": -0.39999999999999997,
+    "S03": -0.1,
+    "S04": 0.0,
+    "S05": -0.06666666666666667,
+    "S06": 1.850371707708594e-17,
+    "S07": 0.39999999999999997,
+    "S08": 0.1,
+    "S09": 0.0,
+    "S10": 0.1,
+    "S11": 0.2,
+    "S12": 0.19999999999999998,
+    "S13": -0.7,
+    "S14": -0.0666666666666667,
+    "S15": 0.19999999999999998,
+    "S16": -0.10000000000000003,
+    "S17": 0.09999999999999998,
+    "S18": 0.2,
+    "S19": 0.0,
+    "S20": 0.29999999999999993,
+    "S21": -0.09999999999999998,
+    "S22": 0.09999999999999998,
+    "S23": -0.3333333333333333,
+    "S24": -0.8,
+    "S25": 0.20000000000000007,
+    "S26": 0.6000000000000001,
+    "S27": 0.0,
+    "S28": 0.0,
+    "S29": -0.2,
+    "S30": 0.4
+   },
+   "test": {
+    "method": "monte_carlo",
+    "n_permutations": 2999,
+    "n_units": 30,
+    "p": 0.8873333333333333,
+    "unit": "task"
+   },
+   "test_block_level_sharp_null": {
+    "method": "monte_carlo",
+    "n_permutations": 2999,
+    "n_units": 56,
+    "p": 0.8703333333333333,
+    "unit": "block"
+   }
+  },
+  "primary_decision": "do_not_reject_null",
+  "secondary": {
+   "B-A:fully_correct": {
+    "ci": {
+     "high": 0.11666666666666667,
+     "level": 0.95,
+     "low": -0.15,
+     "method": "two-stage percentile bootstrap (tasks, then blocks within task)",
+     "n_boot": 1000
+    },
+    "contrast": "B-A",
+    "estimate": -0.01111111111111111,
+    "ledger": {
+     "blocks_analysed": 56,
+     "blocks_planned": 90,
+     "dropped": {
+      "infrastructure_failure": 5,
+      "invalidating_protocol_violation": 26,
+      "not_executed": 2,
+      "scoring_error": 1
+     }
+    },
+    "n_tasks": 30,
+    "outcome": "fully_correct",
+    "p_holm": 1.0,
+    "p_value": 1.0,
+    "standardized_effect": -0.03150350631811301,
+    "task_effect_sd": 0.35269442705565607,
+    "task_effects": {
+     "S01": 0.0,
+     "S02": 0.0,
+     "S03": 0.0,
+     "S04": 0.0,
+     "S05": 0.0,
+     "S06": 0.0,
+     "S07": 0.0,
+     "S08": 0.0,
+     "S09": 0.0,
+     "S10": 0.0,
+     "S11": 0.5,
+     "S12": 0.0,
+     "S13": -1.0,
+     "S14": 0.0,
+     "S15": 0.0,
+     "S16": 0.0,
+     "S17": 0.0,
+     "S18": 0.0,
+     "S19": 0.0,
+     "S20": 0.0,
+     "S21": 0.0,
+     "S22": 0.5,
+     "S23": -0.3333333333333333,
+     "S24": -1.0,
+     "S25": 0.0,
+     "S26": 0.0,
+     "S27": 0.0,
+     "S28": 0.0,
+     "S29": 0.0,
+     "S30": 1.0
+    },
+    "test": {
+     "method": "monte_carlo",
+     "n_permutations": 2999,
+     "n_units": 30,
+     "p": 1.0,
+     "unit": "task"
+    },
+    "test_block_level_sharp_null": {
+     "method": "monte_carlo",
+     "n_permutations": 2999,
+     "n_units": 56,
+     "p": 1.0,
+     "unit": "block"
+    }
+   },
+   "C-A": {
+    "ci": {
+     "high": 0.1411111111111111,
+     "level": 0.95,
+     "low": -0.028888888888888888,
+     "method": "two-stage percentile bootstrap (tasks, then blocks within task)",
+     "n_boot": 1000
+    },
+    "contrast": "C-A",
+    "estimate": 0.05777777777777778,
+    "ledger": {
+     "blocks_analysed": 56,
+     "blocks_planned": 90,
+     "dropped": {
+      "infrastructure_failure": 8,
+      "invalidating_protocol_violation": 25,
+      "not_executed": 1
+     }
+    },
+    "n_tasks": 30,
+    "outcome": "score",
+    "p_holm": 0.521,
+    "p_value": 0.17366666666666666,
+    "standardized_effect": 0.2672544256754932,
+    "task_effect_sd": 0.21619016273254524,
+    "task_effects": {
+     "S01": 0.09999999999999998,
+     "S02": 0.0,
+     "S03": -0.30000000000000004,
+     "S04": 1.850371707708594e-17,
+     "S05": 0.29999999999999993,
+     "S06": 0.13333333333333333,
+     "S07": 0.2,
+     "S08": 0.1,
+     "S09": 0.3333333333333333,
+     "S10": 0.0,
+     "S11": -0.09999999999999998,
+     "S12": 0.09999999999999998,
+     "S13": -0.06666666666666665,
+     "S14": -0.1333333333333334,
+     "S15": -0.09999999999999998,
+     "S16": 0.06666666666666665,
+     "S17": 0.1,
+     "S18": 0.4,
+     "S19": 0.0,
+     "S20": 0.4,
+     "S21": 0.2,
+     "S22": 0.0,
+     "S23": -0.09999999999999998,
+     "S24": 0.0,
+     "S25": 0.20000000000000007,
+     "S26": 0.39999999999999997,
+     "S27": -0.2,
+     "S28": 0.2,
+     "S29": 0.09999999999999998,
+     "S30": -0.6
+    },
+    "test": {
+     "method": "monte_carlo",
+     "n_permutations": 2999,
+     "n_units": 30,
+     "p": 0.17366666666666666,
+     "unit": "task"
+    },
+    "test_block_level_sharp_null": {
+     "method": "monte_carlo",
+     "n_permutations": 2999,
+     "n_units": 56,
+     "p": 0.158,
+     "unit": "block"
+    }
+   },
+   "C-B": {
+    "ci": {
+     "high": 0.1522222222222222,
+     "level": 0.95,
+     "low": -0.05666666666666666,
+     "method": "two-stage percentile bootstrap (tasks, then blocks within task)",
+     "n_boot": 1000
+    },
+    "contrast": "C-B",
+    "estimate": 0.05111111111111111,
+    "ledger": {
+     "blocks_analysed": 79,
+     "blocks_planned": 90,
+     "dropped": {
+      "infrastructure_failure": 7,
+      "not_executed": 3,
+      "scoring_error": 1
+     }
+    },
+    "n_tasks": 30,
+    "outcome": "score",
+    "p_holm": 0.521,
+    "p_value": 0.22166666666666668,
+    "standardized_effect": 0.22923845423505798,
+    "task_effect_sd": 0.22296045958634178,
+    "task_effects": {
+     "S01": 0.2,
+     "S02": 0.26666666666666666,
+     "S03": -1.850371707708594e-17,
+     "S04": 0.1,
+     "S05": 0.29999999999999993,
+     "S06": 0.13333333333333333,
+     "S07": -0.06666666666666664,
+     "S08": -0.06666666666666667,
+     "S09": 0.3333333333333333,
+     "S10": -0.20000000000000004,
+     "S11": -0.13333333333333333,
+     "S12": -0.13333333333333333,
+     "S13": 0.6000000000000001,
+     "S14": -0.0666666666666667,
+     "S15": 0.0,
+     "S16": -0.09999999999999998,
+     "S17": 0.20000000000000004,
+     "S18": 0.19999999999999998,
+     "S19": 0.06666666666666665,
+     "S20": -0.13333333333333333,
+     "S21": 0.26666666666666666,
+     "S22": -0.26666666666666666,
+     "S23": 0.4,
+     "S24": 0.19999999999999998,
+     "S25": -0.06666666666666665,
+     "S26": -1.850371707708594e-17,
+     "S27": -0.3,
+     "S28": 0.06666666666666667,
+     "S29": 0.13333333333333333,
+     "S30": -0.4
+    },
+    "test": {
+     "method": "monte_carlo",
+     "n_permutations": 2999,
+     "n_units": 30,
+     "p": 0.22166666666666668,
+     "unit": "task"
+    },
+    "test_block_level_sharp_null": {
+     "method": "monte_carlo",
+     "n_permutations": 2999,
+     "n_units": 79,
+     "p": 0.245,
+     "unit": "block"
+    }
+   }
+  },
+  "secondary_family_correction": "Holm over C-B, C-A, B-A:fully_correct",
+  "sensitivity": {
+   "include_protocol_violation_trials": 0.005555555555555555,
+   "leave_one_task_out_range": [
+    -0.010344827586206898,
+    0.03793103448275863
+   ],
+   "missing_best_case_for_treatment": 0.19555555555555554,
+   "missing_worst_case_for_treatment": -0.19333333333333333,
+   "primary_point_estimate": 0.010000000000000002
+  }
+ },
+ "arm_position_balance": {
+  "A": {
+   "1": 31,
+   "2": 28,
+   "3": 31
+  },
+  "B": {
+   "1": 27,
+   "2": 33,
+   "3": 30
+  },
+  "C": {
+   "1": 32,
+   "2": 29,
+   "3": 29
+  }
+ },
+ "n_records": 270,
+ "n_trials_planned": 270,
+ "outcome_kinds": {
+  "candidate_failure": 7,
+  "infrastructure_failure": 12,
+  "not_executed": 3,
+  "scored": 246,
+  "scoring_error": 2
+ },
+ "plan_sha256": "de5a1e127b6e9b6161f79eb7c7c51c60c81a0791534140363868a9b163b2ceab",
+ "synthetic": true,
+ "violation_codes": {
+  "arm_a_mcp_called": 26,
+  "arm_a_mcp_reachable": 27,
+  "egress_unexpected_destination": 26
+ }
+}

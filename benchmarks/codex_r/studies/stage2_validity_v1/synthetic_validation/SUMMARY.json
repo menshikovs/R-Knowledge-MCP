@@ -1,0 +1,95 @@
+{
+  "synthetic": true,
+  "seed": 20261028,
+  "scenarios": {
+    "null": {
+      "digest": "d95b4171d332b7e566bebc7fff7ac3908f941e3ff86a18d5971a82927598e015",
+      "estimate_B_minus_A": 0.011111111111111108,
+      "ci95": [
+        -0.08444444444444445,
+        0.10444444444444444
+      ],
+      "p_value": 0.8133333333333334,
+      "violations": {},
+      "outcome_kinds": {
+        "candidate_failure": 7,
+        "infrastructure_failure": 10,
+        "not_executed": 4,
+        "scored": 248,
+        "scoring_error": 1
+      }
+    },
+    "positive": {
+      "digest": "813c1795e3aec7622f04e3bd0eeaa2150b03b0315d31d51098360f44ec74279e",
+      "estimate_B_minus_A": 0.17111111111111113,
+      "ci95": [
+        0.05555555555555556,
+        0.2822222222222222
+      ],
+      "p_value": 0.0023333333333333335,
+      "violations": {},
+      "outcome_kinds": {
+        "candidate_failure": 6,
+        "infrastructure_failure": 9,
+        "not_executed": 4,
+        "scored": 250,
+        "scoring_error": 1
+      }
+    },
+    "negative_tool_tax": {
+      "digest": "9aaf0d4475a7613e58b4872cf8a20bd899a30ed3af48e5485a2147ab8d91a063",
+      "estimate_B_minus_A": -0.17333333333333334,
+      "ci95": [
+        -0.26333333333333336,
+        -0.07666666666666667
+      ],
+      "p_value": 0.0003333333333333333,
+      "violations": {},
+      "outcome_kinds": {
+        "candidate_failure": 6,
+        "infrastructure_failure": 9,
+        "not_executed": 4,
+        "scored": 250,
+        "scoring_error": 1
+      }
+    },
+    "heavy_missingness": {
+      "digest": "be7a06780017be8eda0edb220b17de6227bafe2b79e579ecdf148d64b432e4ec",
+      "estimate_B_minus_A": 0.024691358024691357,
+      "ci95": [
+        -0.1234567901234568,
+        0.16790123456790124
+      ],
+      "p_value": 0.7673333333333333,
+      "violations": {},
+      "outcome_kinds": {
+        "candidate_failure": 8,
+        "infrastructure_failure": 74,
+        "not_executed": 3,
+        "scored": 184,
+        "scoring_error": 1
+      }
+    },
+    "leaky_control": {
+      "digest": "619940352255036e1b70e91eeb147882c7ed7f5b193657988e1f00f3bf523973",
+      "estimate_B_minus_A": 0.010000000000000002,
+      "ci95": [
+        -0.10444444444444444,
+        0.11555555555555556
+      ],
+      "p_value": 0.8873333333333333,
+      "violations": {
+        "arm_a_mcp_called": 26,
+        "arm_a_mcp_reachable": 27,
+        "egress_unexpected_destination": 26
+      },
+      "outcome_kinds": {
+        "candidate_failure": 7,
+        "infrastructure_failure": 12,
+        "not_executed": 3,
+        "scored": 246,
+        "scoring_error": 2
+      }
+    }
+  }
+}

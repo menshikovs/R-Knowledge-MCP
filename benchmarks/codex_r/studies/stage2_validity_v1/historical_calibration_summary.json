@@ -1,0 +1,108 @@
+{
+  "source": "benchmarks/codex_r/results/*/results.json (git-ignored; read-only)",
+  "trial_records": 103,
+  "status_counts": {
+    "error": 6,
+    "interrupted": 2,
+    "scored": 88,
+    "smoke_transport_observed": 1,
+    "unsupported_for_automatic_scoring": 6
+  },
+  "usage_observed": 1,
+  "scored_duration_seconds": {
+    "n": 86,
+    "median": 82.619,
+    "p90": 185.788
+  },
+  "arm_a_by_task": {
+    "B01": {
+      "n": 1,
+      "mean": 1.0
+    },
+    "B02": {
+      "n": 1,
+      "mean": 1.0
+    },
+    "B03": {
+      "n": 1,
+      "mean": 1.0
+    },
+    "C01": {
+      "n": 3,
+      "mean": 1.0
+    },
+    "C02": {
+      "n": 2,
+      "mean": 1.0
+    },
+    "C03": {
+      "n": 2,
+      "mean": 1.0
+    },
+    "C04": {
+      "n": 1,
+      "mean": 1.0
+    },
+    "C05": {
+      "n": 1,
+      "mean": 1.0
+    },
+    "D01": {
+      "n": 5,
+      "mean": 0.4
+    },
+    "D02": {
+      "n": 3,
+      "mean": 0.3333
+    },
+    "D03": {
+      "n": 3,
+      "mean": 0.5
+    },
+    "E01": {
+      "n": 1,
+      "mean": 0.0
+    },
+    "E02": {
+      "n": 1,
+      "mean": 1.0
+    },
+    "E03": {
+      "n": 1,
+      "mean": 1.0
+    },
+    "E04": {
+      "n": 1,
+      "mean": 0.0
+    },
+    "E05": {
+      "n": 1,
+      "mean": 0.2
+    },
+    "H01": {
+      "n": 2,
+      "mean": 1.0
+    },
+    "H04": {
+      "n": 2,
+      "mean": 1.0
+    },
+    "H10": {
+      "n": 2,
+      "mean": 1.0
+    },
+    "R01": {
+      "n": 4,
+      "mean": 1.0
+    },
+    "R02": {
+      "n": 1,
+      "mean": 1.0
+    },
+    "mcp-smoke": {
+      "n": 0,
+      "mean": null
+    }
+  },
+  "note": "Arm A only is used for screening; arms with MCP access are not summarised."
+}
