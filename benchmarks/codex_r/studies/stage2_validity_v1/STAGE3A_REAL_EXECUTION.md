@@ -231,18 +231,32 @@ downloads would be visible only as `command_execution` items, not as web-access 
 The scripted solution files are fixtures. They show that the pipeline carries a given solution to a
 correct verdict; they say nothing about model capability.
 
-### Verification run (2026-10-28)
+### Verification run (2026-10-28, commit `d09df9c`)
 
 | Check | Result |
 | :--- | :--- |
-| `ruff check .` / `ruff format --check .` | passed / 325 files formatted |
-| `pytest --collect-only -q` | 2087 tests collected |
-| `pytest -m "not docker"` (Windows 11) | 1914 passed, 130 skipped, 0 failed |
-| Linux (WSL2) non-Docker: `test_codex_simple*.py` (SIGALRM suites), Stage 2.6/2.7 offline, Stage 3A offline | 116 passed |
-| Linux (WSL2) `tests/test_stage3a_end_to_end.py -m docker` | 7 passed (165.6 s) |
-| Linux (WSL2) Stage 2.6 + 2.7 Docker tests | 14 passed (250.2 s), after the fix below |
+| `ruff check .` / `ruff format --check .` | passed / 329 files formatted |
+| `pytest --collect-only -q` | 2106 tests collected |
+| **Windows 11**, `pytest -m "not docker"` | 1933 passed, 130 skipped, 0 failed |
+| **Windows 11**, Docker-marked tests (Stage 2.6, 2.7, 3A) | 14 passed, 7 skipped (the Stage 3A end-to-end tests need Linux `SIGALRM`); no containers or networks left behind |
+| **Linux (WSL2 Ubuntu), full suite including Docker**, from a clean clone of `d09df9c` on WSL's native filesystem | **2026 passed, 80 skipped, 0 failed** (896 s) |
 | `cli frozen --verify` | 279 frozen files, 0 differences |
-| Manifest / generated-artifact consistency (10 checks) | 10/10 equal |
+| Manifest / generated-artifact consistency, including the amendment record | 11 of 11 equal |
+| `cli amendment --verify` | matches the unchanged originals and the amendment document |
+
+The 80 Linux skips are all clone or environment related. None is a Docker test: git-ignored
+bundles and saved historical runs absent from a clean clone (17), the optional native extension
+not installed (11), and two image-id variables unset (2).
+
+**Test failures vs environment failures.** There were no test failures. Two earlier Linux runs
+failed for environmental reasons, and both were investigated:
+
+- Six Stage 2.6 Docker tests failed at `b851b28` and in an earlier Stage 3A state. This was a real
+  defect, fixed below.
+- One full run on the mounted Windows drive (`/mnt/c`) stopped after 151 passing tests with a
+  pytest `INTERNALERROR` (`FileNotFoundError` in `os.getcwd()`). That is an environment failure of
+  the mounted filesystem: the same test files pass alone (32/32) and in the same order (152/152).
+  It did not recur on the native filesystem.
 
 **Defect found by the Linux run (pre-existing).** The Stage 2.6 live runner's candidate container
 (uid 65534) could not write into the host-created workspace on Linux:
