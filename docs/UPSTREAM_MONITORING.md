@@ -57,3 +57,21 @@ The unit suite tests this logic exclusively with `httpx.MockTransport`; it does
 not contact live sources. A green mocked suite therefore does not assert live
 availability. Investigate a failed scheduled run using its Actions log and
 source/check fields before concluding that application code is at fault.
+
+## Nightly contract checks (Stage 1)
+
+`.github/workflows/upstream-contract.yml` runs `scripts/contract_upstream.py` once a day and on demand
+(`workflow_dispatch`), separately from pull-request CI. It drives the project's own service layer (fixed
+CRAN/Bioconductor routes, explicit HTTP timeouts, one bounded retry, byte limits, no redirects) over a
+five-package sample - `cluster`, `R6`, `MASS`, `rpart` and Bioconductor `BiocGenerics` - and asserts structural
+invariants only (identity, snapshot and archive digests, provenance hosts and check times, completeness versus
+`verification_status`, diagnostic classes, discovery/docs agreement, the version contract including the refusal
+of a historical version). It never asserts exact export or alias lists, and nothing in it edits expectations,
+source or benchmark evidence.
+
+Each package ends as `pass`, `fail` (an invariant was violated: a regression) or `inconclusive` (upstream
+unavailable, rate limited, missing, or an archive that disagrees with the repository's own index; corrupt or
+oversized archives are produced by this project's parsers and limits and therefore count as `fail`). Exit status 0/1/2; only 1 fails the job, 2 raises a
+warning annotation. The machine-readable `upstream-contract-results.json` (versions, archive SHA-256,
+retrieval timestamps, per-check results) is uploaded as an artifact; the job summary lists failures. No secrets
+are used or recorded. The offline behaviour of the runner is covered by `tests/test_upstream_contract.py`.

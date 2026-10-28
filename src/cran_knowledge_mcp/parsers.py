@@ -5,6 +5,7 @@ import gzip
 import io
 import re
 import tarfile
+from bisect import bisect_left
 from difflib import SequenceMatcher
 from html.parser import HTMLParser
 
@@ -188,11 +189,15 @@ def description_text(body: bytes) -> str:
     return decode(body, decode(encoding[1], "ascii").strip() if encoding else "UTF-8")
 
 
+def _alias_values(uncommented: str) -> list[str]:
+    """Every literal alias argument, duplicates included (comments already removed)."""
+    values = re.findall(r"\\alias\{((?:\\.|[^{}\\])*)\}", uncommented)
+    return [re.sub(r"\\([{}%\\])", r"\1", value) for value in values]
+
+
 def aliases(rd: str) -> set[str]:
     # Literal aliases only. Do not expand user macros, conditional Rd or Sexpr.
-    uncommented = re.sub(r"(?<!\\)%[^\n]*", "", rd)
-    values = re.findall(r"\\alias\{((?:\\.|[^{}\\])*)\}", uncommented)
-    return {re.sub(r"\\([{}%\\])", r"\1", value) for value in values}
+    return set(_alias_values(re.sub(r"(?<!\\)%[^\n]*", "", rd)))
 
 
 MAX_ALIAS_LENGTH = 160  # get_function_docs rejects longer names, so they cannot be requested.
@@ -303,6 +308,17 @@ def _namespace_literal(text: str) -> str | None:
     return value if discovery_name(value) else None
 
 
+_QUALIFIED_GENERIC = re.compile(r"\s*([A-Za-z][A-Za-z0-9.]*)::([A-Za-z.][A-Za-z0-9._]*)\s*")
+
+
+def _qualified_generic(text: str) -> tuple[str, str] | None:
+    """`pkg::generic`, as `S3method()` writes a method for another package's generic."""
+    match = _QUALIFIED_GENERIC.fullmatch(text)
+    if match is None or not discovery_name(match[2]):
+        return None
+    return match[1], match[2]
+
+
 def _gap(text: str, between: bool = False) -> bool:
     cleaned = re.sub(r"#[^\n]*", "", text)
     return not cleaned.strip(" \t\r\n\f;") and (not between or "\n" in text or ";" in cleaned)
@@ -350,8 +366,64 @@ def _namespace_statements(source: str, calls) -> tuple[list, bool]:
     return accepted, unsupported
 
 
+# Discovery diagnostics. `info` never lowers verification; the others do, and say how:
+#   incomplete   - a known gap (some declared names are not enumerated);
+#   unestablished - completeness cannot be determined statically.
+# Codes absent from this table are treated as `incomplete`, never as harmless.
+DIAGNOSTIC_CLASS = {
+    "namespace_native_library_declared": "info",
+    "namespace_import_arguments_unparsed": "info",
+    "rd_conditional_formatting": "info",
+    "rd_dynamic_in_section": "info",
+    "rd_macro_definition": "info",
+    "export_patterns_not_expanded": "incomplete",
+    "namespace_nonliteral_arguments": "incomplete",
+    "namespace_empty_argument": "incomplete",
+    "namespace_named_arguments_unsupported": "incomplete",
+    "namespace_unsupported_directive": "incomplete",
+    "namespace_malformed_import": "incomplete",
+    "rd_encoding_unavailable": "incomplete",
+    "rd_member_name_too_long": "incomplete",
+    "rd_topic_name_unavailable": "incomplete",
+    "rd_alias_not_literal": "incomplete",
+    "rd_name_not_literal": "incomplete",
+    "namespace_missing": "unestablished",
+    "namespace_unsupported_expression": "unestablished",
+    "namespace_malformed": "unestablished",
+    "namespace_encoding_unavailable": "unestablished",
+    "rd_unbalanced_braces": "unestablished",
+    "rd_dynamic_top_level": "unestablished",
+    "rd_conditional_structure": "unestablished",
+    "rd_macro_definition_structural": "unestablished",
+}
+MAX_NAMESPACE_DIAGNOSTICS = 50
+NAMESPACE_DIRECTIVES = frozenset(
+    {
+        "export",
+        "exportClasses",
+        "exportMethods",
+        "exportPattern",
+        "S3method",
+        "import",
+        "importFrom",
+        "importClassesFrom",
+        "importMethodsFrom",
+        "useDynLib",
+    }
+)
+
+
+def diagnostic_class(code: str) -> str:
+    return DIAGNOSTIC_CLASS.get(code, "incomplete")
+
+
 def parse_namespace(source: str | None) -> dict:
-    """Only unconditional, isolated supported calls establish declarations."""
+    """Only unconditional, isolated supported calls establish declarations.
+
+    `diagnostics` lists every observation with its class; `issues` and `status` reflect only the
+    non-`info` ones, so harmless constructs (native-library registration, import options) no longer
+    downgrade the result while genuine uncertainty stays visible.
+    """
     from .visualization_analysis import scan_calls, tokenize_r
 
     result = {
@@ -361,20 +433,47 @@ def parse_namespace(source: str | None) -> dict:
         "imports": [],
         "status": "verified",
         "issues": [],
+        "diagnostics": [],
     }
+
+    def note(code: str, call=None) -> None:
+        if len(result["diagnostics"]) < MAX_NAMESPACE_DIAGNOSTICS:
+            item = {"code": code, "class": diagnostic_class(code)}
+            if call is not None:
+                item.update(directive=call.name, line=call.line)
+            result["diagnostics"].append(item)
+        if diagnostic_class(code) != "info":
+            result["issues"].append(code)
+
     if source is None:
-        return {**result, "status": "unavailable", "issues": ["namespace_missing"]}
+        note("namespace_missing")
+        return {**result, "status": "unavailable"}
     if len(source.encode("utf-8")) > 256 << 10:
         raise KnowledgeError("source_too_large", "NAMESPACE exceeds 256 KiB")
     try:
         calls, unsupported = _namespace_statements(source, scan_calls(source))
     except KnowledgeError:
-        return {**result, "status": "partial", "issues": ["namespace_malformed"]}
+        note("namespace_malformed")
+        return {**result, "status": "partial"}
     if len(calls) > MAX_NAMESPACE_DECLARATIONS:
         raise KnowledgeError("source_too_large", "Too many NAMESPACE declarations")
     if unsupported:
-        result["issues"].append("namespace_unsupported_expression")
+        note("namespace_unsupported_expression")
     for call in calls:
+        if call.name in {"useDynLib", "import"}:
+            # Neither can add an export, a method or a re-export origin, so options such as
+            # `.registration = TRUE` or `except = c(...)` do not affect what is enumerated.
+            if not call.arguments or any(
+                key is not None or _namespace_literal(value) is None
+                for key, value in call.arguments
+            ):
+                note(
+                    "namespace_native_library_declared"
+                    if call.name == "useDynLib"
+                    else "namespace_import_arguments_unparsed",
+                    call,
+                )
+            continue
         _, directive_tokens = tokenize_r(source[call.start : call.end])
         pairs = zip(directive_tokens, directive_tokens[1:], strict=False)
         if any(
@@ -382,14 +481,26 @@ def parse_namespace(source: str | None) -> dict:
             for a, b in pairs
             if a.kind == b.kind == "punctuation"
         ):
-            result["issues"].append("namespace_empty_argument")
+            note("namespace_empty_argument", call)
             continue
-        values = [_namespace_literal(value) for _, value in call.arguments]
+        arguments = list(call.arguments)
+        qualified = None
+        if call.name == "S3method" and arguments and arguments[0][0] is None:
+            qualified = _qualified_generic(arguments[0][1])
+            if qualified is not None:
+                arguments[0] = (None, qualified[1])
+        values = [_namespace_literal(value) for _, value in arguments]
         if not values or any(value is None for value in values):
-            result["issues"].append("namespace_nonliteral_arguments")
+            # An arbitrary call (eval(), a helper function) may declare anything at load time.
+            note(
+                "namespace_nonliteral_arguments"
+                if call.name in NAMESPACE_DIRECTIVES
+                else "namespace_unsupported_expression",
+                call,
+            )
             continue
-        if any(key is not None for key, _ in call.arguments) and call.name != "useDynLib":
-            result["issues"].append("namespace_named_arguments_unsupported")
+        if any(key is not None for key, _ in call.arguments):
+            note("namespace_named_arguments_unsupported", call)
             continue
         evidence = {"archive_member": "NAMESPACE", "line": call.line, "directive": call.name}
         if call.name in {"export", "exportClasses", "exportMethods"}:
@@ -415,29 +526,30 @@ def parse_namespace(source: str | None) -> dict:
                     )
         elif call.name == "exportPattern":
             result["patterns"].extend(values)
-            result["issues"].append("export_patterns_not_expanded")
+            note("export_patterns_not_expanded", call)
         elif call.name == "S3method" and len(values) in (2, 3):
             generic, cls = values[:2]
             result["methods"].append(
                 {
                     "name": values[2] if len(values) == 3 else f"{generic}.{cls}",
                     "method_kind": "S3",
-                    "generic": generic,
+                    "generic": f"{qualified[0]}::{generic}" if qualified else generic,
                     "class": cls,
+                    **({"generic_package": qualified[0]} if qualified else {}),
                     "evidence": evidence,
                     "callability": "not_checked",
                 }
             )
         elif call.name in {"importFrom", "importClassesFrom", "importMethodsFrom"}:
             if len(values) < 2:
-                result["issues"].append("namespace_malformed_import")
+                note("namespace_malformed_import", call)
             else:
                 result["imports"].extend(
                     {"package": values[0], "name": value, "directive": call.name}
                     for value in values[1:]
                 )
-        elif call.name not in {"import", "useDynLib"}:
-            result["issues"].append("namespace_unsupported_directive")
+        else:
+            note("namespace_unsupported_directive", call)
         if (
             sum(len(result[k]) for k in ("exports", "methods", "patterns", "imports"))
             > MAX_NAMESPACE_ENTRIES
@@ -449,40 +561,131 @@ def parse_namespace(source: str | None) -> dict:
     return result
 
 
-def _rd_complete(text: str) -> bool:
-    depth, pos = 0, 0
+_RD_STRUCTURE = re.compile(r"\\(?:alias|name|Sexpr|eval|newcommand|renewcommand|RdOpts)\b")
+_RD_MACRO = re.compile(r"[A-Za-z]+")
+_RD_DYNAMIC = frozenset({"Sexpr", "eval", "RdOpts"})
+_RD_MAX_DEPTH = 128
+
+
+def _rd_pairs(text: str) -> dict[int, int] | None:
+    """Map each `{` to its matching `}` in one pass; None if unbalanced or nested too deeply."""
+    stack: list[int] = []
+    pairs: dict[int, int] = {}
+    pos = 0
     while pos < len(text):
         char = text[pos]
         if char == "\\":
             pos += 2
             continue
-        if char == "%":
-            stop = text.find("\n", pos)
-            pos = len(text) if stop < 0 else stop
+        if char == "{":
+            stack.append(pos)
+            if len(stack) > _RD_MAX_DEPTH:
+                return None
+        elif char == "}":
+            if not stack:
+                return None
+            pairs[stack.pop()] = pos
+        pos += 1
+    return None if stack else pairs
+
+
+def _rd_groups(text: str, pos: int, count: int, pairs: dict[int, int]) -> list[tuple[int, int]]:
+    """Content spans of `count` consecutive brace groups after `pos` (whitespace allowed)."""
+    spans = []
+    for _ in range(count):
+        while pos < len(text) and text[pos] in " \t\r\n":
+            pos += 1
+        if pos not in pairs:
+            return []
+        spans.append((pos + 1, pairs[pos]))
+        pos = pairs[pos] + 1
+    return spans
+
+
+def _rd_structure(text: str) -> tuple[bool, set[str]]:
+    """Brace balance and the dynamic/conditional constructs that bear on completeness.
+
+    `text` must have its comments removed. Where a construct appears decides what it can do: a
+    top-level `\\Sexpr[results=rd]` can emit a `\\alias` (verified with R 4.5.2), one inside a
+    section cannot; `\\if`/`\\ifelse` only matter if their body contains Rd structure. Linear in
+    the size of `text`: brace pairs come from one pass and structural macros are located once.
+    """
+    pairs = _rd_pairs(text)
+    if pairs is None:
+        return False, set()
+    structural = [match.start() for match in _RD_STRUCTURE.finditer(text)]
+
+    def has_structure(span: tuple[int, int]) -> bool:
+        index = bisect_left(structural, span[0])
+        return index < len(structural) and structural[index] < span[1]
+
+    depth, pos, codes = 0, 0, set()
+    while pos < len(text):
+        char = text[pos]
+        if char == "\\":
+            macro = _RD_MACRO.match(text, pos + 1)
+            if macro is None:
+                pos += 2
+                continue
+            name, pos = macro[0], macro.end()
+            if name in _RD_DYNAMIC:
+                codes.add("rd_dynamic_top_level" if depth == 0 else "rd_dynamic_in_section")
+            elif name in {"newcommand", "renewcommand"}:
+                spans = _rd_groups(text, pos, 2, pairs)
+                structural_body = len(spans) != 2 or has_structure(spans[1])
+                codes.add(
+                    "rd_macro_definition_structural" if structural_body else "rd_macro_definition"
+                )
+            elif name in {"if", "ifelse"}:
+                spans = _rd_groups(text, pos, 2 if name == "if" else 3, pairs)
+                structural_body = not spans or any(has_structure(span) for span in spans[1:])
+                codes.add(
+                    "rd_conditional_structure" if structural_body else "rd_conditional_formatting"
+                )
             continue
         if char == "{":
             depth += 1
-            if depth > 128:
-                return False
         elif char == "}":
             depth -= 1
-            if depth < 0:
-                return False
         pos += 1
-    return depth == 0 and not re.search(
-        r"\\(?:Sexpr|eval|if|ifelse|newcommand|renewcommand|RdOpts)\b",
-        re.sub(r"(?<!\\)%[^\n]*", "", text),
-    )
+    return True, codes
+
+
+def rd_coverage(member: str, text: str) -> dict:
+    """Literal topic/alias evidence plus classified diagnostics for one Rd file.
+
+    `complete` is False only for a limiting diagnostic (known gap or undeterminable); constructs
+    that cannot change the alias set (formatting conditionals, `\\Sexpr` inside a section) are
+    reported as `info` diagnostics instead of downgrading the file.
+    """
+    uncommented = re.sub(r"(?<!\\)%[^\n]*", "", text)
+    literal = _alias_values(uncommented)
+    names = sorted(set(literal))
+    good = [name for name in names if discovery_name(name)]
+    # `\name{\%>\%}` is a literal topic: only the escapes that `\alias` already resolves count.
+    literal_topics = [
+        re.sub(r"\\([{}%\\])", r"\1", value)
+        for value in re.findall(r"\\name\{((?:\\[{}%\\]|[^{}\\])*)\}", uncommented)
+    ]
+    literal_topic = len(literal_topics) == 1 and discovery_name(literal_topics[0])
+    topic = literal_topics[0] if literal_topic else member.rsplit("/", 1)[1][:-3]
+    balanced, codes = _rd_structure(uncommented)
+    if not balanced:
+        codes.add("rd_unbalanced_braces")
+    if len(good) != len(names) or len(re.findall(r"\\alias\s*\{", uncommented)) != len(literal):
+        codes.add("rd_alias_not_literal")
+    if not literal_topic:
+        codes.add("rd_name_not_literal")
+    return {
+        "topic": topic,
+        "aliases": good,
+        "complete": all(diagnostic_class(code) == "info" for code in codes),
+        "identifier_source": "rd_name" if literal_topic else "archive_filename",
+        "diagnostics": sorted(codes),
+    }
 
 
 def rd_index_record(member: str, text: str) -> tuple[str, list[str], bool, str]:
     """Literal topic/alias evidence only; comments cannot establish topic names."""
-    uncommented = re.sub(r"(?<!\\)%[^\n]*", "", text)
-    names = sorted(aliases(text))
-    good = [name for name in names if discovery_name(name)]
-    literal_topics = re.findall(r"\\name\{([^{}\\]*)\}", uncommented)
-    literal_topic = len(literal_topics) == 1 and discovery_name(literal_topics[0])
-    topic = literal_topics[0] if literal_topic else member.rsplit("/", 1)[1][:-3]
-    complete = _rd_complete(text) and len(good) == len(names) and literal_topic
-    complete = complete and len(re.findall(r"\\alias\s*\{", uncommented)) == len(names)
-    return topic, good, bool(complete), "rd_name" if literal_topic else "archive_filename"
+    record = rd_coverage(member, text)
+    return record["topic"], record["aliases"], record["complete"], record["identifier_source"]

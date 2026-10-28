@@ -2,3 +2,4 @@
 # platform or on core.autocrlf: store and check out text as LF everywhere (audit finding CI-004).
 benchmarks/** text=auto eol=lf
 tests/data/** text=auto eol=lf
+tests/fixtures/archives/*.tar.gz binary

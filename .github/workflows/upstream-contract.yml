@@ -1,0 +1,63 @@
+name: Upstream contract checks
+
+# Real CRAN and Bioconductor data, once a day. Deliberately separate from pull-request CI: it
+# depends on upstream availability and must never block or alter a change. It only reads public
+# package indexes and source archives, edits nothing, and uses no secrets.
+#
+# Exit status of the runner: 0 pass, 1 contract regression, 2 inconclusive (upstream outage,
+# missing package, rate limit). Only 1 fails the job; 2 is reported as a warning so an upstream
+# outage is not mistaken for a local regression. Expected values are never updated automatically.
+
+on:
+  schedule:
+    - cron: "41 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: upstream-contract
+  cancel-in-progress: false
+
+jobs:
+  contract:
+    # Scheduled runs only exist on the default branch; a manual run may target any branch.
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the project
+        run: python -m pip install .
+        timeout-minutes: 5
+      - name: Run the contract checks
+        id: contract
+        timeout-minutes: 20
+        env:
+          HTTP_TIMEOUT_SECONDS: "20"
+        run: |
+          set +e
+          python scripts/contract_upstream.py --output upstream-contract-results.json
+          status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Keep the machine-readable results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: upstream-contract-results
+          path: upstream-contract-results.json
+          if-no-files-found: warn
+          retention-days: 30
+      - name: Interpret the outcome
+        run: |
+          case "${{ steps.contract.outputs.status }}" in
+            0) echo "All upstream contract checks passed." ;;
+            2) echo "::warning::Upstream unavailable or changed; the contract is inconclusive for at least one package. See the results artifact."
+               ;;
+            *) echo "::error::Upstream contract regression (exit status ${{ steps.contract.outputs.status }}). See the job summary and results artifact."
+               exit 1 ;;
+          esac

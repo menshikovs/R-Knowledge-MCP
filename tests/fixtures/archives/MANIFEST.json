@@ -1,0 +1,267 @@
+{
+ "schema_version": 1,
+ "purpose": "Real source archives for offline regression tests. Untrusted data: parsed with the bounded in-memory parser, never extracted to disk or executed. Refetch/verify with tests/fixtures/archives/fetch.py.",
+ "retrieved_by": "tests/fixtures/archives/fetch.py equivalent, 2026-10-28",
+ "archives": [
+  {
+   "package": "cluster",
+   "version": "2.1.8.3",
+   "repository": "CRAN",
+   "url": "https://cloud.r-project.org/src/contrib/cluster_2.1.8.3.tar.gz",
+   "file": "cluster_2.1.8.3.tar.gz",
+   "bytes": 373042,
+   "sha256": "e240bebe2aa85f9d9f674cd7addc3dc9023f9e4c3f462eca94e582e22a5ce2e9",
+   "retrieved_utc": "2026-10-28",
+   "license": "GPL (>= 2)",
+   "title": "\"Finding Groups in Data\": Cluster Analysis Extended Rousseeuw et al.",
+   "reason": "Mixed Rd encodings (plantTraits.Rd declares latin1; KC-001 regression), useDynLib(.registration=TRUE), S3 methods, shared topics with many aliases.",
+   "expected": {
+    "verification_status": "verified",
+    "completeness": "complete_with_diagnostics",
+    "counts": {
+     "export": 25,
+     "alias": 84,
+     "topic": 54,
+     "method": 43
+    },
+    "patterns": 0,
+    "diagnostics": {
+     "namespace_native_library_declared": 1
+    },
+    "issues": []
+   },
+   "cross_check": "alias, explicit-export and S3-method sets equal R 4.5.2 tools::parse_Rd / parseNamespaceFile (audits/.../stage1-evidence/r_comparison_fixtures.json)"
+  },
+  {
+   "package": "R6",
+   "version": "2.6.1",
+   "repository": "CRAN",
+   "url": "https://cloud.r-project.org/src/contrib/R6_2.6.1.tar.gz",
+   "file": "R6_2.6.1.tar.gz",
+   "bytes": 64507,
+   "sha256": "59c6eba8b1b912eb7e104f65053235604be853425ee67c152ac4e86a1f2073b4",
+   "retrieved_utc": "2026-10-28",
+   "license": "MIT + file LICENSE",
+   "title": "Encapsulated Classes with Reference Semantics",
+   "reason": "S3method(utils::.DollarNames, R6): a method registered on another package's generic; roxygen \\if{html} blocks.",
+   "expected": {
+    "verification_status": "verified",
+    "completeness": "complete_with_diagnostics",
+    "counts": {
+     "export": 3,
+     "alias": 6,
+     "topic": 4,
+     "method": 7
+    },
+    "patterns": 0,
+    "diagnostics": {
+     "rd_conditional_formatting": 1
+    },
+    "issues": []
+   },
+   "cross_check": "alias, explicit-export and S3-method sets equal R 4.5.2 tools::parse_Rd / parseNamespaceFile (audits/.../stage1-evidence/r_comparison_fixtures.json)"
+  },
+  {
+   "package": "BiocGenerics",
+   "version": "0.58.1",
+   "repository": "Bioconductor 3.23",
+   "url": "https://bioconductor.org/packages/3.23/bioc/src/contrib/BiocGenerics_0.58.1.tar.gz",
+   "file": "BiocGenerics_0.58.1.tar.gz",
+   "bytes": 57572,
+   "sha256": "6911559f0b2b5a07081cd21b6738aa4c6048509b23425cc3ebafc0b4cb011a98",
+   "retrieved_utc": "2026-10-28",
+   "license": "Artistic-2.0",
+   "title": "S4 generic functions used in Bioconductor",
+   "reason": "Bioconductor release 3.23 metadata, S4 generics (exportMethods/exportClasses), many shared topics and aliases.",
+   "expected": {
+    "verification_status": "verified",
+    "completeness": "complete",
+    "counts": {
+     "export": 149,
+     "alias": 192,
+     "topic": 72,
+     "method": 13
+    },
+    "patterns": 0,
+    "diagnostics": {},
+    "issues": []
+   },
+   "cross_check": "alias, explicit-export and S3-method sets equal R 4.5.2 tools::parse_Rd / parseNamespaceFile (audits/.../stage1-evidence/r_comparison_fixtures.json)"
+  },
+  {
+   "package": "checkglobals",
+   "version": "0.1.4",
+   "repository": "CRAN",
+   "url": "https://cloud.r-project.org/src/contrib/checkglobals_0.1.4.tar.gz",
+   "file": "checkglobals_0.1.4.tar.gz",
+   "bytes": 35286,
+   "sha256": "c36c18ab5ad857b3183feaa0fa2c73c26177f63666d819bf499259e53f69f957",
+   "retrieved_utc": "2026-10-28",
+   "license": "MIT + file LICENSE",
+   "title": "Static Analysis of R-Code Dependencies",
+   "reason": "useDynLib(pkg, .registration = TRUE) with S3 methods (KC-002 harmless native-library declaration).",
+   "expected": {
+    "verification_status": "verified",
+    "completeness": "complete_with_diagnostics",
+    "counts": {
+     "export": 5,
+     "alias": 21,
+     "topic": 21,
+     "method": 16
+    },
+    "patterns": 0,
+    "diagnostics": {
+     "namespace_native_library_declared": 1
+    },
+    "issues": []
+   },
+   "cross_check": "alias, explicit-export and S3-method sets equal R 4.5.2 tools::parse_Rd / parseNamespaceFile (audits/.../stage1-evidence/r_comparison_fixtures.json)"
+  },
+  {
+   "package": "RBMRB",
+   "version": "3.0.0",
+   "repository": "CRAN",
+   "url": "https://cloud.r-project.org/src/contrib/RBMRB_3.0.0.tar.gz",
+   "file": "RBMRB_3.0.0.tar.gz",
+   "bytes": 50986,
+   "sha256": "37f16303396a3ba46651c1a5bbc1fc748578647d6b40dcfee297dfb0820b510e",
+   "retrieved_utc": "2026-10-28",
+   "license": "GPL-3",
+   "title": "Interface to the Biological Magnetic Resonance Data Bank ('BMRB')",
+   "reason": "Roxygen-generated \\if{html}{...} blocks in several Rd files (KC-002 harmless conditional formatting).",
+   "expected": {
+    "verification_status": "verified",
+    "completeness": "complete_with_diagnostics",
+    "counts": {
+     "export": 36,
+     "alias": 38,
+     "topic": 37,
+     "method": 0
+    },
+    "patterns": 0,
+    "diagnostics": {
+     "rd_conditional_formatting": 3
+    },
+    "issues": []
+   },
+   "cross_check": "alias, explicit-export and S3-method sets equal R 4.5.2 tools::parse_Rd / parseNamespaceFile (audits/.../stage1-evidence/r_comparison_fixtures.json)"
+  },
+  {
+   "package": "TSEtools",
+   "version": "1.0.0",
+   "repository": "CRAN",
+   "url": "https://cloud.r-project.org/src/contrib/TSEtools_1.0.0.tar.gz",
+   "file": "TSEtools_1.0.0.tar.gz",
+   "bytes": 16531,
+   "sha256": "e398afa2a3d7dd2f183d81236a7f33fd364b8c192b403b544d93d2cb958f0d01",
+   "retrieved_utc": "2026-10-28",
+   "license": "BSD_2_clause + file LICENSE",
+   "title": "Manage Data from the Finance Markets",
+   "reason": "exportPattern(): exports cannot be enumerated statically, so partial is the correct classification.",
+   "expected": {
+    "verification_status": "partial",
+    "completeness": "incomplete",
+    "counts": {
+     "export": 1,
+     "alias": 17,
+     "topic": 17,
+     "method": 0
+    },
+    "patterns": 1,
+    "diagnostics": {
+     "export_patterns_not_expanded": 1
+    },
+    "issues": [
+     "export_patterns_not_expanded"
+    ]
+   },
+   "cross_check": "alias, explicit-export and S3-method sets equal R 4.5.2 tools::parse_Rd / parseNamespaceFile (audits/.../stage1-evidence/r_comparison_fixtures.json)"
+  },
+  {
+   "package": "einops",
+   "version": "0.2.1",
+   "repository": "CRAN",
+   "url": "https://cloud.r-project.org/src/contrib/einops_0.2.1.tar.gz",
+   "file": "einops_0.2.1.tar.gz",
+   "bytes": 221807,
+   "sha256": "fb49a16d64fb225c706cc84c628385d33ceb6c0a537b81ab2616bd3de7129e59",
+   "retrieved_utc": "2026-10-28",
+   "license": "MIT + file LICENSE",
+   "title": "Flexible, Powerful, and Readable Tensor Operations",
+   "reason": "Topic named with an escaped percent (the pipe operator, written with backslash-percent in Rd), many S3 methods, conditional Rd blocks, larger documentation set.",
+   "expected": {
+    "verification_status": "verified",
+    "completeness": "complete_with_diagnostics",
+    "counts": {
+     "export": 11,
+     "alias": 50,
+     "topic": 45,
+     "method": 68
+    },
+    "patterns": 0,
+    "diagnostics": {
+     "rd_conditional_formatting": 7
+    },
+    "issues": []
+   },
+   "cross_check": "alias, explicit-export and S3-method sets equal R 4.5.2 tools::parse_Rd / parseNamespaceFile (audits/.../stage1-evidence/r_comparison_fixtures.json)"
+  },
+  {
+   "package": "modelimpact",
+   "version": "1.1.0",
+   "repository": "CRAN",
+   "url": "https://cloud.r-project.org/src/contrib/modelimpact_1.1.0.tar.gz",
+   "file": "modelimpact_1.1.0.tar.gz",
+   "bytes": 449408,
+   "sha256": "d87564b7f8e13440fdb5789742a31694340b74520cd44cbb5f706665af02060c",
+   "retrieved_utc": "2026-10-28",
+   "license": "MIT + file LICENSE",
+   "title": "Functions to Assess the Business Impact of Churn Prediction Models",
+   "reason": "S3method(ggplot2::autoplot, class) delayed registrations plus a large export list.",
+   "expected": {
+    "verification_status": "verified",
+    "completeness": "complete",
+    "counts": {
+     "export": 24,
+     "alias": 38,
+     "topic": 19,
+     "method": 10
+    },
+    "patterns": 0,
+    "diagnostics": {},
+    "issues": []
+   },
+   "cross_check": "alias, explicit-export and S3-method sets equal R 4.5.2 tools::parse_Rd / parseNamespaceFile (audits/.../stage1-evidence/r_comparison_fixtures.json)"
+  },
+  {
+   "package": "fabletools",
+   "version": "0.8.0",
+   "repository": "CRAN",
+   "url": "https://cloud.r-project.org/src/contrib/fabletools_0.8.0.tar.gz",
+   "file": "fabletools_0.8.0.tar.gz",
+   "bytes": 216993,
+   "sha256": "e96c553879d3bb214d735d4b934047639f710423c65ef3d8a1f027107c45610d",
+   "retrieved_utc": "2026-10-28",
+   "license": "GPL-3",
+   "title": "Core Tools for Packages in the 'fable' Framework",
+   "reason": "Large documentation set (88 topics); Sexpr and if blocks inside sections (cannot create aliases) and many S3 methods.",
+   "expected": {
+    "verification_status": "verified",
+    "completeness": "complete_with_diagnostics",
+    "counts": {
+     "export": 102,
+     "alias": 204,
+     "topic": 88,
+     "method": 241
+    },
+    "patterns": 0,
+    "diagnostics": {
+     "rd_conditional_formatting": 2,
+     "rd_dynamic_in_section": 2
+    },
+    "issues": []
+   },
+   "cross_check": "alias, explicit-export and S3-method sets equal R 4.5.2 tools::parse_Rd / parseNamespaceFile (audits/.../stage1-evidence/r_comparison_fixtures.json)"
+  }
+ ]
+}

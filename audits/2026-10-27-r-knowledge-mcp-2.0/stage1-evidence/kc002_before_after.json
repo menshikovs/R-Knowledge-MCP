@@ -1,0 +1,1081 @@
+{
+ "before": [
+  {
+   "package": "runner",
+   "version": "0.4.6",
+   "status": "partial",
+   "namespace": "verified",
+   "rd": "partial",
+   "issues": [
+    "rd_literal_coverage_partial"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 13,
+   "aliases": 27,
+   "topics": 22,
+   "methods": 5,
+   "patterns": 0,
+   "seconds": 0.048
+  },
+  {
+   "package": "DIVINE",
+   "version": "0.1.2",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 6,
+   "aliases": 20,
+   "topics": 20,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.013
+  },
+  {
+   "package": "ggnext",
+   "version": "0.1.0",
+   "status": "partial",
+   "namespace": "verified",
+   "rd": "partial",
+   "issues": [
+    "rd_literal_coverage_partial"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 169,
+   "aliases": 170,
+   "topics": 160,
+   "methods": 3,
+   "patterns": 0,
+   "seconds": 0.033
+  },
+  {
+   "package": "mditools",
+   "version": "0.1.1",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 26,
+   "aliases": 30,
+   "topics": 25,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.015
+  },
+  {
+   "package": "ipsfs",
+   "version": "1.0.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 70,
+   "aliases": 70,
+   "topics": 70,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.02
+  },
+  {
+   "package": "Rcan",
+   "version": "1.3.92",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "export_patterns_not_expanded"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 0,
+   "aliases": 21,
+   "topics": 20,
+   "methods": 0,
+   "patterns": 1,
+   "seconds": 0.021
+  },
+  {
+   "package": "seecolor",
+   "version": "0.2.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 5,
+   "aliases": 5,
+   "topics": 5,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.03
+  },
+  {
+   "package": "EWOC.Comb",
+   "version": "1.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 4,
+   "aliases": 21,
+   "topics": 9,
+   "methods": 5,
+   "patterns": 0,
+   "seconds": 0.005
+  },
+  {
+   "package": "SBI",
+   "version": "0.1.2",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 1,
+   "aliases": 1,
+   "topics": 1,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.002
+  },
+  {
+   "package": "climenu",
+   "version": "0.2.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 3,
+   "aliases": 3,
+   "topics": 3,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.003
+  },
+  {
+   "package": "modelimpact",
+   "version": "1.1.0",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "namespace_nonliteral_arguments"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 24,
+   "aliases": 38,
+   "topics": 19,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.011
+  },
+  {
+   "package": "essential8",
+   "version": "0.2.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 1,
+   "aliases": 3,
+   "topics": 2,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.005
+  },
+  {
+   "package": "checkglobals",
+   "version": "0.1.4",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "namespace_nonliteral_arguments"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 5,
+   "aliases": 21,
+   "topics": 21,
+   "methods": 16,
+   "patterns": 0,
+   "seconds": 0.009
+  },
+  {
+   "package": "TSEtools",
+   "version": "1.0.0",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "export_patterns_not_expanded"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 1,
+   "aliases": 17,
+   "topics": 17,
+   "methods": 0,
+   "patterns": 1,
+   "seconds": 0.007
+  },
+  {
+   "package": "RBMRB",
+   "version": "3.0.0",
+   "status": "partial",
+   "namespace": "verified",
+   "rd": "partial",
+   "issues": [
+    "rd_literal_coverage_partial"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 36,
+   "aliases": 38,
+   "topics": 37,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.009
+  },
+  {
+   "package": "tidyREDCap",
+   "version": "2.1.0",
+   "status": "partial",
+   "namespace": "verified",
+   "rd": "partial",
+   "issues": [
+    "rd_literal_coverage_partial"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 12,
+   "aliases": 12,
+   "topics": 12,
+   "methods": 18,
+   "patterns": 0,
+   "seconds": 0.015
+  },
+  {
+   "package": "nptest",
+   "version": "1.2",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "export_patterns_not_expanded"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 0,
+   "aliases": 74,
+   "topics": 13,
+   "methods": 14,
+   "patterns": 1,
+   "seconds": 0.014
+  },
+  {
+   "package": "mcglm",
+   "version": "0.9.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 36,
+   "aliases": 96,
+   "topics": 75,
+   "methods": 9,
+   "patterns": 0,
+   "seconds": 0.03
+  },
+  {
+   "package": "AdvBinomApps",
+   "version": "1.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 11,
+   "aliases": 13,
+   "topics": 12,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.007
+  },
+  {
+   "package": "rSEA",
+   "version": "2.1.2",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 5,
+   "aliases": 6,
+   "topics": 6,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.005
+  },
+  {
+   "package": "ipd",
+   "version": "0.4.1",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 33,
+   "aliases": 70,
+   "topics": 67,
+   "methods": 7,
+   "patterns": 0,
+   "seconds": 0.028
+  },
+  {
+   "package": "fabletools",
+   "version": "0.8.0",
+   "status": "partial",
+   "namespace": "verified",
+   "rd": "partial",
+   "issues": [
+    "rd_literal_coverage_partial"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 102,
+   "aliases": 204,
+   "topics": 88,
+   "methods": 241,
+   "patterns": 0,
+   "seconds": 0.034
+  },
+  {
+   "package": "gamesGA",
+   "version": "1.1.3.7",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "namespace_nonliteral_arguments"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 7,
+   "aliases": 8,
+   "topics": 8,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.005
+  },
+  {
+   "package": "einops",
+   "version": "0.2.1",
+   "status": "partial",
+   "namespace": "verified",
+   "rd": "partial",
+   "issues": [
+    "rd_literal_coverage_partial"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 11,
+   "aliases": 50,
+   "topics": 45,
+   "methods": 68,
+   "patterns": 0,
+   "seconds": 0.017
+  },
+  {
+   "package": "torchvisionlib",
+   "version": "0.8.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 7,
+   "aliases": 7,
+   "topics": 5,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.004
+  },
+  {
+   "package": "smdocker",
+   "version": "0.1.4",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 4,
+   "aliases": 4,
+   "topics": 4,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.004
+  },
+  {
+   "package": "swCRTdesign",
+   "version": "4.1",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "export_patterns_not_expanded"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 0,
+   "aliases": 14,
+   "topics": 13,
+   "methods": 0,
+   "patterns": 1,
+   "seconds": 0.017
+  },
+  {
+   "package": "visxhclust",
+   "version": "1.1.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 17,
+   "aliases": 23,
+   "topics": 23,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.031
+  },
+  {
+   "package": "ggmr",
+   "version": "0.1.1",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "export_patterns_not_expanded"
+   ],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 1,
+   "aliases": 1,
+   "topics": 1,
+   "methods": 0,
+   "patterns": 1,
+   "seconds": 0.002
+  },
+  {
+   "package": "rcprd",
+   "version": "0.0.2",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": null,
+   "diagnostics": [],
+   "exports": 19,
+   "aliases": 35,
+   "topics": 34,
+   "methods": 2,
+   "patterns": 0,
+   "seconds": 0.022
+  }
+ ],
+ "after": [
+  {
+   "package": "runner",
+   "version": "0.4.6",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete_with_diagnostics",
+   "diagnostics": [
+    {
+     "code": "rd_conditional_formatting",
+     "class": "info",
+     "count": 1
+    }
+   ],
+   "exports": 13,
+   "aliases": 27,
+   "topics": 22,
+   "methods": 5,
+   "patterns": 0,
+   "seconds": 0.024
+  },
+  {
+   "package": "DIVINE",
+   "version": "0.1.2",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 6,
+   "aliases": 20,
+   "topics": 20,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.013
+  },
+  {
+   "package": "ggnext",
+   "version": "0.1.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete_with_diagnostics",
+   "diagnostics": [
+    {
+     "code": "rd_conditional_formatting",
+     "class": "info",
+     "count": 1
+    }
+   ],
+   "exports": 169,
+   "aliases": 170,
+   "topics": 160,
+   "methods": 3,
+   "patterns": 0,
+   "seconds": 0.034
+  },
+  {
+   "package": "mditools",
+   "version": "0.1.1",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 26,
+   "aliases": 30,
+   "topics": 25,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.017
+  },
+  {
+   "package": "ipsfs",
+   "version": "1.0.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 70,
+   "aliases": 70,
+   "topics": 70,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.023
+  },
+  {
+   "package": "Rcan",
+   "version": "1.3.92",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "export_patterns_not_expanded"
+   ],
+   "completeness": "incomplete",
+   "diagnostics": [
+    {
+     "code": "export_patterns_not_expanded",
+     "class": "incomplete",
+     "count": 1
+    }
+   ],
+   "exports": 0,
+   "aliases": 21,
+   "topics": 20,
+   "methods": 0,
+   "patterns": 1,
+   "seconds": 0.021
+  },
+  {
+   "package": "seecolor",
+   "version": "0.2.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 5,
+   "aliases": 5,
+   "topics": 5,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.026
+  },
+  {
+   "package": "EWOC.Comb",
+   "version": "1.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 4,
+   "aliases": 21,
+   "topics": 9,
+   "methods": 5,
+   "patterns": 0,
+   "seconds": 0.005
+  },
+  {
+   "package": "SBI",
+   "version": "0.1.2",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 1,
+   "aliases": 1,
+   "topics": 1,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.002
+  },
+  {
+   "package": "climenu",
+   "version": "0.2.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 3,
+   "aliases": 3,
+   "topics": 3,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.003
+  },
+  {
+   "package": "modelimpact",
+   "version": "1.1.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 24,
+   "aliases": 38,
+   "topics": 19,
+   "methods": 10,
+   "patterns": 0,
+   "seconds": 0.011
+  },
+  {
+   "package": "essential8",
+   "version": "0.2.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 1,
+   "aliases": 3,
+   "topics": 2,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.005
+  },
+  {
+   "package": "checkglobals",
+   "version": "0.1.4",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete_with_diagnostics",
+   "diagnostics": [
+    {
+     "code": "namespace_native_library_declared",
+     "class": "info",
+     "count": 1
+    }
+   ],
+   "exports": 5,
+   "aliases": 21,
+   "topics": 21,
+   "methods": 16,
+   "patterns": 0,
+   "seconds": 0.01
+  },
+  {
+   "package": "TSEtools",
+   "version": "1.0.0",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "export_patterns_not_expanded"
+   ],
+   "completeness": "incomplete",
+   "diagnostics": [
+    {
+     "code": "export_patterns_not_expanded",
+     "class": "incomplete",
+     "count": 1
+    }
+   ],
+   "exports": 1,
+   "aliases": 17,
+   "topics": 17,
+   "methods": 0,
+   "patterns": 1,
+   "seconds": 0.008
+  },
+  {
+   "package": "RBMRB",
+   "version": "3.0.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete_with_diagnostics",
+   "diagnostics": [
+    {
+     "code": "rd_conditional_formatting",
+     "class": "info",
+     "count": 3
+    }
+   ],
+   "exports": 36,
+   "aliases": 38,
+   "topics": 37,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.009
+  },
+  {
+   "package": "tidyREDCap",
+   "version": "2.1.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 12,
+   "aliases": 12,
+   "topics": 12,
+   "methods": 18,
+   "patterns": 0,
+   "seconds": 0.014
+  },
+  {
+   "package": "nptest",
+   "version": "1.2",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "export_patterns_not_expanded"
+   ],
+   "completeness": "incomplete",
+   "diagnostics": [
+    {
+     "code": "export_patterns_not_expanded",
+     "class": "incomplete",
+     "count": 1
+    }
+   ],
+   "exports": 0,
+   "aliases": 74,
+   "topics": 13,
+   "methods": 14,
+   "patterns": 1,
+   "seconds": 0.015
+  },
+  {
+   "package": "mcglm",
+   "version": "0.9.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 36,
+   "aliases": 96,
+   "topics": 75,
+   "methods": 9,
+   "patterns": 0,
+   "seconds": 0.031
+  },
+  {
+   "package": "AdvBinomApps",
+   "version": "1.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 11,
+   "aliases": 13,
+   "topics": 12,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.008
+  },
+  {
+   "package": "rSEA",
+   "version": "2.1.2",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 5,
+   "aliases": 6,
+   "topics": 6,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.005
+  },
+  {
+   "package": "ipd",
+   "version": "0.4.1",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 33,
+   "aliases": 70,
+   "topics": 67,
+   "methods": 7,
+   "patterns": 0,
+   "seconds": 0.029
+  },
+  {
+   "package": "fabletools",
+   "version": "0.8.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete_with_diagnostics",
+   "diagnostics": [
+    {
+     "code": "rd_conditional_formatting",
+     "class": "info",
+     "count": 2
+    },
+    {
+     "code": "rd_dynamic_in_section",
+     "class": "info",
+     "count": 2
+    }
+   ],
+   "exports": 102,
+   "aliases": 204,
+   "topics": 88,
+   "methods": 241,
+   "patterns": 0,
+   "seconds": 0.035
+  },
+  {
+   "package": "gamesGA",
+   "version": "1.1.3.7",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete_with_diagnostics",
+   "diagnostics": [
+    {
+     "code": "namespace_native_library_declared",
+     "class": "info",
+     "count": 1
+    }
+   ],
+   "exports": 7,
+   "aliases": 8,
+   "topics": 8,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.005
+  },
+  {
+   "package": "einops",
+   "version": "0.2.1",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete_with_diagnostics",
+   "diagnostics": [
+    {
+     "code": "rd_conditional_formatting",
+     "class": "info",
+     "count": 7
+    }
+   ],
+   "exports": 11,
+   "aliases": 50,
+   "topics": 45,
+   "methods": 68,
+   "patterns": 0,
+   "seconds": 0.019
+  },
+  {
+   "package": "torchvisionlib",
+   "version": "0.8.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 7,
+   "aliases": 7,
+   "topics": 5,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.004
+  },
+  {
+   "package": "smdocker",
+   "version": "0.1.4",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 4,
+   "aliases": 4,
+   "topics": 4,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.004
+  },
+  {
+   "package": "swCRTdesign",
+   "version": "4.1",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "export_patterns_not_expanded"
+   ],
+   "completeness": "incomplete",
+   "diagnostics": [
+    {
+     "code": "export_patterns_not_expanded",
+     "class": "incomplete",
+     "count": 1
+    }
+   ],
+   "exports": 0,
+   "aliases": 14,
+   "topics": 13,
+   "methods": 0,
+   "patterns": 1,
+   "seconds": 0.019
+  },
+  {
+   "package": "visxhclust",
+   "version": "1.1.0",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 17,
+   "aliases": 23,
+   "topics": 23,
+   "methods": 0,
+   "patterns": 0,
+   "seconds": 0.026
+  },
+  {
+   "package": "ggmr",
+   "version": "0.1.1",
+   "status": "partial",
+   "namespace": "partial",
+   "rd": "verified",
+   "issues": [
+    "export_patterns_not_expanded"
+   ],
+   "completeness": "incomplete",
+   "diagnostics": [
+    {
+     "code": "export_patterns_not_expanded",
+     "class": "incomplete",
+     "count": 1
+    }
+   ],
+   "exports": 1,
+   "aliases": 1,
+   "topics": 1,
+   "methods": 0,
+   "patterns": 1,
+   "seconds": 0.002
+  },
+  {
+   "package": "rcprd",
+   "version": "0.0.2",
+   "status": "verified",
+   "namespace": "verified",
+   "rd": "verified",
+   "issues": [],
+   "completeness": "complete",
+   "diagnostics": [],
+   "exports": 19,
+   "aliases": 35,
+   "topics": 34,
+   "methods": 2,
+   "patterns": 0,
+   "seconds": 0.024
+  }
+ ]
+}

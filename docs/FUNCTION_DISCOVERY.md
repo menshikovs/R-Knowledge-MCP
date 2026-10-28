@@ -82,6 +82,47 @@ package, version and query. The snapshot binds schema, repository, release/chann
 version, source digest and query. Source/query drift yields source_identity_drift
 and requires restarting from zero; results from two snapshots are never merged.
 
+## Completeness and diagnostics (Stage 1, KC-002)
+
+`verification_status` is `verified` only when the enumeration is trustworthy, and the
+additive `coverage.completeness` says why. Every observation is a `diagnostics` item with
+a class; `issues` lists only the limiting ones.
+
+| completeness | verification_status | Meaning |
+|---|---|---|
+| complete | verified | Nothing unusual was observed |
+| complete_with_diagnostics | verified | Only `info` observations that cannot change the enumerated names |
+| incomplete | partial | A known gap: `exportPattern()`, non-literal NAMESPACE arguments, unreadable Rd files, non-literal `\alias`/`\name` |
+| unestablished | partial | Completeness cannot be determined statically: missing or conditional NAMESPACE, arbitrary calls, top-level `\Sexpr`/`\RdOpts`, `\if` bodies that contain Rd structure, unbalanced braces |
+
+`info` observations: `useDynLib()`/`import()` options such as `.registration = TRUE` (they
+cannot add exports, methods or re-export origins), conditional formatting such as
+`\if{html}{...}`, and `\Sexpr`/`\eval` inside a section (R 4.5.2 was used to confirm that a
+top-level `\Sexpr[results=rd]` can add an alias while a nested one cannot). Each diagnostic
+carries a `count` and at most three `examples` (directive and line, or archive member).
+`S3method(pkg::generic, class)` is enumerated as a method with `generic = "pkg::generic"` and
+`generic_package`. A topic named `\name{\%>\%}` is a literal topic. Codes absent from the
+class table in `parsers.py` default to `incomplete`, never to harmless.
+
+## Version contract (Stage 1, KC-003)
+
+`list_package_functions` and `get_function_docs` share one rule (`http.version_match`):
+`.` and `-` are interchangeable and leading/trailing zero components are ignored, which is
+R's `numeric_version ==` (so `2.10.1`, `2.10-1.0` and `2.10-01` equal `2.10-1`, while `2.1-1`
+and `1.10` vs `1.1` stay different). Every successful answer carries
+`requested_package_version`, the source's own `package_version`, and
+`version_resolution = {requested, resolved, match, verified_for_requested_version,
+version_scope}` with `match` one of `not_requested`, `identical` or `equivalent` (the latter
+adds the `equivalence_rule`). The resolved spelling is never replaced by the requested one.
+
+Only the repository's current source is available. A different version fails with
+`requested_version_unavailable` and the details `requested_package_version`,
+`available_package_version`, `requested_relation` (`older_than_available` /
+`newer_than_available`), `reason` (`historical_versions_not_supported` /
+`not_in_repository_index`), `substituted: false` and `version_scope`; no documentation or
+discovery data is returned. A malformed version is `invalid_input` before any fetch. An
+upstream outage keeps its own code and is never reported as a version problem.
+
 ## Documentation misses and errors
 
 Successful get_function_docs remains literal, case-sensitive and returns its

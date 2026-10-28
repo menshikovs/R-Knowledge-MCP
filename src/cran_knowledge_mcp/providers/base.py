@@ -9,7 +9,16 @@ from urllib.parse import urljoin, urlsplit
 
 from ..errors import KnowledgeError
 from ..function_discovery import build_discovery_index, snapshot_id, validate_request
-from ..http import Artifact, RepositoryHTTP, package_name, same_content, version_parts
+from ..http import (
+    Artifact,
+    RepositoryHTTP,
+    package_name,
+    same_content,
+    unavailable_version_details,
+    version_match,
+    version_parts,
+    version_resolution,
+)
 from ..native import native
 from ..parsers import (
     PackagePageParser,
@@ -290,37 +299,38 @@ class SourceRepository(ABC):
                 self._parsed_bytes += discovery.estimated_bytes
             return discovery, digest
 
+    def _version_scope(self) -> str:
+        return "latest_cran" if self.repository == "cran" else "selected_bioconductor_release"
+
     async def list_package_functions(
         self, package, query=None, limit=20, offset=0, package_version=None, snapshot=None
     ):
         validate_request(query, limit, offset, snapshot)
+        scope = self._version_scope()
         if package_version is not None:
             version_parts(package_version)
             record, index = await self.current(package)
-            if package_version != record["Version"]:
+            if version_match(package_version, record["Version"]) is None:
                 raise KnowledgeError(
                     "requested_version_unavailable",
                     "Only the selected repository version is available; "
                     "no version was substituted.",
                     index.source_url,
                     related_sources=[index.provenance()],
-                    details={
-                        "requested_package_version": package_version,
-                        "available_package_version": record["Version"],
-                    },
+                    details=unavailable_version_details(package_version, record["Version"], scope),
                 )
         metadata, files, artifact, index = await self.source(package)
         sources = [index.provenance(), artifact.provenance()]
-        if package_version is not None and package_version != metadata["Version"]:
+        if (
+            package_version is not None
+            and version_match(package_version, metadata["Version"]) is None
+        ):
             raise KnowledgeError(
                 "requested_version_unavailable",
                 "Package version changed during resolution.",
                 artifact.source_url,
                 related_sources=sources,
-                details={
-                    "requested_package_version": package_version,
-                    "available_package_version": metadata["Version"],
-                },
+                details=unavailable_version_details(package_version, metadata["Version"], scope),
             )
         discovery, digest = await self._discovery_index(package, metadata, files, artifact)
         identity = {
@@ -350,9 +360,10 @@ class SourceRepository(ABC):
             source_verification_level="archive_checksum_verified"
             if self._index_records.get(package, {}).get("MD5sum")
             else "description_version_matched",
-            version_scope="latest_cran"
-            if self.repository == "cran"
-            else "selected_bioconductor_release",
+            version_scope=scope,
+            requested_package_version=package_version,
+            version_resolution=version_resolution(package_version, metadata["Version"], scope),
+            completeness=discovery.completeness,
             sources=sources,
         )
         return result
@@ -475,9 +486,10 @@ class SourceRepository(ABC):
             "package": package,
             "function": function,
             "package_version": metadata["Version"],
-            "version_scope": "latest_cran"
-            if self.repository == "cran"
-            else "selected_bioconductor_release",
+            "version_scope": self._version_scope(),
+            "version_resolution": version_resolution(
+                None, metadata["Version"], self._version_scope()
+            ),
             "format": "text/x-r-doc (raw Rd; macros not evaluated)",
             "archive_member": name,
             "rd_encoding": {"encoding": rd_encoding, "source": rd_encoding_source},

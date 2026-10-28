@@ -1,0 +1,781 @@
+{
+ "schema_version": 1,
+ "started_utc": "2026-10-28T10:35:59Z",
+ "finished_utc": "2026-10-28T10:36:08Z",
+ "project_version": "0.1.0",
+ "git_sha": null,
+ "python": "3.14.4",
+ "sample": [
+  [
+   "cran",
+   "cluster"
+  ],
+  [
+   "cran",
+   "R6"
+  ],
+  [
+   "cran",
+   "MASS"
+  ],
+  [
+   "cran",
+   "rpart"
+  ],
+  [
+   "bioconductor",
+   "BiocGenerics"
+  ]
+ ],
+ "summary": {
+  "pass": 5,
+  "fail": 0,
+  "inconclusive": 0
+ },
+ "outcome": "pass",
+ "results": [
+  {
+   "repository": "cran",
+   "package": "cluster",
+   "package_version": "2.1.8.3",
+   "bioc_version": null,
+   "archive_sha256": "e240bebe2aa85f9d9f674cd7addc3dc9023f9e4c3f462eca94e582e22a5ce2e9",
+   "discovery_checked_at": [
+    "2026-10-28T10:36:06.752571+00:00",
+    "2026-10-28T10:36:07.585138+00:00"
+   ],
+   "source_urls": [
+    "https://cran.r-project.org/src/contrib/PACKAGES.gz",
+    "https://cran.r-project.org/src/contrib/cluster_2.1.8.3.tar.gz"
+   ],
+   "completeness": "complete_with_diagnostics",
+   "verification_status": "verified",
+   "counts": {
+    "exports": 25,
+    "aliases": 84
+   },
+   "diagnostics": [
+    "namespace_native_library_declared"
+   ],
+   "status": "pass",
+   "checks": [
+    {
+     "name": "search_returns_the_package_first",
+     "ok": true
+    },
+    {
+     "name": "identity",
+     "ok": true
+    },
+    {
+     "name": "snapshot_token",
+     "ok": true
+    },
+    {
+     "name": "archive_digest",
+     "ok": true
+    },
+    {
+     "name": "provenance_hosts",
+     "ok": true,
+     "detail": [
+      {
+       "source_url": "https://cran.r-project.org/src/contrib/PACKAGES.gz",
+       "checked_at": "2026-10-28T10:36:06.752571+00:00",
+       "verification_status": "verified"
+      },
+      {
+       "source_url": "https://cran.r-project.org/src/contrib/cluster_2.1.8.3.tar.gz",
+       "checked_at": "2026-10-28T10:36:07.585138+00:00",
+       "verification_status": "verified"
+      }
+     ]
+    },
+    {
+     "name": "completeness_known",
+     "ok": true,
+     "detail": "complete_with_diagnostics"
+    },
+    {
+     "name": "status_matches_completeness",
+     "ok": true,
+     "detail": [
+      "verified",
+      "complete_with_diagnostics"
+     ]
+    },
+    {
+     "name": "diagnostic_classes_follow_the_table",
+     "ok": true
+    },
+    {
+     "name": "unverified_has_a_limiting_issue",
+     "ok": true
+    },
+    {
+     "name": "version_resolution",
+     "ok": true,
+     "detail": {
+      "requested": null,
+      "resolved": "2.1.8.3",
+      "match": "not_requested",
+      "verified_for_requested_version": null,
+      "version_scope": "latest_cran"
+     }
+    },
+    {
+     "name": "documentation_surface_not_empty",
+     "ok": true
+    },
+    {
+     "name": "callability_not_claimed",
+     "ok": true
+    },
+    {
+     "name": "cran_archive_checksum_verified",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:agnes",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:agnes",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:pltree.twins",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:pltree.twins",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:xclara",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:xclara",
+     "ok": true
+    },
+    {
+     "name": "equivalent_spelling_accepted",
+     "ok": true,
+     "detail": [
+      "2.1.8.3",
+      "2.1.8.3"
+     ]
+    },
+    {
+     "name": "historical_version_refused:discovery",
+     "ok": true,
+     "detail": "requested_version_unavailable"
+    },
+    {
+     "name": "historical_version_refused:docs",
+     "ok": true,
+     "detail": "requested_version_unavailable"
+    },
+    {
+     "name": "cluster_mixed_encoding_resolved",
+     "ok": true,
+     "detail": {
+      "encoding": "iso8859-1",
+      "source": "rd_declaration"
+     }
+    },
+    {
+     "name": "cluster_registration_is_not_limiting",
+     "ok": true
+    }
+   ],
+   "seconds": 8.21
+  },
+  {
+   "repository": "cran",
+   "package": "R6",
+   "package_version": "2.6.1",
+   "bioc_version": null,
+   "archive_sha256": "59c6eba8b1b912eb7e104f65053235604be853425ee67c152ac4e86a1f2073b4",
+   "discovery_checked_at": [
+    "2026-10-28T10:36:06.752571+00:00",
+    "2026-10-28T10:36:07.750332+00:00"
+   ],
+   "source_urls": [
+    "https://cran.r-project.org/src/contrib/PACKAGES.gz",
+    "https://cran.r-project.org/src/contrib/R6_2.6.1.tar.gz"
+   ],
+   "completeness": "complete_with_diagnostics",
+   "verification_status": "verified",
+   "counts": {
+    "exports": 3,
+    "aliases": 6
+   },
+   "diagnostics": [
+    "rd_conditional_formatting"
+   ],
+   "status": "pass",
+   "checks": [
+    {
+     "name": "search_returns_the_package_first",
+     "ok": true
+    },
+    {
+     "name": "identity",
+     "ok": true
+    },
+    {
+     "name": "snapshot_token",
+     "ok": true
+    },
+    {
+     "name": "archive_digest",
+     "ok": true
+    },
+    {
+     "name": "provenance_hosts",
+     "ok": true,
+     "detail": [
+      {
+       "source_url": "https://cran.r-project.org/src/contrib/PACKAGES.gz",
+       "checked_at": "2026-10-28T10:36:06.752571+00:00",
+       "verification_status": "verified"
+      },
+      {
+       "source_url": "https://cran.r-project.org/src/contrib/R6_2.6.1.tar.gz",
+       "checked_at": "2026-10-28T10:36:07.750332+00:00",
+       "verification_status": "verified"
+      }
+     ]
+    },
+    {
+     "name": "completeness_known",
+     "ok": true,
+     "detail": "complete_with_diagnostics"
+    },
+    {
+     "name": "status_matches_completeness",
+     "ok": true,
+     "detail": [
+      "verified",
+      "complete_with_diagnostics"
+     ]
+    },
+    {
+     "name": "diagnostic_classes_follow_the_table",
+     "ok": true
+    },
+    {
+     "name": "unverified_has_a_limiting_issue",
+     "ok": true
+    },
+    {
+     "name": "version_resolution",
+     "ok": true,
+     "detail": {
+      "requested": null,
+      "resolved": "2.6.1",
+      "match": "not_requested",
+      "verified_for_requested_version": null,
+      "version_scope": "latest_cran"
+     }
+    },
+    {
+     "name": "documentation_surface_not_empty",
+     "ok": true
+    },
+    {
+     "name": "callability_not_claimed",
+     "ok": true
+    },
+    {
+     "name": "cran_archive_checksum_verified",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:as.list.R6",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:as.list.R6",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:R6",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:R6",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:R6Class",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:R6Class",
+     "ok": true
+    },
+    {
+     "name": "equivalent_spelling_accepted",
+     "ok": true,
+     "detail": [
+      "2.6.1",
+      "2.6.1"
+     ]
+    },
+    {
+     "name": "historical_version_refused:discovery",
+     "ok": true,
+     "detail": "requested_version_unavailable"
+    },
+    {
+     "name": "historical_version_refused:docs",
+     "ok": true,
+     "detail": "requested_version_unavailable"
+    }
+   ],
+   "seconds": 0.13
+  },
+  {
+   "repository": "cran",
+   "package": "MASS",
+   "package_version": "7.3-66",
+   "bioc_version": null,
+   "archive_sha256": "59c619c70bfca653f1c74aef880e69405daefd0134e716a1862ecc5334b4e155",
+   "discovery_checked_at": [
+    "2026-10-28T10:36:06.752571+00:00",
+    "2026-10-28T10:36:07.883834+00:00"
+   ],
+   "source_urls": [
+    "https://cran.r-project.org/src/contrib/PACKAGES.gz",
+    "https://cran.r-project.org/src/contrib/MASS_7.3-66.tar.gz"
+   ],
+   "completeness": "complete_with_diagnostics",
+   "verification_status": "verified",
+   "counts": {
+    "exports": 77,
+    "aliases": 248
+   },
+   "diagnostics": [
+    "namespace_native_library_declared"
+   ],
+   "status": "pass",
+   "checks": [
+    {
+     "name": "search_returns_the_package_first",
+     "ok": true
+    },
+    {
+     "name": "identity",
+     "ok": true
+    },
+    {
+     "name": "snapshot_token",
+     "ok": true
+    },
+    {
+     "name": "archive_digest",
+     "ok": true
+    },
+    {
+     "name": "provenance_hosts",
+     "ok": true,
+     "detail": [
+      {
+       "source_url": "https://cran.r-project.org/src/contrib/PACKAGES.gz",
+       "checked_at": "2026-10-28T10:36:06.752571+00:00",
+       "verification_status": "verified"
+      },
+      {
+       "source_url": "https://cran.r-project.org/src/contrib/MASS_7.3-66.tar.gz",
+       "checked_at": "2026-10-28T10:36:07.883834+00:00",
+       "verification_status": "verified"
+      }
+     ]
+    },
+    {
+     "name": "completeness_known",
+     "ok": true,
+     "detail": "complete_with_diagnostics"
+    },
+    {
+     "name": "status_matches_completeness",
+     "ok": true,
+     "detail": [
+      "verified",
+      "complete_with_diagnostics"
+     ]
+    },
+    {
+     "name": "diagnostic_classes_follow_the_table",
+     "ok": true
+    },
+    {
+     "name": "unverified_has_a_limiting_issue",
+     "ok": true
+    },
+    {
+     "name": "version_resolution",
+     "ok": true,
+     "detail": {
+      "requested": null,
+      "resolved": "7.3-66",
+      "match": "not_requested",
+      "verified_for_requested_version": null,
+      "version_scope": "latest_cran"
+     }
+    },
+    {
+     "name": "documentation_surface_not_empty",
+     "ok": true
+    },
+    {
+     "name": "callability_not_claimed",
+     "ok": true
+    },
+    {
+     "name": "cran_archive_checksum_verified",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:.rat",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:.rat",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:lqs",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:lqs",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:wtloss",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:wtloss",
+     "ok": true
+    },
+    {
+     "name": "equivalent_spelling_accepted",
+     "ok": true,
+     "detail": [
+      "7.3.66",
+      "7.3-66"
+     ]
+    },
+    {
+     "name": "historical_version_refused:discovery",
+     "ok": true,
+     "detail": "requested_version_unavailable"
+    },
+    {
+     "name": "historical_version_refused:docs",
+     "ok": true,
+     "detail": "requested_version_unavailable"
+    }
+   ],
+   "seconds": 0.22
+  },
+  {
+   "repository": "cran",
+   "package": "rpart",
+   "package_version": "4.1.27",
+   "bioc_version": null,
+   "archive_sha256": "3183552d74f02749a70e2b989591c561ca0f7c146034f415748acc8480ca4050",
+   "discovery_checked_at": [
+    "2026-10-28T10:36:06.752571+00:00",
+    "2026-10-28T10:36:08.103132+00:00"
+   ],
+   "source_urls": [
+    "https://cran.r-project.org/src/contrib/PACKAGES.gz",
+    "https://cran.r-project.org/src/contrib/rpart_4.1.27.tar.gz"
+   ],
+   "completeness": "complete_with_diagnostics",
+   "verification_status": "verified",
+   "counts": {
+    "exports": 14,
+    "aliases": 37
+   },
+   "diagnostics": [
+    "namespace_native_library_declared"
+   ],
+   "status": "pass",
+   "checks": [
+    {
+     "name": "search_returns_the_package_first",
+     "ok": true
+    },
+    {
+     "name": "identity",
+     "ok": true
+    },
+    {
+     "name": "snapshot_token",
+     "ok": true
+    },
+    {
+     "name": "archive_digest",
+     "ok": true
+    },
+    {
+     "name": "provenance_hosts",
+     "ok": true,
+     "detail": [
+      {
+       "source_url": "https://cran.r-project.org/src/contrib/PACKAGES.gz",
+       "checked_at": "2026-10-28T10:36:06.752571+00:00",
+       "verification_status": "verified"
+      },
+      {
+       "source_url": "https://cran.r-project.org/src/contrib/rpart_4.1.27.tar.gz",
+       "checked_at": "2026-10-28T10:36:08.103132+00:00",
+       "verification_status": "verified"
+      }
+     ]
+    },
+    {
+     "name": "completeness_known",
+     "ok": true,
+     "detail": "complete_with_diagnostics"
+    },
+    {
+     "name": "status_matches_completeness",
+     "ok": true,
+     "detail": [
+      "verified",
+      "complete_with_diagnostics"
+     ]
+    },
+    {
+     "name": "diagnostic_classes_follow_the_table",
+     "ok": true
+    },
+    {
+     "name": "unverified_has_a_limiting_issue",
+     "ok": true
+    },
+    {
+     "name": "version_resolution",
+     "ok": true,
+     "detail": {
+      "requested": null,
+      "resolved": "4.1.27",
+      "match": "not_requested",
+      "verified_for_requested_version": null,
+      "version_scope": "latest_cran"
+     }
+    },
+    {
+     "name": "documentation_surface_not_empty",
+     "ok": true
+    },
+    {
+     "name": "callability_not_claimed",
+     "ok": true
+    },
+    {
+     "name": "cran_archive_checksum_verified",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:car.test.frame",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:car.test.frame",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:prune.rpart",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:prune.rpart",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:xpred.rpart",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:xpred.rpart",
+     "ok": true
+    },
+    {
+     "name": "equivalent_spelling_accepted",
+     "ok": true,
+     "detail": [
+      "4.1.27",
+      "4.1.27"
+     ]
+    },
+    {
+     "name": "historical_version_refused:discovery",
+     "ok": true,
+     "detail": "requested_version_unavailable"
+    },
+    {
+     "name": "historical_version_refused:docs",
+     "ok": true,
+     "detail": "requested_version_unavailable"
+    }
+   ],
+   "seconds": 0.15
+  },
+  {
+   "repository": "bioconductor",
+   "package": "BiocGenerics",
+   "package_version": "0.58.1",
+   "bioc_version": "3.23",
+   "archive_sha256": "6911559f0b2b5a07081cd21b6738aa4c6048509b23425cc3ebafc0b4cb011a98",
+   "discovery_checked_at": [
+    "2026-10-28T10:36:08.485619+00:00",
+    "2026-10-28T10:36:08.559048+00:00",
+    "2026-10-28T10:36:08.434348+00:00"
+   ],
+   "source_urls": [
+    "https://bioconductor.org/packages/3.23/bioc/src/contrib/PACKAGES.gz",
+    "https://bioconductor.org/packages/3.23/bioc/src/contrib/BiocGenerics_0.58.1.tar.gz",
+    "https://bioconductor.org/config.yaml"
+   ],
+   "completeness": "complete",
+   "verification_status": "verified",
+   "counts": {
+    "exports": 149,
+    "aliases": 192
+   },
+   "diagnostics": [],
+   "status": "pass",
+   "checks": [
+    {
+     "name": "search_returns_the_package_first",
+     "ok": true
+    },
+    {
+     "name": "identity",
+     "ok": true
+    },
+    {
+     "name": "snapshot_token",
+     "ok": true
+    },
+    {
+     "name": "archive_digest",
+     "ok": true
+    },
+    {
+     "name": "provenance_hosts",
+     "ok": true,
+     "detail": [
+      {
+       "source_url": "https://bioconductor.org/packages/3.23/bioc/src/contrib/PACKAGES.gz",
+       "checked_at": "2026-10-28T10:36:08.485619+00:00",
+       "verification_status": "verified"
+      },
+      {
+       "source_url": "https://bioconductor.org/packages/3.23/bioc/src/contrib/BiocGenerics_0.58.1.tar.gz",
+       "checked_at": "2026-10-28T10:36:08.559048+00:00",
+       "verification_status": "verified"
+      },
+      {
+       "source_url": "https://bioconductor.org/config.yaml",
+       "checked_at": "2026-10-28T10:36:08.434348+00:00",
+       "verification_status": "verified"
+      }
+     ]
+    },
+    {
+     "name": "completeness_known",
+     "ok": true,
+     "detail": "complete"
+    },
+    {
+     "name": "status_matches_completeness",
+     "ok": true,
+     "detail": [
+      "verified",
+      "complete"
+     ]
+    },
+    {
+     "name": "diagnostic_classes_follow_the_table",
+     "ok": true
+    },
+    {
+     "name": "unverified_has_a_limiting_issue",
+     "ok": true
+    },
+    {
+     "name": "version_resolution",
+     "ok": true,
+     "detail": {
+      "requested": null,
+      "resolved": "0.58.1",
+      "match": "not_requested",
+      "verified_for_requested_version": null,
+      "version_scope": "selected_bioconductor_release"
+     }
+    },
+    {
+     "name": "documentation_surface_not_empty",
+     "ok": true
+    },
+    {
+     "name": "callability_not_claimed",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:%in%",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:%in%",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:NROW",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:NROW",
+     "ok": true
+    },
+    {
+     "name": "docs_agree:xtabs",
+     "ok": true
+    },
+    {
+     "name": "docs_topic_listed:xtabs",
+     "ok": true
+    },
+    {
+     "name": "equivalent_spelling_accepted",
+     "ok": true,
+     "detail": [
+      "0.58.1",
+      "0.58.1"
+     ]
+    },
+    {
+     "name": "historical_version_refused:discovery",
+     "ok": true,
+     "detail": "requested_version_unavailable"
+    },
+    {
+     "name": "historical_version_refused:docs",
+     "ok": true,
+     "detail": "requested_version_unavailable"
+    }
+   ],
+   "seconds": 0.67
+  }
+ ]
+}
