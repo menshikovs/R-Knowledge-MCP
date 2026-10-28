@@ -1,8 +1,10 @@
-"""Command line for study stage2_validity_v1. None of these commands runs a real model.
+"""Command line for study stage2_validity_v1.
 
-Only ``live-smoke`` and ``execute-calibration --executor docker-mock-model`` start Docker
-containers, and those use a local mock model. ``execute-calibration --executor live`` validates
-its inputs and spend ceiling, then exits 3 (UNAVAILABLE): no real-model executor exists.
+Only ``execute-calibration --executor live`` and ``execute-study`` can call a real model. Both
+run the existing benchmark runner (run_simple.run_trial), refuse to start without
+``--authorize-spend`` *and* a complete spend ceiling, and then require Linux, Docker, the
+OPENAI_API_KEY/OPENAI_EXECUTOR_API_KEY variables and the runner images. ``live-smoke`` and
+``execute-calibration --executor docker-mock-model`` start containers with a local mock model.
 
 python -m benchmarks.codex_r.studies.stage2_validity_v1.cli <command> [options]
 
@@ -17,8 +19,11 @@ power              run the design-sensitivity simulation
 analyze            run the preregistered analysis on a plan + trial_records.jsonl of a real study
 calibration-pipeline, readiness-gates, execute-calibration, evaluate-baseline: Stage 2.7
 
-Exit codes of execute-calibration: 0 ok, 1 dataset problems, 2 refused input or blocked
-environment, 3 live execution unavailable.
+execute-study: run a pinned A/B/C plan (plan --pin) for study1 through run_simple; study2 is
+unsupported and refused.
+
+Exit codes of execute-calibration / execute-study: 0 ok, 1 dataset problems, 2 refused input or
+blocked environment, 3 live execution structurally unavailable.
 """
 
 from __future__ import annotations
@@ -75,6 +80,13 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--design", choices=sorted(power.DESIGNS) + ["pilot"], default="pilot")
     p.add_argument("--seed", type=int, required=True)
     p.add_argument("--out", type=Path, required=True)
+    p.add_argument(
+        "--tasks", nargs="+", default=None, help="explicit task ids (overrides --design tasks)"
+    )
+    p.add_argument("--reps", type=int, default=None, help="repetitions with --tasks (default 3)")
+    p.add_argument(
+        "--pin", action="store_true", help="pin task/scorer digests (required by execute-study)"
+    )
     d = sub.add_parser("dry-run")
     d.add_argument("--out", type=Path, default=STUDY / "synthetic_validation")
     d.add_argument("--tasks", type=int, default=30)
@@ -112,6 +124,9 @@ def main(argv: list[str] | None = None) -> int:
     cp.add_argument("--out-dir", type=Path, default=STUDY)
     rg = sub.add_parser("readiness-gates")
     rg.add_argument("--out", type=Path, default=STUDY / "readiness_gates_report.json")
+    am = sub.add_parser("amendment", help="write or verify preregistration_amendment_a1.json")
+    am.add_argument("--write", action="store_true")
+    am.add_argument("--verify", action="store_true")
     ec = sub.add_parser(
         "execute-calibration",
         help="Run the Arm-A calibration schedule (mock executors only; live is unavailable)",
@@ -154,6 +169,23 @@ def main(argv: list[str] | None = None) -> int:
         type=float,
         help="Maximum cost one attempt may incur; charged in full when usage is unobservable",
     )
+    es = sub.add_parser(
+        "execute-study",
+        help="Run a pinned A/B/C plan through run_simple (real model; authorization required)",
+    )
+    es.add_argument("--study", choices=sorted(("study1", "study2")), required=True)
+    es.add_argument("--plan", type=Path, required=True)
+    es.add_argument("--out-dir", type=Path, required=True)
+    es.add_argument("--effort", choices=("medium", "high"), default="medium")
+    es.add_argument("--timeout", type=int, default=900)
+    es.add_argument("--executor-image", default=None)
+    es.add_argument("--scorer-image", default=None)
+    es.add_argument("--mcp-image", default="cran-knowledge-mcp:shiny-quarto")
+    es.add_argument("--authorize-spend", action="store_true")
+    es.add_argument("--max-spend-usd", type=float)
+    es.add_argument("--input-usd-per-mtok", type=float)
+    es.add_argument("--output-usd-per-mtok", type=float)
+    es.add_argument("--per-trial-reserve-usd", type=float)
     eb = sub.add_parser(
         "evaluate-baseline",
         help="Evaluate baseline difficulty, variance, and uncertainty from Arm A trial records",
@@ -216,7 +248,9 @@ def main(argv: list[str] | None = None) -> int:
             print(" ", line)
         return 1 if problems else 0
     elif args.command == "plan":
-        if args.design == "pilot":
+        if args.tasks:
+            tasks, reps = list(dict.fromkeys(args.tasks)), args.reps or 3
+        elif args.design == "pilot":
             tasks, reps = list(manifest.PILOT_TASKS), 3
         else:
             count, reps = power.DESIGNS[args.design]
@@ -226,6 +260,10 @@ def main(argv: list[str] | None = None) -> int:
         if problems:
             print("\n".join(problems), file=sys.stderr)
             return 1
+        if args.pin:
+            from . import legacy_executor
+
+            plan = legacy_executor.pin_plan_identities(plan)
         _dump(args.out, plan)
     elif args.command == "dry-run":
         summary = {}
@@ -327,6 +365,19 @@ def main(argv: list[str] | None = None) -> int:
             f"schedule ({schedule['total_planned_trials']} trials), and pilot spec"
         )
         return 0
+    elif args.command == "amendment":
+        from . import amendment
+
+        built = amendment.build_amendment_record()
+        if args.write:
+            _dump(amendment.RECORD, built)
+        recorded = json.loads(amendment.RECORD.read_text(encoding="utf-8"))
+        same = recorded == built
+        print(
+            f"amendment {built['amendment_id']} (protocol {built['protocol_version']}): "
+            + ("matches the originals and its document" if same else "DIFFERS")
+        )
+        return 0 if same else 1
     elif args.command == "readiness-gates":
         gates = calibration_pipeline.evaluate_readiness_gates()
         _dump(args.out, gates)
@@ -335,6 +386,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     elif args.command == "execute-calibration":
         return _execute_calibration(args)
+    elif args.command == "execute-study":
+        return _execute_study(args)
     elif args.command in ("evaluate-baseline", "evaluate-calibration"):
         try:
             recs = calibration_pipeline.load_baseline_evidence(
@@ -362,6 +415,74 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
+def _ceiling(args: argparse.Namespace) -> tuple[bool, spend_control.SpendCeiling | None]:
+    """(ok, ceiling): all four ceiling arguments or none of them."""
+    prices = (
+        args.max_spend_usd,
+        args.input_usd_per_mtok,
+        args.output_usd_per_mtok,
+        args.per_trial_reserve_usd,
+    )
+    if all(v is None for v in prices):
+        return True, None
+    if any(v is None for v in prices):
+        print(
+            "REFUSED: a spend ceiling needs all of --max-spend-usd, --input-usd-per-mtok, "
+            "--output-usd-per-mtok and --per-trial-reserve-usd",
+            file=sys.stderr,
+        )
+        return False, None
+    return True, spend_control.SpendCeiling(*prices)
+
+
+def _execute_study(args: argparse.Namespace) -> int:
+    from . import legacy_executor
+
+    ok, ceiling = _ceiling(args)
+    if not ok:
+        return 2
+    study = legacy_executor.STUDIES[args.study]
+    if not study.supported:
+        print(f"REFUSED: {study.id} is unsupported: {study.unsupported_reason}", file=sys.stderr)
+        return 2
+    if not args.authorize_spend or ceiling is None or ceiling.problems():
+        print(
+            "REFUSED: execute-study calls a real model; it requires --authorize-spend and a "
+            "valid, complete spend ceiling",
+            file=sys.stderr,
+        )
+        return 2
+    plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    problems = design.verify_plan(plan) + legacy_executor.plan_identity_problems(plan)
+    if problems:
+        print("REFUSED: " + "; ".join(problems[:10]), file=sys.stderr)
+        return 2
+    try:
+        ctx = legacy_executor.preflight(
+            plan["tasks"],
+            study=study,
+            effort=args.effort,
+            timeout_seconds=args.timeout,
+            need_mcp=any(protocol.ARMS[a].mcp_available for a in plan["arms"]),
+            executor_image=args.executor_image,
+            scorer_image=args.scorer_image,
+            mcp_image=args.mcp_image,
+        )
+        res = legacy_executor.execute_study(plan, args.out_dir, ctx, spend_ceiling=ceiling)
+    except legacy_executor.LegacyRunnerUnavailable as exc:
+        print("BLOCKED: " + "; ".join(exc.reasons), file=sys.stderr)
+        return 2
+    except (ValueError, RuntimeError) as exc:
+        print(f"REFUSED: {exc}", file=sys.stderr)
+        return 2
+    print(
+        f"Executed {res['study_configuration']}: {res['finalized_count']}/{res['planned_count']} "
+        f"trials; stopped_reason={res['stopped_reason']}; accounted spend "
+        f"{res['spend']['accounted_spend_usd']} USD"
+    )
+    return 1 if res["dataset_problems"] else 0
+
+
 def _execute_calibration(args: argparse.Namespace) -> int:
     mode = args.executor or ("mock" if args.mock else None)
     if mode is None or (args.mock and args.executor not in (None, "mock")):
@@ -369,23 +490,10 @@ def _execute_calibration(args: argparse.Namespace) -> int:
             "REFUSED: choose exactly one --executor {mock,docker-mock-model,live}", file=sys.stderr
         )
         return 2
-    prices = (
-        args.max_spend_usd,
-        args.input_usd_per_mtok,
-        args.output_usd_per_mtok,
-        args.per_trial_reserve_usd,
-    )
-    ceiling = None
-    if any(v is not None for v in prices):
-        if any(v is None for v in prices):
-            print(
-                "REFUSED: a spend ceiling needs all of --max-spend-usd, --input-usd-per-mtok, "
-                "--output-usd-per-mtok and --per-trial-reserve-usd",
-                file=sys.stderr,
-            )
-            return 2
-        ceiling = spend_control.SpendCeiling(*prices)
-    from . import live_network
+    ok, ceiling = _ceiling(args)
+    if not ok:
+        return 2
+    from . import legacy_executor, live_network
 
     try:
         res = calibration_pipeline.execute_calibration(
@@ -396,10 +504,13 @@ def _execute_calibration(args: argparse.Namespace) -> int:
             spend_ceiling=ceiling,
         )
     except calibration_pipeline.LiveExecutionUnavailable as exc:
-        print("UNAVAILABLE: live calibration executor is not implemented; nothing ran.")
+        print("UNAVAILABLE: the schedule cannot run on the real execution path; nothing ran.")
         for blocker in exc.blockers:
-            print(f"  - {blocker['id']}: {blocker['detail']}")
+            print(f"  - {blocker['id']}: {blocker.get('tasks')}")
         return 3
+    except legacy_executor.LegacyRunnerUnavailable as exc:
+        print("BLOCKED: " + "; ".join(exc.reasons), file=sys.stderr)
+        return 2
     except live_network.DockerUnavailable as exc:
         print(f"BLOCKED: live Docker verification unavailable: {exc}", file=sys.stderr)
         return 2
@@ -412,7 +523,7 @@ def _execute_calibration(args: argparse.Namespace) -> int:
         f"{res['records_path']}; stopped_reason={res['stopped_reason']}"
     )
     if res["spend"] is not None:
-        print(f"  accounted spend: {res['spend']['accounted_spend_usd']} USD (synthetic usage)")
+        print(f"  accounted spend: {res['spend']['accounted_spend_usd']} USD")
     if res["dataset_problems"]:
         for prob in res["dataset_problems"][:10]:
             print(f"  [ERROR] {prob}", file=sys.stderr)

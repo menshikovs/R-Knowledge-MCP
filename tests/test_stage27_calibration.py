@@ -15,6 +15,7 @@ from benchmarks.codex_r import knowledge_pilot_v2, knowledge_pilot_v21
 from benchmarks.codex_r.studies.stage2_validity_v1 import (
     calibration_pipeline,
     cli,
+    legacy_executor,
     live_network,
     live_runner,
     manifest,
@@ -277,8 +278,18 @@ def test_spend_guard_restore_charges_reserve_for_interrupted_attempts():
 # --------------------------------------------------------------------- execution modes
 
 
-def test_live_mode_requires_authorization_and_a_ceiling_then_is_unavailable(tmp_path, monkeypatch):
-    monkeypatch.setenv("OPENAI_API_KEY", "sk-test-sentinel-never-used")
+def test_live_mode_requires_authorization_and_a_ceiling_then_the_runner_preconditions(
+    tmp_path, monkeypatch
+):
+    for name in ("OPENAI_API_KEY", "OPENAI_EXECUTOR_API_KEY"):
+        monkeypatch.delenv(name, raising=False)
+
+    def no_docker(*_a, **_k):
+        raise AssertionError("no Docker command may run before the preconditions pass")
+
+    from benchmarks.codex_r import run_simple
+
+    monkeypatch.setattr(run_simple, "docker", no_docker)
     sched = calibration_pipeline.build_calibration_schedule()
     out = tmp_path / "live"
     with pytest.raises(RuntimeError, match="not authorized"):
@@ -289,15 +300,13 @@ def test_live_mode_requires_authorization_and_a_ceiling_then_is_unavailable(tmp_
         calibration_pipeline.execute_calibration(
             sched, out, executor_mode="live", authorize_spend=True
         )
-    with pytest.raises(calibration_pipeline.LiveExecutionUnavailable) as exc:
+    # Authorized with a ceiling: the real path (run_simple) is reached and its own startup
+    # checks refuse; credential values are never read into the error, nothing is written.
+    with pytest.raises(legacy_executor.LegacyRunnerUnavailable) as exc:
         calibration_pipeline.execute_calibration(
             sched, out, executor_mode="live", authorize_spend=True, spend_ceiling=_ceiling()
         )
-    assert [b["id"] for b in exc.value.blockers] == [
-        "no_real_model_workload",
-        "no_real_model_upstream_or_credential_path",
-        "scorer_container_not_integrated",
-    ]
+    assert any("OPENAI_EXECUTOR_API_KEY" in r for r in exc.value.reasons)
     assert not out.exists()
 
 
@@ -328,11 +337,18 @@ def test_live_mode_rejects_test_hooks_invalid_ceilings_and_spend_flag_misuse(tmp
         calibration_pipeline.execute_calibration(sched, tmp_path, executor_mode="paid")
 
 
-def test_live_blockers_are_computed_from_the_code_that_would_run():
-    blockers = {b["id"]: b for b in calibration_pipeline.live_execution_blockers()}
-    assert live_network.WORKLOAD_SCRIPT.endswith("mock_agent.py")
-    assert "OPENAI_API_KEY" in live_network.HOST_SECRET_NAMES
-    assert blockers["scorer_container_not_integrated"]["tasks"] == CANDIDATES
+def test_live_path_has_no_structural_blockers_and_states_its_limitations():
+    assert calibration_pipeline.live_execution_blockers() == []
+    limits = {x["id"]: x for x in calibration_pipeline.live_execution_limitations()}
+    assert set(limits) == {
+        "network_egress_not_enforced",
+        "spend_accounted_not_metered",
+        "catalogue_scorer_label_not_executable",
+        "not_empirically_verified",
+    }
+    # Every scheduled knowledge-pilot task is scored by the legacy scorer (v2.1: D01/D03 only).
+    relabelled = limits["catalogue_scorer_label_not_executable"]["tasks"]
+    assert relabelled == [t for t in CANDIDATES if t[0] in "BCE"]
 
 
 def test_docker_mock_model_refuses_a_schedule_it_cannot_score_before_touching_docker(
@@ -633,14 +649,14 @@ def test_readiness_distinguishes_mock_live_authorized_and_confirmatory():
     statuses = {k: v["status"] for k, v in gates["execution_readiness"].items()}
     assert statuses == {
         "mock_ready": "READY",
-        "live_executor_ready": "NOT_READY",
+        "live_executor_ready": "IMPLEMENTED_NOT_EMPIRICALLY_VERIFIED",
         "calibration_authorized": "NOT_AUTHORIZED",
         "confirmatory_ready": "NOT_READY",
     }
     by_id = {g["gate_id"]: g for g in gates["gates"]}
     assert by_id["gate_1_offline_research_infrastructure"]["status"] == "PASS"
     assert by_id["gate_2_docker_experiment_infrastructure"]["status"] == "PASS"
-    assert "no_real_model_workload" in by_id["gate_3_calibration_execution"]["remaining_blockers"]
+    assert by_id["gate_3_calibration_execution"]["remaining_blockers"] == ["spend_not_authorized"]
     for gate in ("gate_3_calibration_execution", "gate_4_pilot_execution"):
         assert by_id[gate]["status"] == "BLOCKED"
     assert by_id["gate_5_confirmatory_experiment_eligibility"]["status"] == "BLOCKED"
@@ -679,7 +695,9 @@ def test_cli_calibration_pipeline_and_readiness_gates(tmp_path):
     assert gates["mock_infrastructure_ready"] is True and gates["live_calibration_ready"] is False
 
 
-def test_cli_execute_calibration_exit_codes_and_evidence_refusal(tmp_path, capsys):
+def test_cli_execute_calibration_exit_codes_and_evidence_refusal(tmp_path, capsys, monkeypatch):
+    for name in ("OPENAI_API_KEY", "OPENAI_EXECUTOR_API_KEY"):
+        monkeypatch.delenv(name, raising=False)
     sched_path = tmp_path / "mini.json"
     sched_path.write_text(json.dumps(_subset(["B01", "B02"])), encoding="utf-8")
     base = ["execute-calibration", "--schedule", str(sched_path)]
@@ -705,8 +723,8 @@ def test_cli_execute_calibration_exit_codes_and_evidence_refusal(tmp_path, capsy
     assert cli.main(base + ["--out-dir", str(tmp_path / "x"), "--executor", "mock", *partial]) == 2
     capsys.readouterr()
     live = base + ["--out-dir", str(tmp_path / "x"), "--executor", "live", "--authorize-spend"]
-    assert cli.main(live + ceiling) == 3
-    assert "UNAVAILABLE" in capsys.readouterr().out
+    assert cli.main(live + ceiling) == 2  # authorized, but the runner's preconditions fail
+    assert "BLOCKED" in capsys.readouterr().err
     assert not (tmp_path / "x").exists()
 
     run_dir = tmp_path / "run"

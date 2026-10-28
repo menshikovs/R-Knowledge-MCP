@@ -154,7 +154,7 @@ def from_runner_result(
     plain Docker bridge network without an observing egress proxy, or a two-mode runner lacking
     arm-C instructions) is recorded explicitly as a protocol violation rather than concealed.
     """
-    from . import protocol, telemetry
+    from . import amendment, protocol, telemetry
 
     arm_id = planned_trial["arm"]
     status = runner_record.get("status")
@@ -165,18 +165,21 @@ def from_runner_result(
     total: int | None = None
     score_val: float | None = None
 
+    scorer_result = _canonical_scorer_result(raw_score)
     if status == "scored" and raw_score is not None:
         p_val = raw_score.get("passed")
         t_val = raw_score.get("total")
-        if (p_val is None or t_val is None) and isinstance(raw_score.get("dimensions"), dict):
-            dims = raw_score["dimensions"]
-            p_val = sum(v["passed"] for v in dims.values() if isinstance(v.get("passed"), int))
-            t_val = sum(v["total"] for v in dims.values() if isinstance(v.get("total"), int))
+        # The preregistered outcome is passed/total of the scorer. Multidimensional scorers
+        # (knowledge-pilot v2/v2.1) deliberately report no passed/total and no overall score; no
+        # aggregate is invented here. Such a result is a missing primary outcome, and the
+        # scorer's own fully_correct and dimensions are preserved in `scorer_result`.
         if isinstance(p_val, int) and isinstance(t_val, int) and 0 <= p_val <= t_val > 0:
             kind = "scored"
             passed = p_val
             total = t_val
             score_val = passed / total
+        else:
+            kind = "scoring_error"
     elif status in ("unsupported_for_automatic_scoring", "scoring_error") or (
         primary_err.get("origin") == "scorer"
         or primary_err.get("source_code") == "unsupported_for_automatic_scoring"
@@ -231,7 +234,18 @@ def from_runner_result(
         "network_internal": bool(runner_record.get("network_internal", False)),
         "egress_destinations": runner_record.get("egress_destinations"),
     }
-    violations = protocol.capability_violations(arm_id, evidence, expected)
+    violation_list = [
+        v.as_dict() for v in protocol.capability_violations(arm_id, evidence, expected)
+    ]
+    protocol_version = protocol.STUDY_VERSION
+    if expected.get("protocol_amendment") == amendment.AMENDMENT_ID:
+        # Applies only to runs that declare A1; recorded 1.0.0 violations are kept, not removed.
+        violation_list = amendment.evaluate(
+            violation_list, runner_record.get("capability"), expected.get("capability_policy") or {}
+        )
+        protocol_version = f"{amendment.PROTOCOL_VERSION}+{amendment.AMENDMENT_ID}"
+    elif expected.get("protocol_amendment") is not None:
+        raise ValueError(f"unknown protocol amendment {expected['protocol_amendment']!r}")
 
     raw_usage = runner_record.get("usage") if isinstance(runner_record.get("usage"), dict) else {}
     if (
@@ -247,7 +261,7 @@ def from_runner_result(
     else:
         usage = {"status": "unavailable"}
 
-    return {
+    record = {
         "trial_id": planned_trial["trial_id"],
         "block_id": planned_trial["block_id"],
         "task": planned_trial["task"],
@@ -263,6 +277,41 @@ def from_runner_result(
         "checks_total": total,
         "mcp": {k: v for k, v in summary.items() if k != "links"},
         "usage": usage,
-        "violations": [v.as_dict() for v in violations],
+        "violations": violation_list,
         "synthetic": False,
+        "protocol_version": protocol_version,
+    }
+    if scorer_result is not None:
+        record["scorer_result"] = scorer_result
+    # Tool availability (configuration) and observed tool use, kept apart; optional evidence.
+    if isinstance(runner_record.get("agent_tools"), dict):
+        record["agent_tools"] = runner_record["agent_tools"]
+    if isinstance(runner_record.get("capability"), dict):
+        record["capability"] = runner_record["capability"]
+    return record
+
+
+def _canonical_scorer_result(raw_score: dict | None) -> dict | None:
+    """The scorer's own verdict, unaggregated: status, checks, fully_correct, dimension states."""
+    if raw_score is None:
+        return None
+    dims = raw_score.get("dimensions")
+    p_val, t_val = raw_score.get("passed"), raw_score.get("total")
+    defined = isinstance(p_val, int) and isinstance(t_val, int) and t_val > 0
+    return {
+        "status": raw_score.get("status"),
+        "scorer_version": raw_score.get("scorer_version"),
+        "passed": p_val,
+        "total": t_val,
+        "fully_correct": raw_score.get("fully_correct"),
+        "primary_metric": ("passed_over_total" if defined else "undefined_by_canonical_scorer"),
+        "dimensions": (
+            {
+                name: {k: v.get(k) for k in ("status", "passed", "total") if k in v}
+                for name, v in dims.items()
+                if isinstance(v, dict)
+            }
+            if isinstance(dims, dict)
+            else None
+        ),
     }

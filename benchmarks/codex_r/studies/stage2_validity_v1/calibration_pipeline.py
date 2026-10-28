@@ -19,7 +19,7 @@ import math
 from pathlib import Path
 from typing import Any
 
-from . import calibration, design, manifest, records, runner, spend_control
+from . import calibration, design, manifest, records, runner, scorer_bindings, spend_control
 
 STUDY_ROOT = Path(__file__).resolve().parent
 CODEX_ROOT = STUDY_ROOT.parents[1]
@@ -154,6 +154,13 @@ def audit_task_eligibility() -> dict[str, Any]:
 SCHEDULE_VERSION = "stage27-calibration-schedule-v1.1"
 EXECUTOR_MODES = ("mock", "docker-mock-model", "live")
 EVIDENCE_SYNTHETIC = "synthetic_not_baseline_evidence"
+EVIDENCE_REAL = "real_model_execution_legacy_runner"
+
+
+def _capability_policy(ctx: Any) -> dict[str, Any]:
+    from . import legacy_executor
+
+    return legacy_executor.capability_policy(ctx)
 
 
 class LiveExecutionUnavailable(RuntimeError):
@@ -429,48 +436,76 @@ def schedule_to_plan(schedule: dict[str, Any]) -> dict[str, Any]:
 
 
 def live_execution_blockers(schedule: dict[str, Any] | None = None) -> list[dict[str, Any]]:
-    """Why a real-model calibration cannot run, computed from the code that would run it."""
-    from . import live_network, live_runner
+    """Structural reasons the real execution path (run_simple.run_trial) cannot run a schedule.
+
+    Computed from the code that would run: every scheduled task must be a task the legacy runner
+    knows and must have an executable scorer binding. Environment preconditions (Linux, Docker,
+    credentials, images) are checked by ``legacy_executor.preflight`` only when a run starts.
+    """
+    from benchmarks.codex_r import knowledge_pilot, run_simple
+    from benchmarks.codex_r.hard import suite as hard
 
     schedule = schedule if schedule is not None else build_calibration_schedule()
-    blockers: list[dict[str, Any]] = []
-    if live_network.WORKLOAD_SCRIPT.endswith("mock_agent.py"):
-        blockers.append(
-            {
-                "id": "no_real_model_workload",
-                "detail": (
-                    f"the candidate container runs {live_network.WORKLOAD_SCRIPT} in "
-                    f"{live_network.PYTHON_IMAGE}; no code path starts the agent runtime "
-                    f"{schedule['trials'][0]['runtime_image']} inside the isolated topology"
-                ),
-            }
-        )
-    if live_network.MODEL_UPSTREAM_SCRIPT.endswith("mock_model_server.py"):
-        blockers.append(
-            {
-                "id": "no_real_model_upstream_or_credential_path",
-                "detail": (
-                    f"the gateway tunnels {live_network.MODEL_AUTHORITY} only to the local "
-                    f"{live_network.MODEL_UPSTREAM_SCRIPT}; OPENAI_API_KEY is withheld from every "
-                    "container and nothing injects a real credential outside the candidate"
-                ),
-            }
-        )
-    scheduled = sorted({(t["task"], t["scorer_version"]) for t in schedule["trials"]})
-    unscorable = [task for task, scorer in scheduled if not live_runner.host_scorable(task, scorer)]
-    if unscorable:
-        blockers.append(
-            {
-                "id": "scorer_container_not_integrated",
-                "detail": (
-                    f"{len(unscorable)} of {len(scheduled)} scheduled tasks need the R scorer "
-                    "container, which the live runner does not run; they could only produce "
-                    "infrastructure failures"
-                ),
-                "tasks": unscorable,
-            }
-        )
+    known = set(run_simple.R_TASKS) | set(hard.task_ids()) | set(knowledge_pilot.PILOT_TASK_IDS)
+    labels = {e["task"]: e["scorer"] for e in calibration.CATALOG}
+    unknown, unbound = [], []
+    for task in sorted({t["task"] for t in schedule["trials"]}):
+        if task not in known:
+            unknown.append(task)
+            continue
+        try:
+            scorer_bindings.bind(task, labels[task])
+        except (KeyError, ValueError):
+            unbound.append(task)
+    blockers = []
+    if unknown:
+        blockers.append({"id": "task_not_in_legacy_runner", "tasks": unknown})
+    if unbound:
+        blockers.append({"id": "no_executable_scorer", "tasks": unbound})
     return blockers
+
+
+def live_execution_limitations(schedule: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    """Known, documented limits of the real execution path (not blockers)."""
+    from . import legacy_executor
+
+    schedule = schedule if schedule is not None else build_calibration_schedule()
+    labels = {e["task"]: e["scorer"] for e in calibration.CATALOG}
+    relabelled = sorted(
+        t
+        for t in {t["task"] for t in schedule["trials"]}
+        if not scorer_bindings.bind(t, labels[t]).label_executable
+    )
+    return [
+        {
+            "id": "network_egress_not_enforced",
+            "detail": (
+                "run_simple uses a plain Docker bridge network; under amendment A1 the recorded "
+                + " and ".join(legacy_executor.STRUCTURAL_VIOLATIONS)
+                + " are superseded by per-trial capability-equivalence checks, and web access "
+                "is restricted by tool configuration and instructions, not by the network"
+            ),
+        },
+        {
+            "id": "spend_accounted_not_metered",
+            "detail": (
+                "the ceiling is enforced per attempt over reported token usage with a reserve; "
+                "no provider-side limit is sent and requests cannot be cut off mid-flight"
+            ),
+        },
+        {
+            "id": "catalogue_scorer_label_not_executable",
+            "detail": (
+                "knowledge-pilot-v2.1 scores only D01/D03; these tasks are scored by the "
+                "knowledge-pilot legacy scorer, which the record states explicitly"
+            ),
+            "tasks": relabelled,
+        },
+        {
+            "id": "not_empirically_verified",
+            "detail": "no authorized real-model run of this path has taken place",
+        },
+    ]
 
 
 class _CalibrationController:
@@ -537,6 +572,7 @@ def execute_calibration(
     executor: runner.TrialAttemptExecutor | None = None,
     docker_settings: Any = None,
     allow_ineligible_tasks: bool = False,
+    legacy_context: Any = None,
 ) -> dict[str, Any]:
     """Execute the Arm-A-only baseline calibration schedule through the Stage 2 ledger.
 
@@ -545,13 +581,16 @@ def execute_calibration(
     * ``mock``: in-process deterministic executor (``runner.make_mock_trial_executor``).
     * ``docker-mock-model``: the real Stage 2.6 Docker topology (internal network, egress
       gateway, canary, fresh workspace) with the local mock model and mock agent.
-    * ``live``: real model. Requires ``authorize_spend`` *and* a valid ``spend_ceiling``, and
-      then raises ``LiveExecutionUnavailable`` listing ``live_execution_blockers()``: no
-      real-model executor exists, so nothing is started and nothing is written.
+    * ``live``: the existing benchmark runner (``run_simple.run_trial`` via
+      ``legacy_executor``): real Agents API sessions, Docker executor and R scorers. Requires
+      ``authorize_spend`` *and* a valid ``spend_ceiling``; then ``live_execution_blockers()``
+      must be empty and ``legacy_executor.preflight`` must pass (Linux, Docker, credentials,
+      images), otherwise nothing is written. ``legacy_context`` replaces the preflight in tests
+      that mock the model API; such a context is synthetic and so are its records.
 
-    Every record produced here is synthetic and labelled so; ``evaluate_baseline_difficulty``
-    refuses such records as baseline evidence. Resume, staging recovery, duplicate-line
-    quarantine, retry linkage and stop conditions are the unchanged ``runner`` contracts.
+    Mock-mode records are synthetic and labelled so; ``evaluate_baseline_difficulty`` refuses
+    them as baseline evidence. Resume, staging recovery, duplicate-line quarantine, retry
+    linkage and stop conditions are the unchanged ``runner`` contracts.
     """
     if executor_mode not in EXECUTOR_MODES:
         raise ValueError(f"executor_mode must be one of {EXECUTOR_MODES}, got {executor_mode!r}")
@@ -567,7 +606,9 @@ def execute_calibration(
         schedule_data, allow_ineligible_tasks=allow_ineligible_tasks
     )
     if problems:
-        raise ValueError(f"Invalid calibration schedule: {problems}")
+        raise ValueError(
+            f"Invalid calibration schedule ({len(problems)} problems): {problems[:10]}"
+        )
     if spend_ceiling is not None and spend_ceiling.problems():
         raise ValueError(f"Invalid spend ceiling: {spend_ceiling.problems()}")
 
@@ -582,8 +623,21 @@ def execute_calibration(
                 "Spend authorization without a ceiling is refused: pass --max-spend-usd, "
                 "--input-usd-per-mtok, --output-usd-per-mtok and --per-trial-reserve-usd."
             )
-        raise LiveExecutionUnavailable(live_execution_blockers(schedule_data))
-    if authorize_spend:
+        blockers = live_execution_blockers(schedule_data)
+        if blockers:
+            raise LiveExecutionUnavailable(blockers)
+        from . import legacy_executor
+
+        legacy_context = legacy_context or legacy_executor.preflight(
+            sorted(set(schedule_data["candidate_tasks"])),
+            study=legacy_executor.STUDIES["study1"],
+            effort=runner.DEFAULT_EFFORT,
+            timeout_seconds=schedule_data["trials"][0]["timeout_seconds"],
+            need_mcp=False,
+        )
+    elif legacy_context is not None:
+        raise ValueError("legacy_context applies only to --executor live")
+    if authorize_spend and not live:
         raise ValueError("--authorize-spend applies only to --executor live")
     if executor_mode == "docker-mock-model" and executor is None:
         from . import live_runner
@@ -609,12 +663,16 @@ def execute_calibration(
         model=first["model"],
         timeout_seconds=first["timeout_seconds"],
         max_infra_retries=first["retry_policy"]["max_retries"],
+        effort=legacy_context.effort if live else runner.DEFAULT_EFFORT,
         stop_on_invalidating_violation=True,
         max_consecutive_infra_failures=first["stop_conditions"][
             "max_consecutive_infrastructure_failures"
         ],
-        synthetic=True,
+        synthetic=legacy_context.synthetic if live else True,
+        protocol_amendment="A1" if live else None,
+        capability_policy=_capability_policy(legacy_context) if live else None,
     )
+    evidence_status = EVIDENCE_REAL if not cfg.synthetic else EVIDENCE_SYNTHETIC
     plan = schedule_to_plan(schedule_data)
 
     out_dir = Path(out_dir)
@@ -622,8 +680,8 @@ def execute_calibration(
     binding = {
         "executor_mode": executor_mode,
         "spend_ceiling": spend_ceiling.to_dict() if spend_ceiling else None,
-        "evidence_status": EVIDENCE_SYNTHETIC,
-        "baseline_evidence": False,
+        "evidence_status": evidence_status,
+        "baseline_evidence": not cfg.synthetic,
     }
     binding_path = out_dir / "calibration_run.json"
     if binding_path.exists():
@@ -655,6 +713,16 @@ def execute_calibration(
             executor or runner.make_mock_trial_executor(effect_b=0.0, effect_c_over_b=0.0),
             attempt_controller=controller,
         )
+    elif live:
+        from . import legacy_executor
+
+        result = runner.execute_study_plan(
+            plan,
+            cfg,
+            out_dir,
+            legacy_executor.make_legacy_trial_executor(legacy_context),
+            attempt_controller=controller,
+        )
     else:
         from . import live_runner
 
@@ -663,7 +731,7 @@ def execute_calibration(
         )
     result.update(
         executor_mode=executor_mode,
-        evidence_status=EVIDENCE_SYNTHETIC,
+        evidence_status=evidence_status,
         total_planned=result["planned_count"],
         records_path=str(out_dir / "trial_records.jsonl"),
         journal_path=str(out_dir / "ledger_journal.jsonl"),
@@ -907,9 +975,9 @@ def execution_readiness(schedule: dict[str, Any] | None = None) -> dict[str, Any
         "mock_ready": {
             "status": "READY",
             "meaning": (
-                "Calibration schedules run end to end through the Stage 2 ledger with the "
-                "in-process mock executor and through the real Docker topology with the local "
-                "mock model; every record is synthetic"
+                "Schedules and A/B/C plans run end to end through the Stage 2 ledger with the "
+                "in-process mock, the Stage 2.6 Docker topology with a mock model, and the real "
+                "benchmark runner with a mocked model API; every such record is synthetic"
             ),
             "commands": [
                 "execute-calibration --executor mock",
@@ -917,15 +985,18 @@ def execution_readiness(schedule: dict[str, Any] | None = None) -> dict[str, Any
             ],
         },
         "live_executor_ready": {
-            "status": "NOT_READY" if blockers else "READY",
+            # Implemented on run_simple.run_trial; no authorized real-model run has happened.
+            "status": "NOT_READY" if blockers else "IMPLEMENTED_NOT_EMPIRICALLY_VERIFIED",
+            "executor": "run_simple.run_trial via legacy_executor",
             "blockers": blockers,
+            "limitations": live_execution_limitations(sched),
         },
         "calibration_authorized": {
             "status": "NOT_AUTHORIZED",
             "detail": (
                 "No owner-approved spend ceiling is recorded (schedule "
-                "model_execution_authorized=false). Authorization would require --authorize-spend "
-                "plus an explicit ceiling, and is moot while the live executor is not ready"
+                "model_execution_authorized=false). A live run requires --authorize-spend plus "
+                "an explicit ceiling, prices and per-trial reserve"
             ),
         },
         "confirmatory_ready": {
@@ -989,15 +1060,17 @@ def evaluate_readiness_gates(has_docker: bool = True) -> dict[str, Any]:
             "name": "Baseline Model Calibration Execution",
             "status": "BLOCKED",
             "prerequisites": (
-                "A real-model executor inside the isolated topology, scorer-container "
-                "integration for the scheduled tasks, an owner-approved spend ceiling, and "
-                f"execution of the {len(schedule['trials'])} scheduled Arm A trials"
+                "The real execution path (run_simple.run_trial), an owner-approved spend "
+                f"ceiling, and execution of the {len(schedule['trials'])} scheduled Arm A trials"
             ),
             "verification_command": (
                 "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration "
-                "--executor live ... (currently exits 3: UNAVAILABLE)"
+                "--executor live --authorize-spend <ceiling arguments>"
             ),
-            "actual_evidence": "0 model calls executed; live mode refuses before any side effect",
+            "actual_evidence": (
+                "Real execution path implemented and exercised end to end with a mocked model "
+                "API; 0 real model calls executed"
+            ),
             "remaining_blockers": [b["id"] for b in blockers] + ["spend_not_authorized"],
         },
         {
@@ -1007,9 +1080,15 @@ def evaluate_readiness_gates(has_docker: bool = True) -> dict[str, Any]:
             "prerequisites": (
                 "Completion of Gate 3 calibration, pilot budget approval, 90 planned trials (A/B/C)"
             ),
-            "verification_command": "none: no pilot execution command exists",
+            "verification_command": (
+                "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-study "
+                "--study study1 ..."
+            ),
             "actual_evidence": "Pilot specification prepared (90 trials); 0 model calls executed",
-            "remaining_blockers": "Gate 3, the same live-executor blockers, and budget approval",
+            "remaining_blockers": (
+                "Gate 3, budget approval, and an owner decision on the preregistered egress "
+                "rule: every legacy-runner trial records invalidating egress violations"
+            ),
         },
         {
             "gate_id": "gate_5_confirmatory_experiment_eligibility",
@@ -1033,7 +1112,7 @@ def evaluate_readiness_gates(has_docker: bool = True) -> dict[str, Any]:
     ]
 
     return {
-        "report_version": "stage27-readiness-gates-v1.1",
+        "report_version": "stage3a-readiness-gates-v1.2",
         "mock_infrastructure_ready": all(g["status"] == "PASS" for g in gates[:2]),
         "live_calibration_ready": False,
         "execution_readiness": readiness,

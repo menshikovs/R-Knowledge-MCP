@@ -1,30 +1,32 @@
 {
-  "report_version": "stage27-readiness-gates-v1.1",
+  "report_version": "stage3a-readiness-gates-v1.2",
   "mock_infrastructure_ready": true,
   "live_calibration_ready": false,
   "execution_readiness": {
     "mock_ready": {
       "status": "READY",
-      "meaning": "Calibration schedules run end to end through the Stage 2 ledger with the in-process mock executor and through the real Docker topology with the local mock model; every record is synthetic",
+      "meaning": "Schedules and A/B/C plans run end to end through the Stage 2 ledger with the in-process mock, the Stage 2.6 Docker topology with a mock model, and the real benchmark runner with a mocked model API; every such record is synthetic",
       "commands": [
         "execute-calibration --executor mock",
         "execute-calibration --executor docker-mock-model"
       ]
     },
     "live_executor_ready": {
-      "status": "NOT_READY",
-      "blockers": [
+      "status": "IMPLEMENTED_NOT_EMPIRICALLY_VERIFIED",
+      "executor": "run_simple.run_trial via legacy_executor",
+      "blockers": [],
+      "limitations": [
         {
-          "id": "no_real_model_workload",
-          "detail": "the candidate container runs /opt/stage26/mock_agent.py in python:3.11-slim; no code path starts the agent runtime rkmcp-codex-runtime:codex-0.163.0 inside the isolated topology"
+          "id": "network_egress_not_enforced",
+          "detail": "run_simple uses a plain Docker bridge network; under amendment A1 the recorded egress_not_restricted and egress_unverified are superseded by per-trial capability-equivalence checks, and web access is restricted by tool configuration and instructions, not by the network"
         },
         {
-          "id": "no_real_model_upstream_or_credential_path",
-          "detail": "the gateway tunnels api.openai.com:443 only to the local /opt/stage26/mock_model_server.py; OPENAI_API_KEY is withheld from every container and nothing injects a real credential outside the candidate"
+          "id": "spend_accounted_not_metered",
+          "detail": "the ceiling is enforced per attempt over reported token usage with a reserve; no provider-side limit is sent and requests cannot be cut off mid-flight"
         },
         {
-          "id": "scorer_container_not_integrated",
-          "detail": "25 of 25 scheduled tasks need the R scorer container, which the live runner does not run; they could only produce infrastructure failures",
+          "id": "catalogue_scorer_label_not_executable",
+          "detail": "knowledge-pilot-v2.1 scores only D01/D03; these tasks are scored by the knowledge-pilot legacy scorer, which the record states explicitly",
           "tasks": [
             "B01",
             "B02",
@@ -35,29 +37,18 @@
             "C04",
             "C05",
             "E02",
-            "E03",
-            "H01",
-            "H04",
-            "H10",
-            "R01",
-            "R02",
-            "R03",
-            "R04",
-            "R05",
-            "R06",
-            "R07",
-            "R08",
-            "R09",
-            "R10",
-            "R11",
-            "R12"
+            "E03"
           ]
+        },
+        {
+          "id": "not_empirically_verified",
+          "detail": "no authorized real-model run of this path has taken place"
         }
       ]
     },
     "calibration_authorized": {
       "status": "NOT_AUTHORIZED",
-      "detail": "No owner-approved spend ceiling is recorded (schedule model_execution_authorized=false). Authorization would require --authorize-spend plus an explicit ceiling, and is moot while the live executor is not ready"
+      "detail": "No owner-approved spend ceiling is recorded (schedule model_execution_authorized=false). A live run requires --authorize-spend plus an explicit ceiling, prices and per-trial reserve"
     },
     "confirmatory_ready": {
       "status": "NOT_READY",
@@ -104,13 +95,10 @@
       "gate_id": "gate_3_calibration_execution",
       "name": "Baseline Model Calibration Execution",
       "status": "BLOCKED",
-      "prerequisites": "A real-model executor inside the isolated topology, scorer-container integration for the scheduled tasks, an owner-approved spend ceiling, and execution of the 75 scheduled Arm A trials",
-      "verification_command": "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration --executor live ... (currently exits 3: UNAVAILABLE)",
-      "actual_evidence": "0 model calls executed; live mode refuses before any side effect",
+      "prerequisites": "The real execution path (run_simple.run_trial), an owner-approved spend ceiling, and execution of the 75 scheduled Arm A trials",
+      "verification_command": "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-calibration --executor live --authorize-spend <ceiling arguments>",
+      "actual_evidence": "Real execution path implemented and exercised end to end with a mocked model API; 0 real model calls executed",
       "remaining_blockers": [
-        "no_real_model_workload",
-        "no_real_model_upstream_or_credential_path",
-        "scorer_container_not_integrated",
         "spend_not_authorized"
       ]
     },
@@ -119,9 +107,9 @@
       "name": "Three-Arm Pilot Execution",
       "status": "BLOCKED",
       "prerequisites": "Completion of Gate 3 calibration, pilot budget approval, 90 planned trials (A/B/C)",
-      "verification_command": "none: no pilot execution command exists",
+      "verification_command": "python -m benchmarks.codex_r.studies.stage2_validity_v1.cli execute-study --study study1 ...",
       "actual_evidence": "Pilot specification prepared (90 trials); 0 model calls executed",
-      "remaining_blockers": "Gate 3, the same live-executor blockers, and budget approval"
+      "remaining_blockers": "Gate 3, budget approval, and an owner decision on the preregistered egress rule: every legacy-runner trial records invalidating egress violations"
     },
     {
       "gate_id": "gate_5_confirmatory_experiment_eligibility",
