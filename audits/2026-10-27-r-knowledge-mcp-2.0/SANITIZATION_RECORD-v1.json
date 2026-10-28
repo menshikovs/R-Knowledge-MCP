@@ -1,0 +1,274 @@
+{
+ "schema_version": 1,
+ "purpose": "Traceability for the removal of the local user name from audit evidence. Only user-name path components were replaced; no other byte changed (verified by re-applying the replacements to the published blob and comparing).",
+ "published_commit": "2abac89 (first Stage 0 commit, pushed to origin/verify/stage0-ci); identical audits/ content at d7db829",
+ "digest_basis": "SHA-256 of the git blob content (LF-normalised text as stored in the repository)",
+ "replacements": {
+  "windows path component": {
+   "from": "\\<name>",
+   "to": "\\<user>"
+  },
+  "forward-slash path component": {
+   "from": "/<name>",
+   "to": "/<user>"
+  },
+  "linux home directory": {
+   "from": "/home/<name>",
+   "to": "/home/<user>"
+  },
+  "pytest tmp directory": {
+   "from": "pytest-of-<name>",
+   "to": "pytest-of-<user>"
+  }
+ },
+ "evidence_manifest_note": "EVIDENCE_MANIFEST.json holds no per-file digests. Its digest-like fields (src_tree_sha256_installed_copy, src_tree_sha256_audited_clone, container image id) describe source trees or images, not these files, and are unchanged. Its own published and sanitized digests are listed below like any other sanitized file.",
+ "unchanged_historical_digests": "benchmarks/codex_r/** frozen files, E-source-snapshot.sha256 and saved results are untouched; see benchmarks/codex_r/LINE_ENDING_MIGRATION-v1.json",
+ "entries": [
+  {
+   "path": "EVIDENCE_MANIFEST.json",
+   "published_sha256": "42ae1a9ef056ed839cb2e6d25104b9ae00d6d61c48a24a601eb36336f0d80223",
+   "sanitized_sha256": "873a7b16694e8e58eb9f4b4e7a942ba383219a19a74e53a0aca925e9d00218ee",
+   "published_git_blob": "69ff822134bef4a5741e249004b8bf6b11391e48",
+   "sanitized_git_blob": "b776357569984f20b085e4192cd02968b3093be9",
+   "replacements": {
+    "windows path component": 32
+   }
+  },
+  {
+   "path": "evidence/ci/cargo_clippy.txt",
+   "published_sha256": "5ae5506ff1d3a16388f12c642f6676683be5e39dad8c4cfa390a50db7d76ee6f",
+   "sanitized_sha256": "2f4dddb1f98fd50000818df1863b7e5a148eae6e6b594dc6bb0a9428676697ce",
+   "published_git_blob": "06b90e608a2fc5526e6cbfc56a7526191793cfcb",
+   "sanitized_git_blob": "a5378cb5ac036df99aca6e7c1bb7d665a93d403b",
+   "replacements": {
+    "windows path component": 1
+   }
+  },
+  {
+   "path": "evidence/ci/cargo_test.txt",
+   "published_sha256": "e55ae61257b2d1d148853b2acc30368ddf1eb982895d30b696a8e56331f48c61",
+   "sanitized_sha256": "03292217671d25c38bbacfa0cf026baf15dd263b747010591b0b681b711c4c7b",
+   "published_git_blob": "a7d07dffb73ff12a79e785928d7bf79dbd54b944",
+   "sanitized_git_blob": "17076227b44c56eb90bb1459eeefa6068e199c7f",
+   "replacements": {
+    "windows path component": 1,
+    "forward-slash path component": 1
+   }
+  },
+  {
+   "path": "evidence/ci/py311_collect_fixedpath.txt",
+   "published_sha256": "3faf6017441bcc62734dfddfa427d979921439e6578efa107030f9158fd6f732",
+   "sanitized_sha256": "f55069e91bba575caa2a0b8dcab063b680303802d960e0286f1a140aa5b726fe",
+   "published_git_blob": "48d8addf2b49079372d6503070269d0216a5ea43",
+   "sanitized_git_blob": "936e8985e31d450d2db5babca8e79c1750edf321",
+   "replacements": {
+    "windows path component": 2
+   }
+  },
+  {
+   "path": "evidence/ci/pytest_bare_collect_windows.txt",
+   "published_sha256": "037357ec529c3d2d100eacc180780ea23e67cc916f2621196f301beeff951d7e",
+   "sanitized_sha256": "4e96193f23a7c7cdbb0930f9354589d0053f3d474a1f813db4377691a93ebe18",
+   "published_git_blob": "b4460d504106ece8346f0c9f645e4057bb7d0e2a",
+   "sanitized_git_blob": "7bf80ef85ef2ab1f345a6107d5ab70126fcdc75c",
+   "replacements": {
+    "windows path component": 23
+   }
+  },
+  {
+   "path": "evidence/ci/pytest_linux_fixed.txt",
+   "published_sha256": "2c9d0c9ebb45fb9891e38b796b28dbf354786de72550e3ffcf215d689d504f6f",
+   "sanitized_sha256": "90c4e2cc61d7560522b906152369579fcd4bd5fd1270ef89aa76565151dd9af7",
+   "published_git_blob": "25fc0828320cb0f5c3ed5116d690a9750784b3a9",
+   "sanitized_git_blob": "78746478635e66708ced1817d61ecce6df37e730",
+   "replacements": {
+    "linux home directory": 37,
+    "pytest tmp directory": 5
+   }
+  },
+  {
+   "path": "evidence/ci/pytest_py3.11.txt",
+   "published_sha256": "e7a20832acb38a0fd014e09d6e3b2d1ec030b2233dcd1bcd7429a3c8fde3855b",
+   "sanitized_sha256": "946d1b7b92c825e7dc51adddcee68719413eb54c62c6274ebe24851d9ce079f5",
+   "published_git_blob": "6686c7b27b011bbd2d3b0c8326500ca662655538",
+   "sanitized_git_blob": "9c5d4b1a58e006b60e27dbcb780887e6a5edb30a",
+   "replacements": {
+    "windows path component": 1
+   }
+  },
+  {
+   "path": "evidence/ci/pytest_py3.12.txt",
+   "published_sha256": "f1aa76e3564909283d774f22420af724c341f576df7d09897aad903d31029b0f",
+   "sanitized_sha256": "241b7ed56412329f7329b7181bb28b535b953eff84a9d040f5de7f6f18089614",
+   "published_git_blob": "02fcc9b2fb282fb09cc2ae4e8b5d78dc9a978e8a",
+   "sanitized_git_blob": "d2572bbbe6ca0b68f13155243ed7e4ccccfac646",
+   "replacements": {
+    "windows path component": 1
+   }
+  },
+  {
+   "path": "evidence/ci/pytest_py3.13.txt",
+   "published_sha256": "88c3c998edbbd1c3cb362ea92031c811690583e602ddf4b5d34335a828838491",
+   "sanitized_sha256": "cc6e11b0325b825c57df0662eb90aa0bbfb742c4fdfbb9a64254cf9eb2f6e85e",
+   "published_git_blob": "50b63d48a66b679c466f6c188b93a181e3964a6e",
+   "sanitized_git_blob": "dc739061b54838ff4f91769dd5192b4d9242afab",
+   "replacements": {
+    "windows path component": 1
+   }
+  },
+  {
+   "path": "evidence/ci/pytest_windows_clone_cov.txt",
+   "published_sha256": "4aca24125865f71ebf2355e017c7421fcf6457f0f1910477aba82d5f0fa1dbc4",
+   "sanitized_sha256": "fd7180c979817f82dd31db62f874bccaebaf43013c8c5aa822951b8f43002caa",
+   "published_git_blob": "f504d815da6c7551a10c6fd946af9ab6a6a1ea62",
+   "sanitized_git_blob": "c8adecea418044d414ccefc02ffa3ffb7f0d5d77",
+   "replacements": {
+    "windows path component": 16,
+    "forward-slash path component": 23
+   }
+  },
+  {
+   "path": "evidence/ci/pytest_windows_gitarchive_run.txt",
+   "published_sha256": "e4b056772b70d955352a97e44ea1e9f7a366c89cc7826fe1c94fd154971432a8",
+   "sanitized_sha256": "d5f7ac661ef9cdc0fd82ba590fdf020d93ead6d06bb9c01b19e1b41d797fdafd",
+   "published_git_blob": "c0fcff5f44274b5c48f081bbb5f8efa6ede14e2b",
+   "sanitized_git_blob": "0595731be350ce3ba9ad49a3c33c571d4709c39d",
+   "replacements": {
+    "windows path component": 18,
+    "forward-slash path component": 24
+   }
+  },
+  {
+   "path": "evidence/ci/wsl_ci_bare.txt",
+   "published_sha256": "651e7be08388d64b5a8ff3ae21eaf555f0f50fb01297cb39777167d9f9c90421",
+   "sanitized_sha256": "16d8c0ad1d2883ecbbfdba2f3a57fdbae0b8b7c268b772f1c242c582e1d2a1cf",
+   "published_git_blob": "11d4667ef97d6adecb7e9a25ad926333548b7ed3",
+   "sanitized_git_blob": "7c12e988e9db75ebc0265f45084d1846d1e75f69",
+   "replacements": {
+    "linux home directory": 1
+   }
+  },
+  {
+   "path": "evidence/misc_commands.json",
+   "published_sha256": "1355e198dabfe690e2b0a975a6f35b3734b0d07712146741da25a4852bcf9fa7",
+   "sanitized_sha256": "137d4399948cc370c32911bddcf6672b60c94a175e14f14f44dc9cff09d3423d",
+   "published_git_blob": "e36eab2925d0814bfe8898cb46d78f9f08251d17",
+   "sanitized_git_blob": "bcd29f6f5becf62b03d4c162a1ecb84a0a019053",
+   "replacements": {
+    "windows path component": 32
+   }
+  },
+  {
+   "path": "evidence/probes/probe_http_transport.txt",
+   "published_sha256": "299ce4687bfd46b429a09cd6911794bb13db5b6616c55e6e88eea0562056cb5e",
+   "sanitized_sha256": "f4f95fec64b1242b962d2f4ed08b646a96689440863b921431e6d161c970e69b",
+   "published_git_blob": "05ae7413d41ffe25425ffe66efecc303fa415558",
+   "sanitized_git_blob": "fd67ba956f5fe6210d5113e6be9bdbc50d995a41",
+   "replacements": {
+    "windows path component": 1
+   }
+  },
+  {
+   "path": "stage0-evidence/after_context7_full_pytest.txt",
+   "published_sha256": "307a53bb53e5e7507cfc66c0731a7a3af57dcead5af4e565b246c14bb75ca511",
+   "sanitized_sha256": "2e3a76ef7f5519918ab402017679143fdf5f4cf6b041edfdb3e27bdda4ca4eff",
+   "published_git_blob": "c5f47cd21af8d40046f24dd700d6fc85dc48beff",
+   "sanitized_git_blob": "7bf63d764d69f13b7a689a01fad7f1dfbd9ee913",
+   "replacements": {
+    "windows path component": 2
+   }
+  },
+  {
+   "path": "stage0-evidence/baseline_collect_console_script.txt",
+   "published_sha256": "e8977bf6e3dd3ad2270231aa97ce91eae62c906015c58263f0603bf42d12f48a",
+   "sanitized_sha256": "53a936f76a462e9a6bf689d07a3c84cc985d5372cd099ceec5783afc901259e0",
+   "published_git_blob": "5c60ac6bca9e9ce133f71a00186211a68ca1bf96",
+   "sanitized_git_blob": "e049cc232d50a47b1046a90e0d30a1183910752c",
+   "replacements": {
+    "windows path component": 2
+   }
+  },
+  {
+   "path": "stage0-evidence/linux_full_pytest_final.txt",
+   "published_sha256": "b8c427062ae16a5e7fa7c4640d6a2f9d48d617afe184fba3884799ebaccf8cbb",
+   "sanitized_sha256": "1209a072cd2ee3fe0f48c0aaed8571b195ee83f4b7636276f4ecb5c75c3f4268",
+   "published_git_blob": "463ce5f62f952effd8e2c2575c4a941518b83aa8",
+   "sanitized_git_blob": "2e4386b10b956b10f976e7c96acae1e18b933945",
+   "replacements": {
+    "linux home directory": 1,
+    "pytest tmp directory": 1
+   }
+  },
+  {
+   "path": "stage0-evidence/wheel_cli_stdio_check.txt",
+   "published_sha256": "0aa0ea4d9a44c6a65f3d0e50d1652a6fe7c4266aae856091dbf4f741f77e2c66",
+   "sanitized_sha256": "9f878d6c581dc9763387d4a62383841355de801dc1b7b77bb0efd6bda8afbde6",
+   "published_git_blob": "026e69fb4061f0542a683e16cbd9a8fc8ac01a09",
+   "sanitized_git_blob": "4d4f75a4e6a8d9e4c8b3797ee80856104d7fc523",
+   "replacements": {
+    "windows path component": 2
+   }
+  },
+  {
+   "path": "stage0-evidence/windows_cleanclone_py3.11_full_pytest.txt",
+   "published_sha256": "3c7e15d10c76855c120fa65b213e39ea165f6717992b8ab2d9c09e4b9bcc8fbd",
+   "sanitized_sha256": "2bc2498b34378329985af82aa365290ed46c584276ec58353f1940f8b7cebdf9",
+   "published_git_blob": "acadd184f045949c9bd7bad8ee29a5009e6370d1",
+   "sanitized_git_blob": "1e91fe7c9fbc09fcdea239285324730b7ddcedf5",
+   "replacements": {
+    "windows path component": 1
+   }
+  },
+  {
+   "path": "stage0-evidence/windows_cleanclone_py3.12_full_pytest.txt",
+   "published_sha256": "27eb51d927db709a58fc1bf77537244c547a9333dac88872298e58046e44c778",
+   "sanitized_sha256": "8292a5207472dd562fab4a9eb048762836259f0af9b90fdae2378c37c857ce22",
+   "published_git_blob": "1ae6f5faafca6f3ebf29cd91810f40b150c379a7",
+   "sanitized_git_blob": "2a62e08677f23a73bb4da547f219de198450d38e",
+   "replacements": {
+    "windows path component": 1
+   }
+  },
+  {
+   "path": "stage0-evidence/windows_cleanclone_py3.13_full_pytest.txt",
+   "published_sha256": "2873c72dbc777fd6589ffd1283841077eb24908b4aad49980b3e247217dcc699",
+   "sanitized_sha256": "8c3b0155f5ddf8758d93282d9d4ac776d43528f1b449c1ad171b0896b7d8cf2f",
+   "published_git_blob": "c14899c2cf58e4b3369f7da38dcc056cc150c0ce",
+   "sanitized_git_blob": "06e2caf91a26b183f97ec99f12bdc54fff7b8cf5",
+   "replacements": {
+    "windows path component": 1
+   }
+  },
+  {
+   "path": "stage0-evidence/windows_full_pytest_final.txt",
+   "published_sha256": "2ba6549594496d38e1ddd8239ab8fe0b4ddfb63db9a17c4c85578f8489f8988a",
+   "sanitized_sha256": "b543bbeba3716c55822725f931b42e00a45ac112564f4a4f3c030ad7995888f2",
+   "published_git_blob": "17e929863bc19c23d6dfbc5a015b2d50148869dc",
+   "sanitized_git_blob": "1123366bdf20beb0d50def437a71e04ca710d48a",
+   "replacements": {
+    "windows path component": 2
+   }
+  },
+  {
+   "path": "stage05-evidence/linux_py3.14_full_pytest_before_fixes.txt",
+   "published_sha256": "6a4d704ffff3d48edc757377d88081c2a5882f764ca338ec41fd4fff16bca1df",
+   "sanitized_sha256": "e4cf7969adca4084b0c36845e2a321a2aacc0eaa731761a3283302c19adf1f6d",
+   "published_git_blob": "36c18a7aff12cb19471c357c1f2ae5d8f2e6d088",
+   "sanitized_git_blob": "b450d7a74dda8188adb99ae0774aae7868d69bb2",
+   "replacements": {
+    "linux home directory": 3,
+    "pytest tmp directory": 3
+   }
+  },
+  {
+   "path": "stage05-evidence/linux_py3.14_full_pytest_final.txt",
+   "published_sha256": "3a8227e37a3a05044433647183d96e52b9e9338e2af629ecfa94606cfc1d472f",
+   "sanitized_sha256": "dd5f73bae1a9c2c2b216b5f44b8ba7e386f1bab4b6410678e2af9dbeb25459d2",
+   "published_git_blob": "f924583faccf3116b59981cc0415d617605dd68e",
+   "sanitized_git_blob": "dcbddfff8ff0d3bdba2062120325af28f5c01081",
+   "replacements": {
+    "linux home directory": 3
+   }
+  }
+ ]
+}

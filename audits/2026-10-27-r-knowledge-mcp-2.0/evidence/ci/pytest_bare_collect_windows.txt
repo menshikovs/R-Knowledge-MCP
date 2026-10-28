@@ -1175,7 +1175,7 @@ tests/test_windows_tmp_path.py::test_tmp_path_factory_directories_are_writable_a
 
 =================================== ERRORS ====================================
 __________ ERROR collecting tests/test_baseline_root_cause_audit.py ___________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_baseline_root_cause_audit.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_baseline_root_cause_audit.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1185,7 +1185,7 @@ tests\test_baseline_root_cause_audit.py:12: in <module>
     from benchmarks.codex_r.audit_baseline import (
 E   ModuleNotFoundError: No module named 'benchmarks'
 _____________ ERROR collecting tests/test_benchmark_analytics.py ______________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_benchmark_analytics.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_benchmark_analytics.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1195,7 +1195,7 @@ tests\test_benchmark_analytics.py:13: in <module>
     from benchmarks.codex_r.analytics import (  # noqa: E402
 E   ModuleNotFoundError: No module named 'benchmarks'
 ___________ ERROR collecting tests/test_benchmark_evidence_audit.py ___________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_benchmark_evidence_audit.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_benchmark_evidence_audit.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1205,7 +1205,7 @@ tests\test_benchmark_evidence_audit.py:7: in <module>
     from benchmarks.codex_r.evidence_audit import _read_telemetry, audit_run
 E   ModuleNotFoundError: No module named 'benchmarks'
 ___________ ERROR collecting tests/test_benchmark_opportunities.py ____________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_benchmark_opportunities.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_benchmark_opportunities.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1215,7 +1215,7 @@ tests\test_benchmark_opportunities.py:5: in <module>
     from benchmarks.codex_r.telemetry import opportunities
 E   ModuleNotFoundError: No module named 'benchmarks'
 _____________ ERROR collecting tests/test_benchmark_telemetry.py ______________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_benchmark_telemetry.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_benchmark_telemetry.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1225,7 +1225,7 @@ tests\test_benchmark_telemetry.py:11: in <module>
     from benchmarks.codex_r import run_simple as simple
 E   ModuleNotFoundError: No module named 'benchmarks'
 ________ ERROR collecting tests/test_benchmark_telemetry_projection.py ________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_benchmark_telemetry_projection.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_benchmark_telemetry_projection.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1235,7 +1235,7 @@ tests\test_benchmark_telemetry_projection.py:5: in <module>
     from benchmarks.codex_r.telemetry import projection
 E   ModuleNotFoundError: No module named 'benchmarks'
 ____________ ERROR collecting tests/test_benchmark_trace_model.py _____________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_benchmark_trace_model.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_benchmark_trace_model.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1245,7 +1245,7 @@ tests\test_benchmark_trace_model.py:3: in <module>
     from benchmarks.codex_r.telemetry import trace_model
 E   ModuleNotFoundError: No module named 'benchmarks'
 ________________ ERROR collecting tests/test_bioc_benchmark.py ________________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_bioc_benchmark.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_bioc_benchmark.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1255,7 +1255,7 @@ tests\test_bioc_benchmark.py:12: in <module>
     from benchmarks.codex_r import full_selftest
 E   ModuleNotFoundError: No module named 'benchmarks'
 _________ ERROR collecting tests/test_codex_connection_diagnostics.py _________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_connection_diagnostics.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_connection_diagnostics.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1265,7 +1265,7 @@ tests\test_codex_connection_diagnostics.py:13: in <module>
     from benchmarks.codex_r import connection_diagnostics as diagnostics
 E   ModuleNotFoundError: No module named 'benchmarks'
 ___________ ERROR collecting tests/test_codex_expansion_registry.py ___________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_expansion_registry.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_expansion_registry.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1275,7 +1275,7 @@ tests\test_codex_expansion_registry.py:12: in <module>
     from benchmarks.codex_r.expansion import registry
 E   ModuleNotFoundError: No module named 'benchmarks'
 __________________ ERROR collecting tests/test_codex_hard.py __________________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_hard.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_hard.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1285,7 +1285,7 @@ tests\test_codex_hard.py:11: in <module>
     from benchmarks.codex_r import run_simple
 E   ModuleNotFoundError: No module named 'benchmarks'
 ________________ ERROR collecting tests/test_codex_launcher.py ________________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_launcher.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_launcher.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1295,7 +1295,7 @@ tests\test_codex_launcher.py:19: in <module>
     from benchmarks.codex_r import run_simple as simple
 E   ModuleNotFoundError: No module named 'benchmarks'
 ____________ ERROR collecting tests/test_codex_mcp_diagnostics.py _____________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_mcp_diagnostics.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_mcp_diagnostics.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1305,7 +1305,7 @@ tests\test_codex_mcp_diagnostics.py:14: in <module>
     from benchmarks.codex_r import run_simple as simple
 E   ModuleNotFoundError: No module named 'benchmarks'
 _________________ ERROR collecting tests/test_codex_simple.py _________________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_simple.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_simple.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1315,7 +1315,7 @@ tests\test_codex_simple.py:10: in <module>
     from benchmarks.codex_r import run_simple as simple
 E   ModuleNotFoundError: No module named 'benchmarks'
 ___________ ERROR collecting tests/test_codex_simple_interrupts.py ____________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_simple_interrupts.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_simple_interrupts.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1325,7 +1325,7 @@ tests\test_codex_simple_interrupts.py:15: in <module>
     from benchmarks.codex_r import run_simple as simple
 E   ModuleNotFoundError: No module named 'benchmarks'
 _____________ ERROR collecting tests/test_codex_simple_resume.py ______________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_simple_resume.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_codex_simple_resume.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1335,7 +1335,7 @@ tests\test_codex_simple_resume.py:3: in <module>
     from benchmarks.codex_r import run_simple as simple
 E   ModuleNotFoundError: No module named 'benchmarks'
 ________________ ERROR collecting tests/test_d_scorer_urls.py _________________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_d_scorer_urls.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_d_scorer_urls.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1345,7 +1345,7 @@ tests\test_d_scorer_urls.py:9: in <module>
     from benchmarks.codex_r import knowledge_pilot as pilot
 E   ModuleNotFoundError: No module named 'benchmarks'
 __________ ERROR collecting tests/test_function_discovery_replay.py ___________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_function_discovery_replay.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_function_discovery_replay.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1355,7 +1355,7 @@ tests\test_function_discovery_replay.py:12: in <module>
     from benchmarks.codex_r.replay_function_discovery import load_fixtures, render, replay
 E   ModuleNotFoundError: No module named 'benchmarks'
 _______________ ERROR collecting tests/test_knowledge_pilot.py ________________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_knowledge_pilot.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_knowledge_pilot.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1365,7 +1365,7 @@ tests\test_knowledge_pilot.py:10: in <module>
     from benchmarks.codex_r import knowledge_pilot as pilot
 E   ModuleNotFoundError: No module named 'benchmarks'
 ______________ ERROR collecting tests/test_knowledge_pilot_v2.py ______________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_knowledge_pilot_v2.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_knowledge_pilot_v2.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1375,7 +1375,7 @@ tests\test_knowledge_pilot_v2.py:6: in <module>
     from benchmarks.codex_r import knowledge_pilot as pilot
 E   ModuleNotFoundError: No module named 'benchmarks'
 _____________ ERROR collecting tests/test_knowledge_pilot_v21.py ______________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_knowledge_pilot_v21.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_knowledge_pilot_v21.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1385,7 +1385,7 @@ tests\test_knowledge_pilot_v21.py:6: in <module>
     from benchmarks.codex_r import (
 E   ModuleNotFoundError: No module named 'benchmarks'
 ________________ ERROR collecting tests/test_mcp_discovery.py _________________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_mcp_discovery.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_mcp_discovery.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module
@@ -1395,7 +1395,7 @@ tests\test_mcp_discovery.py:15: in <module>
     from benchmarks.codex_r import run_simple
 E   ModuleNotFoundError: No module named 'benchmarks'
 ____________ ERROR collecting tests/test_telemetry_integration.py _____________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_telemetry_integration.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_telemetry_integration.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 C:\Python314\Lib\importlib\__init__.py:88: in import_module

@@ -77,7 +77,7 @@ E               AssertionError
 benchmarks\codex_r\full_selftest.py:145: AssertionError
 _________ test_registry_imports_all_source_specs_and_counts_by_suite __________
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -91,7 +91,7 @@ C:\Python314\Lib\pathlib\__init__.py:787: in read_text
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -104,7 +104,7 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
 
 C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
 
@@ -124,19 +124,19 @@ benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
 
 benchmarks\codex_r\expansion\registry.py:109: RegistryError
 _ test_hard_blueprint_mapping_is_explicit_and_does_not_overstate_revalidation _
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -150,7 +150,7 @@ C:\Python314\Lib\pathlib\__init__.py:787: in read_text
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -163,7 +163,7 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
 
 C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
 
@@ -183,19 +183,19 @@ benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
 
 benchmarks\codex_r\expansion\registry.py:109: RegistryError
 _____ test_legacy_crosswalk_keeps_thematic_links_separate_from_duplicates _____
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -209,7 +209,7 @@ C:\Python314\Lib\pathlib\__init__.py:787: in read_text
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -222,7 +222,7 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
 
 C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
 
@@ -242,19 +242,19 @@ benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
 
 benchmarks\codex_r\expansion\registry.py:109: RegistryError
 ______________ test_registry_rejects_private_answer_key_sources _______________
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -268,7 +268,7 @@ C:\Python314\Lib\pathlib\__init__.py:787: in read_text
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -281,7 +281,7 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
 
 C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
 
@@ -301,19 +301,19 @@ benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
 
 benchmarks\codex_r\expansion\registry.py:109: RegistryError
 _________ test_hard_blueprint_exports_only_the_agent_visible_contract _________
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -327,7 +327,7 @@ C:\Python314\Lib\pathlib\__init__.py:787: in read_text
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -340,7 +340,7 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
 
 C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
 
@@ -360,19 +360,19 @@ benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
 
 benchmarks\codex_r\expansion\registry.py:109: RegistryError
 _______ test_checked_in_json_artifacts_match_the_current_public_sources _______
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -386,7 +386,7 @@ C:\Python314\Lib\pathlib\__init__.py:787: in read_text
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -399,7 +399,7 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
 
 C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
 
@@ -419,19 +419,19 @@ benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
 
 benchmarks\codex_r\expansion\registry.py:109: RegistryError
 _________ test_prompt_export_contains_only_the_requested_public_task __________
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -445,7 +445,7 @@ C:\Python314\Lib\pathlib\__init__.py:787: in read_text
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -458,13 +458,13 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
 
 C:\Python314\Lib\pathlib\__init__.py:771: FileNotFoundError
 
 The above exception was the direct cause of the following exception:
 
-tmp_path = WindowsPath('C:/Users/User001/AppData/Local/Temp/cran-mcp-pytest-510d9d3764f444039e3801bab7d2fbc7/pytest-2422b95fd64a49d3ae0450a056412e68/test_prompt_export_contains_on0')
+tmp_path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/cran-mcp-pytest-510d9d3764f444039e3801bab7d2fbc7/pytest-2422b95fd64a49d3ae0450a056412e68/test_prompt_export_contains_on0')
 
     def test_prompt_export_contains_only_the_requested_public_task(tmp_path):
 >       catalog = registry.build_registry()
@@ -480,31 +480,31 @@ benchmarks\codex_r\expansion\registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-path = WindowsPath('C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/clone/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\benchmark_expansion_sources\SOURCE_MANIFEST.json
 
 benchmarks\codex_r\expansion\registry.py:109: RegistryError
 ______ test_prompt_export_rejects_unknown_or_in_repository_destinations _______
 
-tmp_path = WindowsPath('C:/Users/User001/AppData/Local/Temp/cran-mcp-pytest-510d9d3764f444039e3801bab7d2fbc7/pytest-2422b95fd64a49d3ae0450a056412e68/test_prompt_export_rejects_unk0')
+tmp_path = WindowsPath('C:/Users/<user>/AppData/Local/Temp/cran-mcp-pytest-510d9d3764f444039e3801bab7d2fbc7/pytest-2422b95fd64a49d3ae0450a056412e68/test_prompt_export_rejects_unk0')
 
     def test_prompt_export_rejects_unknown_or_in_repository_destinations(tmp_path):
 >       with pytest.raises(registry.RegistryError, match="Unknown expansion task"):
              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 E       AssertionError: Regex pattern did not match.
 E         Expected regex: 'Unknown expansion task'
-E         Actual message: 'Cannot read JSON manifest: C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
+E         Actual message: 'Cannot read JSON manifest: C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\benchmark_expansion_sources\\SOURCE_MANIFEST.json'
 
 tests\test_codex_expansion_registry.py:158: AssertionError
 ============================== warnings summary ===============================
 ..\venv\Lib\site-packages\_pytest\config\__init__.py:1464
-  C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venv\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
+  C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venv\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
   
     self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
 

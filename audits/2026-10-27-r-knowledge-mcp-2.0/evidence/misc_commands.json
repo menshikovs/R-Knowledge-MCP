@@ -37,8 +37,8 @@
  },
  {
   "id": "clone_head",
-  "command": "git -C C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone rev-parse HEAD",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "command": "git -C C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone rev-parse HEAD",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:26.680325+00:00",
   "ended_utc": "2026-10-27T14:46:26.703437+00:00",
@@ -46,8 +46,8 @@
  },
  {
   "id": "python_versions",
-  "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\python.exe --version",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\python.exe --version",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:26.703454+00:00",
   "ended_utc": "2026-10-27T14:46:26.719833+00:00",
@@ -55,8 +55,8 @@
  },
  {
   "id": "pip_list_audit_venv",
-  "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\python.exe -m pip list --format=freeze",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\python.exe -m pip list --format=freeze",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:26.719850+00:00",
   "ended_utc": "2026-10-27T14:46:27.083863+00:00",
@@ -64,8 +64,8 @@
  },
  {
   "id": "ruff_check_clone",
-  "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\ruff.exe check .",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\ruff.exe check .",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:27.083880+00:00",
   "ended_utc": "2026-10-27T14:46:27.209052+00:00",
@@ -73,8 +73,8 @@
  },
  {
   "id": "ruff_format_check_clone",
-  "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\ruff.exe format --check .",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\ruff.exe format --check .",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:27.209072+00:00",
   "ended_utc": "2026-10-27T14:46:27.326565+00:00",
@@ -82,8 +82,8 @@
  },
  {
   "id": "pytest_collect_only_python_m",
-  "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\python.exe -m pytest --collect-only -q -p no:cacheprovider",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\python.exe -m pytest --collect-only -q -p no:cacheprovider",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:27.326585+00:00",
   "ended_utc": "2026-10-27T14:46:29.741876+00:00",
@@ -91,8 +91,8 @@
  },
  {
   "id": "pytest_collect_only_console_script",
-  "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\pytest.exe --collect-only -q -p no:cacheprovider",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\pytest.exe --collect-only -q -p no:cacheprovider",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 2,
   "started_utc": "2026-10-27T14:46:29.741897+00:00",
   "ended_utc": "2026-10-27T14:46:32.001687+00:00",
@@ -100,8 +100,8 @@
  },
  {
   "id": "pytest_collect_only_pythonpath_fix",
-  "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\pytest.exe -o pythonpath=src . --collect-only -q -p no:cacheprovider",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\pytest.exe -o pythonpath=src . --collect-only -q -p no:cacheprovider",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:32.001708+00:00",
   "ended_utc": "2026-10-27T14:46:34.317945+00:00",
@@ -110,7 +110,7 @@
  {
   "id": "cargo_fmt_check",
   "command": "cargo fmt --check",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\native",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\native",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:34.317965+00:00",
   "ended_utc": "2026-10-27T14:46:34.589591+00:00",
@@ -119,7 +119,7 @@
  {
   "id": "rustc_version",
   "command": "rustc --version",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:34.589610+00:00",
   "ended_utc": "2026-10-27T14:46:34.666740+00:00",
@@ -128,7 +128,7 @@
  {
   "id": "cargo_version",
   "command": "cargo --version",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:34.666758+00:00",
   "ended_utc": "2026-10-27T14:46:34.835425+00:00",
@@ -137,7 +137,7 @@
  {
   "id": "docker_version",
   "command": "docker --version",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:34.835444+00:00",
   "ended_utc": "2026-10-27T14:46:34.947507+00:00",
@@ -146,7 +146,7 @@
  {
   "id": "docker_build",
   "command": "docker build -q -t rkmcp-audit:test .",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:34.947527+00:00",
   "ended_utc": "2026-10-27T14:46:47.525481+00:00",
@@ -155,7 +155,7 @@
  {
   "id": "docker_run_help",
   "command": "docker run --rm rkmcp-audit:test --help",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:47.525504+00:00",
   "ended_utc": "2026-10-27T14:46:48.854788+00:00",
@@ -164,7 +164,7 @@
  {
   "id": "docker_run_id",
   "command": "docker run --rm --entrypoint id rkmcp-audit:test",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:48.854825+00:00",
   "ended_utc": "2026-10-27T14:46:49.381594+00:00",
@@ -173,7 +173,7 @@
  {
   "id": "docker_image_inspect",
   "command": "docker image inspect rkmcp-audit:test --format {{.Size}} bytes; user={{.Config.User}}; healthcheck={{.Config.Healthcheck}}",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:49.381630+00:00",
   "ended_utc": "2026-10-27T14:46:49.585119+00:00",
@@ -182,7 +182,7 @@
  {
   "id": "docker_rmi",
   "command": "docker rmi rkmcp-audit:test",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:49.585157+00:00",
   "ended_utc": "2026-10-27T14:46:49.941195+00:00",
@@ -190,8 +190,8 @@
  },
  {
   "id": "pip_audit_runtime_closure",
-  "command": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venvrt\\Scripts\\python.exe -m pip_audit --local --progress-spinner off",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venvrt\\Scripts\\python.exe -m pip_audit --local --progress-spinner off",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:49.941224+00:00",
   "ended_utc": "2026-10-27T14:46:52.813488+00:00",
@@ -200,7 +200,7 @@
  {
   "id": "rscript_version",
   "command": "Rscript --version",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:52.813509+00:00",
   "ended_utc": "2026-10-27T14:46:52.853636+00:00",
@@ -208,8 +208,8 @@
  },
  {
   "id": "rscript_ground_truth_vers",
-  "command": "Rscript C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\probes\\vers.R",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "command": "Rscript C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\probes\\vers.R",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:52.853654+00:00",
   "ended_utc": "2026-10-27T14:46:52.986774+00:00",
@@ -218,7 +218,7 @@
  {
   "id": "uv_version",
   "command": "uv --version",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:52.986793+00:00",
   "ended_utc": "2026-10-27T14:46:53.004908+00:00",
@@ -227,7 +227,7 @@
  {
   "id": "wsl_python",
   "command": "wsl -d Ubuntu -- python3 --version",
-  "cwd": "C:\\Users\\User001\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
   "exit_code": 0,
   "started_utc": "2026-10-27T14:46:53.004933+00:00",
   "ended_utc": "2026-10-27T14:46:53.103854+00:00",

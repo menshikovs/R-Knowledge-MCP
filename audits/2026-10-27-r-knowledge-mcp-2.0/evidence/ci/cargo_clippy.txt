@@ -2,6 +2,6 @@
     Checking libc v0.2.191
     Checking pyo3-ffi v0.30.1
     Checking pyo3 v0.30.1
-    Checking cran-knowledge-native v0.1.0 (C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\native)
+    Checking cran-knowledge-native v0.1.0 (C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\native)
     Finished `release` profile [optimized] target(s) in 2.55s
 exit=0

@@ -1,7 +1,7 @@
 [notice] A new release of pip is available: 26.0.1 -> 26.2.2
-[notice] To update, run: C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venv\Scripts\python.exe -m pip install --upgrade pip
+[notice] To update, run: C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venv\Scripts\python.exe -m pip install --upgrade pip
 cran_knowledge_mcp-0.1.0-py3-none-any.whl
-usage: python.exe C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venvwheel\Scripts\r-knowledge-mcp
+usage: python.exe C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venvwheel\Scripts\r-knowledge-mcp
        [-h] [--transport {stdio,streamable-http}] [--host HOST] [--port PORT]
 providers.context7 in wheel: False
 == stdio protocol probe (installed wheel)

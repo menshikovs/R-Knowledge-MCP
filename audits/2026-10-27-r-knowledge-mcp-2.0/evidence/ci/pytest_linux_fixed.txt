@@ -54,7 +54,7 @@ E             + e0ae527037d20c97633b67b0899f9c890d120d5fce3f335b2365d2c40a673584
 tests/test_bioc_benchmark.py:39: AssertionError
 __________ test_registry_imports_all_source_specs_and_counts_by_suite __________
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -68,7 +68,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -81,7 +81,7 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
 
 /usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
 
@@ -101,19 +101,19 @@ benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
 
 benchmarks/codex_r/expansion/registry.py:109: RegistryError
 _ test_hard_blueprint_mapping_is_explicit_and_does_not_overstate_revalidation __
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -127,7 +127,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -140,7 +140,7 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
 
 /usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
 
@@ -160,19 +160,19 @@ benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
 
 benchmarks/codex_r/expansion/registry.py:109: RegistryError
 _____ test_legacy_crosswalk_keeps_thematic_links_separate_from_duplicates ______
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -186,7 +186,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -199,7 +199,7 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
 
 /usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
 
@@ -219,19 +219,19 @@ benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
 
 benchmarks/codex_r/expansion/registry.py:109: RegistryError
 _______________ test_registry_rejects_private_answer_key_sources _______________
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -245,7 +245,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -258,7 +258,7 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
 
 /usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
 
@@ -278,19 +278,19 @@ benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
 
 benchmarks/codex_r/expansion/registry.py:109: RegistryError
 _________ test_hard_blueprint_exports_only_the_agent_visible_contract __________
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -304,7 +304,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -317,7 +317,7 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
 
 /usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
 
@@ -337,19 +337,19 @@ benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
 
 benchmarks/codex_r/expansion/registry.py:109: RegistryError
 _______ test_checked_in_json_artifacts_match_the_current_public_sources ________
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -363,7 +363,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -376,7 +376,7 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
 
 /usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
 
@@ -396,19 +396,19 @@ benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
 
 benchmarks/codex_r/expansion/registry.py:109: RegistryError
 __________ test_prompt_export_contains_only_the_requested_public_task __________
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
@@ -422,7 +422,7 @@ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-self = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+self = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
 
     def open(self, mode='r', buffering=-1, encoding=None,
@@ -435,13 +435,13 @@ mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
             encoding = io.text_encoding(encoding)
 >       return io.open(self, mode, buffering, encoding, errors, newline)
                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-E       FileNotFoundError: [Errno 2] No such file or directory: '/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+E       FileNotFoundError: [Errno 2] No such file or directory: '/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
 
 /usr/lib/python3.14/pathlib/__init__.py:772: FileNotFoundError
 
 The above exception was the direct cause of the following exception:
 
-tmp_path = PosixPath('/tmp/pytest-of-user001/pytest-0/test_prompt_export_contains_on0')
+tmp_path = PosixPath('/tmp/pytest-of-<user>/pytest-0/test_prompt_export_contains_on0')
 
     def test_prompt_export_contains_only_the_requested_public_task(tmp_path):
 >       catalog = registry.build_registry()
@@ -457,26 +457,26 @@ benchmarks/codex_r/expansion/registry.py:136: in _source_hashes
                ^^^^^^^^^^^^^^^^^^^^^^^^^
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-path = PosixPath('/home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
+path = PosixPath('/home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json')
 
     def _read_json(path: Path) -> dict[str, Any]:
         try:
             value = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
 >           raise RegistryError(f"Cannot read JSON manifest: {path}") from exc
-E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
+E           benchmarks.codex_r.expansion.registry.RegistryError: Cannot read JSON manifest: /home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json
 
 benchmarks/codex_r/expansion/registry.py:109: RegistryError
 _______ test_prompt_export_rejects_unknown_or_in_repository_destinations _______
 
-tmp_path = PosixPath('/tmp/pytest-of-user001/pytest-0/test_prompt_export_rejects_unk0')
+tmp_path = PosixPath('/tmp/pytest-of-<user>/pytest-0/test_prompt_export_rejects_unk0')
 
     def test_prompt_export_rejects_unknown_or_in_repository_destinations(tmp_path):
 >       with pytest.raises(registry.RegistryError, match="Unknown expansion task"):
              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 E       AssertionError: Regex pattern did not match.
 E         Expected regex: 'Unknown expansion task'
-E         Actual message: 'Cannot read JSON manifest: /home/user001/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
+E         Actual message: 'Cannot read JSON manifest: /home/<user>/audit-ci/benchmark_expansion_sources/SOURCE_MANIFEST.json'
 
 tests/test_codex_expansion_registry.py:158: AssertionError
 ___________________ test_r_unit_and_headless_ui_suite_passes ___________________
@@ -595,7 +595,7 @@ E            +  where 0 = len([])
 tests/test_codex_launcher.py:398: AssertionError
 _ test_trial_deletes_session_and_executor_before_scoring[R01-solution.R-environment_failed] _
 
-tmp_path = PosixPath('/tmp/pytest-of-user001/pytest-0/test_trial_deletes_session_and2')
+tmp_path = PosixPath('/tmp/pytest-of-<user>/pytest-0/test_trial_deletes_session_and2')
 monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7611315483d0>
 outcome = 'environment_failed', task = 'R01', filename = 'solution.R'
 
@@ -729,7 +729,7 @@ R01-A-1: session deleted [0.5s]
 R01-A-1: cleanup completed (confirmed) [0.5s]
 _ test_trial_deletes_session_and_executor_before_scoring[R02-summarize_sales.R-environment_failed] _
 
-tmp_path = PosixPath('/tmp/pytest-of-user001/pytest-0/test_trial_deletes_session_and5')
+tmp_path = PosixPath('/tmp/pytest-of-<user>/pytest-0/test_trial_deletes_session_and5')
 monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7610e3b93620>
 outcome = 'environment_failed', task = 'R02', filename = 'summarize_sales.R'
 
@@ -915,10 +915,10 @@ D01-B-1: scoring started [4.0s]
 D01-B-1: scoring completed [4.1s]
 D01-B-1: cleanup completed (confirmed) [4.1s]
 D01-B-1: scored score=4/4
-Results: /tmp/pytest-of-user001/pytest-0/test_full_chain_with_real_mcp_0/results/20261027T142258Z-0bbce9e4
+Results: /tmp/pytest-of-<user>/pytest-0/test_full_chain_with_real_mcp_0/results/20261027T142258Z-0bbce9e4
 =============================== warnings summary ===============================
 ../audit-ci-venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1464
-  /home/user001/audit-ci-venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
+  /home/<user>/audit-ci-venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
   
     self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
 

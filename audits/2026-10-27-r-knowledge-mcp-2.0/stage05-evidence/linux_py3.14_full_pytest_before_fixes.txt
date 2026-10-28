@@ -1,12 +1,12 @@
 All checks passed!
 269 files already formatted
-/home/user001/stage05/venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:300: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+/home/<user>/stage05/venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:300: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
 The event loop scope for asynchronous fixtures will default to the "fixture" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to "function" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
 
   warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
 
 1650 tests collected in 2.23s
-/home/user001/stage05/venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:300: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
+/home/<user>/stage05/venv/lib/python3.14/site-packages/pytest_asyncio/plugin.py:300: PytestDeprecationWarning: The configuration option "asyncio_default_fixture_loop_scope" is unset.
 The event loop scope for asynchronous fixtures will default to the "fixture" caching scope. Future versions of pytest-asyncio will default the loop scope for asynchronous fixtures to "function" scope. Set the default fixture loop scope explicitly in order to avoid unexpected behavior in the future. Valid fixture loop scopes are: "function", "class", "module", "package", "session"
 
   warnings.warn(PytestDeprecationWarning(_DEFAULT_FIXTURE_LOOP_SCOPE_UNSET))
@@ -36,7 +36,7 @@ sss..................................................................... [ 91%]
 =================================== FAILURES ===================================
 __________ test_experiment_record_identifies_sources_without_secrets ___________
 
-tmp_path = PosixPath('/tmp/pytest-of-user001/pytest-0/test_experiment_record_identif0')
+tmp_path = PosixPath('/tmp/pytest-of-<user>/pytest-0/test_experiment_record_identif0')
 monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ab9dbdbeac0>
 
     def test_experiment_record_identifies_sources_without_secrets(tmp_path, monkeypatch):
@@ -248,7 +248,7 @@ D01-B-1: scoring started [4.2s]
 D01-B-1: scoring completed [4.3s]
 D01-B-1: cleanup completed (confirmed) [4.3s]
 D01-B-1: scored score=4/4
-Results: /tmp/pytest-of-user001/pytest-0/test_full_chain_with_real_mcp_0/results/20261028T083730Z-a7996271
+Results: /tmp/pytest-of-<user>/pytest-0/test_full_chain_with_real_mcp_0/results/20261028T083730Z-a7996271
 __________ test_experiment_configuration_is_recorded_without_secrets ___________
 
 lab = <function lab.<locals>.make at 0x7ab991fb6c40>
@@ -278,10 +278,10 @@ D01-B-1: scoring started [4.2s]
 D01-B-1: scoring completed [4.2s]
 D01-B-1: cleanup completed (confirmed) [4.2s]
 D01-B-1: scored score=4/4
-Results: /tmp/pytest-of-user001/pytest-0/test_experiment_configuration_0/results/20261028T083735Z-4e1cd423
+Results: /tmp/pytest-of-<user>/pytest-0/test_experiment_configuration_0/results/20261028T083735Z-4e1cd423
 =============================== warnings summary ===============================
 ../venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1636
-  /home/user001/stage05/venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1636: PytestConfigWarning: Unknown config option: cache_dir
+  /home/<user>/stage05/venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1636: PytestConfigWarning: Unknown config option: cache_dir
   
     self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
 

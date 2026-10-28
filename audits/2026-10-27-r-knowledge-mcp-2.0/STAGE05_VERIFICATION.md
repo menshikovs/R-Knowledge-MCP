@@ -4,11 +4,11 @@ Branch `2.0`, HEAD `4d2266c` plus the uncommitted working tree (nothing committe
 Raw outputs: `stage05-evidence/`. Scope: verify Stage 0 (`STAGE0_REMEDIATION.md`) and the Context7 removal
 (`CONTEXT7_REMOVAL.md`); no KC-002/KC-003, new tools or benchmark redesign.
 
-## Status: STAGE 0 VERIFIED WITH DOCUMENTED LIMITATIONS
+## Status: STAGE 0 VERIFIED — CI PASSED ON VERIFICATION BRANCH
 
-Every check that can run on this machine passes, and all environment-dependent failures from Stage 0 were attributed
-and fixed or made explicit. **The GitHub Actions matrix has not been run** (no `gh`, no authorization to push), so CI
-is not claimed green. See §7 for what remains before release.
+CI passed on the verification branch `verify/stage0-ci`, **not on `2.0`**: `2.0` has not run these changes.
+The sections below were written before the push and are kept as the historical local record; §9 records the
+GitHub result. Original local-only status at that time: *STAGE 0 VERIFIED WITH DOCUMENTED LIMITATIONS* (CI not run).
 
 ## 1. Reviewed changes
 
@@ -108,3 +108,39 @@ Checked independently of the repo's own helper, from `git show 4d2266c:<path>` b
 ## 8. Changes made in this stage
 
 `src/cran_knowledge_mcp/server.py`, `tests/test_consolidated_server.py`, `docs/ARCHITECTURE.md`, `benchmarks/codex_r/launcher/tests/fake_runner.py`, `…/testthat/test-b1.R`, `…/testthat/test-core.R`, `benchmarks/codex_r/LINE_ENDING_MIGRATION-v1.json` (`mutable` flag), `tests/test_codex_launcher.py`, `tests/test_telemetry_integration.py`, `tests/test_bioc_benchmark.py`, `.github/workflows/tests.yml`, `CONTEXT7_REMOVAL.md`, this report and `stage05-evidence/`.
+
+## 9. GitHub Actions verification (added after push)
+
+| | |
+|---|---|
+| Branch | `verify/stage0-ci` (2 commits ahead of `2.0` @ `4d2266c`, 0 behind; 189 files; rechecked against the GitHub compare API) |
+| Verified commit | `d7db82992531a80fa8b24f54c8f087ba690ad8b7` |
+| Run | https://github.com/menshikovs/R-Knowledge-MCP/actions/runs/40664343797 (event `push`, attempt 1, conclusion `success`) |
+
+Jobs read back from the GitHub API (each job's `head_sha` is `d7db829`): `test` 3.11, 3.12, 3.13, 3.14; `native` 3.11, 3.14; `docker`; `launcher` — **all `success`**. Job logs were not downloadable without authentication (HTTP 403), so per-step output was not inspected; conclusions come from the API.
+
+CI history (kept): baseline run 40513710256 failed in "Run pytest" (before Stage 0); run 40663724217 on the first commit `2abac89`: 7 jobs passed, `launcher` failed because `testthat` was not installed (`install.packages` only warns; the CRAN-only `repos` argument forced source builds); fixed in `d7db829` by trying the RSPM binary repository first with CRAN as fallback.
+
+**Local vs CI:** §3–§6 are local runs (Windows, WSL Ubuntu, uv Python matrix). §9 is the first independent confirmation on GitHub runners. The CI `test` job runs without R, termr, Docker images or the private bundle, so those tests skip there (the `launcher` job covers the R/termr tests and fails on any skip).
+
+## 10. Finalization review (pre-PR)
+
+- Diff reviewed against `origin/2.0`: no credentials, tokens, debug leftovers or hard-coded local paths in non-audit files; largest tracked additions are evidence logs (<220 KB). `audits/` evidence contained the local username in paths (24 evidence files with 242 occurrences, not 5 files as first estimated). They are sanitized in the working tree (user-name path components replaced by `<user>`; only those tokens changed, verified against `HEAD`; published and sanitized SHA-256 digests per file are in `SANITIZATION_RECORD-v1.json`, and `EVIDENCE_MANIFEST.json` holds no per-file digests so nothing in it needed re-pinning). A full secret scan of the published `audits/` tree found no real credentials: matches are synthetic test values (`sk-proj-synthe…`, `S3cretPass`, `hunter2`, the AWS documentation key), the example.com address 93.184.216.34 and version strings that resemble IPs. **The unsanitized versions are already in the pushed commit `2abac89` on `origin/verify/stage0-ci`; removing them from published history would need a history rewrite, which was not performed.** No machine hostname occurs in any published audit file. `audits/*.7z` is not committed.
+- Stale tool counts found and corrected (comments/docs only): `.env.example` ("15 tools / 35") now "16 / 34"; docstrings in `config.py` and `server.py`.
+- **New platform-independent test:** `environment_failure()` extracted from the trial loop in `run_simple.py` (behavior-preserving) and covered by `test_environment_failure_record_uses_reviewed_code_or_fixed_marker` (5 cases). Mutation check: replacing the helper body with a constant makes it fail. This closes the Windows coverage gap noted in §2.
+- Tool-schema diff vs `origin/2.0` (tools/list on both toolsets): only `get_context7_docs` removed (legacy 35→34) and `question` removed with `additionalProperties:false` on `get_package` / `get_package_knowledge`; annotations unchanged. Stdio session: protocol 2025-11-25, 16 tools, 2 resources, 14 prompts, ping OK, stale `question` → `invalid_input`.
+- Benchmark integrity vs `origin/2.0`: changed under `benchmarks/` only the new record/helper, `run_simple.py`, and three launcher test files; no scorer, verifier, manifest, result, report, task or fixture. `line_endings --verify` passes.
+- Rebuilt wheel: 49 files, no Context7, no `benchmarks`/`tests`/`audits`. Docker image builds; the Dockerfile copies only `pyproject.toml`, `README.md`, `LICENSE`, `src` (the build context still includes `audits/`; harmless, could be ignored in `.dockerignore`).
+- Rust: `cargo fmt/clippy -D warnings/test` pass; built extension, 108 parity + discovery tests pass (re-run).
+
+### Release-readiness caveats
+1. `2.0` itself has not run CI; re-run after merge.
+2. Private-bundle registry tests (8) never run in CI.
+3. Docker/pinned-image tests never run in CI.
+4. Unknown arguments are still ignored by the other 14 consolidated tools.
+5. Context7 removal: complete (code, config, docs, tests); remaining mentions are regression tests, "removed" notes and frozen historical files.
+
+### New local run for the finalization changes (not CI)
+Windows 11, Python 3.14.4, Docker running: `ruff check` / `ruff format --check` pass (269 files); **1 655 collected; 1 512 passed, 143 skipped, 0 failed** (`stage05-evidence/windows_py3.14_full_pytest_pr_prep.txt`). The +5 tests are the new `environment_failure` cases.
+
+**These finalization edits (helper extraction, new test, count corrections, this report, `PULL_REQUEST_BODY.md`) are uncommitted and unpushed, so they are not covered by run 40664343797**, which verified `d7db829` exactly. They should be committed and pushed so CI re-verifies them before merge.

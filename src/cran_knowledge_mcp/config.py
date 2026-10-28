@@ -100,7 +100,7 @@ def prompt_default_detail_level() -> str:
 
 
 def mcp_toolset() -> str:
-    """Select the registered tool surface; legacy keeps the original 35 tool names."""
+    """Select the registered tool surface; legacy keeps the original tool names."""
     value = os.environ.get("MCP_TOOLSET", "consolidated").strip().casefold()
     if value not in {"consolidated", "legacy"}:
         raise KnowledgeError("invalid_configuration", "MCP_TOOLSET must be consolidated or legacy")

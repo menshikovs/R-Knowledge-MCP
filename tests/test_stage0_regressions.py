@@ -11,6 +11,7 @@ import httpx
 import pytest
 from conftest import archive
 
+from benchmarks.codex_r import run_simple
 from cran_knowledge_mcp.errors import KnowledgeError
 from cran_knowledge_mcp.http import CATALOG, INDEX, CranHTTP
 from cran_knowledge_mcp.parsers import dcf, decode_rd, rd_declared_encoding
@@ -320,3 +321,21 @@ async def test_large_description_parse_keeps_the_event_loop_responsive():
     assert len(info["description"]) == len("start") + 2 * lines
     assert elapsed < 10
     assert max(gaps) < 2, f"event loop stalled for {max(gaps):.1f}s"
+
+
+@pytest.mark.parametrize(
+    ("event", "expected"),
+    [
+        (
+            {"environment": {"error": {"code": "environment_connection_timeout", "message": "x"}}},
+            {"code": "environment_connection_timeout"},
+        ),
+        ({"environment": {"error": {"message": "no code"}}}, "environment_failed"),
+        ({"environment": {"error": {"code": "Not A Reviewed Code!"}}}, "environment_failed"),
+        ({"environment": {}}, "environment_failed"),
+        ({}, "environment_failed"),
+    ],
+)
+def test_environment_failure_record_uses_reviewed_code_or_fixed_marker(event, expected):
+    # Platform-independent: the trial loop that calls this needs Linux SIGALRM.
+    assert run_simple.environment_failure(event) == expected

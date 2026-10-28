@@ -1405,8 +1405,8 @@ tests\test_telemetry_integration.py:25: in <module>
     from benchmarks.codex_r import run_simple as simple
 E   ModuleNotFoundError: No module named 'benchmarks'
 ============================== warnings summary ===============================
-..\..\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venvdev\Lib\site-packages\_pytest\config\__init__.py:1464
-  C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venvdev\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
+..\..\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venvdev\Lib\site-packages\_pytest\config\__init__.py:1464
+  C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venvdev\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
   
     self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
 

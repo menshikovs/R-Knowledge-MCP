@@ -11,9 +11,9 @@
    Compiling pyo3-ffi v0.30.1
    Compiling pyo3 v0.30.1
    Compiling pyo3-macros v0.30.1
-   Compiling cran-knowledge-native v0.1.0 (C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\native)
+   Compiling cran-knowledge-native v0.1.0 (C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\native)
     Finished `release` profile [optimized] target(s) in 21.37s
-     Running unittests src\lib.rs (C:/Users/User001/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/native-target\release\deps\cran_knowledge_native-95dba9ca8c942272.exe)
+     Running unittests src\lib.rs (C:/Users/<user>/AppData/Local/Temp/claude/c--programming-pj-cran-mcp/9e44f795-6005-46c8-884e-fbf6fc0b91d9/scratchpad/native-target\release\deps\cran_knowledge_native-95dba9ca8c942272.exe)
 
 running 4 tests
 test tests::dynamic_namespace_calls_are_not_executed_and_remain_visible ... ok

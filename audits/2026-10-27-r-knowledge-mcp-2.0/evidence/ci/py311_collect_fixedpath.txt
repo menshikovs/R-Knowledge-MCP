@@ -1555,7 +1555,7 @@ tests/test_windows_tmp_path.py::test_tmp_path_factory_directories_are_writable_a
 
 =================================== ERRORS ====================================
 ________________ ERROR collecting tests/test_mcp_discovery.py _________________
-ImportError while importing test module 'C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_mcp_discovery.py'.
+ImportError while importing test module 'C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\clone\tests\test_mcp_discovery.py'.
 Hint: make sure your test modules/packages have valid Python names.
 Traceback:
 ..\..\..\..\..\..\..\Roaming\uv\python\cpython-3.11-windows-x86_64-none\Lib\importlib\__init__.py:126: in import_module
@@ -1568,7 +1568,7 @@ benchmarks\codex_r\analytics\import_results.py:19: in <module>
 E   ModuleNotFoundError: No module named 'duckdb'
 ============================== warnings summary ===============================
 ..\venv3.11\Lib\site-packages\_pytest\config\__init__.py:1464
-  C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venv3.11\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
+  C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venv3.11\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
   
     self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
 

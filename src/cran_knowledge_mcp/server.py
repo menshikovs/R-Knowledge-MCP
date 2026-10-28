@@ -355,7 +355,7 @@ def create_server(
 
 
 def _register_legacy_tools(server: FastMCP) -> None:
-    """Original 35-tool surface, kept unchanged for benchmark comparability (MCP_TOOLSET=legacy)."""
+    """Legacy 34-tool surface, unchanged for benchmark comparability (MCP_TOOLSET=legacy)."""
     annotations = ToolAnnotations(readOnlyHint=True, destructiveHint=False, openWorldHint=True)
 
     if prompt_intelligence_enabled():

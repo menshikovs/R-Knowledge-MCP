@@ -12,7 +12,7 @@ tests/test_telemetry_integration.py:25: in <module>
 E   ModuleNotFoundError: No module named 'benchmarks'
 =============================== warnings summary ===============================
 ../audit-ci-venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1464
-  /home/user001/audit-ci-venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
+  /home/<user>/audit-ci-venv/lib/python3.14/site-packages/_pytest/config/__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
   
     self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
 

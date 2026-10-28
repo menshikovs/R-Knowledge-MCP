@@ -65,7 +65,7 @@ HTTP Request: OPTIONS http://127.0.0.1:49328/mcp "HTTP/1.1 405 Method Not Allowe
 HTTP Request: POST http://127.0.0.1:49328/mcp "HTTP/1.1 413 Content Too Large"
 Error handling POST request
 Traceback (most recent call last):
-  File "C:\Users\User001\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venv\Lib\site-packages\mcp\server\streamable_http.py", line 535, in _handle_post_request
+  File "C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venv\Lib\site-packages\mcp\server\streamable_http.py", line 535, in _handle_post_request
     raw_message = json.loads(body)
   File "C:\Python314\Lib\json\__init__.py", line 352, in loads
     return _default_decoder.decode(s)
