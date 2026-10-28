@@ -1,0 +1,16 @@
+# command: python -I probe_a.py 
+# started_utc: 2026-10-27T14:44:13.998761+00:00
+# ended_utc: 2026-10-27T14:44:14.308534+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+== A. version equivalence: discovery vs docs (current=2.10-1)
+  package_version='2.10-1'     discovery=('ok', '2.10-1')  docs=ok
+  package_version='2.10.1'     discovery=('ERR', 'requested_version_unavailable')  docs=ok
+  package_version='2.10-1.0'   discovery=('ERR', 'requested_version_unavailable')  docs=ok
+  package_version='2.10-01'    discovery=('ERR', 'requested_version_unavailable')  docs=ok
+== E. docs_not_found / discovery output
+{"code": "docs_not_found", "suggestions": [{"name": "ex", "match_type": "fuzzy", "alias_verified": true, "export_status": "declared", "documentation_topics": ["Ex/man/ex.Rd"], "documentation_topics_count": 1, "callability": "not_checked"}], "discovery_status": {"namespace": "partial", "rd": "verified"}, "lookup_stage": "literal_rd_alias", "closest_aliases": null, "available_aliases": ["ex", "ex_alias"]}
+  discovery status partial {'namespace': 'partial', 'rd': 'verified', 'scope': 'literal Rd and static namespace declarations; runtime not checked', 'fuzzy_search_complete': True} ['export_patterns_not_expanded'] ['^zz']
+== F. search all pagination
+  all offset0: ['Ex'] 1 None verified

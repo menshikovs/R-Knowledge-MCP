@@ -1,0 +1,11 @@
+# command: python -I probe_logs.py 
+# started_utc: 2026-10-27T14:44:32.892898+00:00
+# ended_utc: 2026-10-27T14:44:33.143096+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+INFO:httpx:HTTP Request: GET https://context7.com/api/v2/libs/search?libraryName=ex&query=R+package+ex%3B+official+source+own%2Fex "HTTP/1.1 200 OK"
+INFO:httpx:HTTP Request: GET https://context7.com/api/v2/context?libraryId=%2Fown%2Fex&query=How+do+I+read+the+customer+file+acme_q3_payroll.csv+with+ex%3F&type=json "HTTP/1.1 200 OK"
+
+API key in log: False
+user question text in log: True

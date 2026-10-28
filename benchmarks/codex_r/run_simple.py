@@ -2013,6 +2013,12 @@ TURN_FAILURES = {
 MCP_ITEM_TYPES = frozenset({"mcp_call", "mcp_tool_call"})
 
 
+def environment_failure(event):
+    """Same shape as the session-level error: a reviewed categorical code, else a fixed marker."""
+    code = error_code((event.get("environment") or {}).get("error"))
+    return {"code": code} if code else "environment_failed"
+
+
 def observe_stream_event(trial, record, event, projection_state=None):
     """Mirror safe lifecycle facts and allowlisted response evidence from the agent stream."""
     kind = event.get("type")
@@ -2606,7 +2612,7 @@ def run_trial(
                 }:
                     record["error"] = kind
                     if kind == "agent.session.environment.failed":
-                        record["environment_error"] = "environment_failed"
+                        record["environment_error"] = environment_failure(event)
             if record["status"] != "completed":
                 raise RuntimeError(
                     f"Agent did not complete the task: "

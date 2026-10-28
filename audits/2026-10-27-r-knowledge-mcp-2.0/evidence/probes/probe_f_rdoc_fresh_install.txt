@@ -1,0 +1,64 @@
+# command: python -I probe_f.py 
+# started_utc: 2026-10-27T14:44:15.075163+00:00
+# ended_utc: 2026-10-27T14:44:15.373979+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+{
+ "query": "data frame",
+ "requested_r_version": null,
+ "manuals": [
+  "r-data-import-export",
+  "r-installation-administration",
+  "writing-r-extensions",
+  "r-internals",
+  "r-faq",
+  "introduction-to-r"
+ ],
+ "available_sources": [
+  {
+   "document_id": "r-data-import-export",
+   "title": "R Data Import/Export",
+   "url": "https://cran.r-project.org/doc/manuals/r-release/R-data.html",
+   "index_status": "not_indexed",
+   "r_version": null,
+   "retrieved_at": null,
+   "checked_at": null,
+   "content_hash": null,
+   "section_count": 0
+  },
+  {
+   "document_id": "r-installation-administration",
+   "title": "R Installation and Administration",
+   "url": "https://cran.r-project.org/doc/manuals/r-release/R-admin.html",
+   "index_status": "not_indexed",
+   "r_version": null,
+   "retrieved_at": null,
+   "checked_at": null,
+   "content_hash": null,
+   "section_count": 0
+  },
+  {
+   "document_id": "writing-r-extensions",
+   "title": "Writing R Extensions",
+   "url": "https://cran.r-project.org/doc/manuals/r-release/R-exts.html",
+   "index_status": "not_indexed",
+   "r_version": null,
+   "retrieved_at": null,
+   "checked_at": null,
+   "content_hash": null,
+   "section_count": 0
+  },
+  {
+   "document_id": "r-internals",
+   "title": "R Internals",
+   "url": "https://cran.r-project.org/doc/manuals/r-release/R-ints.html",
+   "index_status": "not_indexed",
+   "r_version": null,
+   "retrieved_at": null,
+   "checked_at": null,
+   "content_hash": null,
+   "section_count": 0
+  },
+  {
+   "docu

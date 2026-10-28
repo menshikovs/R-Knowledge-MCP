@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from difflib import SequenceMatcher
 
 from .errors import KnowledgeError
-from .parsers import decode, discovery_name, parse_namespace, rd_index_record
+from .parsers import decode, decode_rd, discovery_name, parse_namespace, rd_index_record
 
 SCHEMA_VERSION = 1
 MAX_ENTRIES = 10_000
@@ -196,7 +196,7 @@ def build_discovery_index(package: str, metadata: dict, files: dict[str, bytes])
             issues.append("rd_member_name_too_long")
             continue
         try:
-            text = decode(body, encoding)
+            text, _, _ = decode_rd(body, metadata.get("Encoding"))
         except KnowledgeError:
             rd_status = "partial"
             issues.append("rd_encoding_unavailable")

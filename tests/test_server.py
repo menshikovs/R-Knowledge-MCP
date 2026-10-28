@@ -14,7 +14,7 @@ from cran_knowledge_mcp.server import create_http_app, create_server
 
 @pytest.fixture(autouse=True)
 def legacy_toolset(monkeypatch):
-    """These contract tests cover the original 35-tool surface kept for MCP_TOOLSET=legacy."""
+    """These contract tests cover the legacy 34-tool surface kept for MCP_TOOLSET=legacy."""
     monkeypatch.setenv("MCP_TOOLSET", "legacy")
 
 
@@ -30,7 +30,6 @@ TOOLS = {
     "check_package_compatibility",
     "get_package_vignettes",
     "get_package_agent_guidance",
-    "get_context7_docs",
     "get_package_knowledge",
     "get_shiny_docs",
     "explain_shiny_reactivity",

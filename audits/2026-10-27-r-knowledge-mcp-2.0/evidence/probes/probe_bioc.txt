@@ -1,0 +1,22 @@
+# command: python -I probe_bioc.py 
+# started_utc: 2026-10-27T14:45:59.496328+00:00
+# ended_utc: 2026-10-27T14:46:01.884959+00:00
+# exit_code: 0
+# network_to_public_upstream: True
+
+resolve release -> 3.23 release R 4.6
+resolve devel -> 3.24 devel R 4.6
+resolve 3.20 -> 3.20 historical R 4.4
+resolve 9.99 -> ERR release_not_found
+for_r 4.5.2 -> {"releases": [{"bioc_version": "3.21", "r_version": "4.5", "channel": "historical"}, {"bioc_version": "3.22", "r_version": "4.5", "channel": "historical"}], "recommended_bioc_version": "3.22", "warnings": []}
+for_r 3.0.0 -> {"recommended_bioc_version": "2.13", "warnings": []}
+BiocGenerics discovery: {'package_version': '0.58.1', 'bioc_version': '3.23', 'channel': 'release', 'verification_status': 'verified', 'issues': []} 0.2 s
+BiocGenerics::updateObject docs: {'package_version': '0.58.1', 'bioc_version': '3.23', 'verification_status': 'verified'}
+... bioc 3.20: {'package_version': '0.52.0', 'bioc_version': '3.20', 'verification_status': 'verified'}
+DESeq2 get_package: {'package_version': '1.52.0', 'bioc_version': '3.23', 'verification_status': 'verified', 'errors': []}
+DESeq2 compat R 4.2.0: {'bioc_version': '3.16', 'compatibility_status': 'metadata_compatible', 'warnings': ['Historical release; current CRAN dependencies may no longer match', 'R/platform/system libraries and the installed environment were not inspected']}
+ggplot2 compat R 4.5.2: {'package_version': '4.0.3', 'compatibility_status': 'metadata_compatible'}
+ggplot2 compat R 3.6.0: {'package_version': '4.0.3', 'compatibility_status': 'incompatible', 'warnings': ['Only the current CRAN version is checked; an older R may need an archived version, which this server does not substitute.', 'Dependency gtable requires R (>= 4.0)', 'Dependency rlang requires R (>= 4.0.0)', 'Dependency scales requires R (>= 4.1)', 'Dependency vctrs requires R (>= 4.0.0)', 'R/platform/system libraries and the installed environment were not inspected']}
+search all DESeq2: [('DESeq2', 'bioconductor')] verified
+check_package_version ggplot2 3.5.1: {'latest_cran_version': '4.0.3', 'comparison': 'older'}
+S4Vectors repo=all: {'verification_status': 'verified', 'errors': []}

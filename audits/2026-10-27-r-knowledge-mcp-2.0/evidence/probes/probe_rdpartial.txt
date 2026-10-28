@@ -1,0 +1,21 @@
+# command: python -I probe_rdpartial.py 
+# started_utc: 2026-10-27T14:45:56.390548+00:00
+# ended_utc: 2026-10-27T14:45:58.147399+00:00
+# exit_code: 0
+# network_to_public_upstream: True
+
+termr 1.0.1 {'macro:if': 44}
+    macro:if :: . } \section{Super class}{ \code{\link[termr:Widget]{Widget}} -> \code{ScrollView} 
+ggnext 0.1.0 {'macro:if': 1}
+    macro:if :: \name{ggnext-package} \alias{ggnext-package} \title{ggnext: A Next-Generation Gramm
+fabletools 0.8.0 {'macro:Sexpr': 2, 'macro:ifelse': 2}
+    macro:Sexpr :: seful reference for making a \code{\link[=feature_set]{feature_set()}} from particular
+    macro:ifelse :: asts}  \item{dist}{The forecast distribution (typically produced using \code{new_fcdist
+einops 0.2.1 {'non-literal or multiple \\name': 1, 'macro:ifelse': 5, 'macro:if': 2}
+    macro:ifelse :: ion pattern}  \item{...}{either corresponding axes lengths or a single list of them.}  
+    macro:if :: layers}{\code{EinopsBackend$layers()}} \item \href{#method-EinopsBackend-einsum}{\c
+tidyREDCap 2.1.0 {'non-literal or multiple \\name': 1}
+RBMRB 3.0.0 {'macro:ifelse': 3}
+    macro:ifelse ::  edit by hand % Please edit documentation in R/spectra.R \name{n15hsqc} \alias{n15hsqc}
+runner 0.4.6 {'macro:if': 1}
+    macro:if :: cify \code{k = length(x)}, this would mean that \code{k} is equal to number of avai

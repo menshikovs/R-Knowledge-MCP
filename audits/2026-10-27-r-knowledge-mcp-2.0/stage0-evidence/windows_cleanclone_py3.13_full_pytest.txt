@@ -1,0 +1,71 @@
+...............ssss..ss...........................s..................... [  4%]
+......................sss....s.......................................... [  8%]
+......F................................................................. [ 13%]
+.............................ssssss..................................... [ 17%]
+........................................................................ [ 21%]
+..................................................ss.sssssssssssssssss.s [ 26%]
+ssssssssssss..sssssssss.....sssssss..ssss..ssss.s....................... [ 30%]
+..............s.ssssss.............................................sssss [ 34%]
+sss....................................s................ssssssssssssssss [ 39%]
+ssss.................................................................... [ 43%]
+........................................................................ [ 48%]
+........................................................................ [ 52%]
+...s.........s.s..................................ssssss.....ssss..sssss [ 56%]
+ssssssssssssssssssssssss....................s........................... [ 61%]
+........................................................................ [ 65%]
+........................................................................ [ 69%]
+..............................ssssssssssssssssss........................ [ 74%]
+................s....................................................... [ 78%]
+........................................................................ [ 83%]
+....s............................................sssssssssssssssssssssss [ 87%]
+s....................................................................... [ 91%]
+........................................................................ [ 96%]
+...........................ssssss...............................         [100%]
+================================== FAILURES ===================================
+_________ test_e02_reproduction_and_standard_workflow_in_both_images __________
+
+images = {'scorer': 'sha256:a4e959f2ed9af8141ecec5d95d727880fd5dfc325efc19cb55032d6d34899161', 'executor': 'sha256:ab9eefda7d00d6872d1e62f5e3fba2a683317f6969b3ac3ab5bfa94f42c9976d'}
+
+    @pytest.mark.docker
+    def test_e02_reproduction_and_standard_workflow_in_both_images(images):
+>       report = full_selftest.fixture_and_workflow(images["scorer"], images["executor"])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\test_bioc_benchmark.py:301: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+scorer = 'sha256:a4e959f2ed9af8141ecec5d95d727880fd5dfc325efc19cb55032d6d34899161'
+executor = 'sha256:ab9eefda7d00d6872d1e62f5e3fba2a683317f6969b3ac3ab5bfa94f42c9976d'
+
+    def fixture_and_workflow(scorer, executor):
+        fixture = pilot.PILOT / "fixtures/E02-counts.csv"
+        generator = pilot.PILOT / "generate_E02_fixture.R"
+        sha = hashlib.sha256(fixture.read_bytes()).hexdigest()
+        with tempfile.TemporaryDirectory(prefix="rkmcp-e02-reproduce-") as temp:
+            # The image intentionally stays uid 65534; WSL temp dirs start as 0700.
+            Path(temp).chmod(0o777)
+            for index in (1, 2):
+                networkless(
+                    scorer,
+                    "--vanilla",
+                    "/generator.R",
+                    f"/output/{index}.csv",
+                    entrypoint="Rscript",
+                    mounts=[(generator, "/generator.R", True), (temp, "/output", False)],
+                )
+>               assert hashlib.sha256((Path(temp) / f"{index}.csv").read_bytes()).hexdigest() == sha
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError
+
+benchmarks\codex_r\full_selftest.py:145: AssertionError
+============================== warnings summary ===============================
+..\venv3.13\Lib\site-packages\_pytest\config\__init__.py:1464
+  C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venv3.13\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_bioc_benchmark.py::test_e02_reproduction_and_standard_workflow_in_both_images
+1 failed, 1444 passed, 203 skipped, 1 warning in 429.72s (0:07:09)
+exit=1

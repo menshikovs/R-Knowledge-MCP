@@ -25,7 +25,7 @@ test_that("standard command lines are unchanged and never carry B1 flags", {
   args <- build_args(cfg())
   expect_equal(args, c("--effort", "medium", "--tasks", "R01", "--modes", "without-mcp", "with-mcp",
     "--repetitions", "1", "--timeout", "900", "--instructions", "standard",
-    "--knowledge-pilot-scorer", "legacy"))
+    "--function-discovery", "enabled", "--knowledge-pilot-scorer", "legacy"))
   expect_false(any(c("--experiment", "--resume", "--executor-image") %in% args))
 })
 

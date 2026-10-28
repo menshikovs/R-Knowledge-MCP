@@ -3,7 +3,6 @@ import pytest
 from cran_knowledge_mcp.config import (
     cache_bytes,
     cache_ttl,
-    context7_api_key,
     http_user_agent,
     positive_float,
     prompt_default_detail_level,
@@ -14,15 +13,11 @@ from cran_knowledge_mcp.config import (
 from cran_knowledge_mcp.errors import KnowledgeError
 
 
-def test_configuration_defaults_and_context7_key(monkeypatch):
+def test_configuration_defaults(monkeypatch):
     monkeypatch.delenv("CACHE_TTL_SECONDS", raising=False)
     monkeypatch.delenv("CACHE_MAX_BYTES", raising=False)
-    monkeypatch.delenv("CONTEXT7_API_KEY", raising=False)
     assert cache_ttl(300) == 300
     assert cache_bytes() == 64 << 20
-    assert context7_api_key() is None
-    monkeypatch.setenv("CONTEXT7_API_KEY", "  server-secret  ")
-    assert context7_api_key() == "server-secret"
 
 
 @pytest.mark.parametrize("value", ["0", "-1", "not-a-number", "301"])

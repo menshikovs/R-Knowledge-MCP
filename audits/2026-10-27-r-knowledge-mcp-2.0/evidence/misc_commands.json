@@ -1,0 +1,236 @@
+[
+ {
+  "id": "git_head",
+  "command": "git -C C:\\programming_pj\\cran-mcp rev-parse HEAD",
+  "cwd": "C:\\programming_pj\\cran-mcp",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:26.015423+00:00",
+  "ended_utc": "2026-10-27T14:46:26.039125+00:00",
+  "output_tail": "4d2266c994849ac460514ac2ae6df8a6fc5c180e"
+ },
+ {
+  "id": "git_branch",
+  "command": "git -C C:\\programming_pj\\cran-mcp branch --show-current",
+  "cwd": "C:\\programming_pj\\cran-mcp",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:26.039144+00:00",
+  "ended_utc": "2026-10-27T14:46:26.061638+00:00",
+  "output_tail": "2.0"
+ },
+ {
+  "id": "git_status_porcelain_lines",
+  "command": "git -C C:\\programming_pj\\cran-mcp status --short",
+  "cwd": "C:\\programming_pj\\cran-mcp",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:26.061655+00:00",
+  "ended_utc": "2026-10-27T14:46:26.091180+00:00",
+  "output_tail": "?? audits/"
+ },
+ {
+  "id": "git_ls_remote_2.0",
+  "command": "git -C C:\\programming_pj\\cran-mcp ls-remote origin 2.0",
+  "cwd": "C:\\programming_pj\\cran-mcp",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:26.091198+00:00",
+  "ended_utc": "2026-10-27T14:46:26.680306+00:00",
+  "output_tail": "4d2266c994849ac460514ac2ae6df8a6fc5c180e\trefs/heads/2.0"
+ },
+ {
+  "id": "clone_head",
+  "command": "git -C C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone rev-parse HEAD",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:26.680325+00:00",
+  "ended_utc": "2026-10-27T14:46:26.703437+00:00",
+  "output_tail": "4d2266c994849ac460514ac2ae6df8a6fc5c180e"
+ },
+ {
+  "id": "python_versions",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\python.exe --version",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:26.703454+00:00",
+  "ended_utc": "2026-10-27T14:46:26.719833+00:00",
+  "output_tail": "Python 3.14.4"
+ },
+ {
+  "id": "pip_list_audit_venv",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\python.exe -m pip list --format=freeze",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:26.719850+00:00",
+  "ended_utc": "2026-10-27T14:46:27.083863+00:00",
+  "output_tail": "anyio==4.15.1; coverage==7.17.0; cran-knowledge-mcp==0.1.0; duckdb==1.5.6; httpx==0.28.1; mcp==1.30.0; pandas==3.1.0; pydantic==2.14.1; pytest==9.1.1; pytest-asyncio==1.4.1; PyYAML==6.0.3; ruff==0.17.3; starlette==1.10.0; streamlit==1.66.1; uvicorn==0.54.0; vulture==2.16"
+ },
+ {
+  "id": "ruff_check_clone",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\ruff.exe check .",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:27.083880+00:00",
+  "ended_utc": "2026-10-27T14:46:27.209052+00:00",
+  "output_tail": "All checks passed!"
+ },
+ {
+  "id": "ruff_format_check_clone",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\ruff.exe format --check .",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:27.209072+00:00",
+  "ended_utc": "2026-10-27T14:46:27.326565+00:00",
+  "output_tail": "267 files already formatted"
+ },
+ {
+  "id": "pytest_collect_only_python_m",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\python.exe -m pytest --collect-only -q -p no:cacheprovider",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:27.326585+00:00",
+  "ended_utc": "2026-10-27T14:46:29.741876+00:00",
+  "output_tail": "\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1606 tests collected in 1.60s"
+ },
+ {
+  "id": "pytest_collect_only_console_script",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\pytest.exe --collect-only -q -p no:cacheprovider",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 2,
+  "started_utc": "2026-10-27T14:46:29.741897+00:00",
+  "ended_utc": "2026-10-27T14:46:32.001687+00:00",
+  "output_tail": "ERROR tests/test_telemetry_integration.py\n!!!!!!!!!!!!!!!!!! Interrupted: 23 errors during collection !!!!!!!!!!!!!!!!!!!\n1174 tests collected, 23 errors in 1.49s"
+ },
+ {
+  "id": "pytest_collect_only_pythonpath_fix",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venv\\Scripts\\pytest.exe -o pythonpath=src . --collect-only -q -p no:cacheprovider",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:32.001708+00:00",
+  "ended_utc": "2026-10-27T14:46:34.317945+00:00",
+  "output_tail": "\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n1606 tests collected in 1.49s"
+ },
+ {
+  "id": "cargo_fmt_check",
+  "command": "cargo fmt --check",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone\\native",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:34.317965+00:00",
+  "ended_utc": "2026-10-27T14:46:34.589591+00:00",
+  "output_tail": ""
+ },
+ {
+  "id": "rustc_version",
+  "command": "rustc --version",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:34.589610+00:00",
+  "ended_utc": "2026-10-27T14:46:34.666740+00:00",
+  "output_tail": "rustc 1.99.0 (b940084d7 2026-09-28)"
+ },
+ {
+  "id": "cargo_version",
+  "command": "cargo --version",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:34.666758+00:00",
+  "ended_utc": "2026-10-27T14:46:34.835425+00:00",
+  "output_tail": "cargo 1.99.0 (5f94df478 2026-08-27)"
+ },
+ {
+  "id": "docker_version",
+  "command": "docker --version",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:34.835444+00:00",
+  "ended_utc": "2026-10-27T14:46:34.947507+00:00",
+  "output_tail": "Docker version 29.8.2, build 7fc2dff"
+ },
+ {
+  "id": "docker_build",
+  "command": "docker build -q -t rkmcp-audit:test .",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:34.947527+00:00",
+  "ended_utc": "2026-10-27T14:46:47.525481+00:00",
+  "output_tail": "sha256:d33db1943c7ee9d070c07f5c4dfa6403e5a98c02c7e5f3166a64f291b30eed7c"
+ },
+ {
+  "id": "docker_run_help",
+  "command": "docker run --rm rkmcp-audit:test --help",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:47.525504+00:00",
+  "ended_utc": "2026-10-27T14:46:48.854788+00:00",
+  "output_tail": "usage: r-knowledge-mcp [-h] [--transport {stdio,streamable-http}]\n                       [--host HOST] [--port PORT]\n                       [--allowed-host ALLOWED_HOSTS]"
+ },
+ {
+  "id": "docker_run_id",
+  "command": "docker run --rm --entrypoint id rkmcp-audit:test",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:48.854825+00:00",
+  "ended_utc": "2026-10-27T14:46:49.381594+00:00",
+  "output_tail": "uid=10001(app) gid=10001(app) groups=10001(app)"
+ },
+ {
+  "id": "docker_image_inspect",
+  "command": "docker image inspect rkmcp-audit:test --format {{.Size}} bytes; user={{.Config.User}}; healthcheck={{.Config.Healthcheck}}",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:49.381630+00:00",
+  "ended_utc": "2026-10-27T14:46:49.585119+00:00",
+  "output_tail": "258573609 bytes; user=10001; healthcheck=<nil>"
+ },
+ {
+  "id": "docker_rmi",
+  "command": "docker rmi rkmcp-audit:test",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:49.585157+00:00",
+  "ended_utc": "2026-10-27T14:46:49.941195+00:00",
+  "output_tail": "Untagged: rkmcp-audit:test\nDeleted: sha256:d33db1943c7ee9d070c07f5c4dfa6403e5a98c02c7e5f3166a64f291b30eed7c"
+ },
+ {
+  "id": "pip_audit_runtime_closure",
+  "command": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\venvrt\\Scripts\\python.exe -m pip_audit --local --progress-spinner off",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:49.941224+00:00",
+  "ended_utc": "2026-10-27T14:46:52.813488+00:00",
+  "output_tail": "------------------ ---------------------------------------------------------------------------------\ncran-knowledge-mcp Dependency not found on PyPI and could not be audited: cran-knowledge-mcp (0.1.0)\nNo known vulnerabilities found"
+ },
+ {
+  "id": "rscript_version",
+  "command": "Rscript --version",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:52.813509+00:00",
+  "ended_utc": "2026-10-27T14:46:52.853636+00:00",
+  "output_tail": "Rscript (R) version 4.5.2 (2025-10-31)"
+ },
+ {
+  "id": "rscript_ground_truth_vers",
+  "command": "Rscript C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\probes\\vers.R",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:52.853654+00:00",
+  "ended_utc": "2026-10-27T14:46:52.986774+00:00",
+  "output_tail": "1.0 == 1.0.0: TRUE | 1.0 < 1.0.0: FALSE \n2.10-1 == 2.10.1: TRUE \n2.10-01 == 2.10.1: TRUE "
+ },
+ {
+  "id": "uv_version",
+  "command": "uv --version",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:52.986793+00:00",
+  "ended_utc": "2026-10-27T14:46:53.004908+00:00",
+  "output_tail": "uv 0.13.5 (46776a95d 2026-10-21 x86_64-pc-windows-msvc)"
+ },
+ {
+  "id": "wsl_python",
+  "command": "wsl -d Ubuntu -- python3 --version",
+  "cwd": "C:\\Users\\<user>\\AppData\\Local\\Temp\\claude\\c--programming-pj-cran-mcp\\9e44f795-6005-46c8-884e-fbf6fc0b91d9\\scratchpad\\clone",
+  "exit_code": 0,
+  "started_utc": "2026-10-27T14:46:53.004933+00:00",
+  "ended_utc": "2026-10-27T14:46:53.103854+00:00",
+  "output_tail": "Python 3.14.4"
+ }
+]

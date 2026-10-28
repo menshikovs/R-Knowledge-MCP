@@ -1,0 +1,138 @@
+...............ssss..ss.....................sFs...s.s................... [  4%]
+......................sss....s.......................................... [  9%]
+.....................................................................sss [ 13%]
+sss..................................................................... [ 18%]
+........................................................................ [ 22%]
+..................ss.sssssssssssssssss.sssssssssssss..sssssssss.....ssss [ 27%]
+sss..ssss..ssss.s.....................................s.ssssss.......... [ 32%]
+...............................................................s........ [ 36%]
+........ssssssssssssssssssss............................................ [ 41%]
+........................................................................ [ 45%]
+........................................................................ [ 50%]
+...........................s.........s.s................................ [ 55%]
+..ssssss.....ssss..sssssssssssssssssssssssssssss....................s... [ 59%]
+........................................................................ [ 64%]
+........................................................................ [ 68%]
+.........................................................sssssssssssssss [ 73%]
+sss........................................s............................ [ 78%]
+........................................................................ [ 82%]
+...............................s..................................ssssss [ 87%]
+ssssssssssssssssss...................................................... [ 91%]
+........................................................................ [ 96%]
+.................ssssss...............................                   [100%]
+================================== FAILURES ===================================
+____ test_p2_trace_and_opportunity_import_is_idempotent_and_transactional _____
+
+    def test_p2_trace_and_opportunity_import_is_idempotent_and_transactional():
+        run_id = "synthetic-p2-run"
+        trial_id = "D01-B-1"
+    
+        def event(event_type, offset, **fields):
+            return {
+                "schema_version": "1.2",
+                "event_type": event_type,
+                "run_id": run_id,
+                "trial_id": trial_id,
+                "trace_id": "trace-synthetic0001",
+                "timestamp_utc": "2026-10-27T10:00:00Z",
+                "monotonic_offset_ms": offset,
+                "clock": "trial",
+                "source": "runner",
+                **fields,
+            }
+    
+        values = [
+            event("benchmark.trial.started", 0, task="D01", mode="with-mcp"),
+            event(
+                "provider.request.started", 1, call_id="provider-1", provider_operation="session_create"
+            ),
+            event(
+                "provider.response.received",
+                3,
+                call_id="provider-1",
+                provider_operation="session_create",
+                provider_status="success",
+                duration_ms=2,
+            ),
+            event(
+                "mcp.exposure.configured",
+                3,
+                generated_agent_tool_names=["get_package"],
+                configured_allowed_tools=["get_package"],
+                remote_discovery_status="unknown",
+                remote_discovered_tools=None,
+            ),
+            event(
+                "mcp.exposure.response",
+                3,
+                source="agents_api",
+                returned_agent_tool_names=["get_package"],
+            ),
+            event("agent.turn.started", 4, source="agent_stream"),
+            event(
+                "mcp.tool.started",
+                5,
+                source="agent_stream",
+                call_id="client-call-0001",
+                tool="get_package",
+            ),
+            event(
+                "mcp.tool.completed",
+                6,
+                source="agent_stream",
+                call_id="client-call-0001",
+                tool="get_package",
+                is_error=False,
+            ),
+            event("agent.turn.completed", 8, source="agent_stream"),
+            event("benchmark.trial.completed", 10, status="scored", interrupted=False),
+        ]
+        events = [
+            (hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest(), value)
+            for value in values
+        ]
+        records = {trial_id: {"task": "D01", "mode": "with-mcp", "session_creation_attempted": True}}
+        annotation, annotation_sha = opportunity_telemetry.load_opportunity_manifest()
+        p2_tables = (
+            "trial_opportunity_assessments",
+            "task_mcp_opportunities",
+            "task_opportunity_registry",
+            "observability_checkpoints",
+            "agent_spans",
+            "agent_traces",
+        )
+>       with connect(":memory:") as connection:
+
+tests\test_benchmark_analytics.py:1152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+tests\test_benchmark_analytics.py:1223: in test_p2_trace_and_opportunity_import_is_idempotent_and_transactional
+    from benchmarks.codex_r.analytics import dashboard
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """Read-only Streamlit dashboard. Launch: python -m benchmarks.codex_r.analytics.dashboard"""
+    
+    from __future__ import annotations
+    
+    import argparse
+    import json
+    import math
+    import sys
+    from pathlib import Path
+    
+    import duckdb
+    import pandas as pd
+>   import streamlit as st
+E   ModuleNotFoundError: No module named 'streamlit'
+
+benchmarks\codex_r\analytics\dashboard.py:13: ModuleNotFoundError
+============================== warnings summary ===============================
+..\venv3.11\Lib\site-packages\_pytest\config\__init__.py:1464
+  C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venv3.11\Lib\site-packages\_pytest\config\__init__.py:1464: PytestConfigWarning: Unknown config option: cache_dir
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_benchmark_analytics.py::test_p2_trace_and_opportunity_import_is_idempotent_and_transactional
+1 failed, 1367 passed, 198 skipped, 40 deselected, 1 warning in 369.05s (0:06:09)
+exit=1

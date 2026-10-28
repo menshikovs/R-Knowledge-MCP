@@ -1,0 +1,29 @@
+== python 3.11
+3.11.17
+All checks passed!
+269 files already formatted
+1650 tests collected in 18.33s
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+104 passed, 24 skipped, 1 warning in 10.34s
+== python 3.12
+3.12.15
+All checks passed!
+269 files already formatted
+1650 tests collected in 16.54s
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+104 passed, 24 skipped, 1 warning in 9.41s
+== python 3.13
+3.13.5
+All checks passed!
+269 files already formatted
+1650 tests collected in 13.91s
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+104 passed, 24 skipped, 1 warning in 8.19s
+== python 3.14
+3.14.4
+All checks passed!
+269 files already formatted
+1650 tests collected in 15.27s
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+104 passed, 24 skipped, 1 warning in 8.49s
+DONE

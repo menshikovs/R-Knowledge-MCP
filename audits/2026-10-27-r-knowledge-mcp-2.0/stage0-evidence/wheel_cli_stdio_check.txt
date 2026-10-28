@@ -1,0 +1,19 @@
+[notice] A new release of pip is available: 26.0.1 -> 26.2.2
+[notice] To update, run: C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venv\Scripts\python.exe -m pip install --upgrade pip
+cran_knowledge_mcp-0.1.0-py3-none-any.whl
+usage: python.exe C:\Users\<user>\AppData\Local\Temp\claude\c--programming-pj-cran-mcp\9e44f795-6005-46c8-884e-fbf6fc0b91d9\scratchpad\venvwheel\Scripts\r-knowledge-mcp
+       [-h] [--transport {stdio,streamable-http}] [--host HOST] [--port PORT]
+providers.context7 in wheel: False
+== stdio protocol probe (installed wheel)
+  requested '2025-11-25'   -> 2025-11-25
+  tools/list count: 16
+  invalid-arg call isError: True {"code": "invalid_input", "message": "Invalid R package name", "source_url": null, "attempted_at": "2026-10-27T15:28:40.590251+00:00"}
+  unknown tool: {"content": [{"type": "text", "text": "{\"package\":null,\"repository\":null,\"package_version\":null,\"bioc_version\":null,\"source_url\":null,\"checked_at\":null,\"verification_status\":\"failed\",\"sources\":[],\"error\":{\"code\":\"tool_not_found\",\"message\":\"The requested tool is not availab
+  bad enum: {"content": [{"type": "text", "text": "{\"package\":\"ok\",\"repository\":null,\"package_version\":null,\"bioc_version\":null,\"source_url\":null,\"checked_at\":null,\"verification_status\":\"failed\",\"sources\":[],\"error\":{\"code\":\"invalid_input\",\"message\":\"Tool arguments failed validation
+  resources: ['r-knowledge://framework-docs', 'r-knowledge://prompt-templates']
+  prompts/get ok: True 2552
+  ping: {}
+  requested '2025-06-18'   -> 2025-06-18
+  requested '2025-03-26'   -> 2025-03-26
+  requested '2024-11-05'   -> 2024-11-05
+  requested '2099-01-01'   -> 2025-11-25

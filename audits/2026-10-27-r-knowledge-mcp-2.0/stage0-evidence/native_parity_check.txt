@@ -1,0 +1,4 @@
+native loaded: True
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+135 passed, 1 warning in 4.14s

@@ -1,0 +1,10 @@
+server-measured serialized result bytes (frozen reports; includes content+structuredContent duplication)
+P1-E get_function_docs                 n= 12 median=    6138 max=  19785 total=  107556
+P1-E get_function_docs (error)         n=  5 median=    2169 max=   4551 total=   14551
+P1-E get_package                       n=  2 median=    5841 max=   7138 total=   11682
+P1-E list_package_functions            n=  9 median=    7851 max=  40837 total=  107330
+baseline get_function_docs             n= 23 median=    4942 max=  19799 total=  173399
+baseline get_function_docs (error)     n= 26 median=    1819 max=   1951 total=   47472
+baseline get_package                   n=  7 median=    8906 max=  12306 total=   55225
+baseline search_packages               n=  1 median=    1843 max=   1843 total=    1843
+P1-E total bytes: 241119 => bytes/4 estimate 60279 tokens

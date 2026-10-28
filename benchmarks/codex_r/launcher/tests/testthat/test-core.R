@@ -60,7 +60,8 @@ test_that("commands are built as an argument vector, never a shell string", {
     spec$args,
     c("-m", "benchmarks.codex_r.run_simple", "--effort", "high", "--tasks", "R01", "H01",
       "--modes", "without-mcp", "with-mcp", "--repetitions", "2", "--timeout", "900",
-      "--instructions", "standard", "--knowledge-pilot-scorer", "legacy")
+      "--instructions", "standard", "--function-discovery", "enabled",
+      "--knowledge-pilot-scorer", "legacy")
   )
   pilot <- build_args(cfg(preset = "full", modes = "with-mcp"))
   expect_equal(pilot[3:4], c("--pilot", "full"))

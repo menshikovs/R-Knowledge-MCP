@@ -26,7 +26,10 @@ from benchmarks.codex_r import run_simple as simple
 from benchmarks.codex_r.runner import bench
 from benchmarks.codex_r.telemetry import aggregate, errors, experiment, schema
 
-MCP_IMAGE = "cran-knowledge-mcp:shiny-quarto"
+# Built from the current checkout by the `mcp_image` fixture. A hand-built tag such as the
+# runner's default (cran-knowledge-mcp:shiny-quarto) can predate the code under test.
+MCP_IMAGE = "cran-knowledge-mcp:telemetry-test"
+REPO_ROOT = Path(__file__).resolve().parents[1]
 LAUNCHER = Path(__file__).parent / "data" / "mcp_fixture_launcher.py"
 KEYS = ("integration-app-key-0001", "integration-exec-key-0002")
 REAL_CLIENT = simple.SimpleClient
@@ -277,6 +280,8 @@ class Lab:
                 "with-mcp",
                 "--results",
                 str(self.results),
+                "--mcp-image",
+                MCP_IMAGE,
                 "--timeout",
                 "300",
             ]
@@ -314,7 +319,7 @@ class Lab:
 def _docker_ready():
     if sys.platform != "linux" or not shutil.which("docker"):
         return "Linux with a Docker CLI is required"
-    for image in (MCP_IMAGE, "rkmcp-codex-runtime:codex-0.163.0", "codex-r-benchmark:pilot"):
+    for image in ("rkmcp-codex-runtime:codex-0.163.0", "codex-r-benchmark:pilot"):
         probe = subprocess.run(["docker", "image", "inspect", image], capture_output=True)
         if probe.returncode:
             return f"image {image} is not available locally"
@@ -325,6 +330,18 @@ pytestmark = [
     pytest.mark.docker,
     pytest.mark.skipif(_docker_ready() is not None, reason=str(_docker_ready())),
 ]
+
+
+@pytest.fixture(scope="module", autouse=True)
+def mcp_image():
+    """Build the MCP image from this checkout so the tests never run against a stale local tag."""
+    subprocess.run(
+        ["docker", "build", "-q", "-t", MCP_IMAGE, str(REPO_ROOT)],
+        check=True,
+        capture_output=True,
+        timeout=900,
+    )
+    return MCP_IMAGE
 
 
 @pytest.fixture
@@ -346,6 +363,14 @@ def tool_events(events, source):
         for event in events
         if event["event_type"] in schema.TOOL_TERMINAL and event["source"] == source
     ]
+
+
+def without_key(value, key):
+    if isinstance(value, dict):
+        return {k: without_key(v, key) for k, v in value.items() if k != key}
+    if isinstance(value, list):
+        return [without_key(item, key) for item in value]
+    return value
 
 
 def linear_percentile(values, fraction):
@@ -385,7 +410,8 @@ def test_full_chain_with_real_mcp_container(lab):
 
     # schema, ids, uniqueness ---
     assert schema.validate_stream(events) == []
-    assert {e["schema_version"] for e in events} == {"1.1"}
+    assert {e["schema_version"] for e in events} == {schema.SCHEMA_VERSION}
+    assert schema.SCHEMA_VERSION == "1.2"
     run_id = scenario.run_dir.name
     assert {e["run_id"] for e in events} == {run_id}
     trial_events = [e for e in events if "trial_id" in e]
@@ -417,7 +443,7 @@ def test_full_chain_with_real_mcp_container(lab):
         assert event["partial"] is (
             True if number in PARTIAL_CALLS else None if number in FAILED_CALLS else False
         )
-    client_done = [e for e in client if e["event_type"] != "mcp.tool.started"]
+    client_done = [e for e in client if e["event_type"] in schema.TOOL_TERMINAL]
     assert [e["is_error"] for e in client_done] == [n in FAILED_CALLS for n in range(1, 10)]
     overall = record["mcp_metrics"]["overall"]
     assert (overall["mcp_calls_attempted"], overall["mcp_calls_succeeded"]) == (9, 3)
@@ -491,6 +517,10 @@ def test_full_chain_with_real_mcp_container(lab):
     forbidden = ("Menu", "MissingPkg", "../bad", "7.7.7")
     for artifact in ("telemetry.jsonl", "results.json", "mcp_calls.csv", "mcp_metrics.csv"):
         text = (scenario.run_dir / artifact).read_text(encoding="utf-8")
+        if artifact == "results.json":
+            # The only deliberate copy of validated package/function/version names is the
+            # discovery sidecar projection; every other field must stay free of arguments.
+            text = json.dumps(without_key(json.loads(text), "discovery_request_projection"))
         assert not [marker for marker in forbidden if marker in text], artifact
         assert not [key for key in KEYS if key in text], artifact
 

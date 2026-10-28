@@ -20,7 +20,7 @@ The script checks only fixed official HTTPS routes:
 - Positron's interpreter and R installation pages.
 - Quarto's R computation and project documentation pages.
 
-Context7 and GitHub are not queried, so the job needs no API keys and consumes
+GitHub is not queried, so the job needs no API keys and consumes
 no third-party API quota. Requests reject redirects, disable environment proxy
 configuration, use an eight-second HTTP timeout and a ten-second request
 deadline, accept at most four concurrent requests, and cap bodies at 2 MiB for

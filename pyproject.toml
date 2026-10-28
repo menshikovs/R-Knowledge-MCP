@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "cran-knowledge-mcp"
 version = "0.1.0"
-description = "Read-only, source-attributed CRAN, Bioconductor, GitHub and Context7 knowledge for MCP clients"
+description = "Read-only, source-attributed CRAN, Bioconductor and GitHub AGENTS.md knowledge for MCP clients"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -25,14 +25,15 @@ where = ["src"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-pythonpath = ["src"]
+# "." exposes the top-level `benchmarks` package to the `pytest` console script (not only `python -m pytest`).
+pythonpath = ["src", "."]
 cache_dir = "pytest-cache/data"
 markers = ["docker: requires an available Docker engine and the frozen R benchmark image"]
 
 [tool.ruff]
 target-version = "py311"
 line-length = 100
-extend-exclude = [".venv", "upstream", ".test-tmp", ".pytest-windows-tmp"]
+extend-exclude = [".venv", "upstream", ".test-tmp", ".pytest-windows-tmp", "audits"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]

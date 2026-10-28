@@ -1,0 +1,192 @@
+[
+  {
+    "run_id": "20261024T161148Z-1ffd85ca",
+    "trials": 0,
+    "state": "incomplete",
+    "issues": {
+      "record_without_trial_id": 1
+    }
+  },
+  {
+    "run_id": "20261024T161534Z-06fa649c",
+    "trials": 1,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261024T163156Z-e657575b",
+    "trials": 1,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261024T163400Z-3077de97",
+    "trials": 1,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261024T163854Z-400ad439",
+    "trials": 1,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261024T164104Z-181613ed",
+    "trials": 0,
+    "state": "incomplete",
+    "issues": {
+      "record_without_trial_id": 1
+    }
+  },
+  {
+    "run_id": "20261024T164157Z-adf8964e",
+    "trials": 1,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261024T164423Z-b9bc4ddb",
+    "trials": 2,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261024T165126Z-0bc78e62",
+    "trials": 3,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261024T170326Z-ee7bd4ee",
+    "trials": 1,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261024T170546Z-1d607c72",
+    "trials": 1,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261024T183710Z-4a2c7f8f",
+    "trials": 0,
+    "state": "incomplete",
+    "issues": {
+      "record_without_trial_id": 1
+    }
+  },
+  {
+    "run_id": "20261024T183811Z-7d73f498",
+    "trials": 6,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261024T192448Z-2146273b",
+    "trials": 1,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261024T193709Z-9f131afa",
+    "trials": 1,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261025T080709Z-6544f40e",
+    "trials": 1,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261025T083653Z-ca1d5503",
+    "trials": 2,
+    "state": "legacy_finalized_scope_unknown",
+    "issues": {}
+  },
+  {
+    "run_id": "20261025T100159Z-a939d94f",
+    "trials": 2,
+    "state": "completed",
+    "issues": {}
+  },
+  {
+    "run_id": "20261025T100740Z-9746f577",
+    "trials": 2,
+    "state": "completed",
+    "issues": {}
+  },
+  {
+    "run_id": "20261025T135949Z-9ff06c47",
+    "trials": 38,
+    "state": "completed",
+    "issues": {}
+  },
+  {
+    "run_id": "20261026T063640Z-e23efc9e",
+    "trials": 0,
+    "state": "incomplete",
+    "issues": {
+      "record_without_trial_id": 1
+    }
+  },
+  {
+    "run_id": "20261026T063723Z-c849c1af",
+    "trials": 1,
+    "state": "incomplete",
+    "issues": {}
+  },
+  {
+    "run_id": "20261026T101505Z-5544127a",
+    "trials": 1,
+    "state": "incomplete",
+    "issues": {}
+  },
+  {
+    "run_id": "20261026T104750Z-f78eabf1",
+    "trials": 12,
+    "state": "completed",
+    "issues": {}
+  },
+  {
+    "run_id": "20261026T155642Z-05edb0df",
+    "trials": 8,
+    "state": "completed",
+    "issues": {}
+  },
+  {
+    "run_id": "20261027T080506Z-990b0995",
+    "trials": 0,
+    "state": "incomplete",
+    "issues": {
+      "record_without_trial_id": 1
+    }
+  },
+  {
+    "run_id": "20261027T080622Z-16d73779",
+    "trials": 1,
+    "state": "completed",
+    "issues": {}
+  },
+  {
+    "run_id": "20261027T080923Z-f0bf06a8",
+    "trials": 1,
+    "state": "completed",
+    "issues": {}
+  },
+  {
+    "run_id": "20261027T091937Z-29e767cb",
+    "trials": 1,
+    "state": "completed",
+    "issues": {}
+  },
+  {
+    "run_id": "20261027T092234Z-5d712f1d",
+    "trials": 1,
+    "state": "completed",
+    "issues": {}
+  }
+]

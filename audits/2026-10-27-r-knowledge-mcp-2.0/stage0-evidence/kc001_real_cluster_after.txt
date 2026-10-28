@@ -1,0 +1,6 @@
+cluster::agnes -> OK len=12186
+cluster::plantTraits -> OK len=4590
+cluster::daisy -> OK len=12375
+cluster discovery: partial ['namespace_nonliteral_arguments'] | plantTraits listed: True | alias total (all pages): 84
+cluster::plantTraits rd_encoding: {'encoding': 'iso8859-1', 'source': 'rd_declaration'} | unreadable members: None
+MASS::lm.ridge -> OK

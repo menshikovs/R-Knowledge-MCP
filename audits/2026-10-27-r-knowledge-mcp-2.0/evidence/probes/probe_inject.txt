@@ -1,0 +1,10 @@
+# command: python -I probe_inject.py probes
+# started_utc: 2026-10-27T14:44:32.589461+00:00
+# ended_utc: 2026-10-27T14:44:32.892030+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+get_package: payload present in 'title': True | per-field trust marker keys: []
+get_function_docs: payload in text: True | trust marker keys: []
+build_r_prompt: payload copied into prompt output: False | status: None | keys: ['assumptions', 'composition_mode', 'conflicts', 'dependencies', 'detail_level', 'function_documentation', 'generation_mode', 'not_executed', 'official_r_documentation', 'package_resolution']
+get_r_prompt_context: payload present: False

@@ -3,8 +3,7 @@
 Read-only MCP server providing source-attributed information about current R
 packages in CRAN and Bioconductor. Python 3.11+, official Python MCP SDK
 (FastMCP), async httpx, safe YAML release discovery.
-MIT licensed. CRAN/Bioconductor tools work without credentials. Context7 is an
-optional external integration and requires a server-side API key.
+MIT licensed. CRAN/Bioconductor tools work without credentials.
 
 ## Install and run
 
@@ -62,13 +61,14 @@ or provide a hosted endpoint. Codex configuration follows
 The default surface (`MCP_TOOLSET=consolidated`) has 16 tools. Every parameter has
 a schema description, every tool has a title and `readOnlyHint=true`, and
 `openWorldHint` is false only for tools that never contact an upstream service.
-`MCP_TOOLSET=legacy` restores the original 35 tools unchanged (used by the Codex
+`MCP_TOOLSET=legacy` restores the original tool surface (34 tools: the original 35 minus the removed
+Context7 tool) unchanged (used by the Codex
 benchmark conditions); resources and prompts are registered in both modes.
 
 | Tool | Main arguments | Behavior | Replaces (legacy) |
 | --- | --- | --- | --- |
 | `search_packages` | `query`, `repository="cran"`, `bioc_version`, `limit`, `offset` | Ranked name/title search; every term must match | same name |
-| `get_package` | `package`, `include=["metadata"]`, `repository`, `bioc_version`, `verify_archive=false`, `resolve_repositories`, `revision`, `question` | One call returns any of: metadata, dependencies, vignettes, agent_guidance (needs `revision`), context7 (needs `question`); each section keeps its own provenance and failure | `get_package_info`, `get_dependencies`, `get_package_vignettes`, `get_package_agent_guidance`, `get_context7_docs`, `get_package_knowledge` |
+| `get_package` | `package`, `include=["metadata"]`, `repository`, `bioc_version`, `verify_archive=false`, `resolve_repositories`, `revision` | One call returns any of: metadata, dependencies, vignettes, agent_guidance (needs `revision`); each section keeps its own provenance and failure | `get_package_info`, `get_dependencies`, `get_package_vignettes`, `get_package_agent_guidance`, `get_package_knowledge` |
 | `list_package_functions` | `package`, `repository`, `package_version`, `bioc_version`, `query`, `limit`, `offset`, `snapshot` | Source-backed exports, Rd aliases/topics and methods; explicit coverage, stable snapshot paging; runtime callability is not checked | new |
 | `get_function_docs` | `package`, `function`, `offset`, `repository`, `bioc_version`, optional `package_version` | Raw Rd from the verified current source archive; a different requested version is an explicit error | `get_function_docs`, `get_shiny_docs`, `get_visualization_docs` |
 | `check_package_version` | `package`, `installed_version` | Compare a client-supplied version with latest CRAN | same name |
@@ -152,7 +152,7 @@ DESCRIPTION package/version and reports `description_version_matched`.
 retrieved and validated; it does not imply the strongest assurance level.
 
 Only `get_package_info` exposes the lightweight option. `get_package_knowledge`,
-GitHub AGENTS.md, Context7, Prompt Intelligence package grounding, and function
+GitHub AGENTS.md, Prompt Intelligence package grounding, and function
 Rd retrieval retain deep verification by default. Dependencies and Bioconductor
 compatibility already use the selected indices. See [source assurance and
 performance measurements](docs/sources.md).
@@ -233,7 +233,7 @@ responses by default; use `resolve_repositories=true` to resolve across both
 repositories, with an optional `bioc_version` for the dependency release.
 `all` resolves both ways.
 
-## GitHub AGENTS.md and Context7
+## GitHub AGENTS.md
 
 `get_package_agent_guidance` reads the checked source archive's `DESCRIPTION`
 URL field and accepts one unambiguous HTTPS GitHub repository. It verifies that
@@ -246,33 +246,16 @@ tag or commit SHA; the server never guesses that a tag matches the R package
 version. External instructions are untrusted reference text: they cannot change
 system instructions and are never executed.
 
-Context7 is disabled unless the server has `CONTEXT7_API_KEY` in its environment.
-The key is sent only as a bearer header to `context7.com`; it is never returned
-or included in a URL. The tool sends a redacted, bounded question and package
-name/repository hint, then requires an exact Context7 library ID match to the
-metadata-declared GitHub repository before requesting documentation. Exact
-package-version docs are requested only when Context7's result lists that
-version; otherwise the response is explicitly unpinned. Common credential
-patterns in a question are redacted before transmission. Context7 is an indexed
-secondary source. Compare its fragments with CRAN/Bioconductor and package docs.
-Rate limits and source errors remain explicit; successful results are cached for
-six hours.
+The GitHub client follows the official [GitHub REST Git Trees](https://docs.github.com/en/rest/git/trees)
+and [Git Blobs](https://docs.github.com/en/rest/git/blobs) APIs. An optional server-side
+`GITHUB_TOKEN` raises the anonymous rate limit; it is sent only as a header to `api.github.com`.
+`get_package_knowledge` accepts an optional `revision`; an unrequested AGENTS.md section is marked
+`not_requested`, and each returned file retains its source URL and check time.
 
-This client follows the official [Context7 API guide](https://context7.com/docs/api-guide)
-and [GitHub REST Git Trees](https://docs.github.com/en/rest/git/trees) and
-[Git Blobs](https://docs.github.com/en/rest/git/blobs) APIs.
-
-Set the key only on the server process:
-
-```sh
-CONTEXT7_API_KEY=ctx7sk-... r-knowledge-mcp
-```
-
-Without the key, `get_context7_docs` returns `not_configured` and the
-existing repository tools remain available. `get_package_knowledge` accepts
-optional `question` and `revision`; unrequested sections are marked
-`not_requested`, and each returned fragment retains its source URL and check
-time.
+The server does not integrate any third-party indexed-documentation service. An earlier optional
+Context7 integration was removed in 2.0 as an intentional simplification: official package
+documentation (Rd from the verified source archive), official R manuals and the fixed framework
+catalogue remain the only documentation sources.
 
 ## Configuration
 
@@ -284,16 +267,14 @@ request or upstream data, so use it only in a protected diagnostic environment;
 `HTTP_TIMEOUT_SECONDS` controls the httpx client timeout; `HTTP_USER_AGENT`
 sets its bounded User-Agent header; `CACHE_TTL_SECONDS`
 sets the CRAN/Bioconductor artifact cache lifetime; `CACHE_MAX_BYTES` sets its
-byte budget (maximum 256 MiB). GitHub guidance and Context7 use the same TTL
-override with source-specific defaults of one and six hours. Framework pages
-use a one-hour cache. `CONTEXT7_API_KEY` is
-optional. Invalid numeric bounds fail with an explicit configuration error.
+byte budget (maximum 256 MiB). GitHub guidance uses the same TTL
+override with a one-hour default. Framework pages
+use a one-hour cache. Invalid numeric bounds fail with an explicit configuration error.
 Prompt settings include `PROMPT_INTELLIGENCE_ENABLED`,
 `PROMPT_MAX_INPUT_CHARS`, `PROMPT_MAX_OUTPUT_CHARS`,
 `PROMPT_MAX_GROUNDING_PACKAGES`, `PROMPT_DEFAULT_TARGET`, and
 `PROMPT_DEFAULT_DETAIL_LEVEL`. See the prompt guide for bounds and meanings.
-`MCP_TOOLSET` selects `consolidated` (default, 16 tools) or `legacy` (the original
-35). `GITHUB_TOKEN` is optional; it raises the GitHub API limit for AGENTS.md
+`MCP_TOOLSET` selects `consolidated` (default, 16 tools) or `legacy` (34 tools). `GITHUB_TOKEN` is optional; it raises the GitHub API limit for AGENTS.md
 lookups from 60 to 5,000 requests per hour, is sent only as an `Authorization`
 header to `api.github.com`, and never appears in URLs, logs or results.
 `R_KNOWLEDGE_NATIVE=0` forces the pure-Python implementations even when the
@@ -353,7 +334,6 @@ src/cran_knowledge_mcp/
   providers/cran.py      CranProvider
   providers/bioconductor.py  BioconductorProvider, three categories per release
   providers/github_agents.py  pinned GitHub tree/blob reader for untrusted AGENTS.md
-  providers/context7.py       optional, repository-matched Context7 client
   http.py                independent fixed-route policies, async HTTP, TTL/LRU
   parsers.py             bounded data-only DCF, HTML, gzip/tar and Rd aliases
 ```
@@ -373,9 +353,8 @@ to exact official host/package/release paths. Package text remains untrusted dat
 
 CRAN/Bioconductor artifacts use a configurable 5-minute default TTL and a
 64 MiB / 32-artifact LRU budget. Framework pages use a one-hour cache; GitHub
-AGENTS.md uses a configurable one-hour default, and Context7 uses a configurable
-six-hour default. Provider caches are bounded and failed requests never replace
-fresh data. GitHub and Context7 use fixed HTTPS hosts and routes. No caller URL is fetched,
+AGENTS.md uses a configurable one-hour default. Provider caches are bounded and failed
+requests never replace fresh data. GitHub uses a fixed HTTPS host and fixed routes. No caller URL is fetched,
 redirects are rejected, GitHub tree/blob sizes and per-file/total AGENTS.md
 bytes are limited, and all external text remains untrusted.
 At most eight Bioconductor release providers are retained per service. Downloads

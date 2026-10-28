@@ -1,0 +1,9 @@
+== docker build
+sha256:abba1211c00bb6acde66cad24e0147470d5c275bfb58b65fc9d229bff4f5e4d2
+exit=0
+== --help
+usage: r-knowledge-mcp [-h] [--transport {stdio,streamable-http}]
+                       [--host HOST] [--port PORT]
+                       [--allowed-host ALLOWED_HOSTS]
+== no context7 in image
+providers.context7 importable: False

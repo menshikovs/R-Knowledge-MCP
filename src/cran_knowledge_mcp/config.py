@@ -39,11 +39,6 @@ def cache_bytes() -> int:
     return positive_int("CACHE_MAX_BYTES", 64 << 20, 256 << 20)
 
 
-def context7_api_key() -> str | None:
-    value = os.environ.get("CONTEXT7_API_KEY", "").strip()
-    return value or None
-
-
 def github_token() -> str | None:
     """Optional server-side token; raises GitHub API limits from 60 to 5000 requests/hour."""
     value = os.environ.get("GITHUB_TOKEN", "").strip()
@@ -105,7 +100,7 @@ def prompt_default_detail_level() -> str:
 
 
 def mcp_toolset() -> str:
-    """Select the registered tool surface; legacy keeps the original 35 tool names."""
+    """Select the registered tool surface; legacy keeps the original tool names."""
     value = os.environ.get("MCP_TOOLSET", "consolidated").strip().casefold()
     if value not in {"consolidated", "legacy"}:
         raise KnowledgeError("invalid_configuration", "MCP_TOOLSET must be consolidated or legacy")

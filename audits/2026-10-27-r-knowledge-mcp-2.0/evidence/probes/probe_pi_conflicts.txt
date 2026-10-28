@@ -1,0 +1,10 @@
+# command: python -I probe_pi3.py probes
+# started_utc: 2026-10-27T14:45:41.983480+00:00
+# ended_utc: 2026-10-27T14:45:42.328527+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+prose only                           conflicts: []
+explicit constraints                 conflicts: []
+read-only vs write (constraints)     conflicts: []
+structured_context dialect           KnowledgeError: structured_context must use documented CSV/SQL fields

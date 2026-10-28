@@ -96,12 +96,31 @@ async def test_get_package_rejects_section_arguments_that_would_be_ignored(servi
         missing_revision = await session.call_tool(
             "get_package", {"package": "ExamplePkg", "include": ["agent_guidance"]}
         )
-        stray_question = await session.call_tool(
-            "get_package", {"package": "ExamplePkg", "question": "How?"}
+        stray_revision = await session.call_tool(
+            "get_package", {"package": "ExamplePkg", "revision": "main"}
         )
-    for result in (missing_revision, stray_question):
+        removed_section = await session.call_tool(
+            "get_package", {"package": "ExamplePkg", "include": ["context7"]}
+        )
+    for result in (missing_revision, stray_revision, removed_section):
         assert result.isError is True
         assert result.structuredContent["error"]["code"] == "invalid_input"
+
+
+@pytest.mark.parametrize(
+    ("toolset", "tool"), [("consolidated", "get_package"), ("legacy", "get_package_knowledge")]
+)
+async def test_removed_question_parameter_is_rejected_not_ignored(service, toolset, tool):
+    api, _, _ = service
+    async with create_connected_server_and_client_session(
+        create_server(service=api, toolset=toolset)
+    ) as session:
+        listed = {item.name: item for item in (await session.list_tools()).tools}
+        result = await session.call_tool(tool, {"package": "ExamplePkg", "question": "How?"})
+    assert listed[tool].inputSchema["additionalProperties"] is False
+    assert "question" not in listed[tool].inputSchema["properties"]
+    assert result.isError is True
+    assert result.structuredContent["error"]["code"] == "invalid_input"
 
 
 async def test_function_docs_never_substitute_another_version(service):
@@ -260,10 +279,11 @@ async def test_resources_list_and_read(service, tmp_path):
     assert json.loads(unknown.contents[0].text)["error"]["code"] == "invalid_input"
 
 
-async def test_legacy_toolset_keeps_original_names(service):
+async def test_legacy_toolset_keeps_original_names_except_the_removed_context7_tool(service):
     api, _, _ = service
     server = create_server(service=api, toolset="legacy")
     async with create_connected_server_and_client_session(server) as session:
         names = {tool.name for tool in (await session.list_tools()).tools}
-    assert len(names) == 35
+    assert len(names) == 34
+    assert "get_context7_docs" not in names
     assert {"get_shiny_docs", "get_quarto_docs", "analyze_ggplot_code"} <= names

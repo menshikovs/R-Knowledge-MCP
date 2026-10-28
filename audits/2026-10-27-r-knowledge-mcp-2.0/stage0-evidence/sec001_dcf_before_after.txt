@@ -1,0 +1,6 @@
+  continuation lines  input MB |    old s old peak MB |    new s new peak MB | speed-up
+               20000      0.06 |    0.010         1.2 |    0.002         2.1 |       4x
+               80000      0.24 |    0.118         4.8 |    0.011         8.4 |      10x
+              350000      1.05 |    2.595        20.8 |    0.056        36.5 |      46x
+              698000      2.09 |   80.405        41.5 |    0.207        72.9 |     388x
+new implementation result for 698 000 lines verified

@@ -88,8 +88,7 @@ connection pool but have separate artifact cache budgets. At most eight parsed
 Bioconductor providers are retained. All byte/time limits remain in force.
 `HTTP_TIMEOUT_SECONDS`, `HTTP_USER_AGENT`, `CACHE_TTL_SECONDS`, and `CACHE_MAX_BYTES` tune the
 client timeout and repository artifact cache within validated bounds.
-`MCP_TRANSPORT`, `MCP_HOST`, `MCP_PORT`, and `LOG_LEVEL` configure the CLI;
-Context7 credentials are read only from `CONTEXT7_API_KEY`.
+`MCP_TRANSPORT`, `MCP_HOST`, `MCP_PORT`, and `LOG_LEVEL` configure the CLI.
 
 ## Package metadata assurance and retrieval modes
 
@@ -132,7 +131,7 @@ only `index_verified`; consumers must not infer archive integrity from the
 general status.
 
 Trust-sensitive consumers retain deep verification: `get_package_knowledge`,
-GitHub AGENTS.md repository identity, Context7 repository matching, and Prompt
+GitHub AGENTS.md repository identity, and Prompt
 Intelligence package grounding continue to call package metadata with the
 default. `get_function_docs` always uses the exact archive, index checksum when
 available, and literal Rd alias checks. Dependencies and Bioconductor
@@ -233,30 +232,24 @@ Tree JSON is capped at 4 MiB, individual files at 32 KiB, total file text at
 runs. Content is marked `untrusted_reference_only` and cannot override system
 instructions.
 
-## Context7 provider
+## Removed: Context7 integration
 
-`Context7Provider` is disabled when `CONTEXT7_API_KEY` is unset. Its only routes
-are the documented library-search and context endpoints on `context7.com`; the
-key is sent in a bearer header, never to the caller or URL. The provider starts
-from verified package `DESCRIPTION` URLs, searches by package name and official
-GitHub repository hint, and requires exactly one returned Context7 library ID
-matching that repository before retrieving docs. This prevents a same-name
-library from being silently substituted. It pins the R package version only
-when Context7 explicitly lists an exact match; otherwise it labels docs
-unpinned.
+An earlier optional Context7 provider (an indexed third-party documentation client keyed by
+`CONTEXT7_API_KEY`) was removed in 2.0 as an intentional simplification: it was a secondary,
+non-authoritative source outside the project's core value (verified, source-attributed R package
+facts). Its tool (`get_context7_docs`, legacy surface only), the `context7` section of
+`get_package`/`get_package_knowledge`, the `question` parameter of `get_package`, the
+`CONTEXT7_API_KEY` setting and its redaction code are gone. No third-party documentation service
+replaces it; official package documentation (Rd from the verified source archive), the official R
+manuals and the fixed framework catalogue are the documentation sources.
 
-Questions are bounded and common credential patterns are redacted before they
-leave the server. Context7 responses are capped at 4 MiB and 48 KiB of returned
-fragment text. Successful documentation results are cached for six hours;
-errors, including HTTP 429 and Retry-After, are surfaced. Each fragment
-identifies its library, source URL, package/repository identity, version scope
-and check time. Context7 remains a secondary indexed source, not an authority
-above official package archives or docs.
+A client that still sends `question` to `get_package` or `get_package_knowledge` (or `include=["context7"]`)
+receives an `invalid_input` error rather than having the argument silently dropped; these two tools
+advertise `additionalProperties: false`. Other tools keep the SDK default of ignoring unknown arguments.
 
-`get_package_knowledge` combines package info and dependencies with optional
-AGENTS.md and Context7 sections. Every section preserves its own errors and
-provenance. Omitting a revision or question is explicitly `not_requested`, not
-evidence that the respective source has no content.
+`get_package_knowledge` combines package info and dependencies with an optional
+AGENTS.md section. Every section preserves its own errors and provenance. Omitting a
+revision is explicitly `not_requested`, not evidence that the source has no content.
 
 ## Shiny, Positron and Quarto
 
@@ -308,13 +301,13 @@ ggplotly compatibility matrix. See
 
 ## Validation
 
-Offline tests use synthetic HTTP responses, including mocked GitHub and Context7
+Offline tests use synthetic HTTP responses, including mocked GitHub
 APIs, and real package names with deliberately synthetic versions. They cover
 CRAN regressions, release/devel/history, all three categories,
 cross-repository dependencies, R compatibility, unavailable sources, malformed
 YAML, missing packages, pinned vignette links, pagination, external repository
 matching, commit-pinned nested AGENTS.md scopes, verified absence versus
-truncated trees, Context7 version selection, key isolation, redaction and rate
+truncated trees, token isolation and rate
 limits, and MCP stdio/HTTP. Optional smoke scripts exercise real official
 sources separately. The scheduled `upstream-smoke.yml` workflow runs daily on
 the default branch and supports manual dispatch. It checks current CRAN package

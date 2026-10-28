@@ -1,0 +1,15 @@
+# command: python -I probe_archive.py 
+# started_utc: 2026-10-27T14:45:42.329414+00:00
+# ended_utc: 2026-10-27T14:45:44.647214+00:00
+# exit_code: 0
+# network_to_public_upstream: False
+
+traversal names (../, absolute, backslash)                        2 ms  peak   151.2 MB  ok members=Ex/DESCRIPTION
+symlink and hardlink named like Rd files                          1 ms  peak   151.2 MB  ok members=Ex/DESCRIPTION
+fifo / char device members                                        1 ms  peak   151.2 MB  ok members=Ex/DESCRIPTION
+duplicate DESCRIPTION                                             1 ms  peak   151.2 MB  KnowledgeError:invalid_source
+Rd member of 2 MiB + 1 byte                                       2 ms  peak   151.2 MB  KnowledgeError:source_too_large
+17 x 1.5 MiB Rd (> 16 MiB total)                                 22 ms  peak   168.0 MB  KnowledgeError:source_too_large
+20 001 tiny members                                             818 ms  peak   151.3 MB  KnowledgeError:source_too_large
+gzip bomb: 100 MiB of zeros in one member                        72 ms  peak   268.7 MB  KnowledgeError:source_too_large
+gzip bomb: 200 MiB of zeros (over the 128 MiB cap)               63 ms  peak   151.3 MB  KnowledgeError:source_too_large
