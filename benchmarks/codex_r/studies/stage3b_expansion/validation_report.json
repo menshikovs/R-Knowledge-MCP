@@ -1,0 +1,1653 @@
+{
+  "benchmark": "r-knowledge-mcp-stage3b-v1",
+  "validated_at": "2026-10-29T08:22:32Z",
+  "api_calls": 0,
+  "tasks": [
+    {
+      "task": "XA01",
+      "task_sha256": "da0d0d8154f6237dd45df3169be5072376c74b6188abca507bfaabe9634cbcd5",
+      "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+      "checks": 13,
+      "checks_failed_by_some_rejected_control": 13,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "stats": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.21
+        },
+        "alternate_closed_form": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.1
+        },
+        "wrong_levene_mean_centered": {
+          "status": "scored",
+          "passed": 11,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "equal_variances_brown_forsythe_statistic_matches_oracle",
+            "unequal_variances_brown_forsythe_statistic_matches_oracle"
+          ],
+          "details": [
+            "equal_variances_brown_forsythe_statistic_matches_oracle: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.76\n`expected`: 0.59\n\nequal statistic",
+            "unequal_variances_brown_forsythe_statistic_matches_oracle: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 21.5\n`expected`: 17.3\n\nunequal statistic"
+          ],
+          "seconds": 2.4
+        },
+        "wrong_always_classical": {
+          "status": "scored",
+          "passed": 8,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "method_is_classical_for_equal_and_welch_for_unequal_variances",
+            "welch_omnibus_uses_fractional_denominator_df_and_matches_oracle",
+            "holm_adjusted_unpooled_welch_pairwise_for_unequal_variance_data",
+            "welch_branch_does_not_reuse_pooled_tukey_p_values",
+            "rows_with_missing_values_are_dropped_and_row_order_is_irrelevant"
+          ],
+          "details": [
+            "method_is_classical_for_equal_and_welch_for_unequal_variances: Expected `got` to be identical to `c(\"classical\", \"welch\", \"classical\")`.\nDifferences:\n`actual`:   \"classical\" \"classical\" \"classical\"\n`expected`: \"classical\" \"welch\"     \"classical\"\n",
+            "welch_omnibus_uses_fractional_denominator_df_and_matches_oracle: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 5.1\n`expected`: 1.2\n\nwelch statistic",
+            "holm_adjusted_unpooled_welch_pairwise_for_unequal_variance_data: Expected `as.numeric(pw$p_adjusted)` to equal `want$p_adjusted`.\nDifferences:\n  `actual`: 0.958 0.028 1.000 0.002 0.930 0.012\n`expected`: 0.909 0.909 0.990 0.843 0.909 0.909\n",
+            "welch_branch_does_not_reuse_pooled_tukey_p_values: Expected `max(abs(as.numeric(pw$p_adjusted) - pooled))` > 0.001.\nActual comparison: 0.0000000000000002 <= 0.0010000000000000\nDifference: -0.0009999999999998 <= 0",
+            "rows_with_missing_values_are_dropped_and_row_order_is_irrelevant: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 4.6\n`expected`: 1.1\n\nna statistic"
+          ],
+          "seconds": 3.07
+        },
+        "wrong_welch_with_pooled_tukey": {
+          "status": "scored",
+          "passed": 10,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "holm_adjusted_unpooled_welch_pairwise_for_unequal_variance_data",
+            "welch_branch_does_not_reuse_pooled_tukey_p_values",
+            "rows_with_missing_values_are_dropped_and_row_order_is_irrelevant"
+          ],
+          "details": [
+            "holm_adjusted_unpooled_welch_pairwise_for_unequal_variance_data: Expected `as.numeric(pw$p_adjusted)` to equal `want$p_adjusted`.\nDifferences:\n  `actual`: 0.958 0.028 1.000 0.002 0.930 0.012\n`expected`: 0.909 0.909 0.990 0.843 0.909 0.909\n",
+            "welch_branch_does_not_reuse_pooled_tukey_p_values: Expected `max(abs(as.numeric(pw$p_adjusted) - pooled))` > 0.001.\nActual comparison: 0.0000000000000002 <= 0.0010000000000000\nDifference: -0.0009999999999998 <= 0",
+            "rows_with_missing_values_are_dropped_and_row_order_is_irrelevant: Expected `as.numeric(field(res, \"pairwise\")$p_adjusted)` to equal `want$pairwise$p_adjusted`.\nDifferences:\n  `actual`: 0.983723 0.038802 0.999743 0.004245 0.944425 0.019871\n`expected`: 0.999753 0.859538 0.999753 0.843278 0.999753 0.859538\n"
+          ],
+          "seconds": 3.05
+        },
+        "edge_accepts_two_groups": {
+          "status": "scored",
+          "passed": 12,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "fewer_than_three_groups_is_an_error"
+          ],
+          "details": [
+            "fewer_than_three_groups_is_an_error: expected an error but the call succeeded"
+          ],
+          "seconds": 2.82
+        },
+        "malformed_returns_vector": {
+          "status": "scored",
+          "passed": 1,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "equal_variances_brown_forsythe_statistic_matches_oracle",
+            "unequal_variances_brown_forsythe_statistic_matches_oracle",
+            "method_is_classical_for_equal_and_welch_for_unequal_variances",
+            "classical_omnibus_matches_oracle",
+            "welch_omnibus_uses_fractional_denominator_df_and_matches_oracle",
+            "tukey_kramer_adjusted_p_values_for_unbalanced_equal_variance_data",
+            "holm_adjusted_unpooled_welch_pairwise_for_unequal_variance_data",
+            "welch_branch_does_not_reuse_pooled_tukey_p_values",
+            "pairwise_table_has_the_required_columns_and_pair_order",
+            "rows_with_missing_values_are_dropped_and_row_order_is_irrelevant",
+            "fewer_than_three_groups_is_an_error",
+            "a_group_with_a_single_observation_is_an_error"
+          ],
+          "details": [
+            "equal_variances_brown_forsythe_statistic_matches_oracle: result has no element 'variance_test'",
+            "unequal_variances_brown_forsythe_statistic_matches_oracle: result has no element 'variance_test'",
+            "method_is_classical_for_equal_and_welch_for_unequal_variances: result has no element 'method'",
+            "classical_omnibus_matches_oracle: result has no element 'omnibus'",
+            "welch_omnibus_uses_fractional_denominator_df_and_matches_oracle: result has no element 'omnibus'",
+            "tukey_kramer_adjusted_p_values_for_unbalanced_equal_variance_data: result has no element 'pairwise'",
+            "holm_adjusted_unpooled_welch_pairwise_for_unequal_variance_data: result has no element 'pairwise'",
+            "welch_branch_does_not_reuse_pooled_tukey_p_values: result has no element 'pairwise'",
+            "pairwise_table_has_the_required_columns_and_pair_order: result has no element 'pairwise'",
+            "rows_with_missing_values_are_dropped_and_row_order_is_irrelevant: result has no element 'omnibus'",
+            "fewer_than_three_groups_is_an_error: expected an error but the call succeeded",
+            "a_group_with_a_single_observation_is_an_error: expected an error but the call succeeded"
+          ],
+          "seconds": 2.59
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "equal_variances_brown_forsythe_statistic_matches_oracle",
+            "unequal_variances_brown_forsythe_statistic_matches_oracle",
+            "method_is_classical_for_equal_and_welch_for_unequal_variances",
+            "classical_omnibus_matches_oracle",
+            "welch_omnibus_uses_fractional_denominator_df_and_matches_oracle",
+            "tukey_kramer_adjusted_p_values_for_unbalanced_equal_variance_data",
+            "holm_adjusted_unpooled_welch_pairwise_for_unequal_variance_data",
+            "welch_branch_does_not_reuse_pooled_tukey_p_values",
+            "pairwise_table_has_the_required_columns_and_pair_order",
+            "rows_with_missing_values_are_dropped_and_row_order_is_irrelevant",
+            "input_data_frame_is_not_modified",
+            "fewer_than_three_groups_is_an_error",
+            "a_group_with_a_single_observation_is_an_error"
+          ],
+          "details": [
+            "equal_variances_brown_forsythe_statistic_matches_oracle: candidate call failed: TODO",
+            "unequal_variances_brown_forsythe_statistic_matches_oracle: candidate call failed: TODO",
+            "method_is_classical_for_equal_and_welch_for_unequal_variances: candidate call failed: TODO",
+            "classical_omnibus_matches_oracle: candidate call failed: TODO",
+            "welch_omnibus_uses_fractional_denominator_df_and_matches_oracle: candidate call failed: TODO",
+            "tukey_kramer_adjusted_p_values_for_unbalanced_equal_variance_data: candidate call failed: TODO",
+            "holm_adjusted_unpooled_welch_pairwise_for_unequal_variance_data: candidate call failed: TODO",
+            "welch_branch_does_not_reuse_pooled_tukey_p_values: candidate call failed: TODO",
+            "pairwise_table_has_the_required_columns_and_pair_order: candidate call failed: TODO",
+            "rows_with_missing_values_are_dropped_and_row_order_is_irrelevant: candidate call failed: TODO",
+            "input_data_frame_is_not_modified: candidate call failed: TODO",
+            "fewer_than_three_groups_is_an_error: candidate call failed: TODO",
+            "a_group_with_a_single_observation_is_an_error: candidate call failed: TODO"
+          ],
+          "seconds": 2.47
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.78
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "equal_variances_brown_forsythe_statistic_matches_oracle",
+            "unequal_variances_brown_forsythe_statistic_matches_oracle",
+            "method_is_classical_for_equal_and_welch_for_unequal_variances",
+            "classical_omnibus_matches_oracle",
+            "welch_omnibus_uses_fractional_denominator_df_and_matches_oracle",
+            "tukey_kramer_adjusted_p_values_for_unbalanced_equal_variance_data",
+            "holm_adjusted_unpooled_welch_pairwise_for_unequal_variance_data",
+            "welch_branch_does_not_reuse_pooled_tukey_p_values",
+            "pairwise_table_has_the_required_columns_and_pair_order",
+            "rows_with_missing_values_are_dropped_and_row_order_is_irrelevant",
+            "input_data_frame_is_not_modified",
+            "fewer_than_three_groups_is_an_error",
+            "a_group_with_a_single_observation_is_an_error"
+          ],
+          "details": [
+            "equal_variances_brown_forsythe_statistic_matches_oracle: candidate call failed: could not find function \"compare_groups\"",
+            "unequal_variances_brown_forsythe_statistic_matches_oracle: candidate call failed: could not find function \"compare_groups\"",
+            "method_is_classical_for_equal_and_welch_for_unequal_variances: candidate call failed: could not find function \"compare_groups\"",
+            "classical_omnibus_matches_oracle: candidate call failed: could not find function \"compare_groups\"",
+            "welch_omnibus_uses_fractional_denominator_df_and_matches_oracle: candidate call failed: could not find function \"compare_groups\"",
+            "tukey_kramer_adjusted_p_values_for_unbalanced_equal_variance_data: candidate call failed: could not find function \"compare_groups\"",
+            "holm_adjusted_unpooled_welch_pairwise_for_unequal_variance_data: candidate call failed: could not find function \"compare_groups\"",
+            "welch_branch_does_not_reuse_pooled_tukey_p_values: candidate call failed: could not find function \"compare_groups\"",
+            "pairwise_table_has_the_required_columns_and_pair_order: candidate call failed: could not find function \"compare_groups\"",
+            "rows_with_missing_values_are_dropped_and_row_order_is_irrelevant: candidate call failed: could not find function \"compare_groups\"",
+            "input_data_frame_is_not_modified: candidate call failed: could not find function \"compare_groups\"",
+            "fewer_than_three_groups_is_an_error: candidate call failed: could not find function \"compare_groups\"",
+            "a_group_with_a_single_observation_is_an_error: candidate call failed: could not find function \"compare_groups\""
+          ],
+          "seconds": 2.2
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 1.6
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.59
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XA02",
+      "task_sha256": "cc06b96406df947fd4f8248d53e920b0b7e26d6725bd993a93943832102fe80f",
+      "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+      "checks": 13,
+      "checks_failed_by_some_rejected_control": 12,
+      "checks_never_failed_by_any_control": [
+        "input_data_frame_is_not_modified"
+      ],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "stats": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.43
+        },
+        "alternate_closed_form": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.39
+        },
+        "wrong_per_site_anova": {
+          "status": "scored",
+          "passed": 11,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "simple_effects_use_the_full_model_residual_mean_square",
+            "simple_effects_are_not_per_site_one_way_anovas"
+          ],
+          "details": [
+            "simple_effects_use_the_full_model_residual_mean_square: Expected `as.numeric(got[[col]])` to equal `want[[col]]`.\nDifferences:\n  `actual`: 12.0 12.0 12.0\n`expected`: 36.0 36.0 36.0\n\ndf2",
+            "simple_effects_are_not_per_site_one_way_anovas: Expected `max(abs(as.numeric(got$f_value) - xa02_oracle(xa02_cross)$per_site_f))` > 0.001.\nActual comparison: 0.00000000000001 <= 0.00100000000000\nDifference: -0.00099999999999 <= 0"
+          ],
+          "seconds": 2.75
+        },
+        "wrong_ignores_interaction": {
+          "status": "scored",
+          "passed": 6,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "crossover_interaction_anova_table_matches_oracle",
+            "additive_design_anova_table_matches_oracle",
+            "two_by_two_with_other_labels_matches_oracle",
+            "interaction_flag_and_report_level_follow_the_fixed_rule",
+            "simple_effects_use_the_full_model_residual_mean_square",
+            "simple_effects_are_not_per_site_one_way_anovas",
+            "missing_score_rows_are_dropped_and_row_order_is_irrelevant"
+          ],
+          "details": [
+            "crossover_interaction_anova_table_matches_oracle: Expected `rownames(got)` to be identical to `rownames(want)`.\nDifferences:\n`actual`:   \"treatment\" \"site\" \"Residuals\"                 \n`expected`: \"treatment\" \"site\" \"treatment:site\" \"Residuals\"\n",
+            "additive_design_anova_table_matches_oracle: Expected `rownames(got)` to be identical to `rownames(want)`.\nDifferences:\n`actual`:   \"treatment\" \"site\" \"Residuals\"                 \n`expected`: \"treatment\" \"site\" \"treatment:site\" \"Residuals\"\n",
+            "two_by_two_with_other_labels_matches_oracle: Expected `rownames(got)` to be identical to `rownames(want)`.\nDifferences:\n`actual`:   \"treatment\" \"site\" \"Residuals\"                 \n`expected`: \"treatment\" \"site\" \"treatment:site\" \"Residuals\"\n",
+            "interaction_flag_and_report_level_follow_the_fixed_rule: Expected `vapply(...)` to be identical to `c(TRUE, FALSE, TRUE)`.\nDifferences:\n`actual`:   FALSE FALSE FALSE\n`expected`: TRUE  FALSE TRUE \n",
+            "simple_effects_use_the_full_model_residual_mean_square: result has no element 'simple_effects'",
+            "simple_effects_are_not_per_site_one_way_anovas: result has no element 'simple_effects'",
+            "missing_score_rows_are_dropped_and_row_order_is_irrelevant: Expected `rownames(got)` to be identical to `rownames(want)`.\nDifferences:\n`actual`:   \"treatment\" \"site\" \"Residuals\"                 \n`expected`: \"treatment\" \"site\" \"treatment:site\" \"Residuals\"\n"
+          ],
+          "seconds": 3.34
+        },
+        "wrong_always_reports_simple_effects": {
+          "status": "scored",
+          "passed": 11,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "interaction_flag_and_report_level_follow_the_fixed_rule",
+            "simple_effects_are_null_when_the_interaction_is_not_significant"
+          ],
+          "details": [
+            "interaction_flag_and_report_level_follow_the_fixed_rule: Expected `vapply(got, function(g) field(g, \"report_level\"), \"\")` to be identical to `c(\"simple_effects\", \"main_effects\", \"simple_effects\")`.\nDifferences:\n`actual`:   \"simple_effects\" \"simple_effects\" \"simple_effects\"\n`expected`: \"simple_effects\" \"main_effects\"   \"simple_effects\"\n",
+            "simple_effects_are_null_when_the_interaction_is_not_significant: Expected `res$simple_effects` to be NULL.\nDifferences:\n`actual` is an S3 object of class <data.frame>, a list\n`expected` is NULL\n"
+          ],
+          "seconds": 3.36
+        },
+        "edge_accepts_unbalanced_data": {
+          "status": "scored",
+          "passed": 12,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "unbalanced_design_after_dropping_is_an_error"
+          ],
+          "details": [
+            "unbalanced_design_after_dropping_is_an_error: expected an error but the call succeeded"
+          ],
+          "seconds": 2.91
+        },
+        "malformed_missing_elements": {
+          "status": "scored",
+          "passed": 1,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "crossover_interaction_anova_table_matches_oracle",
+            "additive_design_anova_table_matches_oracle",
+            "two_by_two_with_other_labels_matches_oracle",
+            "cell_means_table_is_ordered_treatment_then_site",
+            "interaction_flag_and_report_level_follow_the_fixed_rule",
+            "simple_effects_use_the_full_model_residual_mean_square",
+            "simple_effects_are_not_per_site_one_way_anovas",
+            "simple_effects_are_null_when_the_interaction_is_not_significant",
+            "missing_score_rows_are_dropped_and_row_order_is_irrelevant",
+            "unbalanced_design_after_dropping_is_an_error",
+            "single_replicate_or_single_level_factor_is_an_error",
+            "result_has_exactly_the_documented_elements"
+          ],
+          "details": [
+            "crossover_interaction_anova_table_matches_oracle: Expected `unname(as.numeric(got[[col]]))` to equal `unname(want[[col]])`.\nDifferences:\n  `actual`:         \n`expected`: 2 2 4 36\n\ndf",
+            "additive_design_anova_table_matches_oracle: Expected `unname(as.numeric(got[[col]]))` to equal `unname(want[[col]])`.\nDifferences:\n  `actual`:         \n`expected`: 1 2 2 30\n\ndf",
+            "two_by_two_with_other_labels_matches_oracle: Expected `unname(as.numeric(got[[col]]))` to equal `unname(want[[col]])`.\nDifferences:\n  `actual`:         \n`expected`: 1 1 1 28\n\ndf",
+            "cell_means_table_is_ordered_treatment_then_site: result has no element 'cell_means'",
+            "interaction_flag_and_report_level_follow_the_fixed_rule: result has no element 'interaction_significant'",
+            "simple_effects_use_the_full_model_residual_mean_square: result has no element 'simple_effects'",
+            "simple_effects_are_not_per_site_one_way_anovas: result has no element 'simple_effects'",
+            "simple_effects_are_null_when_the_interaction_is_not_significant: Expected `\"simple_effects\" %in% names(res)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "missing_score_rows_are_dropped_and_row_order_is_irrelevant: Expected `unname(as.numeric(got[[col]]))` to equal `unname(want[[col]])`.\nDifferences:\n  `actual`:         \n`expected`: 2 2 4 36\n\ndf",
+            "unbalanced_design_after_dropping_is_an_error: expected an error but the call succeeded",
+            "single_replicate_or_single_level_factor_is_an_error: expected an error but the call succeeded",
+            "result_has_exactly_the_documented_elements: Expected `names(res)` to have the same values as `c(...)`.\nActual: \"anova\"\nExpected: \"anova\", \"cell_means\", \"interaction_significant\", \"report_level\", \"simple_effects\"\nAbsent: \"cell_means\", \"interaction_significant\", \"report_level\", \"simple_effects\""
+          ],
+          "seconds": 3.62
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 1,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "crossover_interaction_anova_table_matches_oracle",
+            "additive_design_anova_table_matches_oracle",
+            "two_by_two_with_other_labels_matches_oracle",
+            "cell_means_table_is_ordered_treatment_then_site",
+            "interaction_flag_and_report_level_follow_the_fixed_rule",
+            "simple_effects_use_the_full_model_residual_mean_square",
+            "simple_effects_are_not_per_site_one_way_anovas",
+            "simple_effects_are_null_when_the_interaction_is_not_significant",
+            "missing_score_rows_are_dropped_and_row_order_is_irrelevant",
+            "unbalanced_design_after_dropping_is_an_error",
+            "single_replicate_or_single_level_factor_is_an_error",
+            "result_has_exactly_the_documented_elements"
+          ],
+          "details": [
+            "crossover_interaction_anova_table_matches_oracle: result has no element 'anova'",
+            "additive_design_anova_table_matches_oracle: result has no element 'anova'",
+            "two_by_two_with_other_labels_matches_oracle: result has no element 'anova'",
+            "cell_means_table_is_ordered_treatment_then_site: result has no element 'cell_means'",
+            "interaction_flag_and_report_level_follow_the_fixed_rule: result has no element 'interaction_significant'",
+            "simple_effects_use_the_full_model_residual_mean_square: result has no element 'simple_effects'",
+            "simple_effects_are_not_per_site_one_way_anovas: result has no element 'simple_effects'",
+            "simple_effects_are_null_when_the_interaction_is_not_significant: Expected `\"simple_effects\" %in% names(res)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "missing_score_rows_are_dropped_and_row_order_is_irrelevant: result has no element 'anova'",
+            "unbalanced_design_after_dropping_is_an_error: expected an error but the call succeeded",
+            "single_replicate_or_single_level_factor_is_an_error: expected an error but the call succeeded",
+            "result_has_exactly_the_documented_elements: `object` must be a vector, not `NULL`."
+          ],
+          "seconds": 3.38
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.26
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "crossover_interaction_anova_table_matches_oracle",
+            "additive_design_anova_table_matches_oracle",
+            "two_by_two_with_other_labels_matches_oracle",
+            "cell_means_table_is_ordered_treatment_then_site",
+            "interaction_flag_and_report_level_follow_the_fixed_rule",
+            "simple_effects_use_the_full_model_residual_mean_square",
+            "simple_effects_are_not_per_site_one_way_anovas",
+            "simple_effects_are_null_when_the_interaction_is_not_significant",
+            "missing_score_rows_are_dropped_and_row_order_is_irrelevant",
+            "input_data_frame_is_not_modified",
+            "unbalanced_design_after_dropping_is_an_error",
+            "single_replicate_or_single_level_factor_is_an_error",
+            "result_has_exactly_the_documented_elements"
+          ],
+          "details": [
+            "crossover_interaction_anova_table_matches_oracle: candidate call failed: could not find function \"factorial_analysis\"",
+            "additive_design_anova_table_matches_oracle: candidate call failed: could not find function \"factorial_analysis\"",
+            "two_by_two_with_other_labels_matches_oracle: candidate call failed: could not find function \"factorial_analysis\"",
+            "cell_means_table_is_ordered_treatment_then_site: candidate call failed: could not find function \"factorial_analysis\"",
+            "interaction_flag_and_report_level_follow_the_fixed_rule: candidate call failed: could not find function \"factorial_analysis\"",
+            "simple_effects_use_the_full_model_residual_mean_square: candidate call failed: could not find function \"factorial_analysis\"",
+            "simple_effects_are_not_per_site_one_way_anovas: candidate call failed: could not find function \"factorial_analysis\"",
+            "simple_effects_are_null_when_the_interaction_is_not_significant: candidate call failed: could not find function \"factorial_analysis\"",
+            "missing_score_rows_are_dropped_and_row_order_is_irrelevant: candidate call failed: could not find function \"factorial_analysis\"",
+            "input_data_frame_is_not_modified: candidate call failed: could not find function \"factorial_analysis\"",
+            "unbalanced_design_after_dropping_is_an_error: candidate call failed: could not find function \"factorial_analysis\"",
+            "single_replicate_or_single_level_factor_is_an_error: candidate call failed: could not find function \"factorial_analysis\"",
+            "result_has_exactly_the_documented_elements: candidate call failed: could not find function \"factorial_analysis\""
+          ],
+          "seconds": 2.6
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 1.89
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.89
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XA03",
+      "task_sha256": "9d040538c7f554653bcd04699b82622ce3d5cedfa48678b7da95366db600bf61",
+      "scorer_sha256": "7fb505638b94ffd649ab373da0d45e608dc5d7625d466e7fb7f2891da9e84e31",
+      "checks": 13,
+      "checks_failed_by_some_rejected_control": 13,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "stats": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.34
+        },
+        "alternate_model_comparison": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.4
+        },
+        "alternate_cell_means": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.26
+        },
+        "wrong_type1_sequential": {
+          "status": "scored",
+          "passed": 5,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "unbalanced_3x2_matches_independent_type3_oracle",
+            "second_unbalanced_design_with_other_labels_and_interaction_sign",
+            "main_effects_are_not_the_sequential_type1_values",
+            "ordered_factor_inputs_do_not_switch_to_polynomial_contrasts",
+            "result_is_invariant_to_row_order_and_factor_level_order",
+            "missing_scores_are_dropped_listwise",
+            "empty_cell_is_an_error_not_a_silent_table",
+            "order_dependence_of_sequential_ss_detected_for_unbalanced_only"
+          ],
+          "details": [
+            "unbalanced_3x2_matches_independent_type3_oracle: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 415.2179570 195.5348083 12.5054196 282.9789558\n`expected`: 449.1979557 185.3580342 12.5054196 282.9789558\n\nsum_sq",
+            "second_unbalanced_design_with_other_labels_and_interaction_sign: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 858.0761836 181.3896084 44.0531846 427.0441551\n`expected`: 394.7222638 171.9730511 44.0531846 427.0441551\n\nsum_sq",
+            "main_effects_are_not_the_sequential_type1_values: Expected `abs(tab[\"treatment\", \"sum_sq\"] - seq_tab[\"treatment\", \"Sum Sq\"])` > 0.001.\nActual comparison: 0.0000 <= 0.0010\nDifference: -0.0010 <= 0",
+            "ordered_factor_inputs_do_not_switch_to_polynomial_contrasts: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 415.2179570 195.5348083 12.5054196 282.9789558\n`expected`: 449.1979557 185.3580342 12.5054196 282.9789558\n\nsum_sq",
+            "result_is_invariant_to_row_order_and_factor_level_order: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 415.2179570 195.5348083 12.5054196 282.9789558\n`expected`: 449.1979557 185.3580342 12.5054196 282.9789558\n\nsum_sq",
+            "missing_scores_are_dropped_listwise: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 431.4330099 176.6426087 11.5670141 258.5185188\n`expected`: 429.1212493 172.2759491 11.5670141 258.5185188\n\nsum_sq",
+            "empty_cell_is_an_error_not_a_silent_table: expected an error but the call succeeded",
+            "order_dependence_of_sequential_ss_detected_for_unbalanced_only: Expected `c(yes, yes2, no)` to be identical to `c(TRUE, TRUE, FALSE)`.\nDifferences:\n`actual`:   TRUE TRUE TRUE \n`expected`: TRUE TRUE FALSE\n"
+          ],
+          "seconds": 2.74
+        },
+        "wrong_type2": {
+          "status": "scored",
+          "passed": 7,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "unbalanced_3x2_matches_independent_type3_oracle",
+            "second_unbalanced_design_with_other_labels_and_interaction_sign",
+            "ordered_factor_inputs_do_not_switch_to_polynomial_contrasts",
+            "result_is_invariant_to_row_order_and_factor_level_order",
+            "missing_scores_are_dropped_listwise",
+            "empty_cell_is_an_error_not_a_silent_table"
+          ],
+          "details": [
+            "unbalanced_3x2_matches_independent_type3_oracle: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 452.8835533 195.5348083 12.5054196 282.9789558\n`expected`: 449.1979557 185.3580342 12.5054196 282.9789558\n\nsum_sq",
+            "second_unbalanced_design_with_other_labels_and_interaction_sign: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 443.3389063 181.3896084 44.0531846 427.0441551\n`expected`: 394.7222638 171.9730511 44.0531846 427.0441551\n\nsum_sq",
+            "ordered_factor_inputs_do_not_switch_to_polynomial_contrasts: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 452.8835533 195.5348083 12.5054196 282.9789558\n`expected`: 449.1979557 185.3580342 12.5054196 282.9789558\n\nsum_sq",
+            "result_is_invariant_to_row_order_and_factor_level_order: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 452.8835533 195.5348083 12.5054196 282.9789558\n`expected`: 449.1979557 185.3580342 12.5054196 282.9789558\n\nsum_sq",
+            "missing_scores_are_dropped_listwise: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 436.4713453 176.6426087 11.5670141 258.5185188\n`expected`: 429.1212493 172.2759491 11.5670141 258.5185188\n\nsum_sq",
+            "empty_cell_is_an_error_not_a_silent_table: expected an error but the call succeeded"
+          ],
+          "seconds": 2.78
+        },
+        "wrong_treatment_contrasts": {
+          "status": "scored",
+          "passed": 7,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "unbalanced_3x2_matches_independent_type3_oracle",
+            "second_unbalanced_design_with_other_labels_and_interaction_sign",
+            "balanced_design_reduces_to_the_classical_table",
+            "result_is_invariant_to_row_order_and_factor_level_order",
+            "missing_scores_are_dropped_listwise",
+            "empty_cell_is_an_error_not_a_silent_table"
+          ],
+          "details": [
+            "unbalanced_3x2_matches_independent_type3_oracle: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 204.1548385  33.3516692 12.5054196 282.9789558\n`expected`: 449.1979557 185.3580342 12.5054196 282.9789558\n\nsum_sq",
+            "second_unbalanced_design_with_other_labels_and_interaction_sign: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 139.5248047 174.9140889 44.0531846 427.0441551\n`expected`: 394.7222638 171.9730511 44.0531846 427.0441551\n\nsum_sq",
+            "balanced_design_reduces_to_the_classical_table: Expected `unname(tab[1:3, \"sum_sq\"])` to equal `unname(classical[1:3, \"Sum Sq\"])`.\nDifferences:\n  `actual`:  65.778439600  75.905760100 6.885325867\n`expected`: 147.295848267 182.636948033 6.885325867\n",
+            "result_is_invariant_to_row_order_and_factor_level_order: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 261.2341344  46.6653333 12.5054196 282.9789558\n`expected`: 449.1979557 185.3580342 12.5054196 282.9789558\n\nsum_sq",
+            "missing_scores_are_dropped_listwise: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 184.8885667  30.2788837 11.5670141 258.5185188\n`expected`: 429.1212493 172.2759491 11.5670141 258.5185188\n\nsum_sq",
+            "empty_cell_is_an_error_not_a_silent_table: expected an error but the call succeeded"
+          ],
+          "seconds": 2.81
+        },
+        "edge_ignores_missing_scores": {
+          "status": "scored",
+          "passed": 11,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "missing_scores_are_dropped_listwise",
+            "empty_cell_is_an_error_not_a_silent_table"
+          ],
+          "details": [
+            "missing_scores_are_dropped_listwise: candidate call failed: missing scores are not supported",
+            "empty_cell_is_an_error_not_a_silent_table: expected an error but the call succeeded"
+          ],
+          "seconds": 2.51
+        },
+        "malformed_incomplete_missing_function": {
+          "status": "scored",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "unbalanced_3x2_matches_independent_type3_oracle",
+            "second_unbalanced_design_with_other_labels_and_interaction_sign",
+            "main_effects_are_not_the_sequential_type1_values",
+            "balanced_design_reduces_to_the_classical_table",
+            "residual_row_has_error_df_ss_and_ms_with_missing_test_columns",
+            "ordered_factor_inputs_do_not_switch_to_polynomial_contrasts",
+            "result_is_invariant_to_row_order_and_factor_level_order",
+            "missing_scores_are_dropped_listwise",
+            "input_data_frame_is_not_modified",
+            "empty_cell_is_an_error_not_a_silent_table",
+            "missing_required_column_is_an_error",
+            "order_dependence_of_sequential_ss_detected_for_unbalanced_only",
+            "normal_input_runs_without_warnings"
+          ],
+          "details": [
+            "unbalanced_3x2_matches_independent_type3_oracle: candidate call failed: not implemented",
+            "second_unbalanced_design_with_other_labels_and_interaction_sign: candidate call failed: not implemented",
+            "main_effects_are_not_the_sequential_type1_values: candidate call failed: not implemented",
+            "balanced_design_reduces_to_the_classical_table: candidate call failed: not implemented",
+            "residual_row_has_error_df_ss_and_ms_with_missing_test_columns: candidate call failed: not implemented",
+            "ordered_factor_inputs_do_not_switch_to_polynomial_contrasts: candidate call failed: not implemented",
+            "result_is_invariant_to_row_order_and_factor_level_order: candidate call failed: not implemented",
+            "missing_scores_are_dropped_listwise: candidate call failed: not implemented",
+            "input_data_frame_is_not_modified: candidate call failed: not implemented",
+            "empty_cell_is_an_error_not_a_silent_table: candidate call failed: not implemented",
+            "missing_required_column_is_an_error: candidate call failed: not implemented",
+            "order_dependence_of_sequential_ss_detected_for_unbalanced_only: candidate call failed: could not find function \"type1_order_dependent\"",
+            "normal_input_runs_without_warnings: candidate call failed: not implemented"
+          ],
+          "seconds": 2.18
+        },
+        "malformed_returns_list": {
+          "status": "scored",
+          "passed": 2,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "unbalanced_3x2_matches_independent_type3_oracle",
+            "second_unbalanced_design_with_other_labels_and_interaction_sign",
+            "main_effects_are_not_the_sequential_type1_values",
+            "balanced_design_reduces_to_the_classical_table",
+            "residual_row_has_error_df_ss_and_ms_with_missing_test_columns",
+            "ordered_factor_inputs_do_not_switch_to_polynomial_contrasts",
+            "result_is_invariant_to_row_order_and_factor_level_order",
+            "missing_scores_are_dropped_listwise",
+            "empty_cell_is_an_error_not_a_silent_table",
+            "missing_required_column_is_an_error",
+            "order_dependence_of_sequential_ss_detected_for_unbalanced_only"
+          ],
+          "details": [
+            "unbalanced_3x2_matches_independent_type3_oracle: Expected `tab` to be an S3 object.\nActual OO type: none.",
+            "second_unbalanced_design_with_other_labels_and_interaction_sign: Expected `tab` to be an S3 object.\nActual OO type: none.",
+            "main_effects_are_not_the_sequential_type1_values: incorrect number of dimensions",
+            "balanced_design_reduces_to_the_classical_table: incorrect number of dimensions",
+            "residual_row_has_error_df_ss_and_ms_with_missing_test_columns: Expected `rownames(tab)[4]` to be identical to \"Residuals\".\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('Residuals')\n",
+            "ordered_factor_inputs_do_not_switch_to_polynomial_contrasts: Expected `tab` to be an S3 object.\nActual OO type: none.",
+            "result_is_invariant_to_row_order_and_factor_level_order: Expected `tab` to be an S3 object.\nActual OO type: none.",
+            "missing_scores_are_dropped_listwise: Expected `tab` to be an S3 object.\nActual OO type: none.",
+            "empty_cell_is_an_error_not_a_silent_table: expected an error but the call succeeded",
+            "missing_required_column_is_an_error: expected an error but the call succeeded",
+            "order_dependence_of_sequential_ss_detected_for_unbalanced_only: Expected `c(yes, yes2, no)` to be identical to `c(TRUE, TRUE, FALSE)`.\nDifferences:\n`actual`:   <NA> <NA> <NA> \n`expected`: TRUE TRUE FALSE\n"
+          ],
+          "seconds": 2.54
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.72
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "unbalanced_3x2_matches_independent_type3_oracle",
+            "second_unbalanced_design_with_other_labels_and_interaction_sign",
+            "main_effects_are_not_the_sequential_type1_values",
+            "balanced_design_reduces_to_the_classical_table",
+            "residual_row_has_error_df_ss_and_ms_with_missing_test_columns",
+            "ordered_factor_inputs_do_not_switch_to_polynomial_contrasts",
+            "result_is_invariant_to_row_order_and_factor_level_order",
+            "missing_scores_are_dropped_listwise",
+            "input_data_frame_is_not_modified",
+            "empty_cell_is_an_error_not_a_silent_table",
+            "missing_required_column_is_an_error",
+            "order_dependence_of_sequential_ss_detected_for_unbalanced_only",
+            "normal_input_runs_without_warnings"
+          ],
+          "details": [
+            "unbalanced_3x2_matches_independent_type3_oracle: candidate call failed: could not find function \"type3_anova\"",
+            "second_unbalanced_design_with_other_labels_and_interaction_sign: candidate call failed: could not find function \"type3_anova\"",
+            "main_effects_are_not_the_sequential_type1_values: candidate call failed: could not find function \"type3_anova\"",
+            "balanced_design_reduces_to_the_classical_table: candidate call failed: could not find function \"type3_anova\"",
+            "residual_row_has_error_df_ss_and_ms_with_missing_test_columns: candidate call failed: could not find function \"type3_anova\"",
+            "ordered_factor_inputs_do_not_switch_to_polynomial_contrasts: candidate call failed: could not find function \"type3_anova\"",
+            "result_is_invariant_to_row_order_and_factor_level_order: candidate call failed: could not find function \"type3_anova\"",
+            "missing_scores_are_dropped_listwise: candidate call failed: could not find function \"type3_anova\"",
+            "input_data_frame_is_not_modified: candidate call failed: could not find function \"type3_anova\"",
+            "empty_cell_is_an_error_not_a_silent_table: candidate call failed: could not find function \"type3_anova\"",
+            "missing_required_column_is_an_error: candidate call failed: could not find function \"type3_anova\"",
+            "order_dependence_of_sequential_ss_detected_for_unbalanced_only: candidate call failed: could not find function \"type1_order_dependent\"",
+            "normal_input_runs_without_warnings: candidate call failed: could not find function \"type3_anova\""
+          ],
+          "seconds": 2.3
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 1.64
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.35
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XA04",
+      "task_sha256": "d4cc2480e94aa38609f5155c958a3abc6ccbb55d10d68d1fa040936b96f00e54",
+      "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+      "checks": 13,
+      "checks_failed_by_some_rejected_control": 13,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "stats": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.17
+        },
+        "alternate_matrix_formulas": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.06
+        },
+        "wrong_independent_oneway": {
+          "status": "scored",
+          "passed": 3,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "uncorrected_test_matches_oracle_for_three_occasions",
+            "uncorrected_test_matches_oracle_for_four_occasions",
+            "time_and_error_sums_of_squares_use_the_time_by_subject_error_term",
+            "greenhouse_geisser_epsilon_matches_oracle",
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon",
+            "correction_rule_and_primary_p_follow_the_075_threshold",
+            "subjects_with_a_missing_occasion_are_dropped_entirely",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter",
+            "numeric_subject_identifiers_are_supported",
+            "duplicate_subject_by_occasion_rows_are_an_error"
+          ],
+          "details": [
+            "uncorrected_test_matches_oracle_for_three_occasions: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 39.0\n`expected`: 26.0\n\ndf2",
+            "uncorrected_test_matches_oracle_for_four_occasions: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 68.0\n`expected`: 51.0\n\ndf2",
+            "time_and_error_sums_of_squares_use_the_time_by_subject_error_term: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 45.0\n`expected`: 37.0\n\nss_error",
+            "greenhouse_geisser_epsilon_matches_oracle: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 1.00\n`expected`: 0.51\n\nepsilon_gg",
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.0000000\n`expected`: 0.0000060\n\np_gg",
+            "correction_rule_and_primary_p_follow_the_075_threshold: Expected `c(field(lo, \"correction\"), field(cs, \"correction\"))` to be identical to `c(\"greenhouse_geisser\", \"none\")`.\nDifferences:\n`actual`:   \"none\"               \"none\"\n`expected`: \"greenhouse_geisser\" \"none\"\n",
+            "subjects_with_a_missing_occasion_are_dropped_entirely: Expected `as.integer(field(got, \"n_subjects\"))` to be identical to 12L.\nDifferences:\n  `actual`: 14\n`expected`: 12\n",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 62.9\n`expected`: 50.9\n\nf_value",
+            "numeric_subject_identifiers_are_supported: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 25.0\n`expected`: 44.9\n\nf_value",
+            "duplicate_subject_by_occasion_rows_are_an_error: expected an error but the call succeeded"
+          ],
+          "seconds": 2.43
+        },
+        "wrong_no_df_adjustment": {
+          "status": "scored",
+          "passed": 10,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon",
+            "subjects_with_a_missing_occasion_are_dropped_entirely",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter"
+          ],
+          "details": [
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.0000000\n`expected`: 0.0000060\n\np_gg",
+            "subjects_with_a_missing_occasion_are_dropped_entirely: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.000000\n`expected`: 0.000011\n\np_primary",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.0000000\n`expected`: 0.0000060\n\np_gg"
+          ],
+          "seconds": 2.83
+        },
+        "wrong_huynh_feldt": {
+          "status": "scored",
+          "passed": 8,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "greenhouse_geisser_epsilon_matches_oracle",
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon",
+            "subjects_with_a_missing_occasion_are_dropped_entirely",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter",
+            "numeric_subject_identifiers_are_supported"
+          ],
+          "details": [
+            "greenhouse_geisser_epsilon_matches_oracle: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.5172\n`expected`: 0.5137\n\nepsilon_gg",
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.0000056\n`expected`: 0.0000060\n\np_gg",
+            "subjects_with_a_missing_occasion_are_dropped_entirely: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.5273\n`expected`: 0.5209\n\nepsilon_gg",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.5172\n`expected`: 0.5137\n\nepsilon_gg",
+            "numeric_subject_identifiers_are_supported: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 1.000\n`expected`: 0.977\n\nepsilon_gg"
+          ],
+          "seconds": 2.78
+        },
+        "wrong_always_corrects": {
+          "status": "scored",
+          "passed": 12,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "correction_rule_and_primary_p_follow_the_075_threshold"
+          ],
+          "details": [
+            "correction_rule_and_primary_p_follow_the_075_threshold: Expected `c(field(lo, \"correction\"), field(cs, \"correction\"))` to be identical to `c(\"greenhouse_geisser\", \"none\")`.\nDifferences:\n`actual`:   \"greenhouse_geisser\" \"greenhouse_geisser\"\n`expected`: \"greenhouse_geisser\" \"none\"              \n"
+          ],
+          "seconds": 2.91
+        },
+        "edge_keeps_incomplete_subjects": {
+          "status": "scored",
+          "passed": 7,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "greenhouse_geisser_epsilon_matches_oracle",
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon",
+            "correction_rule_and_primary_p_follow_the_075_threshold",
+            "subjects_with_a_missing_occasion_are_dropped_entirely",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter",
+            "numeric_subject_identifiers_are_supported"
+          ],
+          "details": [
+            "greenhouse_geisser_epsilon_matches_oracle: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 1.00\n`expected`: 0.51\n\nepsilon_gg",
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.0000000\n`expected`: 0.0000060\n\np_gg",
+            "correction_rule_and_primary_p_follow_the_075_threshold: Expected `c(field(lo, \"correction\"), field(cs, \"correction\"))` to be identical to `c(\"greenhouse_geisser\", \"none\")`.\nDifferences:\n`actual`:   \"none\"               \"none\"\n`expected`: \"greenhouse_geisser\" \"none\"\n",
+            "subjects_with_a_missing_occasion_are_dropped_entirely: Expected `as.integer(field(got, \"n_subjects\"))` to be identical to 12L.\nDifferences:\n  `actual`: 14\n`expected`: 12\n",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 1.00\n`expected`: 0.51\n\nepsilon_gg",
+            "numeric_subject_identifiers_are_supported: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 1.000\n`expected`: 0.977\n\nepsilon_gg"
+          ],
+          "seconds": 3.19
+        },
+        "malformed_wrong_names": {
+          "status": "scored",
+          "passed": 1,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "uncorrected_test_matches_oracle_for_three_occasions",
+            "uncorrected_test_matches_oracle_for_four_occasions",
+            "time_and_error_sums_of_squares_use_the_time_by_subject_error_term",
+            "greenhouse_geisser_epsilon_matches_oracle",
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon",
+            "correction_rule_and_primary_p_follow_the_075_threshold",
+            "subjects_with_a_missing_occasion_are_dropped_entirely",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter",
+            "numeric_subject_identifiers_are_supported",
+            "duplicate_subject_by_occasion_rows_are_an_error",
+            "too_few_occasions_or_subjects_is_an_error",
+            "result_has_exactly_the_documented_elements"
+          ],
+          "details": [
+            "uncorrected_test_matches_oracle_for_three_occasions: result has no element 'df1'",
+            "uncorrected_test_matches_oracle_for_four_occasions: result has no element 'df1'",
+            "time_and_error_sums_of_squares_use_the_time_by_subject_error_term: result has no element 'ss_time'",
+            "greenhouse_geisser_epsilon_matches_oracle: result has no element 'epsilon_gg'",
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon: result has no element 'p_gg'",
+            "correction_rule_and_primary_p_follow_the_075_threshold: result has no element 'correction'",
+            "subjects_with_a_missing_occasion_are_dropped_entirely: result has no element 'n_subjects'",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter: result has no element 'f_value'",
+            "numeric_subject_identifiers_are_supported: result has no element 'f_value'",
+            "duplicate_subject_by_occasion_rows_are_an_error: expected an error but the call succeeded",
+            "too_few_occasions_or_subjects_is_an_error: expected an error but the call succeeded",
+            "result_has_exactly_the_documented_elements: Expected `names(value_of(xa04_run(xa04_low)))` to have the same values as `c(...)`.\nActual: \"F\", \"p\", \"eps\"\nExpected: \"n_subjects\", \"n_levels\", \"ss_time\", \"ss_error\", \"df1\", \"df2\", \"f_value\", \"p_value\", \"epsilon_gg\", ...\nNeeds: \"F\", \"p\", \"eps\"\nAbsent: \"n_subjects\", \"n_levels\", \"ss_time\", \"ss_error\", \"df1\", \"df2\", \"f_value\", \"p_value\", \"epsilon_gg\", ..."
+          ],
+          "seconds": 2.67
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "uncorrected_test_matches_oracle_for_three_occasions",
+            "uncorrected_test_matches_oracle_for_four_occasions",
+            "time_and_error_sums_of_squares_use_the_time_by_subject_error_term",
+            "greenhouse_geisser_epsilon_matches_oracle",
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon",
+            "correction_rule_and_primary_p_follow_the_075_threshold",
+            "subjects_with_a_missing_occasion_are_dropped_entirely",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter",
+            "numeric_subject_identifiers_are_supported",
+            "input_data_frame_is_not_modified",
+            "duplicate_subject_by_occasion_rows_are_an_error",
+            "too_few_occasions_or_subjects_is_an_error",
+            "result_has_exactly_the_documented_elements"
+          ],
+          "details": [
+            "uncorrected_test_matches_oracle_for_three_occasions: candidate call failed: not done",
+            "uncorrected_test_matches_oracle_for_four_occasions: candidate call failed: not done",
+            "time_and_error_sums_of_squares_use_the_time_by_subject_error_term: candidate call failed: not done",
+            "greenhouse_geisser_epsilon_matches_oracle: candidate call failed: not done",
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon: candidate call failed: not done",
+            "correction_rule_and_primary_p_follow_the_075_threshold: candidate call failed: not done",
+            "subjects_with_a_missing_occasion_are_dropped_entirely: candidate call failed: not done",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter: candidate call failed: not done",
+            "numeric_subject_identifiers_are_supported: candidate call failed: not done",
+            "input_data_frame_is_not_modified: candidate call failed: not done",
+            "duplicate_subject_by_occasion_rows_are_an_error: candidate call failed: not done",
+            "too_few_occasions_or_subjects_is_an_error: candidate call failed: not done",
+            "result_has_exactly_the_documented_elements: candidate call failed: not done"
+          ],
+          "seconds": 2.45
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.02
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "uncorrected_test_matches_oracle_for_three_occasions",
+            "uncorrected_test_matches_oracle_for_four_occasions",
+            "time_and_error_sums_of_squares_use_the_time_by_subject_error_term",
+            "greenhouse_geisser_epsilon_matches_oracle",
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon",
+            "correction_rule_and_primary_p_follow_the_075_threshold",
+            "subjects_with_a_missing_occasion_are_dropped_entirely",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter",
+            "numeric_subject_identifiers_are_supported",
+            "input_data_frame_is_not_modified",
+            "duplicate_subject_by_occasion_rows_are_an_error",
+            "too_few_occasions_or_subjects_is_an_error",
+            "result_has_exactly_the_documented_elements"
+          ],
+          "details": [
+            "uncorrected_test_matches_oracle_for_three_occasions: candidate call failed: could not find function \"rm_anova\"",
+            "uncorrected_test_matches_oracle_for_four_occasions: candidate call failed: could not find function \"rm_anova\"",
+            "time_and_error_sums_of_squares_use_the_time_by_subject_error_term: candidate call failed: could not find function \"rm_anova\"",
+            "greenhouse_geisser_epsilon_matches_oracle: candidate call failed: could not find function \"rm_anova\"",
+            "corrected_p_multiplies_both_degrees_of_freedom_by_epsilon: candidate call failed: could not find function \"rm_anova\"",
+            "correction_rule_and_primary_p_follow_the_075_threshold: candidate call failed: could not find function \"rm_anova\"",
+            "subjects_with_a_missing_occasion_are_dropped_entirely: candidate call failed: could not find function \"rm_anova\"",
+            "integer_or_factor_time_codes_and_row_order_do_not_matter: candidate call failed: could not find function \"rm_anova\"",
+            "numeric_subject_identifiers_are_supported: candidate call failed: could not find function \"rm_anova\"",
+            "input_data_frame_is_not_modified: candidate call failed: could not find function \"rm_anova\"",
+            "duplicate_subject_by_occasion_rows_are_an_error: candidate call failed: could not find function \"rm_anova\"",
+            "too_few_occasions_or_subjects_is_an_error: candidate call failed: could not find function \"rm_anova\"",
+            "result_has_exactly_the_documented_elements: candidate call failed: could not find function \"rm_anova\""
+          ],
+          "seconds": 2.43
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 1.85
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.59
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XA05",
+      "task_sha256": "c0d946d16c37466eaa345672d4de808f031b1268c485be6f0da6f57a75ba6fc2",
+      "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+      "checks": 12,
+      "checks_failed_by_some_rejected_control": 12,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "stats": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.1
+        },
+        "alternate_matrix_algebra": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.12
+        },
+        "wrong_sequential_unadjusted": {
+          "status": "scored",
+          "passed": 11,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "treatment_test_is_adjusted_for_baseline"
+          ],
+          "details": [
+            "treatment_test_is_adjusted_for_baseline: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 21.21\n`expected`: 21.53\n\npar f_value"
+          ],
+          "seconds": 2.35
+        },
+        "wrong_skips_slope_test": {
+          "status": "scored",
+          "passed": 9,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "decision_flags_and_model_labels_follow_the_005_rule",
+            "conditional_means_for_heterogeneous_slopes_use_mean_plus_minus_one_sd",
+            "elements_of_the_other_branch_are_null"
+          ],
+          "details": [
+            "decision_flags_and_model_labels_follow_the_005_rule: Expected `vapply(...)` to be identical to `c(TRUE, FALSE, TRUE)`.\nDifferences:\n`actual`:   TRUE TRUE  TRUE\n`expected`: TRUE FALSE TRUE\n",
+            "conditional_means_for_heterogeneous_slopes_use_mean_plus_minus_one_sd: result has no element 'conditional_means'",
+            "elements_of_the_other_branch_are_null: Expected `het$treatment_test` to be NULL.\nDifferences:\n`actual` is a list\n`expected` is NULL\n"
+          ],
+          "seconds": 2.92
+        },
+        "wrong_means_at_zero_baseline": {
+          "status": "scored",
+          "passed": 10,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "adjusted_means_are_evaluated_at_the_overall_baseline_mean",
+            "missing_values_row_order_and_factor_labels_do_not_matter"
+          ],
+          "details": [
+            "adjusted_means_are_evaluated_at_the_overall_baseline_mean: Expected `as.numeric(got$adjusted_mean)` to equal `want$adjusted_mean`.\nDifferences:\n  `actual`:  2.6  6.2 10.7\n`expected`: 41.6 45.3 49.7\n",
+            "missing_values_row_order_and_factor_labels_do_not_matter: Expected `as.numeric(field(got, \"adjusted_means\")$adjusted_mean)` to equal `want$adjusted_means$adjusted_mean`.\nDifferences:\n  `actual`:  1.7  5.5 10.4\n`expected`: 41.4 45.2 50.1\n"
+          ],
+          "seconds": 2.95
+        },
+        "edge_accepts_tiny_groups": {
+          "status": "scored",
+          "passed": 11,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "single_level_small_group_or_constant_baseline_is_an_error"
+          ],
+          "details": [
+            "single_level_small_group_or_constant_baseline_is_an_error: expected an error but the call succeeded"
+          ],
+          "seconds": 2.41
+        },
+        "malformed_flat_output": {
+          "status": "scored",
+          "passed": 1,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "slope_homogeneity_test_matches_oracle_for_parallel_data",
+            "slope_homogeneity_test_matches_oracle_for_heterogeneous_data",
+            "decision_flags_and_model_labels_follow_the_005_rule",
+            "treatment_test_is_adjusted_for_baseline",
+            "adjusted_means_are_evaluated_at_the_overall_baseline_mean",
+            "adjusted_means_differ_from_raw_group_means",
+            "conditional_means_for_heterogeneous_slopes_use_mean_plus_minus_one_sd",
+            "elements_of_the_other_branch_are_null",
+            "missing_values_row_order_and_factor_labels_do_not_matter",
+            "single_level_small_group_or_constant_baseline_is_an_error",
+            "result_has_exactly_the_documented_elements"
+          ],
+          "details": [
+            "slope_homogeneity_test_matches_oracle_for_parallel_data: result has no element 'slope_test'",
+            "slope_homogeneity_test_matches_oracle_for_heterogeneous_data: result has no element 'slope_test'",
+            "decision_flags_and_model_labels_follow_the_005_rule: result has no element 'slopes_homogeneous'",
+            "treatment_test_is_adjusted_for_baseline: result has no element 'treatment_test'",
+            "adjusted_means_are_evaluated_at_the_overall_baseline_mean: result has no element 'adjusted_means'",
+            "adjusted_means_differ_from_raw_group_means: result has no element 'adjusted_means'",
+            "conditional_means_for_heterogeneous_slopes_use_mean_plus_minus_one_sd: result has no element 'conditional_means'",
+            "elements_of_the_other_branch_are_null: Expected `all(...)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "missing_values_row_order_and_factor_labels_do_not_matter: result has no element 'slope_test'",
+            "single_level_small_group_or_constant_baseline_is_an_error: expected an error but the call succeeded",
+            "result_has_exactly_the_documented_elements: Expected `names(value_of(xa05_run(xa05_par)))` to have the same values as `c(...)`.\nActual: \"f\", \"p\"\nExpected: \"slope_test\", \"slopes_homogeneous\", \"model\", \"treatment_test\", \"adjusted_means\", \"conditional_means\"\nNeeds: \"f\", \"p\"\nAbsent: \"slope_test\", \"slopes_homogeneous\", \"model\", \"treatment_test\", \"adjusted_means\", \"conditional_means\""
+          ],
+          "seconds": 2.51
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "slope_homogeneity_test_matches_oracle_for_parallel_data",
+            "slope_homogeneity_test_matches_oracle_for_heterogeneous_data",
+            "decision_flags_and_model_labels_follow_the_005_rule",
+            "treatment_test_is_adjusted_for_baseline",
+            "adjusted_means_are_evaluated_at_the_overall_baseline_mean",
+            "adjusted_means_differ_from_raw_group_means",
+            "conditional_means_for_heterogeneous_slopes_use_mean_plus_minus_one_sd",
+            "elements_of_the_other_branch_are_null",
+            "missing_values_row_order_and_factor_labels_do_not_matter",
+            "input_data_frame_is_not_modified",
+            "single_level_small_group_or_constant_baseline_is_an_error",
+            "result_has_exactly_the_documented_elements"
+          ],
+          "details": [
+            "slope_homogeneity_test_matches_oracle_for_parallel_data: candidate call failed: TODO",
+            "slope_homogeneity_test_matches_oracle_for_heterogeneous_data: candidate call failed: TODO",
+            "decision_flags_and_model_labels_follow_the_005_rule: candidate call failed: TODO",
+            "treatment_test_is_adjusted_for_baseline: candidate call failed: TODO",
+            "adjusted_means_are_evaluated_at_the_overall_baseline_mean: candidate call failed: TODO",
+            "adjusted_means_differ_from_raw_group_means: candidate call failed: TODO",
+            "conditional_means_for_heterogeneous_slopes_use_mean_plus_minus_one_sd: candidate call failed: TODO",
+            "elements_of_the_other_branch_are_null: candidate call failed: TODO",
+            "missing_values_row_order_and_factor_labels_do_not_matter: candidate call failed: TODO",
+            "input_data_frame_is_not_modified: candidate call failed: TODO",
+            "single_level_small_group_or_constant_baseline_is_an_error: candidate call failed: TODO",
+            "result_has_exactly_the_documented_elements: candidate call failed: TODO"
+          ],
+          "seconds": 2.22
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.62
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "slope_homogeneity_test_matches_oracle_for_parallel_data",
+            "slope_homogeneity_test_matches_oracle_for_heterogeneous_data",
+            "decision_flags_and_model_labels_follow_the_005_rule",
+            "treatment_test_is_adjusted_for_baseline",
+            "adjusted_means_are_evaluated_at_the_overall_baseline_mean",
+            "adjusted_means_differ_from_raw_group_means",
+            "conditional_means_for_heterogeneous_slopes_use_mean_plus_minus_one_sd",
+            "elements_of_the_other_branch_are_null",
+            "missing_values_row_order_and_factor_labels_do_not_matter",
+            "input_data_frame_is_not_modified",
+            "single_level_small_group_or_constant_baseline_is_an_error",
+            "result_has_exactly_the_documented_elements"
+          ],
+          "details": [
+            "slope_homogeneity_test_matches_oracle_for_parallel_data: candidate call failed: could not find function \"ancova_analysis\"",
+            "slope_homogeneity_test_matches_oracle_for_heterogeneous_data: candidate call failed: could not find function \"ancova_analysis\"",
+            "decision_flags_and_model_labels_follow_the_005_rule: candidate call failed: could not find function \"ancova_analysis\"",
+            "treatment_test_is_adjusted_for_baseline: candidate call failed: could not find function \"ancova_analysis\"",
+            "adjusted_means_are_evaluated_at_the_overall_baseline_mean: candidate call failed: could not find function \"ancova_analysis\"",
+            "adjusted_means_differ_from_raw_group_means: candidate call failed: could not find function \"ancova_analysis\"",
+            "conditional_means_for_heterogeneous_slopes_use_mean_plus_minus_one_sd: candidate call failed: could not find function \"ancova_analysis\"",
+            "elements_of_the_other_branch_are_null: candidate call failed: could not find function \"ancova_analysis\"",
+            "missing_values_row_order_and_factor_labels_do_not_matter: candidate call failed: could not find function \"ancova_analysis\"",
+            "input_data_frame_is_not_modified: candidate call failed: could not find function \"ancova_analysis\"",
+            "single_level_small_group_or_constant_baseline_is_an_error: candidate call failed: could not find function \"ancova_analysis\"",
+            "result_has_exactly_the_documented_elements: candidate call failed: could not find function \"ancova_analysis\""
+          ],
+          "seconds": 2.26
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 1.73
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.54
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XA06",
+      "task_sha256": "e13155af3a2c12630561c39ed70177085a6a795f30c41a46ed8e6f2ffc87488a",
+      "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+      "checks": 13,
+      "checks_failed_by_some_rejected_control": 13,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "stats": "4.5.2",
+          "nlme": "3.1.168"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.84
+        },
+        "alternate_gls_compound_symmetry": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.48
+        },
+        "wrong_complete_case_anova": {
+          "status": "scored",
+          "passed": 6,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_interaction_lrt_matches_the_ml_profile_oracle",
+            "null_interaction_with_four_visits_matches_the_oracle",
+            "three_treatment_groups_use_the_right_degrees_of_freedom",
+            "counts_use_all_available_observations_not_completers",
+            "random_intercept_and_residual_sds_are_ml_estimates",
+            "row_order_factor_levels_and_integer_time_codes_do_not_matter",
+            "rows_with_missing_values_are_dropped"
+          ],
+          "details": [
+            "significant_interaction_lrt_matches_the_ml_profile_oracle: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 10.5\n`expected`: 18.3\n\nstatistic",
+            "null_interaction_with_four_visits_matches_the_oracle: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 0.6\n`expected`: 1.7\n\nstatistic",
+            "three_treatment_groups_use_the_right_degrees_of_freedom: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`:  3.7\n`expected`: 19.4\n\nstatistic",
+            "counts_use_all_available_observations_not_completers: Expected `as.integer(field(got, \"n_subjects\"))` to be identical to `as.integer(want$n_subjects)`.\nDifferences:\n  `actual`: 25\n`expected`: 36\n",
+            "random_intercept_and_residual_sds_are_ml_estimates: Expected `as.numeric(field(got, \"random_intercept_sd\"))` to equal `want$random_intercept_sd`.\nDifferences:\n  `actual`: 1.0\n`expected`: 2.9\n",
+            "row_order_factor_levels_and_integer_time_codes_do_not_matter: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 10.5\n`expected`: 18.3\n\nstatistic",
+            "rows_with_missing_values_are_dropped: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 10.5\n`expected`: 18.3\n\nstatistic"
+          ],
+          "seconds": 2.65
+        },
+        "wrong_reml_comparison": {
+          "status": "scored",
+          "passed": 6,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_interaction_lrt_matches_the_ml_profile_oracle",
+            "null_interaction_with_four_visits_matches_the_oracle",
+            "three_treatment_groups_use_the_right_degrees_of_freedom",
+            "random_intercept_and_residual_sds_are_ml_estimates",
+            "the_test_is_not_the_reml_likelihood_ratio",
+            "row_order_factor_levels_and_integer_time_codes_do_not_matter",
+            "rows_with_missing_values_are_dropped"
+          ],
+          "details": [
+            "significant_interaction_lrt_matches_the_ml_profile_oracle: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 21.5\n`expected`: 18.3\n\nstatistic",
+            "null_interaction_with_four_visits_matches_the_oracle: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 7.4\n`expected`: 1.7\n\nstatistic",
+            "three_treatment_groups_use_the_right_degrees_of_freedom: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 27.8\n`expected`: 19.4\n\nstatistic",
+            "random_intercept_and_residual_sds_are_ml_estimates: Expected `as.numeric(field(got, \"random_intercept_sd\"))` to equal `want$random_intercept_sd`.\nDifferences:\n  `actual`: 2.983\n`expected`: 2.900\n",
+            "the_test_is_not_the_reml_likelihood_ratio: Expected `abs(as.numeric(got) - xa06_oracle(d)$lrt$statistic)` < `abs(as.numeric(got) - reml_stat)`.\nActual comparison: 3.1 >= 0.0\nDifference: 3.1 >= 0",
+            "row_order_factor_levels_and_integer_time_codes_do_not_matter: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 21.5\n`expected`: 18.3\n\nstatistic",
+            "rows_with_missing_values_are_dropped: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 21.5\n`expected`: 18.3\n\nstatistic"
+          ],
+          "seconds": 3.27
+        },
+        "wrong_ignores_clustering": {
+          "status": "scored",
+          "passed": 6,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_interaction_lrt_matches_the_ml_profile_oracle",
+            "null_interaction_with_four_visits_matches_the_oracle",
+            "three_treatment_groups_use_the_right_degrees_of_freedom",
+            "random_intercept_and_residual_sds_are_ml_estimates",
+            "significance_flag_follows_the_005_rule",
+            "row_order_factor_levels_and_integer_time_codes_do_not_matter",
+            "rows_with_missing_values_are_dropped"
+          ],
+          "details": [
+            "significant_interaction_lrt_matches_the_ml_profile_oracle: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`:  7.7\n`expected`: 18.3\n\nstatistic",
+            "null_interaction_with_four_visits_matches_the_oracle: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 0.3\n`expected`: 1.7\n\nstatistic",
+            "three_treatment_groups_use_the_right_degrees_of_freedom: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`:  8.8\n`expected`: 19.4\n\nstatistic",
+            "random_intercept_and_residual_sds_are_ml_estimates: Expected `as.numeric(field(got, \"random_intercept_sd\"))` to equal `want$random_intercept_sd`.\nDifferences:\n  `actual`: 0.0\n`expected`: 2.9\n",
+            "significance_flag_follows_the_005_rule: Expected `flags` to be identical to `c(TRUE, FALSE, TRUE)`.\nDifferences:\n`actual`:   TRUE FALSE FALSE\n`expected`: TRUE FALSE TRUE \n",
+            "row_order_factor_levels_and_integer_time_codes_do_not_matter: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`:  7.7\n`expected`: 18.3\n\nstatistic",
+            "rows_with_missing_values_are_dropped: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`:  7.7\n`expected`: 18.3\n\nstatistic"
+          ],
+          "seconds": 2.81
+        },
+        "edge_does_not_check_arm_membership": {
+          "status": "scored",
+          "passed": 12,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "a_participant_in_two_treatment_arms_is_an_error"
+          ],
+          "details": [
+            "a_participant_in_two_treatment_arms_is_an_error: expected an error but the call succeeded"
+          ],
+          "seconds": 2.88
+        },
+        "malformed_missing_lrt": {
+          "status": "scored",
+          "passed": 2,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_interaction_lrt_matches_the_ml_profile_oracle",
+            "null_interaction_with_four_visits_matches_the_oracle",
+            "three_treatment_groups_use_the_right_degrees_of_freedom",
+            "random_intercept_and_residual_sds_are_ml_estimates",
+            "significance_flag_follows_the_005_rule",
+            "the_test_is_not_the_reml_likelihood_ratio",
+            "row_order_factor_levels_and_integer_time_codes_do_not_matter",
+            "rows_with_missing_values_are_dropped",
+            "a_participant_in_two_treatment_arms_is_an_error",
+            "single_treatment_arm_or_single_visit_is_an_error",
+            "result_has_exactly_the_documented_elements"
+          ],
+          "details": [
+            "significant_interaction_lrt_matches_the_ml_profile_oracle: result has no element 'lrt'",
+            "null_interaction_with_four_visits_matches_the_oracle: result has no element 'lrt'",
+            "three_treatment_groups_use_the_right_degrees_of_freedom: result has no element 'lrt'",
+            "random_intercept_and_residual_sds_are_ml_estimates: result has no element 'random_intercept_sd'",
+            "significance_flag_follows_the_005_rule: result has no element 'significant'",
+            "the_test_is_not_the_reml_likelihood_ratio: result has no element 'lrt'",
+            "row_order_factor_levels_and_integer_time_codes_do_not_matter: result has no element 'lrt'",
+            "rows_with_missing_values_are_dropped: result has no element 'lrt'",
+            "a_participant_in_two_treatment_arms_is_an_error: expected an error but the call succeeded",
+            "single_treatment_arm_or_single_visit_is_an_error: expected an error but the call succeeded",
+            "result_has_exactly_the_documented_elements: Expected `names(value_of(xa06_run(xa06_sig)))` to have the same values as `c(...)`.\nActual: \"n_subjects\", \"n_observations\"\nExpected: \"n_subjects\", \"n_observations\", \"lrt\", \"significant\", \"random_intercept_sd\", \"residual_sd\"\nAbsent: \"lrt\", \"significant\", \"random_intercept_sd\", \"residual_sd\""
+          ],
+          "seconds": 2.49
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_interaction_lrt_matches_the_ml_profile_oracle",
+            "null_interaction_with_four_visits_matches_the_oracle",
+            "three_treatment_groups_use_the_right_degrees_of_freedom",
+            "counts_use_all_available_observations_not_completers",
+            "random_intercept_and_residual_sds_are_ml_estimates",
+            "significance_flag_follows_the_005_rule",
+            "the_test_is_not_the_reml_likelihood_ratio",
+            "row_order_factor_levels_and_integer_time_codes_do_not_matter",
+            "rows_with_missing_values_are_dropped",
+            "input_data_frame_is_not_modified",
+            "a_participant_in_two_treatment_arms_is_an_error",
+            "single_treatment_arm_or_single_visit_is_an_error",
+            "result_has_exactly_the_documented_elements"
+          ],
+          "details": [
+            "significant_interaction_lrt_matches_the_ml_profile_oracle: candidate call failed: TODO",
+            "null_interaction_with_four_visits_matches_the_oracle: candidate call failed: TODO",
+            "three_treatment_groups_use_the_right_degrees_of_freedom: candidate call failed: TODO",
+            "counts_use_all_available_observations_not_completers: candidate call failed: TODO",
+            "random_intercept_and_residual_sds_are_ml_estimates: candidate call failed: TODO",
+            "significance_flag_follows_the_005_rule: candidate call failed: TODO",
+            "the_test_is_not_the_reml_likelihood_ratio: candidate call failed: TODO",
+            "row_order_factor_levels_and_integer_time_codes_do_not_matter: candidate call failed: TODO",
+            "rows_with_missing_values_are_dropped: candidate call failed: TODO",
+            "input_data_frame_is_not_modified: candidate call failed: TODO",
+            "a_participant_in_two_treatment_arms_is_an_error: candidate call failed: TODO",
+            "single_treatment_arm_or_single_visit_is_an_error: candidate call failed: TODO",
+            "result_has_exactly_the_documented_elements: candidate call failed: TODO"
+          ],
+          "seconds": 2.43
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.22
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_interaction_lrt_matches_the_ml_profile_oracle",
+            "null_interaction_with_four_visits_matches_the_oracle",
+            "three_treatment_groups_use_the_right_degrees_of_freedom",
+            "counts_use_all_available_observations_not_completers",
+            "random_intercept_and_residual_sds_are_ml_estimates",
+            "significance_flag_follows_the_005_rule",
+            "the_test_is_not_the_reml_likelihood_ratio",
+            "row_order_factor_levels_and_integer_time_codes_do_not_matter",
+            "rows_with_missing_values_are_dropped",
+            "input_data_frame_is_not_modified",
+            "a_participant_in_two_treatment_arms_is_an_error",
+            "single_treatment_arm_or_single_visit_is_an_error",
+            "result_has_exactly_the_documented_elements"
+          ],
+          "details": [
+            "significant_interaction_lrt_matches_the_ml_profile_oracle: candidate call failed: could not find function \"longitudinal_test\"",
+            "null_interaction_with_four_visits_matches_the_oracle: candidate call failed: could not find function \"longitudinal_test\"",
+            "three_treatment_groups_use_the_right_degrees_of_freedom: candidate call failed: could not find function \"longitudinal_test\"",
+            "counts_use_all_available_observations_not_completers: candidate call failed: could not find function \"longitudinal_test\"",
+            "random_intercept_and_residual_sds_are_ml_estimates: candidate call failed: could not find function \"longitudinal_test\"",
+            "significance_flag_follows_the_005_rule: candidate call failed: could not find function \"longitudinal_test\"",
+            "the_test_is_not_the_reml_likelihood_ratio: candidate call failed: could not find function \"longitudinal_test\"",
+            "row_order_factor_levels_and_integer_time_codes_do_not_matter: candidate call failed: could not find function \"longitudinal_test\"",
+            "rows_with_missing_values_are_dropped: candidate call failed: could not find function \"longitudinal_test\"",
+            "input_data_frame_is_not_modified: candidate call failed: could not find function \"longitudinal_test\"",
+            "a_participant_in_two_treatment_arms_is_an_error: candidate call failed: could not find function \"longitudinal_test\"",
+            "single_treatment_arm_or_single_visit_is_an_error: candidate call failed: could not find function \"longitudinal_test\"",
+            "result_has_exactly_the_documented_elements: candidate call failed: could not find function \"longitudinal_test\""
+          ],
+          "seconds": 2.42
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 13,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 1.92
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 13,
+          "total": 13,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.82
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    }
+  ],
+  "gate": "passed"
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "id": "XA06",
+  "title": "Treatment-by-time interaction with missing visits: random-intercept model and ML likelihood-ratio test",
+  "category": "anova_statistical_inference",
+  "difficulty": "very_hard",
+  "image": "base",
+  "packages": ["stats", "nlme"],
+  "fixtures": ["fixture/visits.csv"],
+  "source_specs": ["ANOVA-A13", "ANOVA-A07"],
+  "source_relation": "adapted: fixed model and test, function-style contract, independent profile-likelihood oracle",
+  "difficulty_hypothesis": "Agents drop incomplete participants and run a classical repeated-measures ANOVA, compare REML fits with different fixed effects, ignore the clustering, reach for lme4 (not installed) instead of the installed nlme, or fit time as a numeric trend and get the wrong degrees of freedom.",
+  "dimensions": {
+    "r_knowledge_depth": 3, "version_sensitivity": 0, "documentation_dependence": 2,
+    "reasoning_complexity": 3, "code_generation_complexity": 2, "statistical_reasoning": 3,
+    "debugging_difficulty": 0, "package_api_verification_need": 2
+  },
+  "expected_mcp_usefulness": "plausible",
+  "mcp_relevance": {
+    "classification": "target_candidate",
+    "rationale": "The standard answer in the wild uses lme4::lmer, which is not installed. Choosing nlme::lme and its ML/REML and VarCorr conventions is an API-availability and documentation question that package metadata and function documentation can inform (check_package_version, get_function_docs). It is not decisive: the lockfile and library(nlme) are available locally.",
+    "information_need": "Which mixed-model package is installed and how nlme::lme exposes ML log-likelihoods, variance components and method = 'ML'.",
+    "relevant_mcp_tools": ["search_packages", "get_package", "get_function_docs", "check_package_version"],
+    "obtainable_without_mcp": "yes, partly: renv.lock and library(nlme) show availability, and nlme help is installed; MCP mainly shortens the lookup",
+    "version_specific_evidence_value": "low",
+    "alternative_solution_paths": [
+      "nlme::lme with method = 'ML' for both models",
+      "nlme::gls with corCompSymm (equivalent for non-negative intraclass correlation)",
+      "an explicit profile-likelihood implementation in base R"
+    ]
+  },
+  "independence": {
+    "cluster": "anova-dependent-data",
+    "shared_with": ["XA04"],
+    "shared_features": ["repeated measures", "within-subject dependence"]
+  },
+  "calibration_risks": {
+    "ceiling": "low-moderate: needs the right package and the ML-versus-REML distinction",
+    "floor": "moderate: the optimiser-level tolerance is 1e-4 and the output contract is long",
+    "documentation_dependence": "moderate",
+    "version_sensitivity": "none",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": [
+      "complete_case_rm_anova",
+      "reml_lrt_across_fixed_effects",
+      "clustering_ignored",
+      "lme4_not_installed",
+      "time_as_numeric_wrong_df",
+      "arm_membership_not_checked"
+    ],
+    "statistical_reasoning_checks": ["missing_data_use_all_observations", "ml_required_for_fixed_effect_comparison"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"stats": "4.5.2", "nlme": "3.1-168"},
+    "oracle": "explicit profile-likelihood random-intercept ML (no nlme); cross-checked at load against nlme::lme logLik and sigma"
+  },
+  "checks_documented_in": "verifier/XA06.R"
+}

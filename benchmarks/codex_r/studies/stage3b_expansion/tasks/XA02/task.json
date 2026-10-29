@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "id": "XA02",
+  "title": "Balanced two-way factorial ANOVA with interaction-aware simple-effects reporting",
+  "category": "anova_statistical_inference",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["stats"],
+  "fixtures": ["fixture/experiment.csv"],
+  "source_specs": ["ANOVA-A04"],
+  "source_relation": "adapted: fixed reporting rule, simple effects against the full-model MSE, closed-form oracle",
+  "difficulty_hypothesis": "Agents report main effects in the presence of a crossover interaction, or compute simple effects from separate per-site ANOVAs (different error term and df) instead of the full-model residual mean square, or fail to stop on unbalanced data where the table is not uniquely defined.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 0, "documentation_dependence": 1,
+    "reasoning_complexity": 2, "code_generation_complexity": 2, "statistical_reasoning": 3,
+    "debugging_difficulty": 0, "package_api_verification_need": 0
+  },
+  "expected_mcp_usefulness": "none",
+  "mcp_relevance": {
+    "classification": "control",
+    "rationale": "Pure factorial-design reasoning with an explicit reporting rule; nothing depends on a package, version or documentation fact beyond base R.",
+    "information_need": "How simple effects are tested against the pooled full-model error term.",
+    "relevant_mcp_tools": ["get_function_docs"],
+    "obtainable_without_mcp": "yes: textbook formulas and installed stats help",
+    "version_specific_evidence_value": "none",
+    "alternative_solution_paths": [
+      "lm + anova for the table, then per-site SS from cell means with the full MSE",
+      "closed-form balanced-design sums of squares",
+      "nested model comparison score ~ site vs score ~ site + site:treatment, split by site"
+    ]
+  },
+  "independence": {
+    "cluster": "anova-factorial",
+    "shared_with": [],
+    "shared_features": ["two crossed factors", "interaction"]
+  },
+  "calibration_risks": {
+    "ceiling": "moderate-high: a standard textbook procedure with explicit instructions",
+    "floor": "low",
+    "documentation_dependence": "low",
+    "version_sensitivity": "none",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": [
+      "main_effects_reported_despite_interaction",
+      "per_site_error_term",
+      "additive_model",
+      "simple_effects_reported_without_interaction",
+      "unbalanced_design_accepted"
+    ],
+    "statistical_reasoning_checks": ["interaction_changes_interpretation", "error_term_choice"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"stats": "4.5.2"},
+    "oracle": "balanced-design closed-form sums of squares; cross-checked at load against anova(lm) and the nested-model identity SS(simple effects) = SS(A) + SS(AB)"
+  },
+  "checks_documented_in": "verifier/XA02.R"
+}

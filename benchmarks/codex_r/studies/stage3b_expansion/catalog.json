@@ -1,0 +1,758 @@
+{
+  "catalog_version": "stage3b-catalog-v1.0",
+  "benchmark": "r-knowledge-mcp-stage3b-v1",
+  "pool": "stage3b-candidate-pool-v1",
+  "stratum_policy": "No Stage 3B task is assigned S1, S2, RC or Q. Strata are assigned by a later, versioned review of Arm-A calibration data; thresholds are the preregistered ones.",
+  "scorer_files": {
+    "benchmarks/codex_r/studies/stage3b_expansion/suite.py": "9ec15175c379199649cd0a67cf8fa48860ca95cc0e37ecfb88454ccfe3943431",
+    "benchmarks/codex_r/studies/stage3b_expansion/verifier/run.R": "b449346fcd13d6dd84846ecedb6e76d4e9d132726d9190f22f48e873c0697e0d",
+    "benchmarks/codex_r/studies/stage3b_expansion/verifier/lib.R": "734d9e6f93041eb0a4dee9b17a7ba0e9dfc61ec7626feddc551b5522015980a8",
+    "benchmarks/codex_r/hard/verifier/harness.R": "e5524b818f3be07c58b7668e3a68a6cce81ecc83a653492686bb678418fe6183"
+  },
+  "tasks": [
+    {
+      "schema_version": 1,
+      "id": "XA01",
+      "title": "Brown-Forsythe screening, then classical or Welch one-way ANOVA with matching follow-ups",
+      "category": "anova_statistical_inference",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/experiment.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A03",
+        "ANOVA-A01",
+        "ANOVA-A02"
+      ],
+      "source_relation": "adapted: fixed analysis plan, function-style contract, closed-form oracle",
+      "difficulty_hypothesis": "Agents reach for car::leveneTest (not installed) or mean-centred Levene, apply pooled Tukey after a Welch omnibus, or forget that Welch's denominator df is fractional and that the pairwise branch must be unpooled with Holm.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "The decision rule and every formula are given in the prompt; the work is implementation of base-R statistics. MCP package documentation does not change the answer.",
+        "information_need": "Exact definitions of Welch's F and Tukey-Kramer p-values, and which base functions expose them (oneway.test, TukeyHSD, pairwise.t.test).",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: stats help pages are installed locally",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "oneway.test + TukeyHSD + manual unpooled t tests",
+          "closed-form formulas for every statistic",
+          "pairwise.t.test(pool.sd = FALSE) for the Welch branch"
+        ]
+      },
+      "independence": {
+        "cluster": "anova-independent-groups",
+        "shared_with": [],
+        "shared_features": [
+          "one-way layout",
+          "pooled versus unpooled variance"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate: the plan is explicit and the building blocks are standard",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "mean_centred_levene",
+          "always_classical",
+          "pooled_tukey_after_welch",
+          "integer_welch_df",
+          "group_order_or_diff_sign",
+          "no_error_for_two_groups"
+        ],
+        "statistical_reasoning_checks": [
+          "variance_assumption_drives_method",
+          "pooled_vs_unpooled_followup"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "closed-form Brown-Forsythe F, Welch F with weights n/s^2, Tukey-Kramer via ptukey; cross-checked at load against oneway.test, TukeyHSD and pairwise.t.test"
+      },
+      "hashes": {
+        "task_sha256": "da0d0d8154f6237dd45df3169be5072376c74b6188abca507bfaabe9634cbcd5",
+        "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA01/prompt.md": "687d67f8076c6460c15e6cdc7d08e5cb7a51445fd5a851af213287100f435f55",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA01/task.json": "f393888720611170a8053a4ba10f8c8d23d49bf79922d6a323362f80335ce911",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA01/fixture/experiment.csv": "6904ac8c0efdd083b095d2db9c7070277f0d8db3dcffca6dafe73e809d9376d4",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XA01.R": "63b684ff577173586024d493673587acc0662076669b3cbeb241736f34b6c178"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 13,
+        "controls": [
+          "reference",
+          "alternate_closed_form",
+          "wrong_levene_mean_centered",
+          "wrong_always_classical",
+          "wrong_welch_with_pooled_tukey",
+          "edge_accepts_two_groups",
+          "malformed_returns_vector",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XA02",
+      "title": "Balanced two-way factorial ANOVA with interaction-aware simple-effects reporting",
+      "category": "anova_statistical_inference",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/experiment.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A04"
+      ],
+      "source_relation": "adapted: fixed reporting rule, simple effects against the full-model MSE, closed-form oracle",
+      "difficulty_hypothesis": "Agents report main effects in the presence of a crossover interaction, or compute simple effects from separate per-site ANOVAs (different error term and df) instead of the full-model residual mean square, or fail to stop on unbalanced data where the table is not uniquely defined.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "none",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "Pure factorial-design reasoning with an explicit reporting rule; nothing depends on a package, version or documentation fact beyond base R.",
+        "information_need": "How simple effects are tested against the pooled full-model error term.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: textbook formulas and installed stats help",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "lm + anova for the table, then per-site SS from cell means with the full MSE",
+          "closed-form balanced-design sums of squares",
+          "nested model comparison score ~ site vs score ~ site + site:treatment, split by site"
+        ]
+      },
+      "independence": {
+        "cluster": "anova-factorial",
+        "shared_with": [],
+        "shared_features": [
+          "two crossed factors",
+          "interaction"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate-high: a standard textbook procedure with explicit instructions",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "main_effects_reported_despite_interaction",
+          "per_site_error_term",
+          "additive_model",
+          "simple_effects_reported_without_interaction",
+          "unbalanced_design_accepted"
+        ],
+        "statistical_reasoning_checks": [
+          "interaction_changes_interpretation",
+          "error_term_choice"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "balanced-design closed-form sums of squares; cross-checked at load against anova(lm) and the nested-model identity SS(simple effects) = SS(A) + SS(AB)"
+      },
+      "hashes": {
+        "task_sha256": "cc06b96406df947fd4f8248d53e920b0b7e26d6725bd993a93943832102fe80f",
+        "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA02/prompt.md": "16bf705ce14f5e4f8ce9d8b6e67cdf10cdafdda784da6b3580cab4e6e9953ba7",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA02/task.json": "19c5bad5085adbf69d31ad75b87dd2e7dec9968dfed945c4c9b64a9a8abffdca",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA02/fixture/experiment.csv": "cc1813000607227b9e09d7368dd1cf9359a0a5949eaeb2c31ab1049a413de337",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XA02.R": "f7005c1b4301354ff99923f71c39e3d882455fac619312f970b6026b221f9605"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 13,
+        "controls": [
+          "reference",
+          "alternate_closed_form",
+          "wrong_per_site_anova",
+          "wrong_ignores_interaction",
+          "wrong_always_reports_simple_effects",
+          "edge_accepts_unbalanced_data",
+          "malformed_missing_elements",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XA03",
+      "title": "Equal-weight marginal (Type III) tests in an unbalanced two-factor design",
+      "category": "anova_statistical_inference",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/experiment.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A05",
+        "ANOVA-A12"
+      ],
+      "source_relation": "adapted: new fixtures, function-style contract, independent cell-means oracle",
+      "difficulty_hypothesis": "The default aov/anova table is sequential (Type I) and silently answers different hypotheses in an unbalanced design; drop1() on a default treatment-coded fit answers yet another question when an interaction is present; ordered factors switch to polynomial contrasts; and car::Anova, the usual shortcut, is not installed.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "none",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "The task is statistical reasoning about hypotheses and contrast coding. The decisive facts (how contr.sum, drop1 scope and sequential SS behave) are in base R documentation that is also installed locally; no package version or ecosystem fact changes the answer.",
+        "information_need": "Which linear hypotheses Type I/II/III sums of squares test, and how to obtain Type III values with base R only.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation"
+        ],
+        "obtainable_without_mcp": "yes: stats help pages (?drop1, ?contrasts, ?anova.lm) and the model-matrix algebra are available locally and in model knowledge",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "drop1(fit, scope = ~ ., test = 'F') on a contr.sum fit",
+          "explicit comparison of nested models built from effect-coded model matrices",
+          "cell-means linear-hypothesis (Wald/F) tests with equal-weight averaging"
+        ]
+      },
+      "independence": {
+        "cluster": "anova-sums-of-squares",
+        "shared_with": [],
+        "shared_features": [
+          "unbalanced factorial data",
+          "Type I versus Type III hypotheses"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate: strong models know the car::Anova idiom and the contr.sum + drop1 recipe",
+        "floor": "low: the output contract is fully specified",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "sequential_type1_reported_as_type3",
+          "type2_reported_as_type3",
+          "default_treatment_contrasts_with_interaction",
+          "ordered_factor_polynomial_contrasts",
+          "na_rows_not_dropped",
+          "empty_cell_not_rejected",
+          "output_contract_violation"
+        ],
+        "statistical_reasoning_checks": [
+          "interaction_aware_marginal_hypothesis",
+          "order_dependence_of_sequential_ss"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "cell-means linear hypotheses L m = 0 with Var(m) = sigma^2 diag(1/n); self-checked against balanced anova() and against sequential SS at load time"
+      },
+      "hashes": {
+        "task_sha256": "9d040538c7f554653bcd04699b82622ce3d5cedfa48678b7da95366db600bf61",
+        "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA03/prompt.md": "3bea190dde59c318a62f21b638d74f38088a94889c48abcda40bd361f52b27f3",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA03/task.json": "7c928cb0284371f332f47ba8807455c765a451a57b406e21906f096b4f1473ce",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA03/fixture/experiment.csv": "3449eb50218179fb005383b4a9b5a31df039c733ace04be2d1a2eb0df81ee83a",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XA03.R": "1b0f08473e646efba4a4d15388e40432091e999bf9379ebfd953cc80b66ff6ba"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 13,
+        "controls": [
+          "reference",
+          "alternate_model_comparison",
+          "alternate_cell_means",
+          "wrong_type1_sequential",
+          "wrong_type2",
+          "wrong_treatment_contrasts",
+          "edge_ignores_missing_scores",
+          "malformed_incomplete_missing_function",
+          "malformed_returns_list"
+        ]
+      },
+      "validation": {
+        "gate": null,
+        "current": false,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": false,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "scorer validation gate not passed on the current files"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XA04",
+      "title": "One-factor repeated-measures ANOVA with a Greenhouse-Geisser sphericity rule",
+      "category": "anova_statistical_inference",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/measurements.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A06"
+      ],
+      "source_relation": "adapted: fixed epsilon rule, function-style contract, covariance-formula oracle",
+      "difficulty_hypothesis": "Agents either treat repeated measurements as independent, rely on ez/afex (not installed) for the sphericity correction, apply the correction to the F statistic or only to one df, mix up Greenhouse-Geisser with Huynh-Feldt, or fail to drop subjects with a missing occasion.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "The statistics are specified in the prompt; the only ecosystem fact is that the usual convenience packages (ez, afex, rstatix) are not installed, which the supplied lockfile shows directly.",
+        "information_need": "Box's epsilon formula and the aov Error() decomposition for within-subject designs.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_packages"
+        ],
+        "obtainable_without_mcp": "yes: stats::aov help and textbook formulas",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "aov with Error(subject/time) plus epsilon from the double-centred covariance eigenvalues",
+          "subjects-by-occasions matrix with closed-form sums of squares",
+          "nlme::gls/lme with an unstructured covariance is NOT equivalent and does not satisfy the contract"
+        ]
+      },
+      "independence": {
+        "cluster": "anova-dependent-data",
+        "shared_with": [],
+        "shared_features": [
+          "within-subject structure"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "low-moderate: epsilon computation is a known stumbling block",
+        "floor": "moderate: several exact numbers must all be right",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "independent_observations_anova",
+          "no_df_adjustment",
+          "huynh_feldt_instead_of_gg",
+          "always_corrected",
+          "incomplete_subjects_not_dropped",
+          "duplicate_rows_accepted"
+        ],
+        "statistical_reasoning_checks": [
+          "dependence_respected",
+          "sphericity_correction_rule"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "subjects-by-occasions sums of squares and Box's epsilon; cross-checked at load against aov(Error()) and the eigenvalue form of epsilon"
+      },
+      "hashes": {
+        "task_sha256": "d4cc2480e94aa38609f5155c958a3abc6ccbb55d10d68d1fa040936b96f00e54",
+        "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA04/prompt.md": "e4ec9031bcbef8ff8ed43d59e4d021bf1acbafc611e70c2c9ccc881603064e73",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA04/task.json": "90087b54cf97d22de5ac71aceeb12996655dad773715afd34e48665205f55881",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA04/fixture/measurements.csv": "b50b103895c154c1f763c0a8a99e5db311ab4f614127e789a6008b3d4f327d95",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XA04.R": "fe1c27ca61c7a452ef2c0e2426f4ce9d66078de7a135d241d64826a823ee9097"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 13,
+        "controls": [
+          "reference",
+          "alternate_matrix_formulas",
+          "wrong_independent_oneway",
+          "wrong_no_df_adjustment",
+          "wrong_huynh_feldt",
+          "wrong_always_corrects",
+          "edge_keeps_incomplete_subjects",
+          "malformed_wrong_names",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XA05",
+      "title": "ANCOVA with a slope-homogeneity decision rule and covariate-adjusted means",
+      "category": "anova_statistical_inference",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/trial.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A08"
+      ],
+      "source_relation": "adapted: explicit decision tree, function-style contract, normal-equation oracle",
+      "difficulty_hypothesis": "Agents enter treatment before the covariate (unadjusted F), skip the slope test and always report parallel-slope adjusted effects, evaluate adjusted means at baseline = 0 or at group-specific baselines, or fail to switch to conditional means when slopes differ.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "none",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "Model specification and covariate reasoning in base R; no package or version fact is needed.",
+        "information_need": "Which F test adjusts for the covariate, and how to evaluate fitted means at fixed covariate values.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: lm, anova and predict are documented locally",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "lm + anova + predict",
+          "explicit design matrices with RSS differences",
+          "drop1 on the parallel model for the adjusted treatment F"
+        ]
+      },
+      "independence": {
+        "cluster": "anova-covariate-adjustment",
+        "shared_with": [],
+        "shared_features": [
+          "linear model with factor and covariate"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate: a standard analysis with an explicit plan",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "sequential_unadjusted_treatment_f",
+          "slope_test_skipped",
+          "means_at_zero_baseline",
+          "wrong_conditional_baseline_values",
+          "small_groups_accepted"
+        ],
+        "statistical_reasoning_checks": [
+          "adjustment_changes_effect",
+          "interaction_precludes_single_adjusted_effect"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "normal-equation OLS from explicit design matrices; cross-checked at load against anova(lm), model comparison and predict()"
+      },
+      "hashes": {
+        "task_sha256": "e18b4938169900a44acc2b86b8a3643d3545ff39d6b92db3993281dd275300ef",
+        "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA05/prompt.md": "ffff4b57bbd157dfb42ff5d79d14829db539b84172f8fef89c241d1bba4d9af6",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA05/task.json": "a8c3b6a7ce20bbc0c09ed4c73b4f69b11e2539c43b3443e1662fa59dc3d6f7ab",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA05/fixture/trial.csv": "212d9bcb6d1b4b16dc76babe99f84cefc16cbc400c4f5fa2073baf4d1752847f",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XA05.R": "e068117d4778ee49dbbab3dbabb6da5563264dd5fed53cabd87a7977fd21bfbd"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 12,
+        "controls": [
+          "reference",
+          "alternate_matrix_algebra",
+          "wrong_sequential_unadjusted",
+          "wrong_skips_slope_test",
+          "wrong_means_at_zero_baseline",
+          "edge_accepts_tiny_groups",
+          "malformed_flat_output",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": null,
+        "current": false,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": false,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "scorer validation gate not passed on the current files"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XA06",
+      "title": "Treatment-by-time interaction with missing visits: random-intercept model and ML likelihood-ratio test",
+      "category": "anova_statistical_inference",
+      "difficulty": "very_hard",
+      "image": "base",
+      "packages": [
+        "stats",
+        "nlme"
+      ],
+      "fixtures": [
+        "fixture/visits.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A13",
+        "ANOVA-A07"
+      ],
+      "source_relation": "adapted: fixed model and test, function-style contract, independent profile-likelihood oracle",
+      "difficulty_hypothesis": "Agents drop incomplete participants and run a classical repeated-measures ANOVA, compare REML fits with different fixed effects, ignore the clustering, reach for lme4 (not installed) instead of the installed nlme, or fit time as a numeric trend and get the wrong degrees of freedom.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 0,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "The standard answer in the wild uses lme4::lmer, which is not installed. Choosing nlme::lme and its ML/REML and VarCorr conventions is an API-availability and documentation question that package metadata and function documentation can inform (check_package_version, get_function_docs). It is not decisive: the lockfile and library(nlme) are available locally.",
+        "information_need": "Which mixed-model package is installed and how nlme::lme exposes ML log-likelihoods, variance components and method = 'ML'.",
+        "relevant_mcp_tools": [
+          "search_packages",
+          "get_package",
+          "get_function_docs",
+          "check_package_version"
+        ],
+        "obtainable_without_mcp": "yes, partly: renv.lock and library(nlme) show availability, and nlme help is installed; MCP mainly shortens the lookup",
+        "version_specific_evidence_value": "low",
+        "alternative_solution_paths": [
+          "nlme::lme with method = 'ML' for both models",
+          "nlme::gls with corCompSymm (equivalent for non-negative intraclass correlation)",
+          "an explicit profile-likelihood implementation in base R"
+        ]
+      },
+      "independence": {
+        "cluster": "anova-dependent-data",
+        "shared_with": [
+          "XA04"
+        ],
+        "shared_features": [
+          "repeated measures",
+          "within-subject dependence"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "low-moderate: needs the right package and the ML-versus-REML distinction",
+        "floor": "moderate: the optimiser-level tolerance is 1e-4 and the output contract is long",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "complete_case_rm_anova",
+          "reml_lrt_across_fixed_effects",
+          "clustering_ignored",
+          "lme4_not_installed",
+          "time_as_numeric_wrong_df",
+          "arm_membership_not_checked"
+        ],
+        "statistical_reasoning_checks": [
+          "missing_data_use_all_observations",
+          "ml_required_for_fixed_effect_comparison"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2",
+          "nlme": "3.1-168"
+        },
+        "oracle": "explicit profile-likelihood random-intercept ML (no nlme); cross-checked at load against nlme::lme logLik and sigma"
+      },
+      "hashes": {
+        "task_sha256": "2558b19c2147e8eeb60a4f4c57fe4f6741521aab0674f4dcd0d3cb6f7713fe00",
+        "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA06/prompt.md": "dcc6839a523586543d1dad6be9db1ee6e39db11a799f9750b3d8a88e66ffa977",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA06/task.json": "4500481ac93c0972a15c6c24ff27f8294ed810475a6dba6ba6be7d7102617abd",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA06/fixture/visits.csv": "200d944876814b48cd830b2da18c7e8ca267c3168e06c0c730339ae2c1e2e612",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XA06.R": "ba68b24fda253401abbeee5f6fb36b7e8e6d5c9e5745ce387984ca0a919d3300"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 13,
+        "controls": [
+          "reference",
+          "alternate_gls_compound_symmetry",
+          "wrong_complete_case_anova",
+          "wrong_reml_comparison",
+          "wrong_ignores_clustering",
+          "edge_does_not_check_arm_membership",
+          "malformed_missing_lrt",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": null,
+        "current": false,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": false,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "scorer validation gate not run"
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "id": "XA05",
+  "title": "ANCOVA with a slope-homogeneity decision rule and covariate-adjusted means",
+  "category": "anova_statistical_inference",
+  "difficulty": "hard",
+  "image": "base",
+  "packages": ["stats"],
+  "fixtures": ["fixture/trial.csv"],
+  "source_specs": ["ANOVA-A08"],
+  "source_relation": "adapted: explicit decision tree, function-style contract, normal-equation oracle",
+  "difficulty_hypothesis": "Agents enter treatment before the covariate (unadjusted F), skip the slope test and always report parallel-slope adjusted effects, evaluate adjusted means at baseline = 0 or at group-specific baselines, or fail to switch to conditional means when slopes differ.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 0, "documentation_dependence": 1,
+    "reasoning_complexity": 3, "code_generation_complexity": 2, "statistical_reasoning": 3,
+    "debugging_difficulty": 0, "package_api_verification_need": 0
+  },
+  "expected_mcp_usefulness": "none",
+  "mcp_relevance": {
+    "classification": "control",
+    "rationale": "Model specification and covariate reasoning in base R; no package or version fact is needed.",
+    "information_need": "Which F test adjusts for the covariate, and how to evaluate fitted means at fixed covariate values.",
+    "relevant_mcp_tools": ["get_function_docs"],
+    "obtainable_without_mcp": "yes: lm, anova and predict are documented locally",
+    "version_specific_evidence_value": "none",
+    "alternative_solution_paths": [
+      "lm + anova + predict",
+      "explicit design matrices with RSS differences",
+      "drop1 on the parallel model for the adjusted treatment F"
+    ]
+  },
+  "independence": {
+    "cluster": "anova-covariate-adjustment",
+    "shared_with": [],
+    "shared_features": ["linear model with factor and covariate"]
+  },
+  "calibration_risks": {
+    "ceiling": "moderate: a standard analysis with an explicit plan",
+    "floor": "low",
+    "documentation_dependence": "low",
+    "version_sensitivity": "none",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": [
+      "sequential_unadjusted_treatment_f",
+      "slope_test_skipped",
+      "means_at_zero_baseline",
+      "wrong_conditional_baseline_values",
+      "small_groups_accepted"
+    ],
+    "statistical_reasoning_checks": ["adjustment_changes_effect", "interaction_precludes_single_adjusted_effect"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"stats": "4.5.2"},
+    "oracle": "normal-equation OLS from explicit design matrices; cross-checked at load against anova(lm), model comparison and predict()"
+  },
+  "checks_documented_in": "verifier/XA05.R"
+}

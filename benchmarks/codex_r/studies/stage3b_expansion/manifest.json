@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "benchmark": "r-knowledge-mcp-stage3b-v1",
+  "status": "candidate pool: offline-validated verifiers, no paid runs, no stratum assigned",
+  "environment": {
+    "r": "4.5.2",
+    "lockfile": "configs/renv.lock",
+    "pins": {
+      "stats": "4.5.2",
+      "utils": "4.5.2",
+      "tools": "4.5.2",
+      "MASS": "7.3-65",
+      "nlme": "3.1-168",
+      "survival": "3.8-3",
+      "BiocVersion": "3.22.0",
+      "Biobase": "2.70.0",
+      "SummarizedExperiment": "1.40.0",
+      "DESeq2": "1.50.2"
+    },
+    "images": {
+      "scorer": {
+        "base": "codex-r-benchmark:pilot",
+        "bioc": "codex-r-benchmark:pilot-bioc"
+      },
+      "executor": {
+        "base": "rkmcp-codex-runtime:codex-0.163.0",
+        "bioc": "rkmcp-codex-runtime:codex-0.163.0-bioc"
+      }
+    },
+    "note": "Scorer and executor images have identical package sets (2026-10-29)."
+  },
+  "protocol": {
+    "score_seconds": 240,
+    "memory_mb": 2048,
+    "cpus": 2,
+    "pids": 256,
+    "artifact_bytes": 1048576,
+    "primary_metric": "fully_correct: every hidden behavioral check passes",
+    "secondary_metric": "passed/total hidden checks",
+    "outcome_classes": [
+      "scored (fully_correct true: all checks pass)",
+      "scored (fully_correct false: partially correct or incorrect)",
+      "candidate_error (solution.R does not load, or output limit)",
+      "candidate_timeout",
+      "scoring_error (environment or verifier fault; never a candidate failure)"
+    ]
+  },
+  "mcp": {
+    "toolset": "consolidated",
+    "tools": [
+      "search_packages",
+      "get_package",
+      "get_function_docs",
+      "list_package_functions",
+      "check_package_version",
+      "check_r_compatibility",
+      "search_r_documentation",
+      "get_r_documentation_section",
+      "get_framework_docs",
+      "get_r_workflow_guidance",
+      "analyze_r_source",
+      "analyze_r_project",
+      "recommend_technology_stack"
+    ],
+    "b1_discovery_tools": [
+      "search_packages",
+      "get_package",
+      "get_function_docs",
+      "check_package_version",
+      "check_r_compatibility",
+      "search_r_documentation",
+      "get_r_documentation_section",
+      "get_framework_docs",
+      "get_r_workflow_guidance",
+      "analyze_r_source",
+      "analyze_r_project",
+      "recommend_technology_stack"
+    ]
+  },
+  "tasks": [
+    {
+      "id": "XA01",
+      "title": "Brown-Forsythe screening, then classical or Welch one-way ANOVA with matching follow-ups",
+      "category": "anova_statistical_inference",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XA01/prompt.md",
+      "fixtures": [
+        "tasks/XA01/fixture/experiment.csv"
+      ],
+      "metadata": "tasks/XA01/task.json",
+      "verifier": "verifier/XA01.R",
+      "checks": 13,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XA02",
+      "title": "Balanced two-way factorial ANOVA with interaction-aware simple-effects reporting",
+      "category": "anova_statistical_inference",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XA02/prompt.md",
+      "fixtures": [
+        "tasks/XA02/fixture/experiment.csv"
+      ],
+      "metadata": "tasks/XA02/task.json",
+      "verifier": "verifier/XA02.R",
+      "checks": 13,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XA03",
+      "title": "Equal-weight marginal (Type III) tests in an unbalanced two-factor design",
+      "category": "anova_statistical_inference",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XA03/prompt.md",
+      "fixtures": [
+        "tasks/XA03/fixture/experiment.csv"
+      ],
+      "metadata": "tasks/XA03/task.json",
+      "verifier": "verifier/XA03.R",
+      "checks": 13,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XA04",
+      "title": "One-factor repeated-measures ANOVA with a Greenhouse-Geisser sphericity rule",
+      "category": "anova_statistical_inference",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XA04/prompt.md",
+      "fixtures": [
+        "tasks/XA04/fixture/measurements.csv"
+      ],
+      "metadata": "tasks/XA04/task.json",
+      "verifier": "verifier/XA04.R",
+      "checks": 13,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XA05",
+      "title": "ANCOVA with a slope-homogeneity decision rule and covariate-adjusted means",
+      "category": "anova_statistical_inference",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XA05/prompt.md",
+      "fixtures": [
+        "tasks/XA05/fixture/trial.csv"
+      ],
+      "metadata": "tasks/XA05/task.json",
+      "verifier": "verifier/XA05.R",
+      "checks": 12,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XA06",
+      "title": "Treatment-by-time interaction with missing visits: random-intercept model and ML likelihood-ratio test",
+      "category": "anova_statistical_inference",
+      "image": "base",
+      "packages": [
+        "stats",
+        "nlme"
+      ],
+      "spec": "tasks/XA06/prompt.md",
+      "fixtures": [
+        "tasks/XA06/fixture/visits.csv"
+      ],
+      "metadata": "tasks/XA06/task.json",
+      "verifier": "verifier/XA06.R",
+      "checks": 13,
+      "artifacts": [
+        "solution.R"
+      ]
+    }
+  ]
+}

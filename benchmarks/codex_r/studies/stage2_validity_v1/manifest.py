@@ -78,6 +78,11 @@ def task_files(task: str) -> list[Path]:
             base / "tasks" / task / "metadata.json",
             base / "verifier" / f"{task}.R",
         ]
+    elif task.startswith("X"):
+        # Stage 3B expansion tasks (separate, versioned catalogue; the 31-task one is unchanged).
+        from benchmarks.codex_r.studies.stage3b_expansion import build as stage3b_build
+
+        candidates = stage3b_build.task_files(task)
     else:
         base = CODEX / "knowledge_pilot"
         candidates = [

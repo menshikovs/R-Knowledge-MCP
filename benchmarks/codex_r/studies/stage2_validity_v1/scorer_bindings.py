@@ -24,6 +24,7 @@ from benchmarks.codex_r import knowledge_pilot, knowledge_pilot_v21
 from . import manifest
 
 BINDING_VERSION = "stage3a-scorer-binding-v1"
+STAGE3B_SCORER = "stage3b-expansion-v1"
 CODEX = manifest.CODEX
 
 
@@ -60,6 +61,18 @@ class ScorerBinding:
 
 
 def bind(task: str, catalogue_label: str) -> ScorerBinding:
+    if task.startswith("X") and catalogue_label == STAGE3B_SCORER:
+        from benchmarks.codex_r.studies.stage3b_expansion import build as stage3b_build
+
+        return ScorerBinding(
+            task,
+            catalogue_label,
+            STAGE3B_SCORER,
+            "stage3b_expansion suite + hidden checks (hard-v1 harness reused) in the scorer image",
+            tuple(stage3b_build.scorer_files()),
+            True,
+            False,
+        )
     if task.startswith("R") and catalogue_label == "legacy":
         return ScorerBinding(
             task,

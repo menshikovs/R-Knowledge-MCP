@@ -47,6 +47,7 @@ from benchmarks.codex_r.exploratory.managed_agents import (
 )
 from benchmarks.codex_r.hard import suite as hard
 from benchmarks.codex_r.runner import bench
+from benchmarks.codex_r.studies.stage3b_expansion import suite as stage3b
 from benchmarks.codex_r.telemetry import aggregate as telemetry_aggregate
 from benchmarks.codex_r.telemetry import errors as telemetry_errors
 from benchmarks.codex_r.telemetry import experiment as telemetry_experiment
@@ -283,6 +284,9 @@ def suite_for(task, *, experiment=None, function_discovery=None):
         task_suite, toolset = knowledge_pilot, "consolidated"
     elif task == MCP_SMOKE_TASK or task.startswith("H"):
         task_suite, toolset = hard, "consolidated"
+    elif stage3b.owns(task):
+        # Stage 3B expansion suite: hard-v1 contract, its own manifest; same MCP surface.
+        return stage3b, "consolidated", hard.manifest()["mcp"]["tools"]
     else:
         return bench, "legacy", bench.manifest()["conditions"]["B"]["tools"]
 
@@ -581,6 +585,15 @@ def write_experiment_manifest(output, args, images, tasks, *, write=True):
         "e_compatibility": knowledge_pilot.E_SCORER_VERSION,
         "r_scorer_image": images.get("scorer"),
         "hard_verifier_sha256": telemetry_experiment.tree_sha256(hard.HARD / "verifier", ".R"),
+        **(
+            {
+                "stage3b_verifier_sha256": telemetry_experiment.tree_sha256(
+                    stage3b.STAGE3B / "verifier", ".R"
+                )
+            }
+            if any(stage3b.owns(t) for t in tasks)
+            else {}
+        ),
         "pilot_verifier_sha256": telemetry_experiment.tree_sha256(
             knowledge_pilot.PILOT / "verifier", ".R"
         ),
@@ -757,6 +770,15 @@ def write_experiment_manifest(output, args, images, tasks, *, write=True):
                     for name in task["fixtures"]
                 },
             }
+        elif stage3b.owns(task_id):
+            task = stage3b.task_for(task_id)
+            experiment["task_inputs_sha256"][task_id] = {
+                "spec": bench.digest(bench.safe_file(stage3b.STAGE3B, task["spec"])),
+                "inputs": {
+                    name: bench.digest(bench.safe_file(stage3b.STAGE3B, name))
+                    for name in task["fixtures"]
+                },
+            }
     experiment["image_refs"] = {
         "executor": args.executor_image,
         "scorer": args.scorer_image,
@@ -868,6 +890,9 @@ def experiment_package_pins(tasks, pilot_manifest=None):
             metadata_path = hard.HARD / "tasks" / task_id / "metadata.json"
             metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
             package_pins[task_id] = metadata.get("packages", {})
+        elif stage3b.owns(task_id):
+            pins = stage3b.manifest()["environment"]["pins"]
+            package_pins[task_id] = {p: pins.get(p) for p in stage3b.task_for(task_id)["packages"]}
     return package_pins
 
 
@@ -1981,6 +2006,9 @@ def seal_trial_artifacts(task, workspace, destination, task_suite=None):
     workspace = Path(workspace).absolute()
     if task_suite is knowledge_pilot:
         return knowledge_pilot.seal_artifacts(task, workspace, destination)
+    if stage3b.owns(task):
+        stage3b.seal_artifacts(task, workspace, destination)
+        return {name: name for name in stage3b.task_for(task)["artifacts"]}
     if task.startswith("H"):
         hard.seal_artifacts(task, workspace, destination)
         return {name: name for name in hard.task_for(task)["artifacts"]}
@@ -2386,7 +2414,13 @@ def run_trial(
         if task_suite is knowledge_pilot
         else "mcp-smoke"
         if task == MCP_SMOKE_TASK
-        else ("hard-v1" if task_suite is hard else "codex-r"),
+        else (
+            "hard-v1"
+            if task_suite is hard
+            else stage3b.BENCHMARK_ID
+            if task_suite is stage3b
+            else "codex-r"
+        ),
         "mode": mode,
         "repetition": repetition,
         "model": MODEL,
@@ -2735,7 +2769,7 @@ def run_trial(
                     total=score.get("total"),
                 )
                 record["score"], record["status"] = score, score["status"]
-                if task_suite in {hard, knowledge_pilot}:
+                if task_suite in {hard, knowledge_pilot, stage3b}:
                     record["fully_correct"] = score["fully_correct"]
                     record["environment_versions"] = score.get("environment")
                 progress.event("scoring completed", stage="cleanup")
@@ -3289,7 +3323,13 @@ def expand_tasks(requested, pilot=None):
     selected = []
     for task in requested or ["R01"]:
         selected += (
-            R_TASKS if task == "all" else hard.task_ids() if task == "hard-pilot" else [task]
+            R_TASKS
+            if task == "all"
+            else hard.task_ids()
+            if task == "hard-pilot"
+            else stage3b.task_ids()
+            if task == "stage3b-pool"
+            else [task]
         )
     return list(dict.fromkeys(selected))
 
@@ -3300,7 +3340,7 @@ def default_image_refs(tasks):
         task in knowledge_pilot.PILOT_TASK_IDS
         and knowledge_pilot.task_for(task).get("required_packages")
         for task in tasks
-    )
+    ) or any(stage3b.owns(task) and stage3b.task_for(task)["image"] == "bioc" for task in tasks)
     return {
         "executor": (
             "rkmcp-codex-runtime:codex-0.163.0-bioc"
@@ -3462,9 +3502,11 @@ def main(argv=None):
         choices=[
             "all",
             "hard-pilot",
+            "stage3b-pool",
             MCP_SMOKE_TASK,
             *R_TASKS,
             *hard.task_ids(),
+            *stage3b.task_ids(),
             *knowledge_pilot.PILOT_TASK_IDS,
         ],
         help="R01..R12 (all), hard tasks, or hard-pilot for every registered hard task",

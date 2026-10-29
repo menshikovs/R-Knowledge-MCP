@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "id": "XA03",
+  "title": "Equal-weight marginal (Type III) tests in an unbalanced two-factor design",
+  "category": "anova_statistical_inference",
+  "difficulty": "hard",
+  "image": "base",
+  "packages": [
+    "stats"
+  ],
+  "fixtures": [
+    "fixture/experiment.csv"
+  ],
+  "source_specs": [
+    "ANOVA-A05",
+    "ANOVA-A12"
+  ],
+  "source_relation": "adapted: new fixtures, function-style contract, independent cell-means oracle",
+  "difficulty_hypothesis": "The default aov/anova table is sequential (Type I) and silently answers different hypotheses in an unbalanced design; drop1() on a default treatment-coded fit answers yet another question when an interaction is present; ordered factors switch to polynomial contrasts; and car::Anova, the usual shortcut, is not installed.",
+  "dimensions": {
+    "r_knowledge_depth": 2,
+    "version_sensitivity": 0,
+    "documentation_dependence": 1,
+    "reasoning_complexity": 3,
+    "code_generation_complexity": 2,
+    "statistical_reasoning": 3,
+    "debugging_difficulty": 1,
+    "package_api_verification_need": 1
+  },
+  "expected_mcp_usefulness": "none",
+  "mcp_relevance": {
+    "classification": "control",
+    "rationale": "The task is statistical reasoning about hypotheses and contrast coding. The decisive facts (how contr.sum, drop1 scope and sequential SS behave) are in base R documentation that is also installed locally; no package version or ecosystem fact changes the answer.",
+    "information_need": "Which linear hypotheses Type I/II/III sums of squares test, and how to obtain Type III values with base R only.",
+    "relevant_mcp_tools": [
+      "get_function_docs",
+      "search_r_documentation"
+    ],
+    "obtainable_without_mcp": "yes: stats help pages (?drop1, ?contrasts, ?anova.lm) and the model-matrix algebra are available locally and in model knowledge",
+    "version_specific_evidence_value": "none",
+    "alternative_solution_paths": [
+      "drop1(fit, scope = ~ ., test = 'F') on a contr.sum fit",
+      "explicit comparison of nested models built from effect-coded model matrices",
+      "cell-means linear-hypothesis (Wald/F) tests with equal-weight averaging"
+    ]
+  },
+  "independence": {
+    "cluster": "anova-sums-of-squares",
+    "shared_with": [],
+    "shared_features": [
+      "unbalanced factorial data",
+      "Type I versus Type III hypotheses"
+    ]
+  },
+  "calibration_risks": {
+    "ceiling": "moderate: strong models know the car::Anova idiom and the contr.sum + drop1 recipe",
+    "floor": "low: the output contract is fully specified",
+    "documentation_dependence": "low",
+    "version_sensitivity": "none",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": [
+      "sequential_type1_reported_as_type3",
+      "type2_reported_as_type3",
+      "default_treatment_contrasts_with_interaction",
+      "ordered_factor_polynomial_contrasts",
+      "na_rows_not_dropped",
+      "empty_cell_not_rejected",
+      "output_contract_violation"
+    ],
+    "statistical_reasoning_checks": [
+      "interaction_aware_marginal_hypothesis",
+      "order_dependence_of_sequential_ss"
+    ]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {
+      "stats": "4.5.2"
+    },
+    "oracle": "cell-means linear hypotheses L m = 0 with Var(m) = sigma^2 diag(1/n); self-checked against balanced anova() and against sequential SS at load time"
+  },
+  "checks_documented_in": "verifier/XA03.R"
+}

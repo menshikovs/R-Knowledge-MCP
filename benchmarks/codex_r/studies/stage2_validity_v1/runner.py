@@ -45,6 +45,7 @@ from benchmarks.codex_r.studies.stage2_validity_v1 import (
     records,
     scorer_bindings,
 )
+from benchmarks.codex_r.studies.stage3b_expansion import suite as stage3b_suite
 
 DEFAULT_MODEL = "gpt-6-luna"
 DEFAULT_EFFORT = "medium"
@@ -100,6 +101,13 @@ class StudyExecutionConfig:
 def _task_and_scorer_meta(task_id: str) -> dict[str, str]:
     """Return suite, scorer_version, task_sha256, and scorer_sha256 for ``task_id``."""
     entry = next((e for e in calibration.CATALOG if e["task"] == task_id), None)
+    if entry is None and stage3b_suite.owns(task_id):
+        # Stage 3B tasks live in their own versioned catalogue, never in the 31-task one.
+        entry = {
+            "task": task_id,
+            "suite": stage3b_suite.BENCHMARK_ID,
+            "scorer": scorer_bindings.STAGE3B_SCORER,
+        }
     if entry is None:
         raise ValueError(f"Unknown task_id: {task_id!r}")
     files = manifest.task_files(task_id)
