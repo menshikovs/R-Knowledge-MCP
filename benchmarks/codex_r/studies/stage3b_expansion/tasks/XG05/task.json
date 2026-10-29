@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "id": "XG05",
+  "title": "Per-participant trajectories with a mean trajectory: grouping, ordering and missing scores",
+  "category": "ggplot2_visualization",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["ggplot2", "stats"],
+  "fixtures": ["fixture/trajectories.csv"],
+  "source_specs": ["GGP-E04", "GGP-E07", "GGP-N01"],
+  "source_relation": "original construction on the grouping/ordering failure family; shuffled input rows and missing scores added",
+  "difficulty_hypothesis": "Without an explicit group aesthetic all rows form one path; geom_path (unlike geom_line) joins points in row order so shuffled data zig-zags; averaging with missing scores treated as zero biases the mean line; and the mean line is easily left visually indistinguishable.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 0, "documentation_dependence": 1,
+    "reasoning_complexity": 2, "code_generation_complexity": 2, "statistical_reasoning": 0,
+    "debugging_difficulty": 1, "package_api_verification_need": 0
+  },
+  "expected_mcp_usefulness": "none",
+  "mcp_relevance": {
+    "classification": "control",
+    "rationale": "Grouping and drawing order are core ggplot2 semantics; the answer does not rest on a package fact or version.",
+    "information_need": "The group aesthetic and the difference between geom_line and geom_path ordering.",
+    "relevant_mcp_tools": ["get_function_docs"],
+    "obtainable_without_mcp": "yes",
+    "version_specific_evidence_value": "none",
+    "alternative_solution_paths": [
+      "geom_line(aes(group = subject)) plus a precomputed mean line",
+      "geom_path on week-sorted rows",
+      "stat_summary(fun = mean, geom = 'line', aes(group = 1))"
+    ]
+  },
+  "independence": {
+    "cluster": "ggplot2-grouping",
+    "shared_with": [],
+    "shared_features": ["group aesthetic"]
+  },
+  "calibration_risks": {
+    "ceiling": "high for strong baselines",
+    "floor": "low",
+    "documentation_dependence": "low",
+    "version_sensitivity": "none",
+    "blockers": ["ceiling effect likely for strong baselines: calibration must confirm"]
+  },
+  "analysis": {
+    "failure_modes": [
+      "no_group_aesthetic",
+      "path_in_row_order",
+      "missing_scores_as_zero",
+      "mean_line_not_emphasised",
+      "default_axis_titles"
+    ],
+    "statistical_reasoning_checks": []
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"ggplot2": "4.0.3"},
+    "oracle": "plain-R per-subject (week, score) sequences and weekly means; compared as sets of sequences from ggplot_build layer data, independent of group numbering"
+  },
+  "checks_documented_in": "verifier/XG05.R"
+}

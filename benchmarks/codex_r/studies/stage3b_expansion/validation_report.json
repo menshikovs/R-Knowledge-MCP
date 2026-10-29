@@ -1,6 +1,6 @@
 {
   "benchmark": "r-knowledge-mcp-stage3b-v1",
-  "validated_at": "2026-10-29T08:22:32Z",
+  "validated_at": "2026-10-29T08:36:07Z",
   "api_calls": 0,
   "tasks": [
     {
@@ -1638,6 +1638,1386 @@
           "failed_checks": [],
           "details": [],
           "seconds": 2.82
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XG01",
+      "task_sha256": "5b5b23feed933ba0d5e561748c3a2d1ce6d6c35f031e73846aa3fa0609b7af8e",
+      "scorer_sha256": "010280a11f56d77c13ecd48c4d1bc08c6df0f8b737d6061edf2a089e68c233d3",
+      "checks": 11,
+      "checks_failed_by_some_rejected_control": 11,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "ggplot2": "4.0.3",
+          "stats": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.49
+        },
+        "alternate_dplyr_complete": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.64
+        },
+        "wrong_observed_days_only": {
+          "status": "scored",
+          "passed": 7,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "line_layer_covers_every_calendar_day_with_na_on_gap_days",
+            "gap_days_are_missing_not_zero_and_the_line_is_not_bridged",
+            "a_day_with_only_missing_scores_has_no_mean",
+            "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant"
+          ],
+          "details": [
+            "line_layer_covers_every_calendar_day_with_na_on_gap_days: Expected `as.integer(ln$x)` to be identical to `want$x`.\nDifferences:\n     actual | expected                \n [5] 20152  | 20152    [5]            \n [6] 20153  | 20153    [6]            \n [7] 20154  | 20154    [7]            \n [8] 20161  - 20155    [8]            \n [9] 20164  - 20156    [9]            \n[10] 20165  - 20157    [10]           \n[11] 20166  - 20158    [11]           \n[12] 20167  - 20159    [12]           \n[13] 20169  - 20160    [13]           \n[14] 20173  - 20161    [14]           \n ",
+            "gap_days_are_missing_not_zero_and_the_line_is_not_bridged: Expected `any(is.na(ln$data$y))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "a_day_with_only_missing_scores_has_no_mean: Expected `is.na(ln$y[ln$x == as.integer(first)])` to be TRUE.\nDifferences:\n`actual`:       \n`expected`: TRUE\n",
+            "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant: Expected `as.integer(ln$x)` to be identical to `want$x`.\nDifferences:\n     actual | expected                \n [5] 20152  | 20152    [5]            \n [6] 20153  | 20153    [6]            \n [7] 20154  | 20154    [7]            \n [8] 20161  - 20155    [8]            \n [9] 20164  - 20156    [9]            \n[10] 20165  - 20157    [10]           \n[11] 20166  - 20158    [11]           \n[12] 20167  - 20159    [12]           \n[13] 20169  - 20160    [13]           \n[14] 20173  - 20161    [14]           \n "
+          ],
+          "seconds": 3.59
+        },
+        "wrong_gaps_filled_with_zero": {
+          "status": "scored",
+          "passed": 6,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "line_layer_covers_every_calendar_day_with_na_on_gap_days",
+            "gap_days_are_missing_not_zero_and_the_line_is_not_bridged",
+            "point_layer_marks_exactly_the_days_with_a_mean",
+            "a_day_with_only_missing_scores_has_no_mean",
+            "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant"
+          ],
+          "details": [
+            "line_layer_covers_every_calendar_day_with_na_on_gap_days: Expected `is.na(ln$y)` to be identical to `is.na(want$y)`.\nDifferences:\n     actual | expected                \n [5] FALSE  | FALSE    [5]            \n [6] FALSE  | FALSE    [6]            \n [7] FALSE  | FALSE    [7]            \n [8] FALSE  - TRUE     [8]            \n [9] FALSE  - TRUE     [9]            \n[10] FALSE  - TRUE     [10]           \n[11] FALSE  - TRUE     [11]           \n[12] FALSE  - TRUE     [12]           \n[13] FALSE  - TRUE     [13]           \n[14] FALSE  | FALSE    [14]           ",
+            "gap_days_are_missing_not_zero_and_the_line_is_not_bridged: Expected `any(is.na(ln$data$y))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "point_layer_marks_exactly_the_days_with_a_mean: Expected `as.integer(pt$x[order(pt$x)])` to be identical to `want$x`.\nDifferences:\n     actual | expected                \n [5] 20152  | 20152    [5]            \n [6] 20153  | 20153    [6]            \n [7] 20154  | 20154    [7]            \n [8] 20155  -                         \n [9] 20156  -                         \n[10] 20157  -                         \n[11] 20158  -                         \n[12] 20159  -                         \n[13] 20160  -                         \n[14] 20161  | 20161    [8] ",
+            "a_day_with_only_missing_scores_has_no_mean: Expected `is.na(ln$y[ln$x == as.integer(first)])` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant: Expected `ln$y[!is.na(ln$y)]` to equal `want$y[!is.na(want$y)]`.\nDifferences:\n  `actual[5:29]`: 56.3335 56.081 50.6695 0 0 0 0 0 0 56.648 and 15 more...\n`expected[5:15]`: 56.3335 56.081 50.6695             56.648            ...\n"
+          ],
+          "seconds": 4.08
+        },
+        "wrong_na_rm_bridges_gaps": {
+          "status": "scored",
+          "passed": 10,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "gap_days_are_missing_not_zero_and_the_line_is_not_bridged"
+          ],
+          "details": [
+            "gap_days_are_missing_not_zero_and_the_line_is_not_bridged: Expected `isTRUE(ln$geom_params$na.rm)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n"
+          ],
+          "seconds": 4.29
+        },
+        "wrong_median_instead_of_mean": {
+          "status": "scored",
+          "passed": 8,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "line_layer_covers_every_calendar_day_with_na_on_gap_days",
+            "point_layer_marks_exactly_the_days_with_a_mean",
+            "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant"
+          ],
+          "details": [
+            "line_layer_covers_every_calendar_day_with_na_on_gap_days: Expected `ln$y[!is.na(ln$y)]` to equal `want$y[!is.na(want$y)]`.\nDifferences:\n  `actual[1:6]`: 60.913 60.312 54.330 52.504 56.334 56.081\n`expected[1:6]`: 60.913 54.522 54.378 52.504 56.334 56.081\n\n  `actual[8:15]`: 56.648 44.010 41.960 35.558 46.615 48.526 42.477 48.665\n`expected[8:15]`: 56.648 44.010 41.960 38.446 46.615 48.526 42.477 50.970\n",
+            "point_layer_marks_exactly_the_days_with_a_mean: Expected `pt$y[order(pt$x)]` to equal `want$y`.\nDifferences:\n  `actual[1:6]`: 60.913 60.312 54.330 52.504 56.334 56.081\n`expected[1:6]`: 60.913 54.522 54.378 52.504 56.334 56.081\n\n  `actual[8:15]`: 56.648 44.010 41.960 35.558 46.615 48.526 42.477 48.665\n`expected[8:15]`: 56.648 44.010 41.960 38.446 46.615 48.526 42.477 50.970\n",
+            "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant: Expected `ln$y[!is.na(ln$y)]` to equal `want$y[!is.na(want$y)]`.\nDifferences:\n  `actual[1:6]`: 60.913 60.312 54.330 52.504 56.334 56.081\n`expected[1:6]`: 60.913 54.522 54.378 52.504 56.334 56.081\n\n  `actual[8:15]`: 56.648 44.010 41.960 35.558 46.615 48.526 42.477 48.665\n`expected[8:15]`: 56.648 44.010 41.960 38.446 46.615 48.526 42.477 50.970\n"
+          ],
+          "seconds": 3.97
+        },
+        "edge_default_axis_titles": {
+          "status": "scored",
+          "passed": 10,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "axis_titles_are_exactly_day_and_mean_score"
+          ],
+          "details": [
+            "axis_titles_are_exactly_day_and_mean_score: Expected `trimws(g$labels$x)` to be identical to \"Day\".\nDifferences:\n`actual`:   \"day\"\n`expected`: \"Day\"\n"
+          ],
+          "seconds": 5.02
+        },
+        "malformed_returns_data_frame": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "line_layer_covers_every_calendar_day_with_na_on_gap_days",
+            "gap_days_are_missing_not_zero_and_the_line_is_not_bridged",
+            "point_layer_marks_exactly_the_days_with_a_mean",
+            "a_day_with_only_missing_scores_has_no_mean",
+            "horizontal_axis_is_a_date_scale",
+            "axis_titles_are_exactly_day_and_mean_score",
+            "single_day_data_gives_one_point_and_one_line_row",
+            "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant",
+            "input_data_frame_is_not_modified",
+            "plot_has_a_line_layer_and_a_point_layer",
+            "returned_object_is_a_ggplot_without_deprecation_warnings"
+          ],
+          "details": [
+            "line_layer_covers_every_calendar_day_with_na_on_gap_days: candidate call failed: the function did not return a ggplot object",
+            "gap_days_are_missing_not_zero_and_the_line_is_not_bridged: candidate call failed: the function did not return a ggplot object",
+            "point_layer_marks_exactly_the_days_with_a_mean: candidate call failed: the function did not return a ggplot object",
+            "a_day_with_only_missing_scores_has_no_mean: candidate call failed: the function did not return a ggplot object",
+            "horizontal_axis_is_a_date_scale: candidate call failed: the function did not return a ggplot object",
+            "axis_titles_are_exactly_day_and_mean_score: candidate call failed: the function did not return a ggplot object",
+            "single_day_data_gives_one_point_and_one_line_row: candidate call failed: the function did not return a ggplot object",
+            "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant: candidate call failed: the function did not return a ggplot object",
+            "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object",
+            "plot_has_a_line_layer_and_a_point_layer: candidate call failed: the function did not return a ggplot object",
+            "returned_object_is_a_ggplot_without_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
+          ],
+          "seconds": 2.86
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "line_layer_covers_every_calendar_day_with_na_on_gap_days",
+            "gap_days_are_missing_not_zero_and_the_line_is_not_bridged",
+            "point_layer_marks_exactly_the_days_with_a_mean",
+            "a_day_with_only_missing_scores_has_no_mean",
+            "horizontal_axis_is_a_date_scale",
+            "axis_titles_are_exactly_day_and_mean_score",
+            "single_day_data_gives_one_point_and_one_line_row",
+            "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant",
+            "input_data_frame_is_not_modified",
+            "plot_has_a_line_layer_and_a_point_layer",
+            "returned_object_is_a_ggplot_without_deprecation_warnings"
+          ],
+          "details": [
+            "line_layer_covers_every_calendar_day_with_na_on_gap_days: candidate call failed: the function did not return a ggplot object",
+            "gap_days_are_missing_not_zero_and_the_line_is_not_bridged: candidate call failed: the function did not return a ggplot object",
+            "point_layer_marks_exactly_the_days_with_a_mean: candidate call failed: the function did not return a ggplot object",
+            "a_day_with_only_missing_scores_has_no_mean: candidate call failed: the function did not return a ggplot object",
+            "horizontal_axis_is_a_date_scale: candidate call failed: the function did not return a ggplot object",
+            "axis_titles_are_exactly_day_and_mean_score: candidate call failed: the function did not return a ggplot object",
+            "single_day_data_gives_one_point_and_one_line_row: candidate call failed: the function did not return a ggplot object",
+            "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant: candidate call failed: the function did not return a ggplot object",
+            "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object",
+            "plot_has_a_line_layer_and_a_point_layer: candidate call failed: the function did not return a ggplot object",
+            "returned_object_is_a_ggplot_without_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
+          ],
+          "seconds": 2.54
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.52
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "line_layer_covers_every_calendar_day_with_na_on_gap_days",
+            "gap_days_are_missing_not_zero_and_the_line_is_not_bridged",
+            "point_layer_marks_exactly_the_days_with_a_mean",
+            "a_day_with_only_missing_scores_has_no_mean",
+            "horizontal_axis_is_a_date_scale",
+            "axis_titles_are_exactly_day_and_mean_score",
+            "single_day_data_gives_one_point_and_one_line_row",
+            "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant",
+            "input_data_frame_is_not_modified",
+            "plot_has_a_line_layer_and_a_point_layer",
+            "returned_object_is_a_ggplot_without_deprecation_warnings"
+          ],
+          "details": [
+            "line_layer_covers_every_calendar_day_with_na_on_gap_days: candidate call failed: object 'plot_daily_means' of mode 'function' was not found",
+            "gap_days_are_missing_not_zero_and_the_line_is_not_bridged: candidate call failed: object 'plot_daily_means' of mode 'function' was not found",
+            "point_layer_marks_exactly_the_days_with_a_mean: candidate call failed: object 'plot_daily_means' of mode 'function' was not found",
+            "a_day_with_only_missing_scores_has_no_mean: candidate call failed: object 'plot_daily_means' of mode 'function' was not found",
+            "horizontal_axis_is_a_date_scale: candidate call failed: object 'plot_daily_means' of mode 'function' was not found",
+            "axis_titles_are_exactly_day_and_mean_score: candidate call failed: object 'plot_daily_means' of mode 'function' was not found",
+            "single_day_data_gives_one_point_and_one_line_row: candidate call failed: object 'plot_daily_means' of mode 'function' was not found",
+            "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant: candidate call failed: object 'plot_daily_means' of mode 'function' was not found",
+            "input_data_frame_is_not_modified: candidate call failed: object 'plot_daily_means' of mode 'function' was not found",
+            "plot_has_a_line_layer_and_a_point_layer: candidate call failed: object 'plot_daily_means' of mode 'function' was not found",
+            "returned_object_is_a_ggplot_without_deprecation_warnings: candidate call failed: object 'plot_daily_means' of mode 'function' was not found"
+          ],
+          "seconds": 2.18
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 1.98
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.16
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XG02",
+      "task_sha256": "7110f95745f0482a602b14435486755f528f2ffb1f258817d4e10b9a9a5487a1",
+      "scorer_sha256": "7474b646a291355f4ed0f4570c5da31177c5e054aeebd375f77590cf607538b6",
+      "checks": 11,
+      "checks_failed_by_some_rejected_control": 11,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "ggplot2": "4.0.3",
+          "stats": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.15
+        },
+        "alternate_stat_summary_after_filter": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.06
+        },
+        "wrong_count_bars": {
+          "status": "scored",
+          "passed": 8,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "bar_heights_are_group_means_ignoring_missing_values",
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear",
+            "rows_with_missing_group_are_ignored_and_row_order_is_irrelevant"
+          ],
+          "details": [
+            "bar_heights_are_group_means_ignoring_missing_values: Expected `b$y` to equal `want$mean`.\nDifferences:\n  `actual`:  8.0  9.0 6.0  3.0\n`expected`: 13.7 12.0 8.9 10.9\n",
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear: Expected `xg02_bars(g)$y` to equal `xg02_oracle(xg02_fct)$mean`.\nDifferences:\n  `actual`: 7.0 8.0  9.0\n`expected`: 5.2 6.2 10.4\n",
+            "rows_with_missing_group_are_ignored_and_row_order_is_irrelevant: Expected `xg02_bars(xg02_digest(d))$y` to equal `xg02_oracle(xg02_plain)$mean`.\nDifferences:\n  `actual`: 8.0 8.0 7.0\n`expected`: 6.7 3.0 4.3\n"
+          ],
+          "seconds": 3.43
+        },
+        "wrong_mean_without_na_rm": {
+          "status": "scored",
+          "passed": 4,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "bar_heights_are_group_means_ignoring_missing_values",
+            "bars_start_at_zero",
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear",
+            "group_without_any_value_leaves_no_bar_and_no_empty_axis_slot",
+            "no_bar_has_a_missing_height",
+            "bars_are_not_counts",
+            "rows_with_missing_group_are_ignored_and_row_order_is_irrelevant"
+          ],
+          "details": [
+            "bar_heights_are_group_means_ignoring_missing_values: Expected `b$y` to equal `want$mean`.\nDifferences:\n  `actual`:       NA               NA 8.90283333333333     NA NA\n`expected`: 13.72875 12.0286666666667 8.90283333333333 10.864   \n",
+            "bars_start_at_zero: Expected `all(b$ymax == b$y)` to be TRUE.\nDifferences:\n`actual`:   <NA>\n`expected`: TRUE\n",
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear: Expected `discrete_levels(g)` to be identical to `c(\"low\", \"mid\", \"high\")`.\nDifferences:\n`actual`:   \"low\" \"mid\" \"high\" \"extra\"\n`expected`: \"low\" \"mid\" \"high\"        \n",
+            "group_without_any_value_leaves_no_bar_and_no_empty_axis_slot: Expected `\"echo\" %in% discrete_levels(g)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "no_bar_has_a_missing_height: Expected `anyNA(xg02_bars(xg02_digest(d))$y)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "bars_are_not_counts: Expected `max(abs(b$y - counts))` > 0.5.\nActual comparison: NA <= 0.5",
+            "rows_with_missing_group_are_ignored_and_row_order_is_irrelevant: Expected `xg02_bars(xg02_digest(d))$y` to equal `xg02_oracle(xg02_plain)$mean`.\nDifferences:\n  `actual`: 6.7 3.0  NA\n`expected`: 6.7 3.0 4.3\n"
+          ],
+          "seconds": 3.79
+        },
+        "wrong_alphabetical_order_for_factors": {
+          "status": "scored",
+          "passed": 10,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear"
+          ],
+          "details": [
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear: Expected `discrete_levels(g)` to be identical to `c(\"low\", \"mid\", \"high\")`.\nDifferences:\n`actual`:   \"high\" \"low\" \"mid\" \n`expected`: \"low\"  \"mid\" \"high\"\n"
+          ],
+          "seconds": 3.88
+        },
+        "wrong_keeps_empty_group_slot": {
+          "status": "scored",
+          "passed": 9,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear",
+            "group_without_any_value_leaves_no_bar_and_no_empty_axis_slot"
+          ],
+          "details": [
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear: Expected `discrete_levels(g)` to be identical to `c(\"low\", \"mid\", \"high\")`.\nDifferences:\n`actual`:   \"low\" \"mid\" \"high\" \"extra\"\n`expected`: \"low\" \"mid\" \"high\"        \n",
+            "group_without_any_value_leaves_no_bar_and_no_empty_axis_slot: Expected `\"echo\" %in% discrete_levels(g)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n"
+          ],
+          "seconds": 4.03
+        },
+        "edge_default_axis_titles": {
+          "status": "scored",
+          "passed": 10,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "axis_titles_are_exactly_group_and_mean_y"
+          ],
+          "details": [
+            "axis_titles_are_exactly_group_and_mean_y: Expected `trimws(g$labels$x)` to be identical to \"Group\".\nDifferences:\n`actual`:   \"group\"\n`expected`: \"Group\"\n"
+          ],
+          "seconds": 4.36
+        },
+        "malformed_returns_means_table": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "bar_heights_are_group_means_ignoring_missing_values",
+            "bars_start_at_zero",
+            "character_groups_are_in_sorted_order",
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear",
+            "group_without_any_value_leaves_no_bar_and_no_empty_axis_slot",
+            "no_bar_has_a_missing_height",
+            "axis_titles_are_exactly_group_and_mean_y",
+            "bars_are_not_counts",
+            "rows_with_missing_group_are_ignored_and_row_order_is_irrelevant",
+            "input_data_frame_is_not_modified",
+            "plot_has_a_bar_layer_and_no_deprecation_warnings"
+          ],
+          "details": [
+            "bar_heights_are_group_means_ignoring_missing_values: candidate call failed: the function did not return a ggplot object",
+            "bars_start_at_zero: candidate call failed: the function did not return a ggplot object",
+            "character_groups_are_in_sorted_order: candidate call failed: the function did not return a ggplot object",
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear: candidate call failed: the function did not return a ggplot object",
+            "group_without_any_value_leaves_no_bar_and_no_empty_axis_slot: candidate call failed: the function did not return a ggplot object",
+            "no_bar_has_a_missing_height: candidate call failed: the function did not return a ggplot object",
+            "axis_titles_are_exactly_group_and_mean_y: candidate call failed: the function did not return a ggplot object",
+            "bars_are_not_counts: candidate call failed: the function did not return a ggplot object",
+            "rows_with_missing_group_are_ignored_and_row_order_is_irrelevant: candidate call failed: the function did not return a ggplot object",
+            "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object",
+            "plot_has_a_bar_layer_and_no_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
+          ],
+          "seconds": 2.34
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "bar_heights_are_group_means_ignoring_missing_values",
+            "bars_start_at_zero",
+            "character_groups_are_in_sorted_order",
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear",
+            "group_without_any_value_leaves_no_bar_and_no_empty_axis_slot",
+            "no_bar_has_a_missing_height",
+            "axis_titles_are_exactly_group_and_mean_y",
+            "bars_are_not_counts",
+            "rows_with_missing_group_are_ignored_and_row_order_is_irrelevant",
+            "input_data_frame_is_not_modified",
+            "plot_has_a_bar_layer_and_no_deprecation_warnings"
+          ],
+          "details": [
+            "bar_heights_are_group_means_ignoring_missing_values: candidate call failed: not implemented",
+            "bars_start_at_zero: candidate call failed: not implemented",
+            "character_groups_are_in_sorted_order: candidate call failed: not implemented",
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear: candidate call failed: not implemented",
+            "group_without_any_value_leaves_no_bar_and_no_empty_axis_slot: candidate call failed: not implemented",
+            "no_bar_has_a_missing_height: candidate call failed: not implemented",
+            "axis_titles_are_exactly_group_and_mean_y: candidate call failed: not implemented",
+            "bars_are_not_counts: candidate call failed: not implemented",
+            "rows_with_missing_group_are_ignored_and_row_order_is_irrelevant: candidate call failed: not implemented",
+            "input_data_frame_is_not_modified: candidate call failed: not implemented",
+            "plot_has_a_bar_layer_and_no_deprecation_warnings: candidate call failed: not implemented"
+          ],
+          "seconds": 2.23
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.08
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "bar_heights_are_group_means_ignoring_missing_values",
+            "bars_start_at_zero",
+            "character_groups_are_in_sorted_order",
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear",
+            "group_without_any_value_leaves_no_bar_and_no_empty_axis_slot",
+            "no_bar_has_a_missing_height",
+            "axis_titles_are_exactly_group_and_mean_y",
+            "bars_are_not_counts",
+            "rows_with_missing_group_are_ignored_and_row_order_is_irrelevant",
+            "input_data_frame_is_not_modified",
+            "plot_has_a_bar_layer_and_no_deprecation_warnings"
+          ],
+          "details": [
+            "bar_heights_are_group_means_ignoring_missing_values: candidate call failed: object 'plot_group_means' of mode 'function' was not found",
+            "bars_start_at_zero: candidate call failed: object 'plot_group_means' of mode 'function' was not found",
+            "character_groups_are_in_sorted_order: candidate call failed: object 'plot_group_means' of mode 'function' was not found",
+            "factor_levels_set_the_order_and_unused_levels_do_not_appear: candidate call failed: object 'plot_group_means' of mode 'function' was not found",
+            "group_without_any_value_leaves_no_bar_and_no_empty_axis_slot: candidate call failed: object 'plot_group_means' of mode 'function' was not found",
+            "no_bar_has_a_missing_height: candidate call failed: object 'plot_group_means' of mode 'function' was not found",
+            "axis_titles_are_exactly_group_and_mean_y: candidate call failed: object 'plot_group_means' of mode 'function' was not found",
+            "bars_are_not_counts: candidate call failed: object 'plot_group_means' of mode 'function' was not found",
+            "rows_with_missing_group_are_ignored_and_row_order_is_irrelevant: candidate call failed: object 'plot_group_means' of mode 'function' was not found",
+            "input_data_frame_is_not_modified: candidate call failed: object 'plot_group_means' of mode 'function' was not found",
+            "plot_has_a_bar_layer_and_no_deprecation_warnings: candidate call failed: object 'plot_group_means' of mode 'function' was not found"
+          ],
+          "seconds": 2.21
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 1.7
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.43
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XG03",
+      "task_sha256": "457e5d92a0361dad30ada6fac1ffa96f317af7da8153fecf2c1538575a2f2013",
+      "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+      "checks": 12,
+      "checks_failed_by_some_rejected_control": 12,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "ggplot2": "4.0.3",
+          "stats": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.99
+        },
+        "alternate_dplyr_complete": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.43
+        },
+        "wrong_share_of_region": {
+          "status": "scored",
+          "passed": 7,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "tiles_cover_every_group_region_combination_with_within_group_shares",
+            "each_groups_shares_add_up_to_one",
+            "labels_are_one_decimal_percentages_matching_the_shares",
+            "single_group_gives_one_row_of_tiles_summing_to_one",
+            "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant"
+          ],
+          "details": [
+            "tiles_cover_every_group_region_combination_with_within_group_shares: Expected `got$prop` to equal `want$prop`.\nDifferences:\n     actual | expected               \n [1] 0.338  - 0.550    [1]           \n [2] 0.474  - 0.450    [2]           \n [3] 0.000  | 0.000    [3]           \n [4] 0.154  - 0.303    [4]           \n [5] 0.211  - 0.242    [5]           \n [6] 0.349  - 0.455    [6]           \n [7] 0.431  - 0.538    [7]           \n [8] 0.158  - 0.115    [8]           \n [9] 0.419  - 0.346    [9]           \n[10] 0.077  - 0.238    [10]          \n ... ...      ...      and ",
+            "each_groups_shares_add_up_to_one: Expected `as.numeric(tapply(got$prop, got$group, sum))` to equal `rep(1, 4)`.\nDifferences:\n  `actual`: 0.8121 0.7132 1.0073 0.4674\n`expected`: 1.0000 1.0000 1.0000 1.0000\n",
+            "labels_are_one_decimal_percentages_matching_the_shares: Expected `got$label` to be identical to `want$label`.\nDifferences:\n     actual  | expected               \n [1] \"33.8%\" - \"55.0%\"  [1]           \n [2] \"47.4%\" - \"45.0%\"  [2]           \n [3] \"0.0%\"  | \"0.0%\"   [3]           \n [4] \"15.4%\" - \"30.3%\"  [4]           \n [5] \"21.1%\" - \"24.2%\"  [5]           \n [6] \"34.9%\" - \"45.5%\"  [6]           \n [7] \"43.1%\" - \"53.8%\"  [7]           \n [8] \"15.8%\" - \"11.5%\"  [8]           \n [9] \"41.9%\" - \"34.6%\"  [9]           \n[10] \"7.7%\"  - \"23.8%\"  [10]          \n ...",
+            "single_group_gives_one_row_of_tiles_summing_to_one: Expected `sort(got$prop)` to equal `c(0.4, 0.6)`.\nDifferences:\n  `actual`: 1.00 1.00\n`expected`: 0.40 0.60\n",
+            "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant: Expected `got$prop` to equal `want$prop`.\nDifferences:\n     actual | expected               \n [1] 0.338  - 0.550    [1]           \n [2] 0.474  - 0.450    [2]           \n [3] 0.000  | 0.000    [3]           \n [4] 0.154  - 0.303    [4]           \n [5] 0.211  - 0.242    [5]           \n [6] 0.349  - 0.455    [6]           \n [7] 0.431  - 0.538    [7]           \n [8] 0.158  - 0.115    [8]           \n [9] 0.419  - 0.346    [9]           \n[10] 0.077  - 0.238    [10]          \n ... ...      ...      and "
+          ],
+          "seconds": 4.14
+        },
+        "wrong_share_of_all_respondents": {
+          "status": "scored",
+          "passed": 8,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "tiles_cover_every_group_region_combination_with_within_group_shares",
+            "each_groups_shares_add_up_to_one",
+            "labels_are_one_decimal_percentages_matching_the_shares",
+            "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant"
+          ],
+          "details": [
+            "tiles_cover_every_group_region_combination_with_within_group_shares: Expected `got$prop` to equal `want$prop`.\nDifferences:\n     actual | expected               \n [1] 0.151  - 0.550    [1]           \n [2] 0.123  - 0.450    [2]           \n [3] 0.000  | 0.000    [3]           \n [4] 0.068  - 0.303    [4]           \n [5] 0.055  - 0.242    [5]           \n [6] 0.103  - 0.455    [6]           \n [7] 0.192  - 0.538    [7]           \n [8] 0.041  - 0.115    [8]           \n [9] 0.123  - 0.346    [9]           \n[10] 0.034  - 0.238    [10]          \n ... ...      ...      and ",
+            "each_groups_shares_add_up_to_one: Expected `as.numeric(tapply(got$prop, got$group, sum))` to equal `rep(1, 4)`.\nDifferences:\n  `actual`: 0.27 0.23 0.36 0.14\n`expected`: 1.00 1.00 1.00 1.00\n",
+            "labels_are_one_decimal_percentages_matching_the_shares: Expected `got$label` to be identical to `want$label`.\nDifferences:\n     actual  | expected               \n [1] \"15.1%\" - \"55.0%\"  [1]           \n [2] \"12.3%\" - \"45.0%\"  [2]           \n [3] \"0.0%\"  | \"0.0%\"   [3]           \n [4] \"6.8%\"  - \"30.3%\"  [4]           \n [5] \"5.5%\"  - \"24.2%\"  [5]           \n [6] \"10.3%\" - \"45.5%\"  [6]           \n [7] \"19.2%\" - \"53.8%\"  [7]           \n [8] \"4.1%\"  - \"11.5%\"  [8]           \n [9] \"12.3%\" - \"34.6%\"  [9]           \n[10] \"3.4%\"  - \"23.8%\"  [10]          \n ...",
+            "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant: Expected `got$prop` to equal `want$prop`.\nDifferences:\n     actual | expected               \n [1] 0.151  - 0.550    [1]           \n [2] 0.123  - 0.450    [2]           \n [3] 0.000  | 0.000    [3]           \n [4] 0.068  - 0.303    [4]           \n [5] 0.055  - 0.242    [5]           \n [6] 0.103  - 0.455    [6]           \n [7] 0.192  - 0.538    [7]           \n [8] 0.041  - 0.115    [8]           \n [9] 0.123  - 0.346    [9]           \n[10] 0.034  - 0.238    [10]          \n ... ...      ...      and "
+          ],
+          "seconds": 4.53
+        },
+        "wrong_drops_empty_combinations": {
+          "status": "scored",
+          "passed": 7,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "tiles_cover_every_group_region_combination_with_within_group_shares",
+            "empty_combinations_are_present_as_zero_tiles",
+            "labels_are_one_decimal_percentages_matching_the_shares",
+            "zero_share_is_labelled_0_0_percent",
+            "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant"
+          ],
+          "details": [
+            "tiles_cover_every_group_region_combination_with_within_group_shares: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`: 11\n`expected`: 12\n",
+            "empty_combinations_are_present_as_zero_tiles: Expected `any(got$prop == 0)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "labels_are_one_decimal_percentages_matching_the_shares: Expected `got$label` to be identical to `want$label`.\nDifferences:\n`actual[1:6]`:   \"55.0%\" \"45.0%\" NA     \"30.3%\" \"24.2%\" \"45.5%\"\n`expected[1:6]`: \"55.0%\" \"45.0%\" \"0.0%\" \"30.3%\" \"24.2%\" \"45.5%\"\n",
+            "zero_share_is_labelled_0_0_percent: Expected `\"0.0%\" %in% got$label` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant: Expected `got$prop` to equal `want$prop`.\nDifferences:\n    actual       | expected        \n[1] 0.5500000000 | 0.5500000000 [1]\n[2] 0.4500000000 | 0.4500000000 [2]\n[3] NA           - 0.0000000000 [3]\n[4] 0.3030303030 | 0.3030303030 [4]\n[5] 0.2424242424 | 0.2424242424 [5]\n[6] 0.4545454545 | 0.4545454545 [6]\n"
+          ],
+          "seconds": 4.36
+        },
+        "wrong_label_without_decimal": {
+          "status": "scored",
+          "passed": 10,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "labels_are_one_decimal_percentages_matching_the_shares",
+            "zero_share_is_labelled_0_0_percent"
+          ],
+          "details": [
+            "labels_are_one_decimal_percentages_matching_the_shares: Expected `got$label` to be identical to `want$label`.\nDifferences:\n     actual | expected               \n [1] \"55%\"  - \"55.0%\"  [1]           \n [2] \"45%\"  - \"45.0%\"  [2]           \n [3] \"0%\"   - \"0.0%\"   [3]           \n [4] \"30%\"  - \"30.3%\"  [4]           \n [5] \"24%\"  - \"24.2%\"  [5]           \n [6] \"45%\"  - \"45.5%\"  [6]           \n [7] \"54%\"  - \"53.8%\"  [7]           \n [8] \"12%\"  - \"11.5%\"  [8]           \n [9] \"35%\"  - \"34.6%\"  [9]           \n[10] \"24%\"  - \"23.8%\"  [10]          \n ... ...      .",
+            "zero_share_is_labelled_0_0_percent: Expected `\"0.0%\" %in% got$label` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
+          ],
+          "seconds": 4.52
+        },
+        "edge_default_axis_titles": {
+          "status": "scored",
+          "passed": 11,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "axis_titles_are_exactly_region_and_group"
+          ],
+          "details": [
+            "axis_titles_are_exactly_region_and_group: Expected `trimws(g$labels$x)` to be identical to \"Region\".\nDifferences:\n`actual`:   \"region\"\n`expected`: \"Region\"\n"
+          ],
+          "seconds": 4.93
+        },
+        "malformed_returns_table": {
+          "status": "scored",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "tiles_cover_every_group_region_combination_with_within_group_shares",
+            "each_groups_shares_add_up_to_one",
+            "empty_combinations_are_present_as_zero_tiles",
+            "labels_are_one_decimal_percentages_matching_the_shares",
+            "zero_share_is_labelled_0_0_percent",
+            "axes_follow_factor_or_sorted_order_without_unused_levels",
+            "fill_uses_a_continuous_colour_scale",
+            "axis_titles_are_exactly_region_and_group",
+            "single_group_gives_one_row_of_tiles_summing_to_one",
+            "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant",
+            "input_data_frame_is_not_modified",
+            "no_deprecation_warnings"
+          ],
+          "details": [
+            "tiles_cover_every_group_region_combination_with_within_group_shares: candidate call failed: the function did not return a ggplot object",
+            "each_groups_shares_add_up_to_one: candidate call failed: the function did not return a ggplot object",
+            "empty_combinations_are_present_as_zero_tiles: candidate call failed: the function did not return a ggplot object",
+            "labels_are_one_decimal_percentages_matching_the_shares: candidate call failed: the function did not return a ggplot object",
+            "zero_share_is_labelled_0_0_percent: candidate call failed: the function did not return a ggplot object",
+            "axes_follow_factor_or_sorted_order_without_unused_levels: candidate call failed: the function did not return a ggplot object",
+            "fill_uses_a_continuous_colour_scale: candidate call failed: the function did not return a ggplot object",
+            "axis_titles_are_exactly_region_and_group: candidate call failed: the function did not return a ggplot object",
+            "single_group_gives_one_row_of_tiles_summing_to_one: candidate call failed: the function did not return a ggplot object",
+            "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant: candidate call failed: the function did not return a ggplot object",
+            "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object",
+            "no_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
+          ],
+          "seconds": 2.72
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "tiles_cover_every_group_region_combination_with_within_group_shares",
+            "each_groups_shares_add_up_to_one",
+            "empty_combinations_are_present_as_zero_tiles",
+            "labels_are_one_decimal_percentages_matching_the_shares",
+            "zero_share_is_labelled_0_0_percent",
+            "axes_follow_factor_or_sorted_order_without_unused_levels",
+            "fill_uses_a_continuous_colour_scale",
+            "axis_titles_are_exactly_region_and_group",
+            "single_group_gives_one_row_of_tiles_summing_to_one",
+            "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant",
+            "input_data_frame_is_not_modified",
+            "no_deprecation_warnings"
+          ],
+          "details": [
+            "tiles_cover_every_group_region_combination_with_within_group_shares: candidate call failed: the function did not return a ggplot object",
+            "each_groups_shares_add_up_to_one: candidate call failed: the function did not return a ggplot object",
+            "empty_combinations_are_present_as_zero_tiles: candidate call failed: the function did not return a ggplot object",
+            "labels_are_one_decimal_percentages_matching_the_shares: candidate call failed: the function did not return a ggplot object",
+            "zero_share_is_labelled_0_0_percent: candidate call failed: the function did not return a ggplot object",
+            "axes_follow_factor_or_sorted_order_without_unused_levels: candidate call failed: the function did not return a ggplot object",
+            "fill_uses_a_continuous_colour_scale: candidate call failed: the function did not return a ggplot object",
+            "axis_titles_are_exactly_region_and_group: candidate call failed: the function did not return a ggplot object",
+            "single_group_gives_one_row_of_tiles_summing_to_one: candidate call failed: the function did not return a ggplot object",
+            "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant: candidate call failed: the function did not return a ggplot object",
+            "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object",
+            "no_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
+          ],
+          "seconds": 2.49
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.57
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "tiles_cover_every_group_region_combination_with_within_group_shares",
+            "each_groups_shares_add_up_to_one",
+            "empty_combinations_are_present_as_zero_tiles",
+            "labels_are_one_decimal_percentages_matching_the_shares",
+            "zero_share_is_labelled_0_0_percent",
+            "axes_follow_factor_or_sorted_order_without_unused_levels",
+            "fill_uses_a_continuous_colour_scale",
+            "axis_titles_are_exactly_region_and_group",
+            "single_group_gives_one_row_of_tiles_summing_to_one",
+            "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant",
+            "input_data_frame_is_not_modified",
+            "no_deprecation_warnings"
+          ],
+          "details": [
+            "tiles_cover_every_group_region_combination_with_within_group_shares: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found",
+            "each_groups_shares_add_up_to_one: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found",
+            "empty_combinations_are_present_as_zero_tiles: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found",
+            "labels_are_one_decimal_percentages_matching_the_shares: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found",
+            "zero_share_is_labelled_0_0_percent: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found",
+            "axes_follow_factor_or_sorted_order_without_unused_levels: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found",
+            "fill_uses_a_continuous_colour_scale: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found",
+            "axis_titles_are_exactly_region_and_group: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found",
+            "single_group_gives_one_row_of_tiles_summing_to_one: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found",
+            "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found",
+            "input_data_frame_is_not_modified: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found",
+            "no_deprecation_warnings: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found"
+          ],
+          "seconds": 2.2
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 1.94
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.31
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XG04",
+      "task_sha256": "cd29e9193a71f1e12642511599db15c6c61d9df9162182eaf0ccc0b10edd9f65",
+      "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+      "checks": 11,
+      "checks_failed_by_some_rejected_control": 11,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "ggplot2": "4.0.3",
+          "stats": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.31
+        },
+        "alternate_abline_from_lm": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.32
+        },
+        "wrong_scale_limits_drop_points": {
+          "status": "scored",
+          "passed": 4,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "points_include_every_finite_row_even_outside_the_window",
+            "regression_line_is_fitted_to_all_finite_rows",
+            "line_is_not_the_fit_to_the_window_subset",
+            "zoom_is_applied_through_the_coordinate_system",
+            "horizontal_scale_has_no_limits_that_censor_observations",
+            "rows_with_missing_or_infinite_values_are_ignored",
+            "a_different_window_changes_the_view_but_not_the_line"
+          ],
+          "details": [
+            "points_include_every_finite_row_even_outside_the_window: Expected `nrow(pts)` to be identical to `nrow(xg04_finite(case[[1]]))`.\nDifferences:\n  `actual`:  20\n`expected`: 120\n",
+            "regression_line_is_fitted_to_all_finite_rows: Expected `unname(got[\"slope\"])` to equal `unname(want[\"slope\"])`.\nDifferences:\n  `actual`: 2.26\n`expected`: 3.15\n",
+            "line_is_not_the_fit_to_the_window_subset: Expected `abs(unname(got[\"slope\"]) - unname(sub[\"slope\"]))` > 0.1.\nActual comparison: 0.00 <= 0.10\nDifference: -0.10 <= 0",
+            "zoom_is_applied_through_the_coordinate_system: Expected `as.numeric(g$coord_limits$x)` to equal `xg04_win_a`.\nDifferences:\n  `actual`:         \n`expected`: -0.5 0.5\n",
+            "horizontal_scale_has_no_limits_that_censor_observations: Expected `anyNA(xg04_points(g)$x[is.finite(xg04_finite(xg04_a)$x)])` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "rows_with_missing_or_infinite_values_are_ignored: Expected `unname(got[\"slope\"])` to equal `unname(xg04_ols(xg04_finite(xg04_b))[\"slope\"])`.\nDifferences:\n  `actual`: -0.81\n`expected`: -1.21\n",
+            "a_different_window_changes_the_view_but_not_the_line: Expected `unname(a[\"slope\"])` to equal `unname(b[\"slope\"])`.\nDifferences:\n  `actual`:  2.3\n`expected`: -1.8\n"
+          ],
+          "seconds": 4.46
+        },
+        "wrong_fit_on_window_subset": {
+          "status": "scored",
+          "passed": 7,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "regression_line_is_fitted_to_all_finite_rows",
+            "line_is_not_the_fit_to_the_window_subset",
+            "rows_with_missing_or_infinite_values_are_ignored",
+            "a_different_window_changes_the_view_but_not_the_line"
+          ],
+          "details": [
+            "regression_line_is_fitted_to_all_finite_rows: Expected `unname(got[\"slope\"])` to equal `unname(want[\"slope\"])`.\nDifferences:\n  `actual`: 2.26\n`expected`: 3.15\n",
+            "line_is_not_the_fit_to_the_window_subset: Expected `abs(unname(got[\"slope\"]) - unname(sub[\"slope\"]))` > 0.1.\nActual comparison: 0.00 <= 0.10\nDifference: -0.10 <= 0",
+            "rows_with_missing_or_infinite_values_are_ignored: Expected `unname(got[\"slope\"])` to equal `unname(xg04_ols(xg04_finite(xg04_b))[\"slope\"])`.\nDifferences:\n  `actual`: -0.81\n`expected`: -1.21\n",
+            "a_different_window_changes_the_view_but_not_the_line: Expected `unname(a[\"slope\"])` to equal `unname(b[\"slope\"])`.\nDifferences:\n  `actual`:  2.3\n`expected`: -1.8\n"
+          ],
+          "seconds": 4.27
+        },
+        "wrong_default_loess_smoother": {
+          "status": "scored",
+          "passed": 7,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "regression_line_is_fitted_to_all_finite_rows",
+            "line_is_not_the_fit_to_the_window_subset",
+            "rows_with_missing_or_infinite_values_are_ignored",
+            "a_different_window_changes_the_view_but_not_the_line"
+          ],
+          "details": [
+            "regression_line_is_fitted_to_all_finite_rows: the plotted line is not straight",
+            "line_is_not_the_fit_to_the_window_subset: the plotted line is not straight",
+            "rows_with_missing_or_infinite_values_are_ignored: the plotted line is not straight",
+            "a_different_window_changes_the_view_but_not_the_line: the plotted line is not straight"
+          ],
+          "seconds": 4.17
+        },
+        "wrong_zoom_by_filtering_rows": {
+          "status": "scored",
+          "passed": 3,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "points_include_every_finite_row_even_outside_the_window",
+            "regression_line_is_fitted_to_all_finite_rows",
+            "line_is_not_the_fit_to_the_window_subset",
+            "zoom_is_applied_through_the_coordinate_system",
+            "horizontal_scale_has_no_limits_that_censor_observations",
+            "visible_horizontal_range_is_the_window_plus_default_expansion",
+            "rows_with_missing_or_infinite_values_are_ignored",
+            "a_different_window_changes_the_view_but_not_the_line"
+          ],
+          "details": [
+            "points_include_every_finite_row_even_outside_the_window: Expected `nrow(pts)` to be identical to `nrow(xg04_finite(case[[1]]))`.\nDifferences:\n  `actual`:  20\n`expected`: 120\n",
+            "regression_line_is_fitted_to_all_finite_rows: Expected `unname(got[\"slope\"])` to equal `unname(want[\"slope\"])`.\nDifferences:\n  `actual`: 2.26\n`expected`: 3.15\n",
+            "line_is_not_the_fit_to_the_window_subset: Expected `abs(unname(got[\"slope\"]) - unname(sub[\"slope\"]))` > 0.1.\nActual comparison: 0.00 <= 0.10\nDifference: -0.10 <= 0",
+            "zoom_is_applied_through_the_coordinate_system: Expected `as.numeric(g$coord_limits$x)` to equal `xg04_win_a`.\nDifferences:\n  `actual`:         \n`expected`: -0.5 0.5\n",
+            "horizontal_scale_has_no_limits_that_censor_observations: Expected `anyNA(xg04_points(g)$x[is.finite(xg04_finite(xg04_a)$x)])` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "visible_horizontal_range_is_the_window_plus_default_expansion: Expected `g$panel_x_range[2]` >= `w[2]`.\nActual comparison: 2.451 < 2.500\nDifference: -0.049 < 0",
+            "rows_with_missing_or_infinite_values_are_ignored: Expected `unname(got[\"slope\"])` to equal `unname(xg04_ols(xg04_finite(xg04_b))[\"slope\"])`.\nDifferences:\n  `actual`: -0.81\n`expected`: -1.21\n",
+            "a_different_window_changes_the_view_but_not_the_line: Expected `unname(a[\"slope\"])` to equal `unname(b[\"slope\"])`.\nDifferences:\n  `actual`:  2.3\n`expected`: -1.8\n"
+          ],
+          "seconds": 4.34
+        },
+        "edge_no_window_validation": {
+          "status": "scored",
+          "passed": 10,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "invalid_windows_are_errors"
+          ],
+          "details": [
+            "invalid_windows_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 4.85
+        },
+        "malformed_returns_coefficients": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "points_include_every_finite_row_even_outside_the_window",
+            "regression_line_is_fitted_to_all_finite_rows",
+            "line_is_not_the_fit_to_the_window_subset",
+            "zoom_is_applied_through_the_coordinate_system",
+            "horizontal_scale_has_no_limits_that_censor_observations",
+            "visible_horizontal_range_is_the_window_plus_default_expansion",
+            "rows_with_missing_or_infinite_values_are_ignored",
+            "a_different_window_changes_the_view_but_not_the_line",
+            "invalid_windows_are_errors",
+            "input_data_frame_is_not_modified",
+            "no_deprecation_warnings"
+          ],
+          "details": [
+            "points_include_every_finite_row_even_outside_the_window: candidate call failed: the function did not return a ggplot object",
+            "regression_line_is_fitted_to_all_finite_rows: candidate call failed: the function did not return a ggplot object",
+            "line_is_not_the_fit_to_the_window_subset: candidate call failed: the function did not return a ggplot object",
+            "zoom_is_applied_through_the_coordinate_system: candidate call failed: the function did not return a ggplot object",
+            "horizontal_scale_has_no_limits_that_censor_observations: candidate call failed: the function did not return a ggplot object",
+            "visible_horizontal_range_is_the_window_plus_default_expansion: candidate call failed: the function did not return a ggplot object",
+            "rows_with_missing_or_infinite_values_are_ignored: candidate call failed: NA/NaN/Inf in 'x'",
+            "a_different_window_changes_the_view_but_not_the_line: candidate call failed: the function did not return a ggplot object",
+            "invalid_windows_are_errors: candidate call failed: the function did not return a ggplot object",
+            "input_data_frame_is_not_modified: candidate call failed: NA/NaN/Inf in 'x'",
+            "no_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
+          ],
+          "seconds": 2.02
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "points_include_every_finite_row_even_outside_the_window",
+            "regression_line_is_fitted_to_all_finite_rows",
+            "line_is_not_the_fit_to_the_window_subset",
+            "zoom_is_applied_through_the_coordinate_system",
+            "horizontal_scale_has_no_limits_that_censor_observations",
+            "visible_horizontal_range_is_the_window_plus_default_expansion",
+            "rows_with_missing_or_infinite_values_are_ignored",
+            "a_different_window_changes_the_view_but_not_the_line",
+            "invalid_windows_are_errors",
+            "input_data_frame_is_not_modified",
+            "no_deprecation_warnings"
+          ],
+          "details": [
+            "points_include_every_finite_row_even_outside_the_window: candidate call failed: todo",
+            "regression_line_is_fitted_to_all_finite_rows: candidate call failed: todo",
+            "line_is_not_the_fit_to_the_window_subset: candidate call failed: todo",
+            "zoom_is_applied_through_the_coordinate_system: candidate call failed: todo",
+            "horizontal_scale_has_no_limits_that_censor_observations: candidate call failed: todo",
+            "visible_horizontal_range_is_the_window_plus_default_expansion: candidate call failed: todo",
+            "rows_with_missing_or_infinite_values_are_ignored: candidate call failed: todo",
+            "a_different_window_changes_the_view_but_not_the_line: candidate call failed: todo",
+            "invalid_windows_are_errors: candidate call failed: todo",
+            "input_data_frame_is_not_modified: candidate call failed: todo",
+            "no_deprecation_warnings: candidate call failed: todo"
+          ],
+          "seconds": 2.0
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.69
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "points_include_every_finite_row_even_outside_the_window",
+            "regression_line_is_fitted_to_all_finite_rows",
+            "line_is_not_the_fit_to_the_window_subset",
+            "zoom_is_applied_through_the_coordinate_system",
+            "horizontal_scale_has_no_limits_that_censor_observations",
+            "visible_horizontal_range_is_the_window_plus_default_expansion",
+            "rows_with_missing_or_infinite_values_are_ignored",
+            "a_different_window_changes_the_view_but_not_the_line",
+            "invalid_windows_are_errors",
+            "input_data_frame_is_not_modified",
+            "no_deprecation_warnings"
+          ],
+          "details": [
+            "points_include_every_finite_row_even_outside_the_window: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found",
+            "regression_line_is_fitted_to_all_finite_rows: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found",
+            "line_is_not_the_fit_to_the_window_subset: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found",
+            "zoom_is_applied_through_the_coordinate_system: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found",
+            "horizontal_scale_has_no_limits_that_censor_observations: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found",
+            "visible_horizontal_range_is_the_window_plus_default_expansion: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found",
+            "rows_with_missing_or_infinite_values_are_ignored: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found",
+            "a_different_window_changes_the_view_but_not_the_line: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found",
+            "invalid_windows_are_errors: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found",
+            "input_data_frame_is_not_modified: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found",
+            "no_deprecation_warnings: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found"
+          ],
+          "seconds": 1.93
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 1.58
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.19
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XG05",
+      "task_sha256": "ee186e62f98686ee73dbc9b1c7dd7fa05c2baf85269d5c37cff6e94091808a8d",
+      "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+      "checks": 11,
+      "checks_failed_by_some_rejected_control": 11,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "ggplot2": "4.0.3",
+          "stats": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.99
+        },
+        "alternate_stat_summary_mean_line": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.08
+        },
+        "wrong_no_group_aesthetic": {
+          "status": "scored",
+          "passed": 6,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "one_line_per_participant_with_its_observed_scores",
+            "lines_run_in_week_order_whatever_the_row_order",
+            "participants_are_separate_lines_not_one_connected_path",
+            "numeric_identifiers_and_unevenly_spaced_weeks_are_supported",
+            "participants_without_any_score_do_not_appear"
+          ],
+          "details": [
+            "one_line_per_participant_with_its_observed_scores: Expected `sort(unname(vapply(got, key, \"\")))` to be identical to `sort(unname(vapply(want, key, \"\")))`.\nDifferences:\nactual vs expected\n- \"5.000000:35.831000|1.000000:30.454000|1.000000:35.527000|4.000000:37.628000|2.000000:33.968000|5.000000:33.877000|4.000000:39.041000|2.000000:33.647000|1.000000:27.933000|4.000000:35.573000|1.000000:28.391000|4.000000:37.681000|3.000000:29.857000|5.000000:40.742000|2.000000:33.383000|1.000000:31.917000|5.000000:35.491000|3.000000:36.045000|3.000000:31.494000|",
+            "lines_run_in_week_order_whatever_the_row_order: Expected `is.unsorted(grp$x)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "participants_are_separate_lines_not_one_connected_path: Expected `max(ll$n_groups)` to be identical to `xg05_oracle(xg05_a)$n_subjects`.\nDifferences:\n  `actual`:  1\n`expected`: 10\n",
+            "numeric_identifiers_and_unevenly_spaced_weeks_are_supported: Expected `sort(unname(vapply(got, key, \"\")))` to be identical to `sort(unname(vapply(want, key, \"\")))`.\nDifferences:\nactual vs expected\n- \"3.000000:33.816000|3.000000:28.718000|9.000000:38.897000|3.000000:34.734000|12.000000:38.792000|9.000000:35.515000|9.000000:31.446000|6.000000:34.653000|6.000000:32.684000|12.000000:40.576000|3.000000:32.912000|6.000000:32.287000|9.000000:33.730000|9.000000:40.894000|6.000000:34.747000|6.000000:33.329000|9.000000:30.573000|12.000000:36.152000|12.000000:40.926",
+            "participants_without_any_score_do_not_appear: Expected `max(xg05_line_layers(g)$n_groups[1:2])` to be identical to 9L.\nDifferences:\n  `actual`: 1\n`expected`: 9\n"
+          ],
+          "seconds": 4.11
+        },
+        "wrong_path_in_row_order": {
+          "status": "scored",
+          "passed": 7,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "one_line_per_participant_with_its_observed_scores",
+            "lines_run_in_week_order_whatever_the_row_order",
+            "numeric_identifiers_and_unevenly_spaced_weeks_are_supported",
+            "participants_without_any_score_do_not_appear"
+          ],
+          "details": [
+            "one_line_per_participant_with_its_observed_scores: Expected `sort(unname(vapply(got, key, \"\")))` to be identical to `sort(unname(vapply(want, key, \"\")))`.\nDifferences:\nactual vs expected\n- \"1.000000:27.933000|3.000000:31.494000|5.000000:34.290000|4.000000:35.323000\"\n+ \"1.000000:24.471000|2.000000:28.149000|3.000000:29.857000|4.000000:32.399000|5.000000:33.877000\"\n- \"1.000000:28.391000|3.000000:32.722000|2.000000:30.550000|4.000000:34.851000\"\n+ \"1.000000:27.250000|2.000000:31.665000|3.000000:36.045000|4.000000:34.153000|5.000000:35.831000\"\n- \"1.0",
+            "lines_run_in_week_order_whatever_the_row_order: Expected `is.unsorted(grp$x)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "numeric_identifiers_and_unevenly_spaced_weeks_are_supported: Expected `sort(unname(vapply(got, key, \"\")))` to be identical to `sort(unname(vapply(want, key, \"\")))`.\nDifferences:\nactual vs expected\n- \"12.000000:38.792000|6.000000:32.684000|3.000000:32.912000|9.000000:33.730000\"\n+ \"3.000000:28.718000|6.000000:34.653000|9.000000:30.573000|12.000000:32.573000\"\n- \"3.000000:28.718000|6.000000:34.653000|9.000000:30.573000|12.000000:32.573000\"\n+ \"3.000000:28.841000|6.000000:33.329000|9.000000:31.446000|12.000000:30.878000\"\n- \"3.000000:33.816000|9.000000:35.515000",
+            "participants_without_any_score_do_not_appear: Expected `sort(unname(vapply(got, key, \"\")))` to be identical to `sort(unname(vapply(want, key, \"\")))`.\nDifferences:\nactual vs expected\n- \"1.000000:27.933000|3.000000:31.494000|5.000000:34.290000|4.000000:35.323000\"\n+ \"1.000000:24.471000|2.000000:28.149000|3.000000:29.857000|4.000000:32.399000|5.000000:33.877000\"\n- \"1.000000:28.391000|3.000000:32.722000|2.000000:30.550000|4.000000:34.851000\"\n+ \"1.000000:27.250000|2.000000:31.665000|3.000000:36.045000|4.000000:34.153000|5.000000:35.831000\"\n- \"1.0"
+          ],
+          "seconds": 4.15
+        },
+        "wrong_mean_with_missing_as_zero": {
+          "status": "scored",
+          "passed": 9,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "mean_line_is_one_group_with_weekly_means_ignoring_missing_scores",
+            "a_week_with_no_scores_has_no_mean_point"
+          ],
+          "details": [
+            "mean_line_is_one_group_with_weekly_means_ignoring_missing_scores: Expected `ml$y` to equal `want$y`.\nDifferences:\n  `actual`: 29.9 26.1 30.8 32.3 30.1\n`expected`: 29.9 32.6 34.2 35.8 37.6\n",
+            "a_week_with_no_scores_has_no_mean_point: Expected `3 %in% xg05_weeks(g, ml$x)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n"
+          ],
+          "seconds": 3.98
+        },
+        "wrong_mean_line_same_width": {
+          "status": "scored",
+          "passed": 10,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "mean_line_is_at_least_one_and_a_half_times_as_thick"
+          ],
+          "details": [
+            "mean_line_is_at_least_one_and_a_half_times_as_thick: Expected `mean(ll$mean$data$linewidth)` >= `1.5 * mean(ll$subject$data$linewidth)`.\nActual comparison: 0.50 < 0.75\nDifference: -0.25 < 0"
+          ],
+          "seconds": 4.0
+        },
+        "edge_default_axis_titles": {
+          "status": "scored",
+          "passed": 10,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "axis_titles_are_exactly_week_and_score"
+          ],
+          "details": [
+            "axis_titles_are_exactly_week_and_score: Expected `trimws(g$labels$x)` to be identical to \"Week\".\nDifferences:\n`actual`:   \"week\"\n`expected`: \"Week\"\n"
+          ],
+          "seconds": 4.56
+        },
+        "malformed_returns_means_table": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "one_line_per_participant_with_its_observed_scores",
+            "lines_run_in_week_order_whatever_the_row_order",
+            "participants_are_separate_lines_not_one_connected_path",
+            "mean_line_is_one_group_with_weekly_means_ignoring_missing_scores",
+            "a_week_with_no_scores_has_no_mean_point",
+            "mean_line_is_at_least_one_and_a_half_times_as_thick",
+            "axis_titles_are_exactly_week_and_score",
+            "numeric_identifiers_and_unevenly_spaced_weeks_are_supported",
+            "participants_without_any_score_do_not_appear",
+            "input_data_frame_is_not_modified",
+            "no_deprecation_warnings"
+          ],
+          "details": [
+            "one_line_per_participant_with_its_observed_scores: candidate call failed: the function did not return a ggplot object",
+            "lines_run_in_week_order_whatever_the_row_order: candidate call failed: the function did not return a ggplot object",
+            "participants_are_separate_lines_not_one_connected_path: candidate call failed: the function did not return a ggplot object",
+            "mean_line_is_one_group_with_weekly_means_ignoring_missing_scores: candidate call failed: the function did not return a ggplot object",
+            "a_week_with_no_scores_has_no_mean_point: candidate call failed: the function did not return a ggplot object",
+            "mean_line_is_at_least_one_and_a_half_times_as_thick: candidate call failed: the function did not return a ggplot object",
+            "axis_titles_are_exactly_week_and_score: candidate call failed: the function did not return a ggplot object",
+            "numeric_identifiers_and_unevenly_spaced_weeks_are_supported: candidate call failed: the function did not return a ggplot object",
+            "participants_without_any_score_do_not_appear: candidate call failed: the function did not return a ggplot object",
+            "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object",
+            "no_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
+          ],
+          "seconds": 2.57
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "one_line_per_participant_with_its_observed_scores",
+            "lines_run_in_week_order_whatever_the_row_order",
+            "participants_are_separate_lines_not_one_connected_path",
+            "mean_line_is_one_group_with_weekly_means_ignoring_missing_scores",
+            "a_week_with_no_scores_has_no_mean_point",
+            "mean_line_is_at_least_one_and_a_half_times_as_thick",
+            "axis_titles_are_exactly_week_and_score",
+            "numeric_identifiers_and_unevenly_spaced_weeks_are_supported",
+            "participants_without_any_score_do_not_appear",
+            "input_data_frame_is_not_modified",
+            "no_deprecation_warnings"
+          ],
+          "details": [
+            "one_line_per_participant_with_its_observed_scores: candidate call failed: the function did not return a ggplot object",
+            "lines_run_in_week_order_whatever_the_row_order: candidate call failed: the function did not return a ggplot object",
+            "participants_are_separate_lines_not_one_connected_path: candidate call failed: the function did not return a ggplot object",
+            "mean_line_is_one_group_with_weekly_means_ignoring_missing_scores: candidate call failed: the function did not return a ggplot object",
+            "a_week_with_no_scores_has_no_mean_point: candidate call failed: the function did not return a ggplot object",
+            "mean_line_is_at_least_one_and_a_half_times_as_thick: candidate call failed: the function did not return a ggplot object",
+            "axis_titles_are_exactly_week_and_score: candidate call failed: the function did not return a ggplot object",
+            "numeric_identifiers_and_unevenly_spaced_weeks_are_supported: candidate call failed: the function did not return a ggplot object",
+            "participants_without_any_score_do_not_appear: candidate call failed: the function did not return a ggplot object",
+            "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object",
+            "no_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
+          ],
+          "seconds": 2.53
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.13
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "one_line_per_participant_with_its_observed_scores",
+            "lines_run_in_week_order_whatever_the_row_order",
+            "participants_are_separate_lines_not_one_connected_path",
+            "mean_line_is_one_group_with_weekly_means_ignoring_missing_scores",
+            "a_week_with_no_scores_has_no_mean_point",
+            "mean_line_is_at_least_one_and_a_half_times_as_thick",
+            "axis_titles_are_exactly_week_and_score",
+            "numeric_identifiers_and_unevenly_spaced_weeks_are_supported",
+            "participants_without_any_score_do_not_appear",
+            "input_data_frame_is_not_modified",
+            "no_deprecation_warnings"
+          ],
+          "details": [
+            "one_line_per_participant_with_its_observed_scores: candidate call failed: object 'plot_trajectories' of mode 'function' was not found",
+            "lines_run_in_week_order_whatever_the_row_order: candidate call failed: object 'plot_trajectories' of mode 'function' was not found",
+            "participants_are_separate_lines_not_one_connected_path: candidate call failed: object 'plot_trajectories' of mode 'function' was not found",
+            "mean_line_is_one_group_with_weekly_means_ignoring_missing_scores: candidate call failed: object 'plot_trajectories' of mode 'function' was not found",
+            "a_week_with_no_scores_has_no_mean_point: candidate call failed: object 'plot_trajectories' of mode 'function' was not found",
+            "mean_line_is_at_least_one_and_a_half_times_as_thick: candidate call failed: object 'plot_trajectories' of mode 'function' was not found",
+            "axis_titles_are_exactly_week_and_score: candidate call failed: object 'plot_trajectories' of mode 'function' was not found",
+            "numeric_identifiers_and_unevenly_spaced_weeks_are_supported: candidate call failed: object 'plot_trajectories' of mode 'function' was not found",
+            "participants_without_any_score_do_not_appear: candidate call failed: object 'plot_trajectories' of mode 'function' was not found",
+            "input_data_frame_is_not_modified: candidate call failed: object 'plot_trajectories' of mode 'function' was not found",
+            "no_deprecation_warnings: candidate call failed: object 'plot_trajectories' of mode 'function' was not found"
+          ],
+          "seconds": 2.09
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 1.66
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.69
         }
       },
       "problems": [],

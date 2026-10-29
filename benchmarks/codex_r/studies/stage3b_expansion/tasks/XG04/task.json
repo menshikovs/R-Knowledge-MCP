@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "id": "XG04",
+  "title": "Zoom with the coordinate system so the regression line still uses all observations",
+  "category": "ggplot2_visualization",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["ggplot2", "stats"],
+  "fixtures": ["fixture/measurements.csv"],
+  "source_specs": ["GGP-E08", "GGP-P01"],
+  "source_relation": "original construction inspired by the scale-versus-coordinate misunderstanding family in the source set",
+  "difficulty_hypothesis": "Agents zoom with xlim()/scale limits, which silently censors observations and refits the smoother on the window, or filter rows to zoom; others leave geom_smooth on its default loess method.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 1, "documentation_dependence": 2,
+    "reasoning_complexity": 2, "code_generation_complexity": 1, "statistical_reasoning": 1,
+    "debugging_difficulty": 1, "package_api_verification_need": 1
+  },
+  "expected_mcp_usefulness": "low",
+  "mcp_relevance": {
+    "classification": "exploratory",
+    "rationale": "The distinction between scale limits and coord_cartesian() is documented in the ggplot2 help and is the heart of the task, so documentation matters more than for the other plotting tasks; but the help pages are installed locally and the behaviour is long-stable, so MCP offers no unique information.",
+    "information_need": "What xlim()/scale limits do to data and statistics versus coord_cartesian(xlim =).",
+    "relevant_mcp_tools": ["get_function_docs", "search_r_documentation"],
+    "obtainable_without_mcp": "yes: ?coord_cartesian and ?scale_x_continuous are installed locally",
+    "version_specific_evidence_value": "low",
+    "alternative_solution_paths": [
+      "geom_smooth(method = 'lm') plus coord_cartesian(xlim = xlim)",
+      "an explicit lm fit drawn with geom_abline plus coord_cartesian",
+      "geom_smooth(fullrange) variants are equally valid"
+    ]
+  },
+  "independence": {
+    "cluster": "ggplot2-scales-and-coords",
+    "shared_with": [],
+    "shared_features": ["scale versus coordinate transformation"]
+  },
+  "calibration_risks": {
+    "ceiling": "moderate-high for strong baselines",
+    "floor": "low",
+    "documentation_dependence": "moderate",
+    "version_sensitivity": "low",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": [
+      "scale_limits_censor_points",
+      "fit_on_window_subset",
+      "default_loess_smoother",
+      "zoom_by_filtering_rows",
+      "no_xlim_validation"
+    ],
+    "statistical_reasoning_checks": ["zoom_must_not_change_the_estimate"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"ggplot2": "4.0.3"},
+    "oracle": "normal-equation OLS on all finite rows; plotted line coefficients recovered from layer data (or abline columns); coordinate limits and panel range via ggplot_build"
+  },
+  "checks_documented_in": "verifier/XG04.R"
+}

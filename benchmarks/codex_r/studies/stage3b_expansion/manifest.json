@@ -192,6 +192,106 @@
       "artifacts": [
         "solution.R"
       ]
+    },
+    {
+      "id": "XG01",
+      "title": "Daily mean time series on a complete calendar with a broken line at gaps",
+      "category": "ggplot2_visualization",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "spec": "tasks/XG01/prompt.md",
+      "fixtures": [
+        "tasks/XG01/fixture/readings.csv"
+      ],
+      "metadata": "tasks/XG01/task.json",
+      "verifier": "verifier/XG01.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XG02",
+      "title": "Group-mean bars with correct NA handling, level order and no empty axis slot",
+      "category": "ggplot2_visualization",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "spec": "tasks/XG02/prompt.md",
+      "fixtures": [
+        "tasks/XG02/fixture/outcomes.csv"
+      ],
+      "metadata": "tasks/XG02/task.json",
+      "verifier": "verifier/XG02.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XG03",
+      "title": "Within-group proportion heatmap with complete grid and exact percent labels",
+      "category": "ggplot2_visualization",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "spec": "tasks/XG03/prompt.md",
+      "fixtures": [
+        "tasks/XG03/fixture/respondents.csv"
+      ],
+      "metadata": "tasks/XG03/task.json",
+      "verifier": "verifier/XG03.R",
+      "checks": 12,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XG04",
+      "title": "Zoom with the coordinate system so the regression line still uses all observations",
+      "category": "ggplot2_visualization",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "spec": "tasks/XG04/prompt.md",
+      "fixtures": [
+        "tasks/XG04/fixture/measurements.csv"
+      ],
+      "metadata": "tasks/XG04/task.json",
+      "verifier": "verifier/XG04.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XG05",
+      "title": "Per-participant trajectories with a mean trajectory: grouping, ordering and missing scores",
+      "category": "ggplot2_visualization",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "spec": "tasks/XG05/prompt.md",
+      "fixtures": [
+        "tasks/XG05/fixture/trajectories.csv"
+      ],
+      "metadata": "tasks/XG05/task.json",
+      "verifier": "verifier/XG05.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
     }
   ]
 }

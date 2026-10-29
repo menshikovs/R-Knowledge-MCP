@@ -98,24 +98,47 @@ plot_digest <- function(p, max_rows = 5000L) {
     list(
       geom = class(ly$geom)[1], stat = class(ly$stat)[1], position = class(ly$position)[1],
       show_legend = safe(ly$show.legend), aes_params = safe(names(ly$aes_params), character()),
-      mapped = safe(names(ly$mapping), character()),
+      mapping_names = safe(names(ly$mapping), character()),
       stat_params = safe(lapply(ly$stat_params, function(z) if (is.atomic(z) && length(z) < 20) z else class(z)[1])),
       geom_params = safe(lapply(ly$geom_params, function(z) if (is.atomic(z) && length(z) < 20) z else class(z)[1])),
-      data = as_plain(built$data[[i]])
+      data = as_plain(built$data[[i]]),
+      # Mapped aesthetic values before scales turn them into colours/sizes (e.g. a tile's fill).
+      mapped = safe({
+        raw <- ly$layer_data(p$data)
+        lapply(built$plot$layers[[i]]$computed_mapping, function(q) {
+          v <- rlang::eval_tidy(q, data = raw)
+          if (is.factor(v)) v <- as.character(v)
+          if (inherits(v, "Date")) v <- as.numeric(v)
+          if (is.atomic(v) && length(v) <= max_rows) v else NULL
+        })
+      }, list())
     )
   })
   scales <- lapply(built$plot$scales$scales, function(s) list(
     aesthetics = s$aesthetics, class = class(s)[1],
     transform = safe(s$get_transformation()$name, safe(s$trans$name)),
     limits = safe(as.character(s$get_limits())), breaks = safe(as.character(s$get_breaks())),
+    levels = safe(if (inherits(s, "ScaleDiscrete")) as.character(s$range$range)),
     name = safe(if (inherits(s$name, "waiver")) NULL else as.character(s$name)),
     guide = safe(if (is.character(s$guide)) s$guide else class(s$guide)[1])
   ))
+  # Position scales are trained in the layout (the plot's own scales are untrained templates).
+  trained <- function(sc) {
+    if (is.null(sc)) return(NULL)
+    list(class = class(sc)[1],
+         levels = safe(if (inherits(sc, "ScaleDiscrete")) as.character(sc$range$range)),
+         range = safe(if (inherits(sc, "ScaleContinuous")) as.numeric(sc$range$range)),
+         limits = safe(as.character(sc$get_limits())),
+         transform = safe(sc$get_transformation()$name, safe(sc$trans$name)))
+  }
+  position <- list(x = trained(safe(built$layout$panel_scales_x[[1]])),
+                   y = trained(safe(built$layout$panel_scales_y[[1]])))
   facet <- p$facet
   facet_vars <- safe(c(names(facet$params$facets), names(facet$params$rows), names(facet$params$cols)), character())
   panel <- safe(built$layout$layout, NULL)
   list(
     n_layers = length(p$layers), layers = layers, labels = labs, scales = scales,
+    position = position,
     facet = class(facet)[1], facet_vars = facet_vars, facet_free = safe(facet$params$free),
     n_panels = if (is.null(panel)) NA_integer_ else nrow(panel),
     coord = class(p$coordinates)[1], coord_limits = safe(lapply(p$coordinates$limits, as.numeric)),
@@ -129,4 +152,14 @@ plot_digest <- function(p, max_rows = 5000L) {
 layer_data_of <- function(digest, i = 1L) {
   stopifnot(i <= length(digest$layers))
   digest$layers[[i]]$data
+}
+
+# Indices of the digest's layers whose geom class is one of `geoms`.
+layers_of <- function(digest, geoms) {
+  which(vapply(digest$layers, function(l) l$geom %in% geoms, logical(1)))
+}
+
+# Tick order of a discrete position scale (levels of the trained x or y scale), from a digest.
+discrete_levels <- function(digest, aesthetic = "x") {
+  digest$position[[aesthetic]]$levels
 }

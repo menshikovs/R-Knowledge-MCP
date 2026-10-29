@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "id": "XG02",
+  "title": "Group-mean bars with correct NA handling, level order and no empty axis slot",
+  "category": "ggplot2_visualization",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["ggplot2", "stats"],
+  "fixtures": ["fixture/outcomes.csv"],
+  "source_specs": ["GGP-E05", "GGP-E06", "GGP-X03"],
+  "source_relation": "adapted: function-style contract, NA-only group and factor-level traps added, plot inspected through ggplot_build",
+  "difficulty_hypothesis": "Agents use geom_bar() with the default count statistic, compute means without na.rm, ignore factor-level order, or pass raw rows to stat_summary so a group with no usable value keeps an empty slot (the discrete axis is trained before NA rows are removed).",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 1, "documentation_dependence": 1,
+    "reasoning_complexity": 2, "code_generation_complexity": 1, "statistical_reasoning": 0,
+    "debugging_difficulty": 1, "package_api_verification_need": 1
+  },
+  "expected_mcp_usefulness": "low",
+  "mcp_relevance": {
+    "classification": "control",
+    "rationale": "Stat/geom semantics and scale training are core ggplot2 knowledge available from local help; the answer does not depend on a version or an external fact.",
+    "information_need": "Difference between stat_count and stat_summary; when discrete scales are trained relative to NA removal.",
+    "relevant_mcp_tools": ["get_function_docs"],
+    "obtainable_without_mcp": "yes: ?geom_bar, ?stat_summary installed locally",
+    "version_specific_evidence_value": "low",
+    "alternative_solution_paths": [
+      "precompute means and use geom_col",
+      "filter rows then stat_summary(fun = mean, geom = 'bar')",
+      "geom_bar(stat = 'summary', fun = mean) after filtering"
+    ]
+  },
+  "independence": {
+    "cluster": "ggplot2-missing-data",
+    "shared_with": ["XG01"],
+    "shared_features": ["NA handling in aggregated plots"]
+  },
+  "calibration_risks": {
+    "ceiling": "high: the common patterns are well known; the empty-slot trap is the discriminator",
+    "floor": "low",
+    "documentation_dependence": "low",
+    "version_sensitivity": "low",
+    "blockers": ["ceiling effect likely for strong baselines: calibration must confirm"]
+  },
+  "analysis": {
+    "failure_modes": [
+      "count_bars",
+      "mean_without_na_rm",
+      "alphabetical_instead_of_factor_order",
+      "empty_group_slot",
+      "default_axis_titles"
+    ],
+    "statistical_reasoning_checks": []
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"ggplot2": "4.0.3"},
+    "oracle": "plain-R group means; plot inspected through ggplot_build (bar layer data, discrete scale range, labels)"
+  },
+  "checks_documented_in": "verifier/XG02.R"
+}
