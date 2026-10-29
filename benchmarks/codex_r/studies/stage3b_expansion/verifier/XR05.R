@@ -85,12 +85,17 @@ check("row_names_are_sequential_and_result_is_a_plain_data_frame", {
 })
 
 check("f_is_called_once_per_combination", {
-  counter <- new.env()
-  counter$n <- 0L
-  f <- function(a, b) { counter$n <- counter$n + 1L; a + b }
-  res <- call_wrapped("evaluate_grid", list(a = 1:3, b = c(0.5, 1.5)), function(a, b) a + b)
-  got <- value_of(res)
-  testthat::expect_identical(nrow(got), 6L)
+  probe <- function() {
+    n_calls <- 0L
+    f <- function(a, b) { n_calls <<- n_calls + 1L; a + b }
+    fn <- get("evaluate_grid", envir = globalenv(), mode = "function")
+    out <- fn(list(a = 1:3, b = c(0.5, 1.5)), f)
+    list(nrow = nrow(out), n_calls = n_calls)
+  }
+  environment(probe) <- globalenv()
+  got <- value_of(call_candidate(probe))
+  testthat::expect_identical(got$nrow, 6L)
+  testthat::expect_identical(got$n_calls, 6L)
 })
 
 check("invalid_inputs_are_errors", {

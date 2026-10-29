@@ -43,6 +43,7 @@ REFERENCE_MARKERS = (
     "menshikovs/r-knowledge-mcp",
     "benchmarks/codex_r/oracle",
     "benchmarks/codex_r/hard/verifier",
+    "stage3b_expansion/verifier",
     "knowledge_pilot/verifier",
     "scorer_evidence",
 )

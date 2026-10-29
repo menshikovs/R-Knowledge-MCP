@@ -1,12 +1,12 @@
 {
   "benchmark": "r-knowledge-mcp-stage3b-v1",
-  "validated_at": "2026-10-29T09:15:24Z",
+  "validated_at": "2026-10-29T11:32:49Z",
   "api_calls": 0,
   "tasks": [
     {
       "task": "XA01",
       "task_sha256": "da0d0d8154f6237dd45df3169be5072376c74b6188abca507bfaabe9634cbcd5",
-      "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 13,
       "checks_failed_by_some_rejected_control": 13,
       "checks_never_failed_by_any_control": [],
@@ -29,7 +29,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.21
+          "seconds": 3.38
         },
         "alternate_closed_form": {
           "status": "scored",
@@ -39,7 +39,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.1
+          "seconds": 3.31
         },
         "wrong_levene_mean_centered": {
           "status": "scored",
@@ -55,7 +55,7 @@
             "equal_variances_brown_forsythe_statistic_matches_oracle: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.76\n`expected`: 0.59\n\nequal statistic",
             "unequal_variances_brown_forsythe_statistic_matches_oracle: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 21.5\n`expected`: 17.3\n\nunequal statistic"
           ],
-          "seconds": 2.4
+          "seconds": 3.69
         },
         "wrong_always_classical": {
           "status": "scored",
@@ -77,7 +77,7 @@
             "welch_branch_does_not_reuse_pooled_tukey_p_values: Expected `max(abs(as.numeric(pw$p_adjusted) - pooled))` > 0.001.\nActual comparison: 0.0000000000000002 <= 0.0010000000000000\nDifference: -0.0009999999999998 <= 0",
             "rows_with_missing_values_are_dropped_and_row_order_is_irrelevant: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 4.6\n`expected`: 1.1\n\nna statistic"
           ],
-          "seconds": 3.07
+          "seconds": 4.53
         },
         "wrong_welch_with_pooled_tukey": {
           "status": "scored",
@@ -95,7 +95,7 @@
             "welch_branch_does_not_reuse_pooled_tukey_p_values: Expected `max(abs(as.numeric(pw$p_adjusted) - pooled))` > 0.001.\nActual comparison: 0.0000000000000002 <= 0.0010000000000000\nDifference: -0.0009999999999998 <= 0",
             "rows_with_missing_values_are_dropped_and_row_order_is_irrelevant: Expected `as.numeric(field(res, \"pairwise\")$p_adjusted)` to equal `want$pairwise$p_adjusted`.\nDifferences:\n  `actual`: 0.983723 0.038802 0.999743 0.004245 0.944425 0.019871\n`expected`: 0.999753 0.859538 0.999753 0.843278 0.999753 0.859538\n"
           ],
-          "seconds": 3.05
+          "seconds": 4.29
         },
         "edge_accepts_two_groups": {
           "status": "scored",
@@ -109,7 +109,7 @@
           "details": [
             "fewer_than_three_groups_is_an_error: expected an error but the call succeeded"
           ],
-          "seconds": 2.82
+          "seconds": 3.79
         },
         "malformed_returns_vector": {
           "status": "scored",
@@ -145,7 +145,7 @@
             "fewer_than_three_groups_is_an_error: expected an error but the call succeeded",
             "a_group_with_a_single_observation_is_an_error: expected an error but the call succeeded"
           ],
-          "seconds": 2.59
+          "seconds": 3.71
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -183,7 +183,7 @@
             "fewer_than_three_groups_is_an_error: candidate call failed: TODO",
             "a_group_with_a_single_observation_is_an_error: candidate call failed: TODO"
           ],
-          "seconds": 2.47
+          "seconds": 3.72
         },
         "reference_repeat": {
           "status": "scored",
@@ -193,7 +193,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.78
+          "seconds": 4.15
         },
         "empty": {
           "status": "scored",
@@ -231,7 +231,7 @@
             "fewer_than_three_groups_is_an_error: candidate call failed: could not find function \"compare_groups\"",
             "a_group_with_a_single_observation_is_an_error: candidate call failed: could not find function \"compare_groups\""
           ],
-          "seconds": 2.2
+          "seconds": 3.82
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -243,7 +243,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.6
+          "seconds": 3.32
         },
         "forged_result": {
           "status": "scored",
@@ -253,7 +253,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.59
+          "seconds": 3.8
         }
       },
       "problems": [],
@@ -267,7 +267,7 @@
     {
       "task": "XA02",
       "task_sha256": "cc06b96406df947fd4f8248d53e920b0b7e26d6725bd993a93943832102fe80f",
-      "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 13,
       "checks_failed_by_some_rejected_control": 12,
       "checks_never_failed_by_any_control": [
@@ -292,7 +292,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.43
+          "seconds": 3.38
         },
         "alternate_closed_form": {
           "status": "scored",
@@ -302,7 +302,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.39
+          "seconds": 3.31
         },
         "wrong_per_site_anova": {
           "status": "scored",
@@ -318,7 +318,7 @@
             "simple_effects_use_the_full_model_residual_mean_square: Expected `as.numeric(got[[col]])` to equal `want[[col]]`.\nDifferences:\n  `actual`: 12.0 12.0 12.0\n`expected`: 36.0 36.0 36.0\n\ndf2",
             "simple_effects_are_not_per_site_one_way_anovas: Expected `max(abs(as.numeric(got$f_value) - xa02_oracle(xa02_cross)$per_site_f))` > 0.001.\nActual comparison: 0.00000000000001 <= 0.00100000000000\nDifference: -0.00099999999999 <= 0"
           ],
-          "seconds": 2.75
+          "seconds": 3.72
         },
         "wrong_ignores_interaction": {
           "status": "scored",
@@ -344,7 +344,7 @@
             "simple_effects_are_not_per_site_one_way_anovas: result has no element 'simple_effects'",
             "missing_score_rows_are_dropped_and_row_order_is_irrelevant: Expected `rownames(got)` to be identical to `rownames(want)`.\nDifferences:\n`actual`:   \"treatment\" \"site\" \"Residuals\"                 \n`expected`: \"treatment\" \"site\" \"treatment:site\" \"Residuals\"\n"
           ],
-          "seconds": 3.34
+          "seconds": 4.14
         },
         "wrong_always_reports_simple_effects": {
           "status": "scored",
@@ -360,7 +360,7 @@
             "interaction_flag_and_report_level_follow_the_fixed_rule: Expected `vapply(got, function(g) field(g, \"report_level\"), \"\")` to be identical to `c(\"simple_effects\", \"main_effects\", \"simple_effects\")`.\nDifferences:\n`actual`:   \"simple_effects\" \"simple_effects\" \"simple_effects\"\n`expected`: \"simple_effects\" \"main_effects\"   \"simple_effects\"\n",
             "simple_effects_are_null_when_the_interaction_is_not_significant: Expected `res$simple_effects` to be NULL.\nDifferences:\n`actual` is an S3 object of class <data.frame>, a list\n`expected` is NULL\n"
           ],
-          "seconds": 3.36
+          "seconds": 4.18
         },
         "edge_accepts_unbalanced_data": {
           "status": "scored",
@@ -374,7 +374,7 @@
           "details": [
             "unbalanced_design_after_dropping_is_an_error: expected an error but the call succeeded"
           ],
-          "seconds": 2.91
+          "seconds": 3.78
         },
         "malformed_missing_elements": {
           "status": "scored",
@@ -410,7 +410,7 @@
             "single_replicate_or_single_level_factor_is_an_error: expected an error but the call succeeded",
             "result_has_exactly_the_documented_elements: Expected `names(res)` to have the same values as `c(...)`.\nActual: \"anova\"\nExpected: \"anova\", \"cell_means\", \"interaction_significant\", \"report_level\", \"simple_effects\"\nAbsent: \"cell_means\", \"interaction_significant\", \"report_level\", \"simple_effects\""
           ],
-          "seconds": 3.62
+          "seconds": 4.16
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -446,7 +446,7 @@
             "single_replicate_or_single_level_factor_is_an_error: expected an error but the call succeeded",
             "result_has_exactly_the_documented_elements: `object` must be a vector, not `NULL`."
           ],
-          "seconds": 3.38
+          "seconds": 3.87
         },
         "reference_repeat": {
           "status": "scored",
@@ -456,7 +456,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.26
+          "seconds": 3.88
         },
         "empty": {
           "status": "scored",
@@ -494,7 +494,7 @@
             "single_replicate_or_single_level_factor_is_an_error: candidate call failed: could not find function \"factorial_analysis\"",
             "result_has_exactly_the_documented_elements: candidate call failed: could not find function \"factorial_analysis\""
           ],
-          "seconds": 2.6
+          "seconds": 4.22
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -506,7 +506,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.89
+          "seconds": 3.72
         },
         "forged_result": {
           "status": "scored",
@@ -516,7 +516,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.89
+          "seconds": 4.46
         }
       },
       "problems": [],
@@ -530,7 +530,7 @@
     {
       "task": "XA03",
       "task_sha256": "9d040538c7f554653bcd04699b82622ce3d5cedfa48678b7da95366db600bf61",
-      "scorer_sha256": "7fb505638b94ffd649ab373da0d45e608dc5d7625d466e7fb7f2891da9e84e31",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 13,
       "checks_failed_by_some_rejected_control": 13,
       "checks_never_failed_by_any_control": [],
@@ -553,7 +553,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.34
+          "seconds": 3.47
         },
         "alternate_model_comparison": {
           "status": "scored",
@@ -563,7 +563,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.4
+          "seconds": 3.54
         },
         "alternate_cell_means": {
           "status": "scored",
@@ -573,7 +573,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.26
+          "seconds": 3.41
         },
         "wrong_type1_sequential": {
           "status": "scored",
@@ -601,7 +601,7 @@
             "empty_cell_is_an_error_not_a_silent_table: expected an error but the call succeeded",
             "order_dependence_of_sequential_ss_detected_for_unbalanced_only: Expected `c(yes, yes2, no)` to be identical to `c(TRUE, TRUE, FALSE)`.\nDifferences:\n`actual`:   TRUE TRUE TRUE \n`expected`: TRUE TRUE FALSE\n"
           ],
-          "seconds": 2.74
+          "seconds": 4.53
         },
         "wrong_type2": {
           "status": "scored",
@@ -625,7 +625,7 @@
             "missing_scores_are_dropped_listwise: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 436.4713453 176.6426087 11.5670141 258.5185188\n`expected`: 429.1212493 172.2759491 11.5670141 258.5185188\n\nsum_sq",
             "empty_cell_is_an_error_not_a_silent_table: expected an error but the call succeeded"
           ],
-          "seconds": 2.78
+          "seconds": 4.6
         },
         "wrong_treatment_contrasts": {
           "status": "scored",
@@ -649,7 +649,7 @@
             "missing_scores_are_dropped_listwise: Expected `unname(tab[[col]])` to equal `unname(expected[[col]])`.\nDifferences:\n  `actual`: 184.8885667  30.2788837 11.5670141 258.5185188\n`expected`: 429.1212493 172.2759491 11.5670141 258.5185188\n\nsum_sq",
             "empty_cell_is_an_error_not_a_silent_table: expected an error but the call succeeded"
           ],
-          "seconds": 2.81
+          "seconds": 4.55
         },
         "edge_ignores_missing_scores": {
           "status": "scored",
@@ -665,7 +665,7 @@
             "missing_scores_are_dropped_listwise: candidate call failed: missing scores are not supported",
             "empty_cell_is_an_error_not_a_silent_table: expected an error but the call succeeded"
           ],
-          "seconds": 2.51
+          "seconds": 4.47
         },
         "malformed_incomplete_missing_function": {
           "status": "scored",
@@ -703,7 +703,7 @@
             "order_dependence_of_sequential_ss_detected_for_unbalanced_only: candidate call failed: could not find function \"type1_order_dependent\"",
             "normal_input_runs_without_warnings: candidate call failed: not implemented"
           ],
-          "seconds": 2.18
+          "seconds": 4.08
         },
         "malformed_returns_list": {
           "status": "scored",
@@ -737,7 +737,7 @@
             "missing_required_column_is_an_error: expected an error but the call succeeded",
             "order_dependence_of_sequential_ss_detected_for_unbalanced_only: Expected `c(yes, yes2, no)` to be identical to `c(TRUE, TRUE, FALSE)`.\nDifferences:\n`actual`:   <NA> <NA> <NA> \n`expected`: TRUE TRUE FALSE\n"
           ],
-          "seconds": 2.54
+          "seconds": 4.51
         },
         "reference_repeat": {
           "status": "scored",
@@ -747,7 +747,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.72
+          "seconds": 4.64
         },
         "empty": {
           "status": "scored",
@@ -785,7 +785,7 @@
             "order_dependence_of_sequential_ss_detected_for_unbalanced_only: candidate call failed: could not find function \"type1_order_dependent\"",
             "normal_input_runs_without_warnings: candidate call failed: could not find function \"type3_anova\""
           ],
-          "seconds": 2.3
+          "seconds": 4.19
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -797,7 +797,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.64
+          "seconds": 3.48
         },
         "forged_result": {
           "status": "scored",
@@ -807,7 +807,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.35
+          "seconds": 3.38
         }
       },
       "problems": [],
@@ -821,7 +821,7 @@
     {
       "task": "XA04",
       "task_sha256": "d4cc2480e94aa38609f5155c958a3abc6ccbb55d10d68d1fa040936b96f00e54",
-      "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 13,
       "checks_failed_by_some_rejected_control": 13,
       "checks_never_failed_by_any_control": [],
@@ -844,7 +844,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.17
+          "seconds": 3.74
         },
         "alternate_matrix_formulas": {
           "status": "scored",
@@ -854,7 +854,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.06
+          "seconds": 3.61
         },
         "wrong_independent_oneway": {
           "status": "scored",
@@ -886,7 +886,7 @@
             "numeric_subject_identifiers_are_supported: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 25.0\n`expected`: 44.9\n\nf_value",
             "duplicate_subject_by_occasion_rows_are_an_error: expected an error but the call succeeded"
           ],
-          "seconds": 2.43
+          "seconds": 3.99
         },
         "wrong_no_df_adjustment": {
           "status": "scored",
@@ -904,7 +904,7 @@
             "subjects_with_a_missing_occasion_are_dropped_entirely: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.000000\n`expected`: 0.000011\n\np_primary",
             "integer_or_factor_time_codes_and_row_order_do_not_matter: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.0000000\n`expected`: 0.0000060\n\np_gg"
           ],
-          "seconds": 2.83
+          "seconds": 4.63
         },
         "wrong_huynh_feldt": {
           "status": "scored",
@@ -926,7 +926,7 @@
             "integer_or_factor_time_codes_and_row_order_do_not_matter: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 0.5172\n`expected`: 0.5137\n\nepsilon_gg",
             "numeric_subject_identifiers_are_supported: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 1.000\n`expected`: 0.977\n\nepsilon_gg"
           ],
-          "seconds": 2.78
+          "seconds": 4.56
         },
         "wrong_always_corrects": {
           "status": "scored",
@@ -940,7 +940,7 @@
           "details": [
             "correction_rule_and_primary_p_follow_the_075_threshold: Expected `c(field(lo, \"correction\"), field(cs, \"correction\"))` to be identical to `c(\"greenhouse_geisser\", \"none\")`.\nDifferences:\n`actual`:   \"greenhouse_geisser\" \"greenhouse_geisser\"\n`expected`: \"greenhouse_geisser\" \"none\"              \n"
           ],
-          "seconds": 2.91
+          "seconds": 4.51
         },
         "edge_keeps_incomplete_subjects": {
           "status": "scored",
@@ -964,7 +964,7 @@
             "integer_or_factor_time_codes_and_row_order_do_not_matter: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 1.00\n`expected`: 0.51\n\nepsilon_gg",
             "numeric_subject_identifiers_are_supported: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 1.000\n`expected`: 0.977\n\nepsilon_gg"
           ],
-          "seconds": 3.19
+          "seconds": 4.82
         },
         "malformed_wrong_names": {
           "status": "scored",
@@ -1000,7 +1000,7 @@
             "too_few_occasions_or_subjects_is_an_error: expected an error but the call succeeded",
             "result_has_exactly_the_documented_elements: Expected `names(value_of(xa04_run(xa04_low)))` to have the same values as `c(...)`.\nActual: \"F\", \"p\", \"eps\"\nExpected: \"n_subjects\", \"n_levels\", \"ss_time\", \"ss_error\", \"df1\", \"df2\", \"f_value\", \"p_value\", \"epsilon_gg\", ...\nNeeds: \"F\", \"p\", \"eps\"\nAbsent: \"n_subjects\", \"n_levels\", \"ss_time\", \"ss_error\", \"df1\", \"df2\", \"f_value\", \"p_value\", \"epsilon_gg\", ..."
           ],
-          "seconds": 2.67
+          "seconds": 4.2
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -1038,7 +1038,7 @@
             "too_few_occasions_or_subjects_is_an_error: candidate call failed: not done",
             "result_has_exactly_the_documented_elements: candidate call failed: not done"
           ],
-          "seconds": 2.45
+          "seconds": 3.9
         },
         "reference_repeat": {
           "status": "scored",
@@ -1048,7 +1048,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.02
+          "seconds": 4.91
         },
         "empty": {
           "status": "scored",
@@ -1086,7 +1086,7 @@
             "too_few_occasions_or_subjects_is_an_error: candidate call failed: could not find function \"rm_anova\"",
             "result_has_exactly_the_documented_elements: candidate call failed: could not find function \"rm_anova\""
           ],
-          "seconds": 2.43
+          "seconds": 4.02
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -1098,7 +1098,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.85
+          "seconds": 3.27
         },
         "forged_result": {
           "status": "scored",
@@ -1108,7 +1108,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.59
+          "seconds": 3.32
         }
       },
       "problems": [],
@@ -1121,8 +1121,8 @@
     },
     {
       "task": "XA05",
-      "task_sha256": "c0d946d16c37466eaa345672d4de808f031b1268c485be6f0da6f57a75ba6fc2",
-      "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+      "task_sha256": "e18b4938169900a44acc2b86b8a3643d3545ff39d6b92db3993281dd275300ef",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 12,
       "checks_failed_by_some_rejected_control": 12,
       "checks_never_failed_by_any_control": [],
@@ -1145,7 +1145,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.1
+          "seconds": 3.45
         },
         "alternate_matrix_algebra": {
           "status": "scored",
@@ -1155,7 +1155,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.12
+          "seconds": 3.32
         },
         "wrong_sequential_unadjusted": {
           "status": "scored",
@@ -1169,7 +1169,7 @@
           "details": [
             "treatment_test_is_adjusted_for_baseline: Expected `as.numeric(field(got, nm))` to equal `as.numeric(want[[nm]])`.\nDifferences:\n  `actual`: 21.21\n`expected`: 21.53\n\npar f_value"
           ],
-          "seconds": 2.35
+          "seconds": 3.7
         },
         "wrong_skips_slope_test": {
           "status": "scored",
@@ -1187,7 +1187,7 @@
             "conditional_means_for_heterogeneous_slopes_use_mean_plus_minus_one_sd: result has no element 'conditional_means'",
             "elements_of_the_other_branch_are_null: Expected `het$treatment_test` to be NULL.\nDifferences:\n`actual` is a list\n`expected` is NULL\n"
           ],
-          "seconds": 2.92
+          "seconds": 4.48
         },
         "wrong_means_at_zero_baseline": {
           "status": "scored",
@@ -1203,7 +1203,7 @@
             "adjusted_means_are_evaluated_at_the_overall_baseline_mean: Expected `as.numeric(got$adjusted_mean)` to equal `want$adjusted_mean`.\nDifferences:\n  `actual`:  2.6  6.2 10.7\n`expected`: 41.6 45.3 49.7\n",
             "missing_values_row_order_and_factor_labels_do_not_matter: Expected `as.numeric(field(got, \"adjusted_means\")$adjusted_mean)` to equal `want$adjusted_means$adjusted_mean`.\nDifferences:\n  `actual`:  1.7  5.5 10.4\n`expected`: 41.4 45.2 50.1\n"
           ],
-          "seconds": 2.95
+          "seconds": 4.42
         },
         "edge_accepts_tiny_groups": {
           "status": "scored",
@@ -1217,7 +1217,7 @@
           "details": [
             "single_level_small_group_or_constant_baseline_is_an_error: expected an error but the call succeeded"
           ],
-          "seconds": 2.41
+          "seconds": 4.02
         },
         "malformed_flat_output": {
           "status": "scored",
@@ -1251,7 +1251,7 @@
             "single_level_small_group_or_constant_baseline_is_an_error: expected an error but the call succeeded",
             "result_has_exactly_the_documented_elements: Expected `names(value_of(xa05_run(xa05_par)))` to have the same values as `c(...)`.\nActual: \"f\", \"p\"\nExpected: \"slope_test\", \"slopes_homogeneous\", \"model\", \"treatment_test\", \"adjusted_means\", \"conditional_means\"\nNeeds: \"f\", \"p\"\nAbsent: \"slope_test\", \"slopes_homogeneous\", \"model\", \"treatment_test\", \"adjusted_means\", \"conditional_means\""
           ],
-          "seconds": 2.51
+          "seconds": 4.4
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -1287,7 +1287,7 @@
             "single_level_small_group_or_constant_baseline_is_an_error: candidate call failed: TODO",
             "result_has_exactly_the_documented_elements: candidate call failed: TODO"
           ],
-          "seconds": 2.22
+          "seconds": 4.1
         },
         "reference_repeat": {
           "status": "scored",
@@ -1297,7 +1297,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.62
+          "seconds": 4.6
         },
         "empty": {
           "status": "scored",
@@ -1333,7 +1333,7 @@
             "single_level_small_group_or_constant_baseline_is_an_error: candidate call failed: could not find function \"ancova_analysis\"",
             "result_has_exactly_the_documented_elements: candidate call failed: could not find function \"ancova_analysis\""
           ],
-          "seconds": 2.26
+          "seconds": 3.98
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -1345,7 +1345,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.73
+          "seconds": 3.45
         },
         "forged_result": {
           "status": "scored",
@@ -1355,7 +1355,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.54
+          "seconds": 4.31
         }
       },
       "problems": [],
@@ -1369,7 +1369,7 @@
     {
       "task": "XA06",
       "task_sha256": "e13155af3a2c12630561c39ed70177085a6a795f30c41a46ed8e6f2ffc87488a",
-      "scorer_sha256": "dad1ce9843ebec0e63a65cd0d1b73f48071b6802ec39d6c75ad28a73139e47ad",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 13,
       "checks_failed_by_some_rejected_control": 13,
       "checks_never_failed_by_any_control": [],
@@ -1393,7 +1393,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.84
+          "seconds": 4.28
         },
         "alternate_gls_compound_symmetry": {
           "status": "scored",
@@ -1403,7 +1403,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.48
+          "seconds": 3.97
         },
         "wrong_complete_case_anova": {
           "status": "scored",
@@ -1429,7 +1429,7 @@
             "row_order_factor_levels_and_integer_time_codes_do_not_matter: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 10.5\n`expected`: 18.3\n\nstatistic",
             "rows_with_missing_values_are_dropped: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 10.5\n`expected`: 18.3\n\nstatistic"
           ],
-          "seconds": 2.65
+          "seconds": 4.04
         },
         "wrong_reml_comparison": {
           "status": "scored",
@@ -1455,7 +1455,7 @@
             "row_order_factor_levels_and_integer_time_codes_do_not_matter: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 21.5\n`expected`: 18.3\n\nstatistic",
             "rows_with_missing_values_are_dropped: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`: 21.5\n`expected`: 18.3\n\nstatistic"
           ],
-          "seconds": 3.27
+          "seconds": 5.49
         },
         "wrong_ignores_clustering": {
           "status": "scored",
@@ -1481,7 +1481,7 @@
             "row_order_factor_levels_and_integer_time_codes_do_not_matter: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`:  7.7\n`expected`: 18.3\n\nstatistic",
             "rows_with_missing_values_are_dropped: Expected `as.numeric(field(lrt, nm))` to equal `as.numeric(want$lrt[[nm]])`.\nDifferences:\n  `actual`:  7.7\n`expected`: 18.3\n\nstatistic"
           ],
-          "seconds": 2.81
+          "seconds": 5.07
         },
         "edge_does_not_check_arm_membership": {
           "status": "scored",
@@ -1495,7 +1495,7 @@
           "details": [
             "a_participant_in_two_treatment_arms_is_an_error: expected an error but the call succeeded"
           ],
-          "seconds": 2.88
+          "seconds": 4.71
         },
         "malformed_missing_lrt": {
           "status": "scored",
@@ -1529,7 +1529,7 @@
             "single_treatment_arm_or_single_visit_is_an_error: expected an error but the call succeeded",
             "result_has_exactly_the_documented_elements: Expected `names(value_of(xa06_run(xa06_sig)))` to have the same values as `c(...)`.\nActual: \"n_subjects\", \"n_observations\"\nExpected: \"n_subjects\", \"n_observations\", \"lrt\", \"significant\", \"random_intercept_sd\", \"residual_sd\"\nAbsent: \"lrt\", \"significant\", \"random_intercept_sd\", \"residual_sd\""
           ],
-          "seconds": 2.49
+          "seconds": 4.48
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -1567,7 +1567,7 @@
             "single_treatment_arm_or_single_visit_is_an_error: candidate call failed: TODO",
             "result_has_exactly_the_documented_elements: candidate call failed: TODO"
           ],
-          "seconds": 2.43
+          "seconds": 4.29
         },
         "reference_repeat": {
           "status": "scored",
@@ -1577,7 +1577,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.22
+          "seconds": 5.19
         },
         "empty": {
           "status": "scored",
@@ -1615,7 +1615,7 @@
             "single_treatment_arm_or_single_visit_is_an_error: candidate call failed: could not find function \"longitudinal_test\"",
             "result_has_exactly_the_documented_elements: candidate call failed: could not find function \"longitudinal_test\""
           ],
-          "seconds": 2.42
+          "seconds": 4.56
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -1627,7 +1627,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.92
+          "seconds": 3.89
         },
         "forged_result": {
           "status": "scored",
@@ -1637,7 +1637,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.82
+          "seconds": 4.4
         }
       },
       "problems": [],
@@ -1651,7 +1651,7 @@
     {
       "task": "XG01",
       "task_sha256": "5b5b23feed933ba0d5e561748c3a2d1ce6d6c35f031e73846aa3fa0609b7af8e",
-      "scorer_sha256": "010280a11f56d77c13ecd48c4d1bc08c6df0f8b737d6061edf2a089e68c233d3",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 11,
       "checks_failed_by_some_rejected_control": 11,
       "checks_never_failed_by_any_control": [],
@@ -1675,7 +1675,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.49
+          "seconds": 4.5
         },
         "alternate_dplyr_complete": {
           "status": "scored",
@@ -1685,7 +1685,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.64
+          "seconds": 4.83
         },
         "wrong_observed_days_only": {
           "status": "scored",
@@ -1705,7 +1705,7 @@
             "a_day_with_only_missing_scores_has_no_mean: Expected `is.na(ln$y[ln$x == as.integer(first)])` to be TRUE.\nDifferences:\n`actual`:       \n`expected`: TRUE\n",
             "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant: Expected `as.integer(ln$x)` to be identical to `want$x`.\nDifferences:\n     actual | expected                \n [5] 20152  | 20152    [5]            \n [6] 20153  | 20153    [6]            \n [7] 20154  | 20154    [7]            \n [8] 20161  - 20155    [8]            \n [9] 20164  - 20156    [9]            \n[10] 20165  - 20157    [10]           \n[11] 20166  - 20158    [11]           \n[12] 20167  - 20159    [12]           \n[13] 20169  - 20160    [13]           \n[14] 20173  - 20161    [14]           \n "
           ],
-          "seconds": 3.59
+          "seconds": 4.64
         },
         "wrong_gaps_filled_with_zero": {
           "status": "scored",
@@ -1727,7 +1727,7 @@
             "a_day_with_only_missing_scores_has_no_mean: Expected `is.na(ln$y[ln$x == as.integer(first)])` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
             "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant: Expected `ln$y[!is.na(ln$y)]` to equal `want$y[!is.na(want$y)]`.\nDifferences:\n  `actual[5:29]`: 56.3335 56.081 50.6695 0 0 0 0 0 0 56.648 and 15 more...\n`expected[5:15]`: 56.3335 56.081 50.6695             56.648            ...\n"
           ],
-          "seconds": 4.08
+          "seconds": 5.49
         },
         "wrong_na_rm_bridges_gaps": {
           "status": "scored",
@@ -1741,7 +1741,7 @@
           "details": [
             "gap_days_are_missing_not_zero_and_the_line_is_not_bridged: Expected `isTRUE(ln$geom_params$na.rm)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n"
           ],
-          "seconds": 4.29
+          "seconds": 5.42
         },
         "wrong_median_instead_of_mean": {
           "status": "scored",
@@ -1759,7 +1759,7 @@
             "point_layer_marks_exactly_the_days_with_a_mean: Expected `pt$y[order(pt$x)]` to equal `want$y`.\nDifferences:\n  `actual[1:6]`: 60.913 60.312 54.330 52.504 56.334 56.081\n`expected[1:6]`: 60.913 54.522 54.378 52.504 56.334 56.081\n\n  `actual[8:15]`: 56.648 44.010 41.960 35.558 46.615 48.526 42.477 48.665\n`expected[8:15]`: 56.648 44.010 41.960 38.446 46.615 48.526 42.477 50.970\n",
             "rows_with_missing_day_are_ignored_and_row_order_is_irrelevant: Expected `ln$y[!is.na(ln$y)]` to equal `want$y[!is.na(want$y)]`.\nDifferences:\n  `actual[1:6]`: 60.913 60.312 54.330 52.504 56.334 56.081\n`expected[1:6]`: 60.913 54.522 54.378 52.504 56.334 56.081\n\n  `actual[8:15]`: 56.648 44.010 41.960 35.558 46.615 48.526 42.477 48.665\n`expected[8:15]`: 56.648 44.010 41.960 38.446 46.615 48.526 42.477 50.970\n"
           ],
-          "seconds": 3.97
+          "seconds": 5.45
         },
         "edge_default_axis_titles": {
           "status": "scored",
@@ -1773,7 +1773,7 @@
           "details": [
             "axis_titles_are_exactly_day_and_mean_score: Expected `trimws(g$labels$x)` to be identical to \"Day\".\nDifferences:\n`actual`:   \"day\"\n`expected`: \"Day\"\n"
           ],
-          "seconds": 5.02
+          "seconds": 6.38
         },
         "malformed_returns_data_frame": {
           "status": "scored",
@@ -1807,7 +1807,7 @@
             "plot_has_a_line_layer_and_a_point_layer: candidate call failed: the function did not return a ggplot object",
             "returned_object_is_a_ggplot_without_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
           ],
-          "seconds": 2.86
+          "seconds": 4.1
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -1841,7 +1841,7 @@
             "plot_has_a_line_layer_and_a_point_layer: candidate call failed: the function did not return a ggplot object",
             "returned_object_is_a_ggplot_without_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
           ],
-          "seconds": 2.54
+          "seconds": 3.91
         },
         "reference_repeat": {
           "status": "scored",
@@ -1851,7 +1851,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.52
+          "seconds": 5.65
         },
         "empty": {
           "status": "scored",
@@ -1885,7 +1885,7 @@
             "plot_has_a_line_layer_and_a_point_layer: candidate call failed: object 'plot_daily_means' of mode 'function' was not found",
             "returned_object_is_a_ggplot_without_deprecation_warnings: candidate call failed: object 'plot_daily_means' of mode 'function' was not found"
           ],
-          "seconds": 2.18
+          "seconds": 3.41
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -1897,7 +1897,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.98
+          "seconds": 2.27
         },
         "forged_result": {
           "status": "scored",
@@ -1907,7 +1907,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.16
+          "seconds": 4.46
         }
       },
       "problems": [],
@@ -1921,7 +1921,7 @@
     {
       "task": "XG02",
       "task_sha256": "7110f95745f0482a602b14435486755f528f2ffb1f258817d4e10b9a9a5487a1",
-      "scorer_sha256": "7474b646a291355f4ed0f4570c5da31177c5e054aeebd375f77590cf607538b6",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 11,
       "checks_failed_by_some_rejected_control": 11,
       "checks_never_failed_by_any_control": [],
@@ -1945,7 +1945,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.15
+          "seconds": 4.76
         },
         "alternate_stat_summary_after_filter": {
           "status": "scored",
@@ -1955,7 +1955,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.06
+          "seconds": 4.63
         },
         "wrong_count_bars": {
           "status": "scored",
@@ -1973,7 +1973,7 @@
             "factor_levels_set_the_order_and_unused_levels_do_not_appear: Expected `xg02_bars(g)$y` to equal `xg02_oracle(xg02_fct)$mean`.\nDifferences:\n  `actual`: 7.0 8.0  9.0\n`expected`: 5.2 6.2 10.4\n",
             "rows_with_missing_group_are_ignored_and_row_order_is_irrelevant: Expected `xg02_bars(xg02_digest(d))$y` to equal `xg02_oracle(xg02_plain)$mean`.\nDifferences:\n  `actual`: 8.0 8.0 7.0\n`expected`: 6.7 3.0 4.3\n"
           ],
-          "seconds": 3.43
+          "seconds": 4.72
         },
         "wrong_mean_without_na_rm": {
           "status": "scored",
@@ -1999,7 +1999,7 @@
             "bars_are_not_counts: Expected `max(abs(b$y - counts))` > 0.5.\nActual comparison: NA <= 0.5",
             "rows_with_missing_group_are_ignored_and_row_order_is_irrelevant: Expected `xg02_bars(xg02_digest(d))$y` to equal `xg02_oracle(xg02_plain)$mean`.\nDifferences:\n  `actual`: 6.7 3.0  NA\n`expected`: 6.7 3.0 4.3\n"
           ],
-          "seconds": 3.79
+          "seconds": 6.19
         },
         "wrong_alphabetical_order_for_factors": {
           "status": "scored",
@@ -2013,7 +2013,7 @@
           "details": [
             "factor_levels_set_the_order_and_unused_levels_do_not_appear: Expected `discrete_levels(g)` to be identical to `c(\"low\", \"mid\", \"high\")`.\nDifferences:\n`actual`:   \"high\" \"low\" \"mid\" \n`expected`: \"low\"  \"mid\" \"high\"\n"
           ],
-          "seconds": 3.88
+          "seconds": 6.33
         },
         "wrong_keeps_empty_group_slot": {
           "status": "scored",
@@ -2029,7 +2029,7 @@
             "factor_levels_set_the_order_and_unused_levels_do_not_appear: Expected `discrete_levels(g)` to be identical to `c(\"low\", \"mid\", \"high\")`.\nDifferences:\n`actual`:   \"low\" \"mid\" \"high\" \"extra\"\n`expected`: \"low\" \"mid\" \"high\"        \n",
             "group_without_any_value_leaves_no_bar_and_no_empty_axis_slot: Expected `\"echo\" %in% discrete_levels(g)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n"
           ],
-          "seconds": 4.03
+          "seconds": 6.91
         },
         "edge_default_axis_titles": {
           "status": "scored",
@@ -2043,7 +2043,7 @@
           "details": [
             "axis_titles_are_exactly_group_and_mean_y: Expected `trimws(g$labels$x)` to be identical to \"Group\".\nDifferences:\n`actual`:   \"group\"\n`expected`: \"Group\"\n"
           ],
-          "seconds": 4.36
+          "seconds": 6.94
         },
         "malformed_returns_means_table": {
           "status": "scored",
@@ -2077,7 +2077,7 @@
             "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object",
             "plot_has_a_bar_layer_and_no_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
           ],
-          "seconds": 2.34
+          "seconds": 4.49
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -2111,7 +2111,7 @@
             "input_data_frame_is_not_modified: candidate call failed: not implemented",
             "plot_has_a_bar_layer_and_no_deprecation_warnings: candidate call failed: not implemented"
           ],
-          "seconds": 2.23
+          "seconds": 4.08
         },
         "reference_repeat": {
           "status": "scored",
@@ -2121,7 +2121,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.08
+          "seconds": 6.31
         },
         "empty": {
           "status": "scored",
@@ -2155,7 +2155,7 @@
             "input_data_frame_is_not_modified: candidate call failed: object 'plot_group_means' of mode 'function' was not found",
             "plot_has_a_bar_layer_and_no_deprecation_warnings: candidate call failed: object 'plot_group_means' of mode 'function' was not found"
           ],
-          "seconds": 2.21
+          "seconds": 3.78
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -2167,7 +2167,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.7
+          "seconds": 2.64
         },
         "forged_result": {
           "status": "scored",
@@ -2177,7 +2177,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.43
+          "seconds": 4.94
         }
       },
       "problems": [],
@@ -2191,7 +2191,7 @@
     {
       "task": "XG03",
       "task_sha256": "457e5d92a0361dad30ada6fac1ffa96f317af7da8153fecf2c1538575a2f2013",
-      "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 12,
       "checks_failed_by_some_rejected_control": 12,
       "checks_never_failed_by_any_control": [],
@@ -2215,7 +2215,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.99
+          "seconds": 6.22
         },
         "alternate_dplyr_complete": {
           "status": "scored",
@@ -2225,7 +2225,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.43
+          "seconds": 6.71
         },
         "wrong_share_of_region": {
           "status": "scored",
@@ -2247,7 +2247,7 @@
             "single_group_gives_one_row_of_tiles_summing_to_one: Expected `sort(got$prop)` to equal `c(0.4, 0.6)`.\nDifferences:\n  `actual`: 1.00 1.00\n`expected`: 0.40 0.60\n",
             "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant: Expected `got$prop` to equal `want$prop`.\nDifferences:\n     actual | expected               \n [1] 0.338  - 0.550    [1]           \n [2] 0.474  - 0.450    [2]           \n [3] 0.000  | 0.000    [3]           \n [4] 0.154  - 0.303    [4]           \n [5] 0.211  - 0.242    [5]           \n [6] 0.349  - 0.455    [6]           \n [7] 0.431  - 0.538    [7]           \n [8] 0.158  - 0.115    [8]           \n [9] 0.419  - 0.346    [9]           \n[10] 0.077  - 0.238    [10]          \n ... ...      ...      and "
           ],
-          "seconds": 4.14
+          "seconds": 6.18
         },
         "wrong_share_of_all_respondents": {
           "status": "scored",
@@ -2267,7 +2267,7 @@
             "labels_are_one_decimal_percentages_matching_the_shares: Expected `got$label` to be identical to `want$label`.\nDifferences:\n     actual  | expected               \n [1] \"15.1%\" - \"55.0%\"  [1]           \n [2] \"12.3%\" - \"45.0%\"  [2]           \n [3] \"0.0%\"  | \"0.0%\"   [3]           \n [4] \"6.8%\"  - \"30.3%\"  [4]           \n [5] \"5.5%\"  - \"24.2%\"  [5]           \n [6] \"10.3%\" - \"45.5%\"  [6]           \n [7] \"19.2%\" - \"53.8%\"  [7]           \n [8] \"4.1%\"  - \"11.5%\"  [8]           \n [9] \"12.3%\" - \"34.6%\"  [9]           \n[10] \"3.4%\"  - \"23.8%\"  [10]          \n ...",
             "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant: Expected `got$prop` to equal `want$prop`.\nDifferences:\n     actual | expected               \n [1] 0.151  - 0.550    [1]           \n [2] 0.123  - 0.450    [2]           \n [3] 0.000  | 0.000    [3]           \n [4] 0.068  - 0.303    [4]           \n [5] 0.055  - 0.242    [5]           \n [6] 0.103  - 0.455    [6]           \n [7] 0.192  - 0.538    [7]           \n [8] 0.041  - 0.115    [8]           \n [9] 0.123  - 0.346    [9]           \n[10] 0.034  - 0.238    [10]          \n ... ...      ...      and "
           ],
-          "seconds": 4.53
+          "seconds": 8.09
         },
         "wrong_drops_empty_combinations": {
           "status": "scored",
@@ -2289,7 +2289,7 @@
             "zero_share_is_labelled_0_0_percent: Expected `\"0.0%\" %in% got$label` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
             "rows_with_missing_values_are_ignored_and_row_order_is_irrelevant: Expected `got$prop` to equal `want$prop`.\nDifferences:\n    actual       | expected        \n[1] 0.5500000000 | 0.5500000000 [1]\n[2] 0.4500000000 | 0.4500000000 [2]\n[3] NA           - 0.0000000000 [3]\n[4] 0.3030303030 | 0.3030303030 [4]\n[5] 0.2424242424 | 0.2424242424 [5]\n[6] 0.4545454545 | 0.4545454545 [6]\n"
           ],
-          "seconds": 4.36
+          "seconds": 8.14
         },
         "wrong_label_without_decimal": {
           "status": "scored",
@@ -2305,7 +2305,7 @@
             "labels_are_one_decimal_percentages_matching_the_shares: Expected `got$label` to be identical to `want$label`.\nDifferences:\n     actual | expected               \n [1] \"55%\"  - \"55.0%\"  [1]           \n [2] \"45%\"  - \"45.0%\"  [2]           \n [3] \"0%\"   - \"0.0%\"   [3]           \n [4] \"30%\"  - \"30.3%\"  [4]           \n [5] \"24%\"  - \"24.2%\"  [5]           \n [6] \"45%\"  - \"45.5%\"  [6]           \n [7] \"54%\"  - \"53.8%\"  [7]           \n [8] \"12%\"  - \"11.5%\"  [8]           \n [9] \"35%\"  - \"34.6%\"  [9]           \n[10] \"24%\"  - \"23.8%\"  [10]          \n ... ...      .",
             "zero_share_is_labelled_0_0_percent: Expected `\"0.0%\" %in% got$label` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
           ],
-          "seconds": 4.52
+          "seconds": 8.12
         },
         "edge_default_axis_titles": {
           "status": "scored",
@@ -2319,7 +2319,7 @@
           "details": [
             "axis_titles_are_exactly_region_and_group: Expected `trimws(g$labels$x)` to be identical to \"Region\".\nDifferences:\n`actual`:   \"region\"\n`expected`: \"Region\"\n"
           ],
-          "seconds": 4.93
+          "seconds": 8.4
         },
         "malformed_returns_table": {
           "status": "scored",
@@ -2355,7 +2355,7 @@
             "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object",
             "no_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
           ],
-          "seconds": 2.72
+          "seconds": 5.02
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -2391,7 +2391,7 @@
             "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object",
             "no_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
           ],
-          "seconds": 2.49
+          "seconds": 4.48
         },
         "reference_repeat": {
           "status": "scored",
@@ -2401,7 +2401,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.57
+          "seconds": 7.45
         },
         "empty": {
           "status": "scored",
@@ -2437,7 +2437,7 @@
             "input_data_frame_is_not_modified: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found",
             "no_deprecation_warnings: candidate call failed: object 'plot_proportion_heatmap' of mode 'function' was not found"
           ],
-          "seconds": 2.2
+          "seconds": 4.2
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -2449,7 +2449,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.94
+          "seconds": 3.24
         },
         "forged_result": {
           "status": "scored",
@@ -2459,7 +2459,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.31
+          "seconds": 6.22
         }
       },
       "problems": [],
@@ -2473,7 +2473,7 @@
     {
       "task": "XG04",
       "task_sha256": "cd29e9193a71f1e12642511599db15c6c61d9df9162182eaf0ccc0b10edd9f65",
-      "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 11,
       "checks_failed_by_some_rejected_control": 11,
       "checks_never_failed_by_any_control": [],
@@ -2497,7 +2497,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.31
+          "seconds": 6.69
         },
         "alternate_abline_from_lm": {
           "status": "scored",
@@ -2507,7 +2507,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.32
+          "seconds": 5.38
         },
         "wrong_scale_limits_drop_points": {
           "status": "scored",
@@ -2533,7 +2533,7 @@
             "rows_with_missing_or_infinite_values_are_ignored: Expected `unname(got[\"slope\"])` to equal `unname(xg04_ols(xg04_finite(xg04_b))[\"slope\"])`.\nDifferences:\n  `actual`: -0.81\n`expected`: -1.21\n",
             "a_different_window_changes_the_view_but_not_the_line: Expected `unname(a[\"slope\"])` to equal `unname(b[\"slope\"])`.\nDifferences:\n  `actual`:  2.3\n`expected`: -1.8\n"
           ],
-          "seconds": 4.46
+          "seconds": 6.78
         },
         "wrong_fit_on_window_subset": {
           "status": "scored",
@@ -2553,7 +2553,7 @@
             "rows_with_missing_or_infinite_values_are_ignored: Expected `unname(got[\"slope\"])` to equal `unname(xg04_ols(xg04_finite(xg04_b))[\"slope\"])`.\nDifferences:\n  `actual`: -0.81\n`expected`: -1.21\n",
             "a_different_window_changes_the_view_but_not_the_line: Expected `unname(a[\"slope\"])` to equal `unname(b[\"slope\"])`.\nDifferences:\n  `actual`:  2.3\n`expected`: -1.8\n"
           ],
-          "seconds": 4.27
+          "seconds": 6.26
         },
         "wrong_default_loess_smoother": {
           "status": "scored",
@@ -2573,7 +2573,7 @@
             "rows_with_missing_or_infinite_values_are_ignored: the plotted line is not straight",
             "a_different_window_changes_the_view_but_not_the_line: the plotted line is not straight"
           ],
-          "seconds": 4.17
+          "seconds": 6.14
         },
         "wrong_zoom_by_filtering_rows": {
           "status": "scored",
@@ -2601,7 +2601,7 @@
             "rows_with_missing_or_infinite_values_are_ignored: Expected `unname(got[\"slope\"])` to equal `unname(xg04_ols(xg04_finite(xg04_b))[\"slope\"])`.\nDifferences:\n  `actual`: -0.81\n`expected`: -1.21\n",
             "a_different_window_changes_the_view_but_not_the_line: Expected `unname(a[\"slope\"])` to equal `unname(b[\"slope\"])`.\nDifferences:\n  `actual`:  2.3\n`expected`: -1.8\n"
           ],
-          "seconds": 4.34
+          "seconds": 6.46
         },
         "edge_no_window_validation": {
           "status": "scored",
@@ -2615,7 +2615,7 @@
           "details": [
             "invalid_windows_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 4.85
+          "seconds": 6.81
         },
         "malformed_returns_coefficients": {
           "status": "scored",
@@ -2649,7 +2649,7 @@
             "input_data_frame_is_not_modified: candidate call failed: NA/NaN/Inf in 'x'",
             "no_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
           ],
-          "seconds": 2.02
+          "seconds": 3.69
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -2683,7 +2683,7 @@
             "input_data_frame_is_not_modified: candidate call failed: todo",
             "no_deprecation_warnings: candidate call failed: todo"
           ],
-          "seconds": 2.0
+          "seconds": 3.61
         },
         "reference_repeat": {
           "status": "scored",
@@ -2693,7 +2693,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.69
+          "seconds": 6.91
         },
         "empty": {
           "status": "scored",
@@ -2727,7 +2727,7 @@
             "input_data_frame_is_not_modified: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found",
             "no_deprecation_warnings: candidate call failed: object 'plot_zoomed_fit' of mode 'function' was not found"
           ],
-          "seconds": 1.93
+          "seconds": 3.66
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -2739,7 +2739,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.58
+          "seconds": 3.18
         },
         "forged_result": {
           "status": "scored",
@@ -2749,7 +2749,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.19
+          "seconds": 5.84
         }
       },
       "problems": [],
@@ -2763,7 +2763,7 @@
     {
       "task": "XG05",
       "task_sha256": "ee186e62f98686ee73dbc9b1c7dd7fa05c2baf85269d5c37cff6e94091808a8d",
-      "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 11,
       "checks_failed_by_some_rejected_control": 11,
       "checks_never_failed_by_any_control": [],
@@ -2787,7 +2787,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.99
+          "seconds": 5.55
         },
         "alternate_stat_summary_mean_line": {
           "status": "scored",
@@ -2797,7 +2797,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.08
+          "seconds": 6.27
         },
         "wrong_no_group_aesthetic": {
           "status": "scored",
@@ -2819,7 +2819,7 @@
             "numeric_identifiers_and_unevenly_spaced_weeks_are_supported: Expected `sort(unname(vapply(got, key, \"\")))` to be identical to `sort(unname(vapply(want, key, \"\")))`.\nDifferences:\nactual vs expected\n- \"3.000000:33.816000|3.000000:28.718000|9.000000:38.897000|3.000000:34.734000|12.000000:38.792000|9.000000:35.515000|9.000000:31.446000|6.000000:34.653000|6.000000:32.684000|12.000000:40.576000|3.000000:32.912000|6.000000:32.287000|9.000000:33.730000|9.000000:40.894000|6.000000:34.747000|6.000000:33.329000|9.000000:30.573000|12.000000:36.152000|12.000000:40.926",
             "participants_without_any_score_do_not_appear: Expected `max(xg05_line_layers(g)$n_groups[1:2])` to be identical to 9L.\nDifferences:\n  `actual`: 1\n`expected`: 9\n"
           ],
-          "seconds": 4.11
+          "seconds": 6.02
         },
         "wrong_path_in_row_order": {
           "status": "scored",
@@ -2839,7 +2839,7 @@
             "numeric_identifiers_and_unevenly_spaced_weeks_are_supported: Expected `sort(unname(vapply(got, key, \"\")))` to be identical to `sort(unname(vapply(want, key, \"\")))`.\nDifferences:\nactual vs expected\n- \"12.000000:38.792000|6.000000:32.684000|3.000000:32.912000|9.000000:33.730000\"\n+ \"3.000000:28.718000|6.000000:34.653000|9.000000:30.573000|12.000000:32.573000\"\n- \"3.000000:28.718000|6.000000:34.653000|9.000000:30.573000|12.000000:32.573000\"\n+ \"3.000000:28.841000|6.000000:33.329000|9.000000:31.446000|12.000000:30.878000\"\n- \"3.000000:33.816000|9.000000:35.515000",
             "participants_without_any_score_do_not_appear: Expected `sort(unname(vapply(got, key, \"\")))` to be identical to `sort(unname(vapply(want, key, \"\")))`.\nDifferences:\nactual vs expected\n- \"1.000000:27.933000|3.000000:31.494000|5.000000:34.290000|4.000000:35.323000\"\n+ \"1.000000:24.471000|2.000000:28.149000|3.000000:29.857000|4.000000:32.399000|5.000000:33.877000\"\n- \"1.000000:28.391000|3.000000:32.722000|2.000000:30.550000|4.000000:34.851000\"\n+ \"1.000000:27.250000|2.000000:31.665000|3.000000:36.045000|4.000000:34.153000|5.000000:35.831000\"\n- \"1.0"
           ],
-          "seconds": 4.15
+          "seconds": 5.97
         },
         "wrong_mean_with_missing_as_zero": {
           "status": "scored",
@@ -2855,7 +2855,7 @@
             "mean_line_is_one_group_with_weekly_means_ignoring_missing_scores: Expected `ml$y` to equal `want$y`.\nDifferences:\n  `actual`: 29.9 26.1 30.8 32.3 30.1\n`expected`: 29.9 32.6 34.2 35.8 37.6\n",
             "a_week_with_no_scores_has_no_mean_point: Expected `3 %in% xg05_weeks(g, ml$x)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n"
           ],
-          "seconds": 3.98
+          "seconds": 6.06
         },
         "wrong_mean_line_same_width": {
           "status": "scored",
@@ -2869,7 +2869,7 @@
           "details": [
             "mean_line_is_at_least_one_and_a_half_times_as_thick: Expected `mean(ll$mean$data$linewidth)` >= `1.5 * mean(ll$subject$data$linewidth)`.\nActual comparison: 0.50 < 0.75\nDifference: -0.25 < 0"
           ],
-          "seconds": 4.0
+          "seconds": 6.24
         },
         "edge_default_axis_titles": {
           "status": "scored",
@@ -2883,7 +2883,7 @@
           "details": [
             "axis_titles_are_exactly_week_and_score: Expected `trimws(g$labels$x)` to be identical to \"Week\".\nDifferences:\n`actual`:   \"week\"\n`expected`: \"Week\"\n"
           ],
-          "seconds": 4.56
+          "seconds": 6.75
         },
         "malformed_returns_means_table": {
           "status": "scored",
@@ -2917,7 +2917,7 @@
             "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object",
             "no_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
           ],
-          "seconds": 2.57
+          "seconds": 4.41
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -2951,7 +2951,7 @@
             "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object",
             "no_deprecation_warnings: candidate call failed: the function did not return a ggplot object"
           ],
-          "seconds": 2.53
+          "seconds": 4.34
         },
         "reference_repeat": {
           "status": "scored",
@@ -2961,7 +2961,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.13
+          "seconds": 6.7
         },
         "empty": {
           "status": "scored",
@@ -2995,7 +2995,7 @@
             "input_data_frame_is_not_modified: candidate call failed: object 'plot_trajectories' of mode 'function' was not found",
             "no_deprecation_warnings: candidate call failed: object 'plot_trajectories' of mode 'function' was not found"
           ],
-          "seconds": 2.09
+          "seconds": 4.4
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -3007,7 +3007,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.66
+          "seconds": 3.41
         },
         "forged_result": {
           "status": "scored",
@@ -3017,7 +3017,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.69
+          "seconds": 5.02
         }
       },
       "problems": [],
@@ -3026,6 +3026,917 @@
         "role": "base",
         "name": "codex-r-benchmark:pilot",
         "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XM01",
+      "task_sha256": "520a4a43b8143f28b0e008291274c350199c217bc0d02323e401ee81bbff0257",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+      "checks": 10,
+      "checks_failed_by_some_rejected_control": 10,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "DESeq2": "1.50.2",
+          "SummarizedExperiment": "1.40.0",
+          "BiocVersion": "3.22.0"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 27.36
+        },
+        "alternate_coefficient_name_and_relevel": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 26.56
+        },
+        "wrong_default_alphabetical_reference": {
+          "status": "scored",
+          "passed": 9,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "contrast_direction_follows_contrast_level_over_reference_level"
+          ],
+          "details": [
+            "contrast_direction_follows_contrast_level_over_reference_level: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\nactual != expected but don't know how to show the difference\n\npvalue"
+          ],
+          "seconds": 27.69
+        },
+        "wrong_no_batch_covariate": {
+          "status": "scored",
+          "passed": 5,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model",
+            "contrast_direction_follows_contrast_level_over_reference_level",
+            "alpha_controls_both_the_cutoff_and_independent_filtering",
+            "batch_is_included_in_the_design",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order"
+          ],
+          "details": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`: 12\n`expected`: 15\n",
+            "contrast_direction_follows_contrast_level_over_reference_level: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`: 12\n`expected`: 15\n",
+            "alpha_controls_both_the_cutoff_and_independent_filtering: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`: 11\n`expected`: 14\n",
+            "batch_is_included_in_the_design: Expected `isTRUE(all.equal(got$padj, xm01_o_nobatch$padj[seq_len(nrow(got))])) && nrow(got) == nrow(xm01_o_nobatch)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`: 12\n`expected`: 15\n"
+          ],
+          "seconds": 28.0
+        },
+        "wrong_alpha_only_in_the_final_filter": {
+          "status": "scored",
+          "passed": 5,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model",
+            "contrast_direction_follows_contrast_level_over_reference_level",
+            "alpha_controls_both_the_cutoff_and_independent_filtering",
+            "batch_is_included_in_the_design",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order"
+          ],
+          "details": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`: 14\n`expected`: 15\n",
+            "contrast_direction_follows_contrast_level_over_reference_level: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`: 14\n`expected`: 15\n",
+            "alpha_controls_both_the_cutoff_and_independent_filtering: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`: 13\n`expected`: 14\n",
+            "batch_is_included_in_the_design: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n     actual            | expected              \n[12] -1.04117161367455 | -1.04117161367455 [12]\n[13] 0.897214504365045 | 0.897214504365045 [13]\n[14] 0.658504262197139 | 0.658504262197139 [14]\n                       - 0.607095376344157 [15]\n",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`: 14\n`expected`: 15\n"
+          ],
+          "seconds": 28.55
+        },
+        "wrong_sample_names_overwritten": {
+          "status": "scored",
+          "passed": 4,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model",
+            "contrast_direction_follows_contrast_level_over_reference_level",
+            "alpha_controls_both_the_cutoff_and_independent_filtering",
+            "batch_is_included_in_the_design",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order",
+            "no_significant_gene_gives_a_zero_row_data_frame_with_the_same_columns"
+          ],
+          "details": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`:  0\n`expected`: 15\n",
+            "contrast_direction_follows_contrast_level_over_reference_level: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`:  0\n`expected`: 15\n",
+            "alpha_controls_both_the_cutoff_and_independent_filtering: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`:  0\n`expected`: 14\n",
+            "batch_is_included_in_the_design: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n    actual | expected                        \n           - 1.45732528858784  [1]           \n           - 1.58092350377119  [2]           \n           - 1.61540796460397  [3]           \n           - -1.85998511238527 [4]           \n           - -1.37731985766406 [5]           \n           - 1.42255561365772  [6]           \n           - -1.57559282431019 [7]           \n           - 1.42686888175655  [8]      ",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`:  0\n`expected`: 15\n",
+            "no_significant_gene_gives_a_zero_row_data_frame_with_the_same_columns: Expected `nrow(got)` to be identical to 0L.\nDifferences:\n  `actual`: 5\n`expected`: 0\n"
+          ],
+          "seconds": 28.8
+        },
+        "wrong_sorted_by_fold_change": {
+          "status": "scored",
+          "passed": 4,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model",
+            "contrast_direction_follows_contrast_level_over_reference_level",
+            "alpha_controls_both_the_cutoff_and_independent_filtering",
+            "batch_is_included_in_the_design",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order",
+            "only_genes_with_padj_below_alpha_are_returned_in_the_specified_order"
+          ],
+          "details": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model: Expected `as.character(got$gene)` to be identical to `want$gene`.\nDifferences:\n     actual | expected               \n [1] \"g012\" - \"g003\"   [1]           \n [2] \"g002\" - \"g006\"   [2]           \n [3] \"g006\" - \"g002\"   [3]           \n [4] \"g010\" - \"g012\"   [4]           \n [5] \"g003\" - \"g011\"   [5]           \n [6] \"g004\" - \"g007\"   [6]           \n [7] \"g007\" - \"g010\"   [7]           \n [8] \"g011\" - \"g004\"   [8]           \n [9] \"g001\" | \"g001\"   [9]           \n[10] \"g013\" - \"g014\"   [10]          \n ..",
+            "contrast_direction_follows_contrast_level_over_reference_level: Expected `as.character(got$gene)` to be identical to `want$gene`.\nDifferences:\n     actual | expected               \n [1] \"g012\" - \"g003\"   [1]           \n [2] \"g002\" - \"g006\"   [2]           \n [3] \"g006\" - \"g002\"   [3]           \n [4] \"g010\" - \"g012\"   [4]           \n [5] \"g003\" - \"g011\"   [5]           \n [6] \"g004\" - \"g007\"   [6]           \n [7] \"g007\" - \"g010\"   [7]           \n [8] \"g011\" - \"g004\"   [8]           \n [9] \"g001\" | \"g001\"   [9]           \n[10] \"g013\" - \"g014\"   [10]          \n ..",
+            "alpha_controls_both_the_cutoff_and_independent_filtering: Expected `as.character(got$gene)` to be identical to `want$gene`.\nDifferences:\n     actual | expected               \n [1] \"g012\" - \"g003\"   [1]           \n [2] \"g002\" - \"g006\"   [2]           \n [3] \"g006\" - \"g002\"   [3]           \n [4] \"g010\" - \"g012\"   [4]           \n [5] \"g003\" - \"g011\"   [5]           \n [6] \"g004\" - \"g007\"   [6]           \n [7] \"g007\" - \"g010\"   [7]           \n [8] \"g011\" - \"g004\"   [8]           \n [9] \"g001\" | \"g001\"   [9]           \n[10] \"g013\" - \"g014\"   [10]          \n ..",
+            "batch_is_included_in_the_design: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n     actual  | expected               \n [1] -1.8600 - 1.4573   [1]           \n [2] 1.6154  - 1.5809   [2]           \n [3] 1.5809  - 1.6154   [3]           \n [4] -1.5756 - -1.8600  [4]           \n [5] 1.4573  - -1.3773  [5]           \n [6] 1.4269  - 1.4226   [6]           \n [7] 1.4226  - -1.5756  [7]           \n [8] -1.3773 - 1.4269   [8]           \n [9] 1.2627  | 1.2627   [9]           \n[10] -1.1625 - -1.",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order: Expected `as.character(got$gene)` to be identical to `want$gene`.\nDifferences:\n     actual | expected               \n [1] \"g012\" - \"g003\"   [1]           \n [2] \"g002\" - \"g006\"   [2]           \n [3] \"g006\" - \"g002\"   [3]           \n [4] \"g010\" - \"g012\"   [4]           \n [5] \"g003\" - \"g011\"   [5]           \n [6] \"g004\" - \"g007\"   [6]           \n [7] \"g007\" - \"g010\"   [7]           \n [8] \"g011\" - \"g004\"   [8]           \n [9] \"g001\" | \"g001\"   [9]           \n[10] \"g013\" - \"g014\"   [10]          \n ..",
+            "only_genes_with_padj_below_alpha_are_returned_in_the_specified_order: Expected `is.unsorted(got$padj)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n"
+          ],
+          "seconds": 31.11
+        },
+        "edge_no_input_validation": {
+          "status": "scored",
+          "passed": 9,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "invalid_inputs_are_errors"
+          ],
+          "details": [
+            "invalid_inputs_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 33.18
+        },
+        "malformed_returns_deseq_results": {
+          "status": "scored",
+          "passed": 2,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model",
+            "contrast_direction_follows_contrast_level_over_reference_level",
+            "alpha_controls_both_the_cutoff_and_independent_filtering",
+            "batch_is_included_in_the_design",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order",
+            "only_genes_with_padj_below_alpha_are_returned_in_the_specified_order",
+            "no_significant_gene_gives_a_zero_row_data_frame_with_the_same_columns",
+            "result_is_a_plain_data_frame_with_default_row_names"
+          ],
+          "details": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model: Expected `names(got)` to be identical to `c(\"gene\", \"baseMean\", \"log2FoldChange\", \"pvalue\", \"padj\")`.\nDifferences:\n    actual           | expected            \n[1] \"baseMean\"       - \"gene\"           [1]\n[2] \"log2FoldChange\" - \"baseMean\"       [2]\n[3] \"lfcSE\"          - \"log2FoldChange\" [3]\n[4] \"stat\"           - \"pvalue\"         [4]\n[5] \"pvalue\"         - \"padj\"           [5]\n[6] \"padj\"           -                     \n",
+            "contrast_direction_follows_contrast_level_over_reference_level: Expected `names(got)` to be identical to `c(\"gene\", \"baseMean\", \"log2FoldChange\", \"pvalue\", \"padj\")`.\nDifferences:\n    actual           | expected            \n[1] \"baseMean\"       - \"gene\"           [1]\n[2] \"log2FoldChange\" - \"baseMean\"       [2]\n[3] \"lfcSE\"          - \"log2FoldChange\" [3]\n[4] \"stat\"           - \"pvalue\"         [4]\n[5] \"pvalue\"         - \"padj\"           [5]\n[6] \"padj\"           -                     \n",
+            "alpha_controls_both_the_cutoff_and_independent_filtering: Expected `names(got)` to be identical to `c(\"gene\", \"baseMean\", \"log2FoldChange\", \"pvalue\", \"padj\")`.\nDifferences:\n    actual           | expected            \n[1] \"baseMean\"       - \"gene\"           [1]\n[2] \"log2FoldChange\" - \"baseMean\"       [2]\n[3] \"lfcSE\"          - \"log2FoldChange\" [3]\n[4] \"stat\"           - \"pvalue\"         [4]\n[5] \"pvalue\"         - \"padj\"           [5]\n[6] \"padj\"           -                     \n",
+            "batch_is_included_in_the_design: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n     actual            | expected                          \n [1] 1.40064812134063  - 1.45732528858784  [1]             \n [2] 1.55181281087492  - 1.58092350377119  [2]             \n [3] 1.36878109961407  - 1.61540796460397  [3]             \n [4] 1.38395138417983  - -1.85998511238527 [4]             \n [5] 0.727000883142437 - -1.37731985766406 [5]             \n [6] 1.59131871754874  - 1.42255561365772  [6]  ",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order: Expected `names(got)` to be identical to `c(\"gene\", \"baseMean\", \"log2FoldChange\", \"pvalue\", \"padj\")`.\nDifferences:\n    actual           | expected            \n[1] \"baseMean\"       - \"gene\"           [1]\n[2] \"log2FoldChange\" - \"baseMean\"       [2]\n[3] \"lfcSE\"          - \"log2FoldChange\" [3]\n[4] \"stat\"           - \"pvalue\"         [4]\n[5] \"pvalue\"         - \"padj\"           [5]\n[6] \"padj\"           -                     \n",
+            "only_genes_with_padj_below_alpha_are_returned_in_the_specified_order: Expected `all(got$padj < 0.05)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "no_significant_gene_gives_a_zero_row_data_frame_with_the_same_columns: Expected `nrow(got)` to be identical to 0L.\nDifferences:\n  `actual`: 60\n`expected`:  0\n",
+            "result_is_a_plain_data_frame_with_default_row_names: Expected `inherits(got, \"DFrame\")` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n"
+          ],
+          "seconds": 31.25
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model",
+            "contrast_direction_follows_contrast_level_over_reference_level",
+            "alpha_controls_both_the_cutoff_and_independent_filtering",
+            "batch_is_included_in_the_design",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order",
+            "only_genes_with_padj_below_alpha_are_returned_in_the_specified_order",
+            "no_significant_gene_gives_a_zero_row_data_frame_with_the_same_columns",
+            "result_is_a_plain_data_frame_with_default_row_names",
+            "invalid_inputs_are_errors",
+            "inputs_are_not_modified_and_no_warnings"
+          ],
+          "details": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: todo",
+            "contrast_direction_follows_contrast_level_over_reference_level: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: todo",
+            "alpha_controls_both_the_cutoff_and_independent_filtering: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: todo",
+            "batch_is_included_in_the_design: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: todo",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: todo",
+            "only_genes_with_padj_below_alpha_are_returned_in_the_specified_order: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: todo",
+            "no_significant_gene_gives_a_zero_row_data_frame_with_the_same_columns: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: todo",
+            "result_is_a_plain_data_frame_with_default_row_names: candidate call failed: todo",
+            "invalid_inputs_are_errors: candidate call failed: todo",
+            "inputs_are_not_modified_and_no_warnings: candidate call failed: todo"
+          ],
+          "seconds": 16.92
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 32.51
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model",
+            "contrast_direction_follows_contrast_level_over_reference_level",
+            "alpha_controls_both_the_cutoff_and_independent_filtering",
+            "batch_is_included_in_the_design",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order",
+            "only_genes_with_padj_below_alpha_are_returned_in_the_specified_order",
+            "no_significant_gene_gives_a_zero_row_data_frame_with_the_same_columns",
+            "result_is_a_plain_data_frame_with_default_row_names",
+            "invalid_inputs_are_errors",
+            "inputs_are_not_modified_and_no_warnings"
+          ],
+          "details": [
+            "significant_genes_and_statistics_match_the_batch_adjusted_model: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: object 'differential_expression' of mode 'function' was not found",
+            "contrast_direction_follows_contrast_level_over_reference_level: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: object 'differential_expression' of mode 'function' was not found",
+            "alpha_controls_both_the_cutoff_and_independent_filtering: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: object 'differential_expression' of mode 'function' was not found",
+            "batch_is_included_in_the_design: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: object 'differential_expression' of mode 'function' was not found",
+            "samples_are_matched_by_name_when_coldata_is_in_another_order: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: object 'differential_expression' of mode 'function' was not found",
+            "only_genes_with_padj_below_alpha_are_returned_in_the_specified_order: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: object 'differential_expression' of mode 'function' was not found",
+            "no_significant_gene_gives_a_zero_row_data_frame_with_the_same_columns: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': candidate call failed: object 'differential_expression' of mode 'function' was not found",
+            "result_is_a_plain_data_frame_with_default_row_names: candidate call failed: object 'differential_expression' of mode 'function' was not found",
+            "invalid_inputs_are_errors: candidate call failed: object 'differential_expression' of mode 'function' was not found",
+            "inputs_are_not_modified_and_no_warnings: candidate call failed: object 'differential_expression' of mode 'function' was not found"
+          ],
+          "seconds": 15.66
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 10,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 13.68
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 27.98
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "bioc",
+        "name": "codex-r-benchmark:pilot-bioc",
+        "id": "sha256:a4e959f2ed9af8141ecec5d95d727880fd5dfc325efc19cb55032d6d34899161"
+      }
+    },
+    {
+      "task": "XM02",
+      "task_sha256": "3baa35f90c3c33554e0feef3d6e8196a9fd88def369648baf5833bc2ce7e9ef1",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+      "checks": 9,
+      "checks_failed_by_some_rejected_control": 8,
+      "checks_never_failed_by_any_control": [
+        "inputs_are_not_modified_and_no_warnings"
+      ],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "stats": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 9,
+          "total": 9,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.52
+        },
+        "alternate_vcov_linear_combinations": {
+          "status": "scored",
+          "passed": 9,
+          "total": 9,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.61
+        },
+        "wrong_na_omit_all_columns": {
+          "status": "scored",
+          "passed": 3,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "homogeneous_sites_yield_correct_screening_interaction_and_pooled_effect",
+            "post_treatment_missingness_and_values_do_not_affect_the_analysis",
+            "heterogeneous_sites_trigger_interaction_and_suppress_pooled_effect",
+            "site_effects_use_joint_interaction_model_and_follow_contrast_direction",
+            "alpha_parameter_controls_interaction_decision_and_confidence_interval",
+            "result_is_invariant_to_row_order_and_site_table_has_clean_rownames"
+          ],
+          "details": [
+            "homogeneous_sites_yield_correct_screening_interaction_and_pooled_effect: Expected `as.integer(got$n_used)` to be identical to `want$n_used`.\nDifferences:\n  `actual`: 39\n`expected`: 51\n",
+            "post_treatment_missingness_and_values_do_not_affect_the_analysis: Expected `as.integer(got$n_used)` to be identical to `want$n_used`.\nDifferences:\n  `actual`: 25\n`expected`: 51\n",
+            "heterogeneous_sites_trigger_interaction_and_suppress_pooled_effect: Expected `as.integer(got$n_used)` to be identical to `want$n_used`.\nDifferences:\n  `actual`: 39\n`expected`: 51\n",
+            "site_effects_use_joint_interaction_model_and_follow_contrast_direction: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 9.091 0.530 -5.285\n`expected`: 6.220 0.464 -5.315\n",
+            "alpha_parameter_controls_interaction_decision_and_confidence_interval: Expected `as.integer(got$n_used)` to be identical to `want$n_used`.\nDifferences:\n  `actual`: 39\n`expected`: 51\n",
+            "result_is_invariant_to_row_order_and_site_table_has_clean_rownames: Expected `as.integer(got$n_used)` to be identical to `want$n_used`.\nDifferences:\n  `actual`: 39\n`expected`: 51\n"
+          ],
+          "seconds": 3.58
+        },
+        "wrong_separate_within_site_regressions": {
+          "status": "scored",
+          "passed": 3,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "homogeneous_sites_yield_correct_screening_interaction_and_pooled_effect",
+            "post_treatment_missingness_and_values_do_not_affect_the_analysis",
+            "heterogeneous_sites_trigger_interaction_and_suppress_pooled_effect",
+            "site_effects_use_joint_interaction_model_and_follow_contrast_direction",
+            "alpha_parameter_controls_interaction_decision_and_confidence_interval",
+            "result_is_invariant_to_row_order_and_site_table_has_clean_rownames"
+          ],
+          "details": [
+            "homogeneous_sites_yield_correct_screening_interaction_and_pooled_effect: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 4.251 5.758 4.180\n`expected`: 4.106 5.702 4.068\n\nsite_effects estimate",
+            "post_treatment_missingness_and_values_do_not_affect_the_analysis: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 4.251 5.758 4.180\n`expected`: 4.106 5.702 4.068\n\nsite_effects estimate",
+            "heterogeneous_sites_trigger_interaction_and_suppress_pooled_effect: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 6.2122 0.5705 -5.3748\n`expected`: 6.2202 0.4643 -5.3152\n\nsite_effects estimate",
+            "site_effects_use_joint_interaction_model_and_follow_contrast_direction: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 6.2122 0.5705 -5.3748\n`expected`: 6.2202 0.4643 -5.3152\n",
+            "alpha_parameter_controls_interaction_decision_and_confidence_interval: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 6.2122 0.5705 -5.3748\n`expected`: 6.2202 0.4643 -5.3152\n\nsite_effects estimate",
+            "result_is_invariant_to_row_order_and_site_table_has_clean_rownames: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 4.251 5.758 4.180\n`expected`: 4.106 5.702 4.068\n\nsite_effects estimate"
+          ],
+          "seconds": 4.69
+        },
+        "wrong_always_reports_pooled_effect": {
+          "status": "scored",
+          "passed": 8,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "heterogeneous_sites_trigger_interaction_and_suppress_pooled_effect"
+          ],
+          "details": [
+            "heterogeneous_sites_trigger_interaction_and_suppress_pooled_effect: Expected `got$pooled_effect` to be NULL.\nDifferences:\n`actual` is a list\n`expected` is NULL\n"
+          ],
+          "seconds": 4.33
+        },
+        "edge_no_input_validation": {
+          "status": "scored",
+          "passed": 7,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "duplicate_subjects_or_invalid_arms_stop_with_an_error",
+            "small_cells_constant_baseline_or_bad_alpha_stop_with_an_error"
+          ],
+          "details": [
+            "duplicate_subjects_or_invalid_arms_stop_with_an_error: expected an error but the call succeeded",
+            "small_cells_constant_baseline_or_bad_alpha_stop_with_an_error: expected an error but the call succeeded"
+          ],
+          "seconds": 4.06
+        },
+        "malformed_returns_lm_object": {
+          "status": "scored",
+          "passed": 1,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "homogeneous_sites_yield_correct_screening_interaction_and_pooled_effect",
+            "post_treatment_missingness_and_values_do_not_affect_the_analysis",
+            "heterogeneous_sites_trigger_interaction_and_suppress_pooled_effect",
+            "site_effects_use_joint_interaction_model_and_follow_contrast_direction",
+            "alpha_parameter_controls_interaction_decision_and_confidence_interval",
+            "result_is_invariant_to_row_order_and_site_table_has_clean_rownames",
+            "duplicate_subjects_or_invalid_arms_stop_with_an_error",
+            "small_cells_constant_baseline_or_bad_alpha_stop_with_an_error"
+          ],
+          "details": [
+            "homogeneous_sites_yield_correct_screening_interaction_and_pooled_effect: Expected `names(got)` to be identical to `c(...)`.\nDifferences:\n     actual          | expected                            \n [1] \"coefficients\"  - \"n_used\"              [1]           \n [2] \"residuals\"     - \"n_dropped\"           [2]           \n [3] \"effects\"       - \"interaction_test\"    [3]           \n [4] \"rank\"          - \"interaction_present\" [4]           \n [5] \"fitted.values\" - \"site_effects\"        [5]           \n [6] \"assign\"        - \"pooled_effect\"       [6]           \n [7] \"qr\"       ",
+            "post_treatment_missingness_and_values_do_not_affect_the_analysis: Expected `names(got)` to be identical to `c(...)`.\nDifferences:\n     actual          | expected                            \n [1] \"coefficients\"  - \"n_used\"              [1]           \n [2] \"residuals\"     - \"n_dropped\"           [2]           \n [3] \"effects\"       - \"interaction_test\"    [3]           \n [4] \"rank\"          - \"interaction_present\" [4]           \n [5] \"fitted.values\" - \"site_effects\"        [5]           \n [6] \"assign\"        - \"pooled_effect\"       [6]           \n [7] \"qr\"       ",
+            "heterogeneous_sites_trigger_interaction_and_suppress_pooled_effect: Expected `names(got)` to be identical to `c(...)`.\nDifferences:\n     actual          | expected                            \n [1] \"coefficients\"  - \"n_used\"              [1]           \n [2] \"residuals\"     - \"n_dropped\"           [2]           \n [3] \"effects\"       - \"interaction_test\"    [3]           \n [4] \"rank\"          - \"interaction_present\" [4]           \n [5] \"fitted.values\" - \"site_effects\"        [5]           \n [6] \"assign\"        - \"pooled_effect\"       [6]           \n [7] \"qr\"       ",
+            "site_effects_use_joint_interaction_model_and_follow_contrast_direction: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`:                                                     \n`expected`: 6.22021330442543 0.464304412837757 -5.31522326296167\n",
+            "alpha_parameter_controls_interaction_decision_and_confidence_interval: Expected `got_strict$interaction_present` to be FALSE.\nDifferences:\n`actual` is NULL\n`expected` is a logical vector (FALSE)\n",
+            "result_is_invariant_to_row_order_and_site_table_has_clean_rownames: Expected `names(got)` to be identical to `c(...)`.\nDifferences:\n     actual          | expected                            \n [1] \"coefficients\"  - \"n_used\"              [1]           \n [2] \"residuals\"     - \"n_dropped\"           [2]           \n [3] \"effects\"       - \"interaction_test\"    [3]           \n [4] \"rank\"          - \"interaction_present\" [4]           \n [5] \"fitted.values\" - \"site_effects\"        [5]           \n [6] \"assign\"        - \"pooled_effect\"       [6]           \n [7] \"qr\"       ",
+            "duplicate_subjects_or_invalid_arms_stop_with_an_error: expected an error but the call succeeded",
+            "small_cells_constant_baseline_or_bad_alpha_stop_with_an_error: expected an error but the call succeeded"
+          ],
+          "seconds": 4.25
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 9,
+          "total": 9,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.34
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "homogeneous_sites_yield_correct_screening_interaction_and_pooled_effect",
+            "post_treatment_missingness_and_values_do_not_affect_the_analysis",
+            "heterogeneous_sites_trigger_interaction_and_suppress_pooled_effect",
+            "site_effects_use_joint_interaction_model_and_follow_contrast_direction",
+            "alpha_parameter_controls_interaction_decision_and_confidence_interval",
+            "result_is_invariant_to_row_order_and_site_table_has_clean_rownames",
+            "duplicate_subjects_or_invalid_arms_stop_with_an_error",
+            "small_cells_constant_baseline_or_bad_alpha_stop_with_an_error",
+            "inputs_are_not_modified_and_no_warnings"
+          ],
+          "details": [
+            "homogeneous_sites_yield_correct_screening_interaction_and_pooled_effect: candidate call failed: object 'investigate_study' of mode 'function' was not found",
+            "post_treatment_missingness_and_values_do_not_affect_the_analysis: candidate call failed: object 'investigate_study' of mode 'function' was not found",
+            "heterogeneous_sites_trigger_interaction_and_suppress_pooled_effect: candidate call failed: object 'investigate_study' of mode 'function' was not found",
+            "site_effects_use_joint_interaction_model_and_follow_contrast_direction: candidate call failed: object 'investigate_study' of mode 'function' was not found",
+            "alpha_parameter_controls_interaction_decision_and_confidence_interval: candidate call failed: object 'investigate_study' of mode 'function' was not found",
+            "result_is_invariant_to_row_order_and_site_table_has_clean_rownames: candidate call failed: object 'investigate_study' of mode 'function' was not found",
+            "duplicate_subjects_or_invalid_arms_stop_with_an_error: candidate call failed: object 'investigate_study' of mode 'function' was not found",
+            "small_cells_constant_baseline_or_bad_alpha_stop_with_an_error: candidate call failed: object 'investigate_study' of mode 'function' was not found",
+            "inputs_are_not_modified_and_no_warnings: candidate call failed: object 'investigate_study' of mode 'function' was not found"
+          ],
+          "seconds": 3.47
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 9,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 3.04
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 9,
+          "total": 9,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.87
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XM03",
+      "task_sha256": "13c99b1940894e82c3571e2df43064d66c22b0f26fbd8f60acc51c5338516dcb",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+      "checks": 8,
+      "checks_failed_by_some_rejected_control": 7,
+      "checks_never_failed_by_any_control": [
+        "inputs_are_not_modified_and_no_warnings"
+      ],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "shiny": "1.14.0",
+          "cachem": "1.1.0"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 8,
+          "total": 8,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.62
+        },
+        "alternate_explicit_session_cache_object": {
+          "status": "scored",
+          "passed": 8,
+          "total": 8,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.56
+        },
+        "wrong_app_scoped_cache": {
+          "status": "scored",
+          "passed": 7,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "cache_is_scoped_to_session_not_application"
+          ],
+          "details": [
+            "cache_is_scoped_to_session_not_application: Expected `box$sess_keys >= 1L` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
+          ],
+          "seconds": 5.08
+        },
+        "wrong_incomplete_cache_key": {
+          "status": "scored",
+          "passed": 6,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "replay_cohort_requests_matches_expected_summaries_hits_and_misses",
+            "cache_key_includes_both_cohort_and_min_score"
+          ],
+          "details": [
+            "replay_cohort_requests_matches_expected_summaries_hits_and_misses: Expected `as.integer(got[[nm]])` to be identical to `want[[nm]]`.\nDifferences:\n  `actual`: 10 6 10 10 0 6 0\n`expected`: 10 6 10  4 0 6 0\n\nn_records",
+            "cache_key_includes_both_cohort_and_min_score: Expected `box$r1$n_records > box$r2$n_records` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
+          ],
+          "seconds": 5.95
+        },
+        "wrong_no_bind_event_eager_reactive": {
+          "status": "scored",
+          "passed": 7,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "module_server_only_evaluates_on_run_and_updates_status_output"
+          ],
+          "details": [
+            "module_server_only_evaluates_on_run_and_updates_status_output: Expected `box$s_wait$cohort` to be identical to \"alpha\".\nDifferences:\n`actual`:   \"beta\" \n`expected`: \"alpha\"\n"
+          ],
+          "seconds": 6.16
+        },
+        "edge_no_input_validation": {
+          "status": "scored",
+          "passed": 6,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "invalid_records_stop_with_an_error_in_both_functions",
+            "invalid_requests_stop_with_an_error"
+          ],
+          "details": [
+            "invalid_records_stop_with_an_error_in_both_functions: expected an error but the call succeeded",
+            "invalid_requests_stop_with_an_error: expected an error but the call succeeded"
+          ],
+          "seconds": 5.23
+        },
+        "malformed_missing_replay_function": {
+          "status": "scored",
+          "passed": 1,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "replay_cohort_requests_matches_expected_summaries_hits_and_misses",
+            "module_server_only_evaluates_on_run_and_updates_status_output",
+            "cache_is_scoped_to_session_not_application",
+            "cache_key_includes_both_cohort_and_min_score",
+            "empty_matching_subset_returns_zero_records_and_na_weighted_mean",
+            "invalid_records_stop_with_an_error_in_both_functions",
+            "invalid_requests_stop_with_an_error"
+          ],
+          "details": [
+            "replay_cohort_requests_matches_expected_summaries_hits_and_misses: Expected `is.data.frame(got)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "module_server_only_evaluates_on_run_and_updates_status_output: candidate call failed: argument is not an environment",
+            "cache_is_scoped_to_session_not_application: candidate call failed: argument is not an environment",
+            "cache_key_includes_both_cohort_and_min_score: candidate call failed: argument is not an environment",
+            "empty_matching_subset_returns_zero_records_and_na_weighted_mean: Expected `as.integer(got$n_records)` to be identical to `c(0L, 0L)`.\nDifferences:\n  `actual`:    \n`expected`: 0 0\n",
+            "invalid_records_stop_with_an_error_in_both_functions: expected an error but the call succeeded",
+            "invalid_requests_stop_with_an_error: expected an error but the call succeeded"
+          ],
+          "seconds": 5.41
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 8,
+          "total": 8,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 6.39
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "replay_cohort_requests_matches_expected_summaries_hits_and_misses",
+            "module_server_only_evaluates_on_run_and_updates_status_output",
+            "cache_is_scoped_to_session_not_application",
+            "cache_key_includes_both_cohort_and_min_score",
+            "empty_matching_subset_returns_zero_records_and_na_weighted_mean",
+            "invalid_records_stop_with_an_error_in_both_functions",
+            "invalid_requests_stop_with_an_error",
+            "inputs_are_not_modified_and_no_warnings"
+          ],
+          "details": [
+            "replay_cohort_requests_matches_expected_summaries_hits_and_misses: candidate call failed: object 'replay_cohort_requests' of mode 'function' was not found",
+            "module_server_only_evaluates_on_run_and_updates_status_output: candidate call failed: object 'cohort_module_server' of mode 'function' was not found",
+            "cache_is_scoped_to_session_not_application: candidate call failed: object 'cohort_module_server' of mode 'function' was not found",
+            "cache_key_includes_both_cohort_and_min_score: candidate call failed: object 'cohort_module_server' of mode 'function' was not found",
+            "empty_matching_subset_returns_zero_records_and_na_weighted_mean: candidate call failed: object 'replay_cohort_requests' of mode 'function' was not found",
+            "invalid_records_stop_with_an_error_in_both_functions: candidate call failed: object 'replay_cohort_requests' of mode 'function' was not found",
+            "invalid_requests_stop_with_an_error: candidate call failed: object 'replay_cohort_requests' of mode 'function' was not found",
+            "inputs_are_not_modified_and_no_warnings: candidate call failed: object 'replay_cohort_requests' of mode 'function' was not found"
+          ],
+          "seconds": 3.98
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 8,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 3.55
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 8,
+          "total": 8,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.81
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XM04",
+      "task_sha256": "ed5739a0820619314e6bbac0085f667d71b174bfe5dfbd41c7da0f5ee28d6b64",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+      "checks": 9,
+      "checks_failed_by_some_rejected_control": 8,
+      "checks_never_failed_by_any_control": [
+        "inputs_are_not_modified_and_no_warnings"
+      ],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "SummarizedExperiment": "1.40.0",
+          "BiocVersion": "3.22.0",
+          "digest": "0.6.39"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 9,
+          "total": 9,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 14.92
+        },
+        "alternate_split_by_gene_loop": {
+          "status": "scored",
+          "passed": 9,
+          "total": 9,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 15.51
+        },
+        "wrong_unweighted_effective_length": {
+          "status": "scored",
+          "passed": 7,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "length_assay_uses_tpm_weights_and_falls_back_to_unweighted_mean_when_tpm_is_zero",
+            "metadata_manifest_md5_is_computed_over_sorted_quantified_transcripts_without_serialization"
+          ],
+          "details": [
+            "length_assay_uses_tpm_weights_and_falls_back_to_unweighted_mean_when_tpm_is_zero: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n     actual         | expected                      \n [1] 1505.376666667 - 1630.113099209 [1]            \n [2] 1713.290000000 - 1636.442075342 [2]            \n [3] 2016.012500000 - 2008.010854323 [3]            \n [4] 1675.290000000 | 1675.290000000 [4]            \n [5] 738.910000000  - 758.700977185  [5]            \n [6] 703.093333333  - 732.373427818  [6]            \n [7] 887.760000000  | 887.760000000  ",
+            "metadata_manifest_md5_is_computed_over_sorted_quantified_transcripts_without_serialization: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n     actual         | expected                      \n [1] 1505.376666667 - 1630.113099209 [1]            \n [2] 1713.290000000 - 1636.442075342 [2]            \n [3] 2016.012500000 - 2008.010854323 [3]            \n [4] 1675.290000000 | 1675.290000000 [4]            \n [5] 738.910000000  - 758.700977185  [5]            \n [6] 703.093333333  - 732.373427818  [6]            \n [7] 887.760000000  | 887.760000000  "
+          ],
+          "seconds": 16.02
+        },
+        "wrong_no_zero_tpm_fallback": {
+          "status": "scored",
+          "passed": 7,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "length_assay_uses_tpm_weights_and_falls_back_to_unweighted_mean_when_tpm_is_zero",
+            "metadata_manifest_md5_is_computed_over_sorted_quantified_transcripts_without_serialization"
+          ],
+          "details": [
+            "length_assay_uses_tpm_weights_and_falls_back_to_unweighted_mean_when_tpm_is_zero: Expected `anyNA(len)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "metadata_manifest_md5_is_computed_over_sorted_quantified_transcripts_without_serialization: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n     actual         | expected           \n [4] 1675.290000000 | 1675.290000000 [4] \n [5] 758.700977185  | 758.700977185  [5] \n [6] 732.373427818  | 732.373427818  [6] \n [7] NaN            - 887.760000000  [7] \n [8] 1645.728446885 | 1645.728446885 [8] \n [9] 2018.960000000 | 2018.960000000 [9] \n[10] 1364.038420539 | 1364.038420539 [10]\n\n     actual         | expected           \n[17] 1102.706655739 | 1102.70"
+          ],
+          "seconds": 16.22
+        },
+        "wrong_manifest_md5_uses_full_manifest": {
+          "status": "scored",
+          "passed": 8,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "metadata_manifest_md5_is_computed_over_sorted_quantified_transcripts_without_serialization"
+          ],
+          "details": [
+            "metadata_manifest_md5_is_computed_over_sorted_quantified_transcripts_without_serialization: Expected `md$manifest_md5` to be identical to `xm04_want$manifest_md5`.\nDifferences:\n`actual`:   \"a4282d76c89ab803398c5f295fc9b3ae\"\n`expected`: \"63919be9946d0bf620cb7f4bb9a75e2f\"\n"
+          ],
+          "seconds": 16.19
+        },
+        "edge_no_checksum_or_input_validation": {
+          "status": "scored",
+          "passed": 6,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "corrupted_sequence_checksum_or_missing_transcript_in_manifest_stops_with_an_error",
+            "inconsistent_biotype_within_gene_or_missing_sample_in_coldata_stops_with_an_error",
+            "mismatched_matrix_dimnames_or_invalid_numeric_values_stop_with_an_error"
+          ],
+          "details": [
+            "corrupted_sequence_checksum_or_missing_transcript_in_manifest_stops_with_an_error: expected an error but the call succeeded",
+            "inconsistent_biotype_within_gene_or_missing_sample_in_coldata_stops_with_an_error: expected an error but the call succeeded",
+            "mismatched_matrix_dimnames_or_invalid_numeric_values_stop_with_an_error: expected an error but the call succeeded"
+          ],
+          "seconds": 15.75
+        },
+        "malformed_returns_plain_list": {
+          "status": "scored",
+          "passed": 1,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "returns_valid_summarized_experiment_with_exact_assay_names_and_dimensions",
+            "counts_and_abundance_assays_match_gene_level_sums",
+            "length_assay_uses_tpm_weights_and_falls_back_to_unweighted_mean_when_tpm_is_zero",
+            "rowdata_and_coldata_preserve_gene_and_sample_alignment_excluding_unquantified_rows",
+            "metadata_manifest_md5_is_computed_over_sorted_quantified_transcripts_without_serialization",
+            "corrupted_sequence_checksum_or_missing_transcript_in_manifest_stops_with_an_error",
+            "inconsistent_biotype_within_gene_or_missing_sample_in_coldata_stops_with_an_error",
+            "mismatched_matrix_dimnames_or_invalid_numeric_values_stop_with_an_error"
+          ],
+          "details": [
+            "returns_valid_summarized_experiment_with_exact_assay_names_and_dimensions: Expected `methods::is(se, \"SummarizedExperiment\")` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "counts_and_abundance_assays_match_gene_level_sums: unable to find an inherited method for function ‘assay’ for signature ‘x = \"list\", i = \"character\"’",
+            "length_assay_uses_tpm_weights_and_falls_back_to_unweighted_mean_when_tpm_is_zero: unable to find an inherited method for function ‘assay’ for signature ‘x = \"list\", i = \"character\"’",
+            "rowdata_and_coldata_preserve_gene_and_sample_alignment_excluding_unquantified_rows: error in evaluating the argument 'x' in selecting a method for function 'as.data.frame': unable to find an inherited method for function ‘rowData’ for signature ‘x = \"list\"’",
+            "metadata_manifest_md5_is_computed_over_sorted_quantified_transcripts_without_serialization: unable to find an inherited method for function ‘metadata’ for signature ‘x = \"list\"’",
+            "corrupted_sequence_checksum_or_missing_transcript_in_manifest_stops_with_an_error: expected an error but the call succeeded",
+            "inconsistent_biotype_within_gene_or_missing_sample_in_coldata_stops_with_an_error: expected an error but the call succeeded",
+            "mismatched_matrix_dimnames_or_invalid_numeric_values_stop_with_an_error: expected an error but the call succeeded"
+          ],
+          "seconds": 11.44
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 9,
+          "total": 9,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 18.24
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "returns_valid_summarized_experiment_with_exact_assay_names_and_dimensions",
+            "counts_and_abundance_assays_match_gene_level_sums",
+            "length_assay_uses_tpm_weights_and_falls_back_to_unweighted_mean_when_tpm_is_zero",
+            "rowdata_and_coldata_preserve_gene_and_sample_alignment_excluding_unquantified_rows",
+            "metadata_manifest_md5_is_computed_over_sorted_quantified_transcripts_without_serialization",
+            "corrupted_sequence_checksum_or_missing_transcript_in_manifest_stops_with_an_error",
+            "inconsistent_biotype_within_gene_or_missing_sample_in_coldata_stops_with_an_error",
+            "mismatched_matrix_dimnames_or_invalid_numeric_values_stop_with_an_error",
+            "inputs_are_not_modified_and_no_warnings"
+          ],
+          "details": [
+            "returns_valid_summarized_experiment_with_exact_assay_names_and_dimensions: candidate call failed: object 'summarize_transcriptome' of mode 'function' was not found",
+            "counts_and_abundance_assays_match_gene_level_sums: candidate call failed: object 'summarize_transcriptome' of mode 'function' was not found",
+            "length_assay_uses_tpm_weights_and_falls_back_to_unweighted_mean_when_tpm_is_zero: candidate call failed: object 'summarize_transcriptome' of mode 'function' was not found",
+            "rowdata_and_coldata_preserve_gene_and_sample_alignment_excluding_unquantified_rows: candidate call failed: object 'summarize_transcriptome' of mode 'function' was not found",
+            "metadata_manifest_md5_is_computed_over_sorted_quantified_transcripts_without_serialization: candidate call failed: object 'summarize_transcriptome' of mode 'function' was not found",
+            "corrupted_sequence_checksum_or_missing_transcript_in_manifest_stops_with_an_error: candidate call failed: object 'summarize_transcriptome' of mode 'function' was not found",
+            "inconsistent_biotype_within_gene_or_missing_sample_in_coldata_stops_with_an_error: candidate call failed: object 'summarize_transcriptome' of mode 'function' was not found",
+            "mismatched_matrix_dimnames_or_invalid_numeric_values_stop_with_an_error: candidate call failed: object 'summarize_transcriptome' of mode 'function' was not found",
+            "inputs_are_not_modified_and_no_warnings: candidate call failed: object 'summarize_transcriptome' of mode 'function' was not found"
+          ],
+          "seconds": 10.91
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 9,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 10.21
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 9,
+          "total": 9,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 18.01
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "bioc",
+        "name": "codex-r-benchmark:pilot-bioc",
+        "id": "sha256:a4e959f2ed9af8141ecec5d95d727880fd5dfc325efc19cb55032d6d34899161"
       }
     },
     {
@@ -4086,8 +4997,8 @@
     },
     {
       "task": "XP05",
-      "task_sha256": "18a54d2fb80a0f67eadfd74daf616d83a2112b50c5a7c08ea6da4a1694775460",
-      "scorer_sha256": "15464593ff378efeeee9efd13786841c01630025caeeb0099486463bc8903bef",
+      "task_sha256": "ea2d662810c8b133cbf1be2fd8f1efbcb940a6abcecec3cda9a030b5f368ab4a",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 9,
       "checks_failed_by_some_rejected_control": 9,
       "checks_never_failed_by_any_control": [],
@@ -4110,7 +5021,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.7
+          "seconds": 4.96
         },
         "alternate_compareversion": {
           "status": "scored",
@@ -4120,7 +5031,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.64
+          "seconds": 4.8
         },
         "wrong_textual_comparison": {
           "status": "scored",
@@ -4140,7 +5051,7 @@
             "hyphen_and_dot_separators_are_equivalent: Expected `got$status` to be identical to `xp05_oracle(xp05_b)$status`.\nDifferences:\n`actual`:   \"satisfied\" \"unsatisfied\" \"satisfied\" \"unsatisfied\"\n`expected`: \"satisfied\" \"satisfied\"   \"satisfied\" \"unsatisfied\"\n",
             "zero_row_tables_and_extra_columns_are_accepted: Expected `unname(got[[nm]])` to be identical to `unname(want[[nm]])`.\nDifferences:\n`actual`:   \"satisfied\" \"unsatisfied\" \"satisfied\" \"unsatisfied\"\n`expected`: \"satisfied\" \"satisfied\"   \"satisfied\" \"unsatisfied\"\n\nstatus"
           ],
-          "seconds": 3.96
+          "seconds": 5.34
         },
         "wrong_hyphen_not_a_separator": {
           "status": "scored",
@@ -4160,7 +5071,7 @@
             "hyphen_and_dot_separators_are_equivalent: Expected `got$status` to be identical to `xp05_oracle(xp05_b)$status`.\nDifferences:\n`actual`:   \"satisfied\" \"unsatisfied\" \"unsatisfied\" \"unsatisfied\"\n`expected`: \"satisfied\" \"satisfied\"   \"satisfied\"   \"unsatisfied\"\n",
             "zero_row_tables_and_extra_columns_are_accepted: Expected `unname(got[[nm]])` to be identical to `unname(want[[nm]])`.\nDifferences:\n`actual`:   \"satisfied\" \"unsatisfied\" \"unsatisfied\" \"unsatisfied\"\n`expected`: \"satisfied\" \"satisfied\"   \"satisfied\"   \"unsatisfied\"\n\nstatus"
           ],
-          "seconds": 4.33
+          "seconds": 5.06
         },
         "wrong_not_installed_is_an_error": {
           "status": "scored",
@@ -4190,7 +5101,7 @@
             "invalid_tables_operators_and_versions_are_errors: candidate call failed: $ operator is invalid for atomic vectors",
             "input_is_not_modified_and_no_warnings: candidate call failed: $ operator is invalid for atomic vectors"
           ],
-          "seconds": 3.69
+          "seconds": 4.43
         },
         "edge_no_input_validation": {
           "status": "scored",
@@ -4204,7 +5115,7 @@
           "details": [
             "invalid_tables_operators_and_versions_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 3.74
+          "seconds": 4.71
         },
         "malformed_returns_logical": {
           "status": "scored",
@@ -4230,7 +5141,7 @@
             "zero_row_tables_and_extra_columns_are_accepted: Expected `names(got)` to be identical to `c(\"package\", \"op\", \"required\", \"installed\", \"status\")`.\nDifferences:\n`actual`:   \"value_of(xp05_call(empty))\"                                     \n`expected`: \"package\"                    \"op\" \"required\" \"installed\" \"status\"\n",
             "invalid_tables_operators_and_versions_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 3.64
+          "seconds": 4.62
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -4256,7 +5167,7 @@
             "zero_row_tables_and_extra_columns_are_accepted: Expected `names(got)` to be identical to `c(\"package\", \"op\", \"required\", \"installed\", \"status\")`.\nDifferences:\n`actual`:                                                 \n`expected`: \"package\" \"op\" \"required\" \"installed\" \"status\"\n",
             "invalid_tables_operators_and_versions_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 3.51
+          "seconds": 4.75
         },
         "reference_repeat": {
           "status": "scored",
@@ -4266,7 +5177,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.76
+          "seconds": 5.2
         },
         "empty": {
           "status": "scored",
@@ -4296,7 +5207,7 @@
             "invalid_tables_operators_and_versions_are_errors: candidate call failed: object 'check_requirements' of mode 'function' was not found",
             "input_is_not_modified_and_no_warnings: candidate call failed: object 'check_requirements' of mode 'function' was not found"
           ],
-          "seconds": 3.64
+          "seconds": 4.63
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -4308,7 +5219,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 3.05
+          "seconds": 4.08
         },
         "forged_result": {
           "status": "scored",
@@ -4318,7 +5229,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.07
+          "seconds": 4.85
         }
       },
       "problems": [],
@@ -4332,7 +5243,7 @@
     {
       "task": "XR01",
       "task_sha256": "0ffeec29e2d169452609211f1b3ab52f357f495f4170d58edf93c3c080a0016d",
-      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 11,
       "checks_failed_by_some_rejected_control": 11,
       "checks_never_failed_by_any_control": [],
@@ -4355,7 +5266,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.87
+          "seconds": 4.94
         },
         "alternate_base_r": {
           "status": "scored",
@@ -4365,7 +5276,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.37
+          "seconds": 4.18
         },
         "wrong_underscore_verbs_unchanged": {
           "status": "scored",
@@ -4399,7 +5310,7 @@
             "runs_without_warnings_under_strict_lifecycle_settings: candidate call failed: `filter_()` was deprecated in dplyr 0.7.0 and is now defunct.\nℹ Please use `filter()` instead.\nℹ See vignette('programming') for more help",
             "input_is_not_modified: candidate call failed: `filter_()` was deprecated in dplyr 0.7.0 and is now defunct.\nℹ Please use `filter()` instead.\nℹ See vignette('programming') for more help"
           ],
-          "seconds": 2.94
+          "seconds": 4.74
         },
         "wrong_top_n_keeps_ties": {
           "status": "scored",
@@ -4417,7 +5328,7 @@
             "column_names_are_taken_from_the_arguments_even_when_they_clash_with_other_names: candidate call failed: ℹ In argument: `top_n_rank(n, .data[[\"rank\"]])`.\nℹ In group 1: `group = \"u\"`.\nCaused by error in `if (n > 0) ...`:\n! the condition has length > 1",
             "numeric_group_columns_work: Expected `as.data.frame(got)` to be identical to `xr01_oracle(xr01_num, \"k\", \"v\", 1L)`.\nDifferences:\n  `attr(actual, 'row.names')`: 1 2 3\n`attr(expected, 'row.names')`: 1 2  \n\nactual vs expected\n                k   v tag\n  actual[1, ]   1 0.5   b\n  actual[2, ]   2 1.5   c\n- actual[3, ]   2 1.5   e\n\n  `actual$k`: 1 2 2\n`expected$k`: 1 2  \n\n  `actual$v`: 0.5 1.5 1.5\n`expected$v`: 0.5 1.5    \n\n`actual$tag`:   \"b\" \"c\" \"e\"\n`expected$tag`: \"b\" \"c\"    \n"
           ],
-          "seconds": 3.33
+          "seconds": 4.97
         },
         "wrong_ascending_order": {
           "status": "scored",
@@ -4441,7 +5352,7 @@
             "column_names_are_taken_from_the_arguments_even_when_they_clash_with_other_names: Expected `got$n` to be identical to `c(2L, 3L)`.\nDifferences:\n  `actual`: 1 3\n`expected`: 2 3\n",
             "numeric_group_columns_work: Expected `as.data.frame(got)` to be identical to `xr01_oracle(xr01_num, \"k\", \"v\", 1L)`.\nDifferences:\nactual vs expected\n                   v tag\n- actual[1, ]   0.25   d\n+ expected[1, ] 0.50   b\n- actual[2, ]   0.50   a\n+ expected[2, ] 1.50   c\n\n  `actual$v`: 0.25 0.50\n`expected$v`: 0.50 1.50\n\n`actual$tag`:   \"d\" \"a\"\n`expected$tag`: \"b\" \"c\"\n"
           ],
-          "seconds": 3.57
+          "seconds": 4.92
         },
         "wrong_keeps_missing_groups": {
           "status": "scored",
@@ -4461,7 +5372,7 @@
             "groups_smaller_than_n_keep_all_their_usable_rows: Expected `as.data.frame(got)` to be identical to `xr01_oracle(xr01_b, \"g\", \"pts\", 5L)`.\nDifferences:\n  `attr(actual, 'row.names')[10:14]`: 10 11 12 13 14\n`attr(expected, 'row.names')[10:12]`: 10 11 12      \n\nactual vs expected\n                  g pts who  flag\n  actual[10, ]   y    2 w12 FALSE\n  actual[11, ]   z    5 w14 FALSE\n  actual[12, ]   z    4 w07  TRUE\n- actual[13, ]   NA   2 w04 FALSE\n- actual[14, ]   NA   1 w11 FALSE\n\n`actual$g[10:14]`:   \"y\" \"z\" \"z\" NA NA\n`expected$g[10:12]`: \"y\" \"z\" ",
             "rows_with_missing_group_or_rank_are_ignored: Expected `anyNA(got$g)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n"
           ],
-          "seconds": 3.43
+          "seconds": 5.1
         },
         "wrong_data_masking_name_clash": {
           "status": "scored",
@@ -4493,7 +5404,7 @@
             "runs_without_warnings_under_strict_lifecycle_settings: candidate call failed: Must group by variables found in `.data`.\n✖ Column `group` is not found.",
             "input_is_not_modified: candidate call failed: Must group by variables found in `.data`.\n✖ Column `group` is not found."
           ],
-          "seconds": 3.04
+          "seconds": 5.03
         },
         "edge_no_n_validation": {
           "status": "scored",
@@ -4507,7 +5418,7 @@
           "details": [
             "invalid_n_is_an_error: expected an error but the call succeeded"
           ],
-          "seconds": 2.63
+          "seconds": 4.28
         },
         "malformed_returns_vector": {
           "status": "scored",
@@ -4537,7 +5448,7 @@
             "numeric_group_columns_work: Expected `as.data.frame(got)` to be identical to `xr01_oracle(xr01_num, \"k\", \"v\", 1L)`.\nDifferences:\n`actual` is length 1\n`expected` is length 3\n\n`names(actual)`:   \"got\"          \n`names(expected)`: \"k\"   \"v\" \"tag\"\n\n`attr(actual, 'row.names')` is a character vector ('1', '2')\n`attr(expected, 'row.names')` is an integer vector (1, 2)\n\n`actual$got` is a double vector (0.5, 1.5)\n`expected$got` is absent\n\n`actual$k` is absent\n`expected$k` is a double vector (1, 2)\n\n`actual$v` is absent\n`expected$v`",
             "invalid_n_is_an_error: expected an error but the call succeeded"
           ],
-          "seconds": 3.0
+          "seconds": 4.61
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -4571,7 +5482,7 @@
             "runs_without_warnings_under_strict_lifecycle_settings: candidate call failed: todo",
             "input_is_not_modified: candidate call failed: todo"
           ],
-          "seconds": 2.86
+          "seconds": 4.48
         },
         "reference_repeat": {
           "status": "scored",
@@ -4581,7 +5492,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.69
+          "seconds": 5.33
         },
         "empty": {
           "status": "scored",
@@ -4615,7 +5526,7 @@
             "runs_without_warnings_under_strict_lifecycle_settings: candidate call failed: object 'top_by' of mode 'function' was not found",
             "input_is_not_modified: candidate call failed: object 'top_by' of mode 'function' was not found"
           ],
-          "seconds": 2.54
+          "seconds": 4.27
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -4627,7 +5538,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.97
+          "seconds": 3.65
         },
         "forged_result": {
           "status": "scored",
@@ -4637,7 +5548,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.02
+          "seconds": 4.51
         }
       },
       "problems": [],
@@ -4651,7 +5562,7 @@
     {
       "task": "XR02",
       "task_sha256": "a058d21de56622b23f3e0e30973aae2d9ecde910ef558e05417e5ebc8894a475",
-      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 10,
       "checks_failed_by_some_rejected_control": 10,
       "checks_never_failed_by_any_control": [],
@@ -4674,7 +5585,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.34
+          "seconds": 4.94
         },
         "alternate_manual_formulas": {
           "status": "scored",
@@ -4684,7 +5595,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.49
+          "seconds": 4.97
         },
         "wrong_legacy_formula_paired": {
           "status": "scored",
@@ -4716,7 +5627,7 @@
             "runs_without_warnings_or_errors_in_the_pinned_r: candidate call failed: cannot use 'paired' in formula method",
             "input_is_not_modified: candidate call failed: cannot use 'paired' in formula method"
           ],
-          "seconds": 2.12
+          "seconds": 4.73
         },
         "wrong_unpaired_welch": {
           "status": "scored",
@@ -4736,7 +5647,7 @@
             "confidence_interval_is_the_95_percent_t_interval: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: -2.4\n`expected`:  1.8\n",
             "fewer_than_two_pairs_or_constant_differences_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 3.04
+          "seconds": 4.82
         },
         "wrong_sign_before_minus_after": {
           "status": "scored",
@@ -4754,7 +5665,7 @@
             "paired_t_statistic_df_and_p_value: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: -3.6\n`expected`:  3.6\n",
             "confidence_interval_is_the_95_percent_t_interval: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: -6.4\n`expected`:  1.8\n"
           ],
-          "seconds": 3.03
+          "seconds": 4.67
         },
         "wrong_independent_na_removal": {
           "status": "scored",
@@ -4776,7 +5687,7 @@
             "confidence_interval_is_the_95_percent_t_interval: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 1.54\n`expected`: 1.77\n",
             "row_order_does_not_matter: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 1.4\n`expected`: 3.0\n"
           ],
-          "seconds": 3.1
+          "seconds": 4.86
         },
         "wrong_ninety_percent_interval": {
           "status": "scored",
@@ -4790,7 +5701,7 @@
           "details": [
             "confidence_interval_is_the_95_percent_t_interval: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 2.16\n`expected`: 1.77\n"
           ],
-          "seconds": 3.04
+          "seconds": 4.84
         },
         "edge_names_left_on_values": {
           "status": "scored",
@@ -4804,7 +5715,7 @@
           "details": [
             "values_are_plain_unnamed_numbers: Expected `names(got[[nm]])` to be NULL.\nDifferences:\n`actual` is a character vector ('mean of x')\n`expected` is NULL\n"
           ],
-          "seconds": 2.89
+          "seconds": 4.72
         },
         "malformed_returns_htest": {
           "status": "scored",
@@ -4828,7 +5739,7 @@
             "confidence_interval_is_the_95_percent_t_interval: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`:                 \n`expected`: 1.76621431928815\n",
             "values_are_plain_unnamed_numbers: Expected `is.numeric(got[[nm]]) && length(got[[nm]]) == 1L` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n\nn"
           ],
-          "seconds": 3.03
+          "seconds": 4.89
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -4860,7 +5771,7 @@
             "runs_without_warnings_or_errors_in_the_pinned_r: candidate call failed: todo",
             "input_is_not_modified: candidate call failed: todo"
           ],
-          "seconds": 2.87
+          "seconds": 4.68
         },
         "reference_repeat": {
           "status": "scored",
@@ -4870,7 +5781,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.24
+          "seconds": 5.09
         },
         "empty": {
           "status": "scored",
@@ -4902,7 +5813,7 @@
             "runs_without_warnings_or_errors_in_the_pinned_r: candidate call failed: object 'paired_difference' of mode 'function' was not found",
             "input_is_not_modified: candidate call failed: object 'paired_difference' of mode 'function' was not found"
           ],
-          "seconds": 2.63
+          "seconds": 4.41
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -4914,7 +5825,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 2.39
+          "seconds": 3.71
         },
         "forged_result": {
           "status": "scored",
@@ -4924,7 +5835,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.13
+          "seconds": 4.6
         }
       },
       "problems": [],
@@ -4938,7 +5849,7 @@
     {
       "task": "XR03",
       "task_sha256": "220a536640af3a5c9a3228b4366a8e48449bb6751bb3bd991f782dd704700120",
-      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 12,
       "checks_failed_by_some_rejected_control": 12,
       "checks_never_failed_by_any_control": [],
@@ -4961,7 +5872,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.73
+          "seconds": 4.09
         },
         "alternate_stats_filter": {
           "status": "scored",
@@ -4971,7 +5882,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.58
+          "seconds": 3.9
         },
         "wrong_legacy_code_unchanged": {
           "status": "scored",
@@ -5001,7 +5912,7 @@
             "integer_input_and_a_double_whole_k_are_accepted: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual[1:3]`:   11.5 15.5 19.5\n`expected[1:4]`: 6 11.5 15.5 19.5\n",
             "invalid_arguments_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 2.54
+          "seconds": 3.82
         },
         "wrong_leading_values_dropped": {
           "status": "scored",
@@ -5025,7 +5936,7 @@
             "window_equal_to_the_input_length_gives_one_value_at_the_end: Expected `is.na(got)` to be identical to `c(TRUE, TRUE, FALSE)`.\nDifferences:\n`actual`:   FALSE           \n`expected`: TRUE  TRUE FALSE\n",
             "integer_input_and_a_double_whole_k_are_accepted: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual[1:3]`:   11.5 15.5 19.5\n`expected[1:4]`: 6 11.5 15.5 19.5\n"
           ],
-          "seconds": 3.43
+          "seconds": 4.39
         },
         "wrong_skips_missing_values": {
           "status": "scored",
@@ -5041,7 +5952,7 @@
             "matches_the_oracle_for_several_window_lengths: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual[4:12]`: 105.5 107.8 109.4  110.4 -999.0  104.9 107.4 111.1 111.5\n`expected[4:12]`: 105.5 107.8 109.4 -999.0 -999.0 -999.0 107.4 111.1 111.5\n\n  `actual[27:34]`: 117.5 116.6 118.4  120.4  111.5 112.0 114.0 116.3\n`expected[27:34]`: 117.5 116.6 118.4 -999.0 -999.0 112.0 114.0 116.3\n\n  `actual[56:60]`: 109.2 108.0 107.1  106.7  104.7\n`expected[56:60]`: 109.2 108.0 107.1 -999.0 -999.0\n",
             "windows_with_a_missing_value_are_missing_not_skipped: Expected `all(is.na(got[c(7, 8, 9, 10)]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
           ],
-          "seconds": 3.35
+          "seconds": 4.7
         },
         "wrong_cumsum_propagates_missing": {
           "status": "scored",
@@ -5059,7 +5970,7 @@
             "windows_with_a_missing_value_are_missing_not_skipped: Expected `is.na(got[11])` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
             "missing_values_do_not_contaminate_later_windows: Expected `is.na(got[20])` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n"
           ],
-          "seconds": 3.11
+          "seconds": 4.16
         },
         "wrong_centered_window": {
           "status": "scored",
@@ -5079,7 +5990,7 @@
             "windows_with_a_missing_value_are_missing_not_skipped: Expected `all(is.na(got[c(7, 8, 9, 10)]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
             "window_equal_to_the_input_length_gives_one_value_at_the_end: Expected `is.na(got)` to be identical to `c(TRUE, TRUE, FALSE)`.\nDifferences:\n`actual`:   TRUE FALSE TRUE \n`expected`: TRUE TRUE  FALSE\n"
           ],
-          "seconds": 3.58
+          "seconds": 5.25
         },
         "edge_keeps_names": {
           "status": "scored",
@@ -5093,7 +6004,7 @@
           "details": [
             "result_is_a_plain_double_vector_without_attributes: Expected `attributes(value_of(xr03_call(named, 2L)))` to be NULL.\nDifferences:\n`actual` is a list\n`expected` is NULL\n"
           ],
-          "seconds": 3.24
+          "seconds": 5.02
         },
         "malformed_returns_scalar": {
           "status": "scored",
@@ -5125,7 +6036,7 @@
             "integer_input_and_a_double_whole_k_are_accepted: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`:                      \n`expected`: 6 11.5 15.5 19.5 32.5\n",
             "invalid_arguments_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 3.09
+          "seconds": 4.93
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -5161,7 +6072,7 @@
             "invalid_arguments_are_errors: candidate call failed: todo",
             "input_is_not_modified: candidate call failed: todo"
           ],
-          "seconds": 2.89
+          "seconds": 4.06
         },
         "reference_repeat": {
           "status": "scored",
@@ -5171,7 +6082,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.3
+          "seconds": 4.42
         },
         "empty": {
           "status": "scored",
@@ -5207,7 +6118,7 @@
             "invalid_arguments_are_errors: candidate call failed: object 'moving_average' of mode 'function' was not found",
             "input_is_not_modified: candidate call failed: object 'moving_average' of mode 'function' was not found"
           ],
-          "seconds": 2.64
+          "seconds": 3.86
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -5219,7 +6130,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 2.24
+          "seconds": 3.49
         },
         "forged_result": {
           "status": "scored",
@@ -5229,7 +6140,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.98
+          "seconds": 4.48
         }
       },
       "problems": [],
@@ -5243,7 +6154,7 @@
     {
       "task": "XR04",
       "task_sha256": "6ff99c6e47fe37946174c2a4f4f8ff34d1788d99b26f28b8ef6231b1fb0045ba",
-      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 10,
       "checks_failed_by_some_rejected_control": 10,
       "checks_never_failed_by_any_control": [],
@@ -5266,7 +6177,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.47
+          "seconds": 4.19
         },
         "alternate_tidyr_pivot_wider": {
           "status": "scored",
@@ -5276,7 +6187,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.01
+          "seconds": 4.77
         },
         "wrong_legacy_spread_unchanged": {
           "status": "scored",
@@ -5306,7 +6217,7 @@
             "runs_without_warnings_or_errors: candidate call failed: Each row of output must be identified by a unique combination of keys.\nℹ Keys are shared for 34 rows\n• 2, 11, 15, 24, 30\n• 6, 23, 34\n• 12, 29\n• 3, 31\n• 1, 14, 27\n• 4, 22\n• 16, 33, 39\n• 21, 26\n• 18, 32\n• 7, 20, 25, 36\n• 10, 37\n• 13, 17\n• 8, 19",
             "input_is_not_modified: candidate call failed: Each row of output must be identified by a unique combination of keys.\nℹ Keys are shared for 34 rows\n• 2, 11, 15, 24, 30\n• 6, 23, 34\n• 12, 29\n• 3, 31\n• 1, 14, 27\n• 4, 22\n• 16, 33, 39\n• 21, 26\n• 18, 32\n• 7, 20, 25, 36\n• 10, 37\n• 13, 17\n• 8, 19"
           ],
-          "seconds": 3.55
+          "seconds": 5.07
         },
         "wrong_pivot_wider_list_columns": {
           "status": "scored",
@@ -5332,7 +6243,7 @@
             "result_is_a_plain_data_frame_without_list_columns: Expected `any(vapply(got, is.list, logical(1)))` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
             "runs_without_warnings_or_errors: warning raised: Values from `value` are not uniquely identified; output will contain list-cols.\n• Use `values_fn = list` to suppress this warning.\n• Use `values_fn = {summary_fun}` to summarise duplicates.\n• Use the "
           ],
-          "seconds": 3.23
+          "seconds": 5.56
         },
         "wrong_sum_instead_of_mean": {
           "status": "scored",
@@ -5346,7 +6257,7 @@
           "details": [
             "repeated_measurements_are_averaged_ignoring_missing_values: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 72.1 46.4 273.0 147.2\n`expected`: 72.1 46.4  54.6  49.1\n\n2nd visit"
           ],
-          "seconds": 2.74
+          "seconds": 4.39
         },
         "wrong_missing_values_poison_the_mean": {
           "status": "scored",
@@ -5360,7 +6271,7 @@
           "details": [
             "repeated_measurements_are_averaged_ignoring_missing_values: Expected `is.na(got[[nm]])` to be identical to `is.na(want[[nm]])`.\nDifferences:\n`actual`:   FALSE TRUE TRUE TRUE  FALSE FALSE\n`expected`: FALSE TRUE TRUE FALSE FALSE FALSE\n\nbp sys"
           ],
-          "seconds": 2.72
+          "seconds": 4.34
         },
         "wrong_columns_in_order_of_appearance": {
           "status": "scored",
@@ -5376,7 +6287,7 @@
             "repeated_measurements_are_averaged_ignoring_missing_values: Expected `names(got)` to be identical to `names(want)`.\nDifferences:\n`actual`:   \"id\" \"bp sys\"    \"2nd visit\" \"height\" \"weight\"\n`expected`: \"id\" \"2nd visit\" \"bp sys\"    \"height\" \"weight\"\n",
             "key_columns_are_sorted_c_locale_and_named_exactly: Expected `names(got)` to be identical to `c(\"id\", \"Y\", \"x\", \"z1\")`.\nDifferences:\n`actual`:   \"id\" \"x\" \"Y\" \"z1\"\n`expected`: \"id\" \"Y\" \"x\" \"z1\"\n"
           ],
-          "seconds": 3.14
+          "seconds": 4.95
         },
         "edge_drops_ids_with_only_missing_values": {
           "status": "scored",
@@ -5392,7 +6303,7 @@
             "ids_with_only_missing_values_still_appear: Expected `got$id` to be identical to `1:3`.\nDifferences:\n  `actual`: 2 3  \n`expected`: 1 2 3\n",
             "missing_combinations_are_NA: Expected `is.na(got$a[2])` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
           ],
-          "seconds": 3.21
+          "seconds": 4.75
         },
         "malformed_returns_matrix": {
           "status": "scored",
@@ -5418,7 +6329,7 @@
             "empty_input_gives_an_id_only_zero_row_frame: Expected `names(got)` to be identical to \"id\".\nDifferences:\n`actual`:       \n`expected`: \"id\"\n",
             "result_is_a_plain_data_frame_without_list_columns: Expected `is.data.frame(got)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
           ],
-          "seconds": 2.72
+          "seconds": 4.7
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -5446,7 +6357,7 @@
             "empty_input_gives_an_id_only_zero_row_frame: Expected `names(got)` to be identical to \"id\".\nDifferences:\n`actual`:       \n`expected`: \"id\"\n",
             "result_is_a_plain_data_frame_without_list_columns: Expected `is.data.frame(got)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
           ],
-          "seconds": 3.29
+          "seconds": 4.75
         },
         "reference_repeat": {
           "status": "scored",
@@ -5456,7 +6367,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.21
+          "seconds": 4.67
         },
         "empty": {
           "status": "scored",
@@ -5488,7 +6399,7 @@
             "runs_without_warnings_or_errors: candidate call failed: object 'wide_means' of mode 'function' was not found",
             "input_is_not_modified: candidate call failed: object 'wide_means' of mode 'function' was not found"
           ],
-          "seconds": 2.9
+          "seconds": 4.3
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -5500,7 +6411,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 2.31
+          "seconds": 3.55
         },
         "forged_result": {
           "status": "scored",
@@ -5510,7 +6421,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.79
+          "seconds": 4.34
         }
       },
       "problems": [],
@@ -5523,8 +6434,8 @@
     },
     {
       "task": "XR05",
-      "task_sha256": "6688cd6182e3153780754c3e6ba3337174b199f4f0a056c8109e21f5ffd89a65",
-      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "task_sha256": "46e1bf1eee1fab56ccb7c71306d2b11a51a90139f8b12f8b488d8d0f6b0093f1",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 10,
       "checks_failed_by_some_rejected_control": 10,
       "checks_never_failed_by_any_control": [],
@@ -5548,7 +6459,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.56
+          "seconds": 4.1
         },
         "alternate_purrr_pmap": {
           "status": "scored",
@@ -5558,7 +6469,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.09
+          "seconds": 4.8
         },
         "wrong_legacy_purrr_unchanged": {
           "status": "scored",
@@ -5578,7 +6489,7 @@
             "invalid_inputs_are_errors: expected an error but the call succeeded",
             "runs_without_deprecation_or_other_warnings: warning raised: `cross()` was deprecated in purrr 1.0.0.\nℹ Please use `tidyr::expand_grid()` instead.\nℹ See <https://github.com/tidyverse/purrr/issues/768>."
           ],
-          "seconds": 3.61
+          "seconds": 5.47
         },
         "wrong_last_parameter_varies_fastest": {
           "status": "scored",
@@ -5596,7 +6507,7 @@
             "arguments_are_matched_by_name_not_position: Expected `unname(got[[nm]])` to be identical to `unname(want[[nm]])`.\nDifferences:\n     actual | expected               \n [1] \"xx\"   | \"xx\"     [1]           \n [2] \"xx\"   - \"yyyy\"   [2]           \n [3] \"xx\"   | \"xx\"     [3]           \n [4] \"xx\"   - \"yyyy\"   [4]           \n [5] \"xx\"   | \"xx\"     [5]           \n [6] \"xx\"   - \"yyyy\"   [6]           \n [7] \"yyyy\" - \"xx\"     [7]           \n [8] \"yyyy\" | \"yyyy\"   [8]           \n [9] \"yyyy\" - \"xx\"     [9]           \n[10] \"yyyy\" | \"yyyy\"   [10]          ",
             "invalid_inputs_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 2.75
+          "seconds": 4.81
         },
         "wrong_factors_from_expand_grid": {
           "status": "scored",
@@ -5614,7 +6525,7 @@
             "character_parameters_stay_character_and_integers_stay_integer: Expected `is.character(got$g)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
             "invalid_inputs_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 2.87
+          "seconds": 4.78
         },
         "wrong_positional_arguments": {
           "status": "scored",
@@ -5636,7 +6547,7 @@
             "invalid_inputs_are_errors: expected an error but the call succeeded",
             "params_are_not_modified: candidate call failed: non-numeric argument to binary operator"
           ],
-          "seconds": 2.62
+          "seconds": 4.56
         },
         "wrong_no_input_validation": {
           "status": "scored",
@@ -5650,7 +6561,7 @@
           "details": [
             "invalid_inputs_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 2.66
+          "seconds": 4.62
         },
         "edge_returns_tibble": {
           "status": "scored",
@@ -5666,7 +6577,7 @@
             "row_names_are_sequential_and_result_is_a_plain_data_frame: Expected `inherits(got, \"tbl_df\")` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
             "invalid_inputs_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 3.41
+          "seconds": 4.81
         },
         "malformed_returns_vector": {
           "status": "scored",
@@ -5691,10 +6602,10 @@
             "single_parameter_grid: Expected `names(got)` to be identical to `names(want)`.\nDifferences:\n`actual`:   \"value_of(xr05_call(xr05_p3, xr05_f3))\"         \n`expected`: \"only\"                                  \"result\"\n",
             "columns_are_parameters_in_order_then_result: Expected `names(got)` to be identical to `c(\"label\", \"shift\", \"scale\", \"result\")`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('label', 'shift', 'scale', 'result')\n",
             "row_names_are_sequential_and_result_is_a_plain_data_frame: argument must be coercible to non-negative integer",
-            "f_is_called_once_per_combination: Expected `nrow(got)` to be identical to 6L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (6)\n",
+            "f_is_called_once_per_combination: Expected `got$nrow` to be identical to 6L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (6)\n",
             "invalid_inputs_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 2.95
+          "seconds": 4.41
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -5726,7 +6637,7 @@
             "runs_without_deprecation_or_other_warnings: candidate call failed: todo",
             "params_are_not_modified: candidate call failed: todo"
           ],
-          "seconds": 2.42
+          "seconds": 4.59
         },
         "reference_repeat": {
           "status": "scored",
@@ -5736,7 +6647,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.23
+          "seconds": 4.91
         },
         "empty": {
           "status": "scored",
@@ -5768,7 +6679,7 @@
             "runs_without_deprecation_or_other_warnings: candidate call failed: object 'evaluate_grid' of mode 'function' was not found",
             "params_are_not_modified: candidate call failed: object 'evaluate_grid' of mode 'function' was not found"
           ],
-          "seconds": 2.74
+          "seconds": 4.46
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -5780,7 +6691,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.8
+          "seconds": 3.53
         },
         "forged_result": {
           "status": "scored",
@@ -5790,7 +6701,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.48
+          "seconds": 4.05
         }
       },
       "problems": [],
@@ -5804,7 +6715,7 @@
     {
       "task": "XV01",
       "task_sha256": "0c39c48acab87a714e438918beb466a28fbd26dd9e4b6aa91ba11691f88333b9",
-      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 10,
       "checks_failed_by_some_rejected_control": 10,
       "checks_never_failed_by_any_control": [],
@@ -5828,7 +6739,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.78
+          "seconds": 4.64
         },
         "alternate_base_r_split": {
           "status": "scored",
@@ -5838,7 +6749,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.28
+          "seconds": 4.14
         },
         "wrong_summarise_multirow": {
           "status": "scored",
@@ -5868,7 +6779,7 @@
             "runs_without_any_warning_under_strict_lifecycle_settings: candidate call failed: ℹ In argument: `prob = probs`.\nℹ In group 1: `g = \"a\"`.\nCaused by error:\n! `prob` must be size 1, not 3.\nℹ To return more or less than 1 row per group, use `reframe()`.",
             "input_is_not_modified: candidate call failed: ℹ In argument: `prob = probs`.\nℹ In group 1: `g = \"a\"`.\nCaused by error:\n! `prob` must be size 1, not 3.\nℹ To return more or less than 1 row per group, use `reframe()`."
           ],
-          "seconds": 3.38
+          "seconds": 5.48
         },
         "wrong_quantile_type_6": {
           "status": "scored",
@@ -5888,7 +6799,7 @@
             "missing_values_are_ignored_and_empty_groups_omitted: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 12.41 28.39 44.43 10.60 19.83 44.89\n`expected`: 13.05 28.39 42.48 10.96 19.83 40.17\n",
             "rows_with_a_missing_group_are_ignored: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n     actual | expected               \n [1] 9.240  - 9.253    [1]           \n [2] 14.498 | 14.498   [2]           \n [3] 30.986 - 28.716   [3]           \n [4] 11.183 - 11.302   [4]           \n [5] 13.659 | 13.659   [5]           \n [6] 39.362 - 30.418   [6]           \n [7] 14.539 - 16.862   [7]           \n [8] 25.096 | 25.096   [8]           \n [9] 37.519 - 32.538   [9]           \n[10] 10.391 - 10.678   [10] "
           ],
-          "seconds": 2.79
+          "seconds": 4.88
         },
         "wrong_ignores_probs_argument": {
           "status": "scored",
@@ -5904,7 +6815,7 @@
             "column_names_follow_the_group_and_value_arguments: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 3 4 6.5\n`expected`: 4      \n",
             "probs_are_honoured_in_the_given_order: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 0.25 0.50 0.75 0.25 0.50 0.75 0.25 0.50 0.75 0.25 and 2 more...\n`expected`: 0.90 0.10 0.50 0.90 0.10 0.50 0.90 0.10 0.50 0.90           ...\n"
           ],
-          "seconds": 3.03
+          "seconds": 4.71
         },
         "wrong_keeps_empty_group_as_na": {
           "status": "scored",
@@ -5918,7 +6829,7 @@
           "details": [
             "missing_values_are_ignored_and_empty_groups_omitted: Expected `as.character(got$grp)` to be identical to `want$grp`.\nDifferences:\n`actual[4:9]`:   \"y\" \"y\" \"y\" \"z\" \"z\" \"z\"\n`expected[4:6]`: \"y\" \"y\" \"y\"            \n"
           ],
-          "seconds": 3.05
+          "seconds": 4.77
         },
         "edge_no_probs_validation": {
           "status": "scored",
@@ -5932,7 +6843,7 @@
           "details": [
             "invalid_probabilities_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 2.74
+          "seconds": 4.6
         },
         "malformed_returns_list": {
           "status": "scored",
@@ -5960,7 +6871,7 @@
             "groups_are_ordered_ascending_whatever_the_row_order: Expected `unique(as.character(got$grp))` to be identical to `c(\"a\", \"b\", \"c\", \"d\")`.\nDifferences:\n`actual`:                  \n`expected`: \"a\" \"b\" \"c\" \"d\"\n",
             "invalid_probabilities_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 2.85
+          "seconds": 4.6
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -5992,7 +6903,7 @@
             "runs_without_any_warning_under_strict_lifecycle_settings: candidate call failed: todo",
             "input_is_not_modified: candidate call failed: todo"
           ],
-          "seconds": 2.44
+          "seconds": 4.3
         },
         "reference_repeat": {
           "status": "scored",
@@ -6002,7 +6913,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.13
+          "seconds": 5.08
         },
         "empty": {
           "status": "scored",
@@ -6034,7 +6945,7 @@
             "runs_without_any_warning_under_strict_lifecycle_settings: candidate call failed: object 'group_quantiles' of mode 'function' was not found",
             "input_is_not_modified: candidate call failed: object 'group_quantiles' of mode 'function' was not found"
           ],
-          "seconds": 2.71
+          "seconds": 4.01
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -6046,7 +6957,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 2.12
+          "seconds": 3.53
         },
         "forged_result": {
           "status": "scored",
@@ -6056,7 +6967,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.84
+          "seconds": 4.03
         }
       },
       "problems": [],
@@ -6070,7 +6981,7 @@
     {
       "task": "XV02",
       "task_sha256": "7ff464b59f12bf9545d16b256f00ceba9c552fba8a0f45b29f0c5b54c28e6c04",
-      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 10,
       "checks_failed_by_some_rejected_control": 9,
       "checks_never_failed_by_any_control": [
@@ -6095,7 +7006,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.32
+          "seconds": 4.88
         },
         "alternate_base_r_findinterval": {
           "status": "scored",
@@ -6105,7 +7016,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.87
+          "seconds": 4.51
         },
         "wrong_filter_after_join_warns_and_duplicates": {
           "status": "scored",
@@ -6131,7 +7042,7 @@
             "missing_order_date_gives_missing_price_but_keeps_the_row: Expected `all(is.na(got$price[c(4, 9)]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
             "runs_without_warnings_including_join_relationship_notices: warning raised: Detected an unexpected many-to-many relationship between `x` and `y`.\nℹ Row 1 of `x` matches multiple rows in `y`.\nℹ Row 1 of `y` matches multiple rows in `x`.\nℹ If a many-to-many relationship is expe"
           ],
-          "seconds": 3.93
+          "seconds": 5.68
         },
         "wrong_strict_inequality": {
           "status": "scored",
@@ -6149,7 +7060,7 @@
             "price_date_is_the_start_of_the_applicable_price: Expected `is.na(got$price_date)` to be identical to `is.na(want$price_date)`.\nDifferences:\n`actual[1:5]`:   FALSE TRUE  FALSE TRUE TRUE\n`expected[1:5]`: FALSE FALSE FALSE TRUE TRUE\n",
             "a_price_that_starts_on_the_order_date_applies: Expected `as.numeric(got$price_date[hit])` to be identical to `as.numeric(v$orders$order_date[hit])`.\nDifferences:\n  `actual`: 20469.0      NA 20469.0\n`expected`: 20506.0 20532.0 20506.0\n"
           ],
-          "seconds": 3.07
+          "seconds": 4.6
         },
         "wrong_uses_next_price": {
           "status": "scored",
@@ -6169,7 +7080,7 @@
             "orders_without_an_applicable_price_are_kept_with_missing_values: Expected `all(is.na(got$price[before]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
             "no_future_price_is_used: Expected `all(got$price_date[ok] <= got$order_date[ok])` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
           ],
-          "seconds": 2.91
+          "seconds": 4.58
         },
         "wrong_drops_unmatched_orders": {
           "status": "scored",
@@ -6191,7 +7102,7 @@
             "orders_without_an_applicable_price_are_kept_with_missing_values: Expected `all(is.na(got$price[none]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
             "missing_order_date_gives_missing_price_but_keeps_the_row: Expected `all(is.na(got$price[c(4, 9)]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
           ],
-          "seconds": 3.17
+          "seconds": 5.18
         },
         "wrong_output_sorted_by_date": {
           "status": "scored",
@@ -6215,7 +7126,7 @@
             "a_price_that_starts_on_the_order_date_applies: Expected `as.numeric(got$price_date[hit])` to be identical to `as.numeric(v$orders$order_date[hit])`.\nDifferences:\n  `actual`:      NA      NA      NA\n`expected`: 20506.0 20532.0 20506.0\n",
             "missing_order_date_gives_missing_price_but_keeps_the_row: Expected `all(is.na(got$price[c(4, 9)]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
           ],
-          "seconds": 3.26
+          "seconds": 5.15
         },
         "edge_extra_helper_column": {
           "status": "scored",
@@ -6229,7 +7140,7 @@
           "details": [
             "columns_are_exactly_the_specified_ones_in_order: Expected `names(got)` to be identical to `c(\"order_id\", \"sku\", \"order_date\", \"price_date\", \"price\")`.\nDifferences:\n`actual`:   \"order_id\" \"sku\" \"order_date\" \".row\" \"price_date\" \"price\"\n`expected`: \"order_id\" \"sku\" \"order_date\"        \"price_date\" \"price\"\n"
           ],
-          "seconds": 3.17
+          "seconds": 5.14
         },
         "malformed_returns_vector": {
           "status": "scored",
@@ -6257,7 +7168,7 @@
             "no_future_price_is_used: $ operator is invalid for atomic vectors",
             "missing_order_date_gives_missing_price_but_keeps_the_row: $ operator is invalid for atomic vectors"
           ],
-          "seconds": 2.55
+          "seconds": 4.3
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -6281,7 +7192,7 @@
             "a_price_that_starts_on_the_order_date_applies: Expected `as.numeric(got$price_date[hit])` to be identical to `as.numeric(v$orders$order_date[hit])`.\nDifferences:\n  `actual`:                  \n`expected`: 20506 20532 20506\n",
             "missing_order_date_gives_missing_price_but_keeps_the_row: Expected `nrow(got)` to be identical to `nrow(v$orders)`.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (40)\n"
           ],
-          "seconds": 2.99
+          "seconds": 4.58
         },
         "reference_repeat": {
           "status": "scored",
@@ -6291,7 +7202,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.33
+          "seconds": 4.89
         },
         "empty": {
           "status": "scored",
@@ -6323,7 +7234,7 @@
             "runs_without_warnings_including_join_relationship_notices: candidate call failed: object 'price_in_force' of mode 'function' was not found",
             "inputs_are_not_modified: candidate call failed: object 'price_in_force' of mode 'function' was not found"
           ],
-          "seconds": 2.57
+          "seconds": 4.12
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -6335,7 +7246,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 2.53
+          "seconds": 3.58
         },
         "forged_result": {
           "status": "scored",
@@ -6345,7 +7256,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.63
+          "seconds": 4.26
         }
       },
       "problems": [],
@@ -6359,7 +7270,7 @@
     {
       "task": "XV03",
       "task_sha256": "849dd91d06d856bf4d97ec6613bb6ae546f31bb11c7683ac6186f1fd6207f9eb",
-      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 11,
       "checks_failed_by_some_rejected_control": 11,
       "checks_never_failed_by_any_control": [],
@@ -6382,7 +7293,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.63
+          "seconds": 5.57
         },
         "alternate_inherits_based": {
           "status": "scored",
@@ -6392,7 +7303,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.79
+          "seconds": 5.59
         },
         "wrong_class_equals_matrix": {
           "status": "scored",
@@ -6412,7 +7323,7 @@
             "result_is_always_a_single_string: candidate call failed: the condition has length > 1",
             "no_input_raises_an_error_or_a_warning: Expected `isTRUE(res$ok)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n\nmatrix(1:6, 2)"
           ],
-          "seconds": 2.82
+          "seconds": 4.64
         },
         "wrong_array_before_matrix": {
           "status": "scored",
@@ -6426,7 +7337,7 @@
           "details": [
             "matrices_including_zero_extent_and_character_matrices: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"array\" \n`expected`: \"matrix\"\n\nmatrix(1:6, 2)"
           ],
-          "seconds": 4.03
+          "seconds": 6.04
         },
         "wrong_tibble_as_data_frame": {
           "status": "scored",
@@ -6440,7 +7351,7 @@
           "details": [
             "tibbles_are_not_plain_data_frames: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"data.frame\"\n`expected`: \"tibble\"    \n\ntibble::tibble(a = 1:3, b = letters[1:3])"
           ],
-          "seconds": 4.48
+          "seconds": 6.23
         },
         "wrong_is_vector_for_atomic": {
           "status": "scored",
@@ -6454,7 +7365,7 @@
           "details": [
             "atomic_vectors_including_classed_dates_and_named_vectors: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"other\" \n`expected`: \"vector\"\n\nas.Date(\"2026-01-01\")"
           ],
-          "seconds": 4.42
+          "seconds": 5.97
         },
         "wrong_data_frame_as_list": {
           "status": "scored",
@@ -6470,7 +7381,7 @@
             "tibbles_are_not_plain_data_frames: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"list\"  \n`expected`: \"tibble\"\n\ntibble::tibble(a = 1:3, b = letters[1:3])",
             "data_frames_including_empty_ones: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"list\"      \n`expected`: \"data.frame\"\n\ndata.frame(a = 1:3)"
           ],
-          "seconds": 4.36
+          "seconds": 6.13
         },
         "edge_errors_on_environments_and_formulas": {
           "status": "scored",
@@ -6488,7 +7399,7 @@
             "result_is_always_a_single_string: candidate call failed: unsupported object",
             "no_input_raises_an_error_or_a_warning: Expected `isTRUE(res$ok)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n\nnew.env()"
           ],
-          "seconds": 4.55
+          "seconds": 6.04
         },
         "malformed_returns_class_vector": {
           "status": "scored",
@@ -6512,7 +7423,7 @@
             "environments_symbols_calls_and_formulas_are_other: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"environment\"\n`expected`: \"other\"      \n\nnew.env()",
             "result_is_always_a_single_string: Expected `is.character(got) && length(got) == 1L && !is.na(got)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
           ],
-          "seconds": 3.67
+          "seconds": 5.28
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -6546,7 +7457,7 @@
             "result_is_always_a_single_string: candidate call failed: todo",
             "no_input_raises_an_error_or_a_warning: Expected `isTRUE(res$ok)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n\nNULL"
           ],
-          "seconds": 2.81
+          "seconds": 4.79
         },
         "reference_repeat": {
           "status": "scored",
@@ -6556,7 +7467,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.5
+          "seconds": 6.62
         },
         "empty": {
           "status": "scored",
@@ -6590,7 +7501,7 @@
             "result_is_always_a_single_string: candidate call failed: object 'object_kind' of mode 'function' was not found",
             "no_input_raises_an_error_or_a_warning: Expected `isTRUE(res$ok)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n\nNULL"
           ],
-          "seconds": 2.58
+          "seconds": 4.72
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -6602,7 +7513,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 1.96
+          "seconds": 4.29
         },
         "forged_result": {
           "status": "scored",
@@ -6612,7 +7523,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.65
+          "seconds": 5.63
         }
       },
       "problems": [],
@@ -6626,7 +7537,7 @@
     {
       "task": "XV04",
       "task_sha256": "fb0db4713295cb7e894fe75c6f5527268857ddbd69dcf3002190788a98917738",
-      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 12,
       "checks_failed_by_some_rejected_control": 12,
       "checks_never_failed_by_any_control": [],
@@ -6649,7 +7560,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.93
+          "seconds": 6.15
         },
         "alternate_explicit_density_mapping": {
           "status": "scored",
@@ -6659,7 +7570,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.51
+          "seconds": 6.74
         },
         "wrong_dot_dot_notation": {
           "status": "scored",
@@ -6677,7 +7588,7 @@
             "missing_values_are_ignored: Expected `sort(unique(as.character(h$mapped$fill)))` to be identical to `c(\"ctl\", \"trt\")`.\nDifferences:\n`actual`:              \n`expected`: \"ctl\" \"trt\"\n",
             "no_deprecation_warning_when_the_plot_is_built: warning raised: The dot-dot notation (`..density..`) was deprecated in ggplot2 3.4.0.\nℹ Please use `after_stat(density)` instead."
           ],
-          "seconds": 4.56
+          "seconds": 6.93
         },
         "alternate_numeric_legend_position": {
           "status": "scored",
@@ -6687,7 +7598,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.1
+          "seconds": 6.59
         },
         "wrong_size_for_line_width": {
           "status": "scored",
@@ -6701,7 +7612,7 @@
           "details": [
             "no_deprecation_warning_when_the_plot_is_built: warning raised: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.\nℹ Please use `linewidth` instead."
           ],
-          "seconds": 4.74
+          "seconds": 6.94
         },
         "wrong_counts_and_stacked": {
           "status": "scored",
@@ -6717,7 +7628,7 @@
             "bars_are_on_the_density_scale_so_each_group_integrates_to_one: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 127.3 43.4\n`expected`:   1.0  1.0\n",
             "groups_are_overlaid_not_stacked: Expected `h$position` to be identical to \"PositionIdentity\".\nDifferences:\n`actual`:   \"PositionStack\"   \n`expected`: \"PositionIdentity\"\n"
           ],
-          "seconds": 4.39
+          "seconds": 6.47
         },
         "wrong_legend_outside_on_the_right": {
           "status": "scored",
@@ -6731,7 +7642,7 @@
           "details": [
             "legend_is_inside_in_the_upper_right_part: Expected `g$legend_position` to be identical to \"inside\".\nDifferences:\n`actual`:   \"right\" \n`expected`: \"inside\"\n"
           ],
-          "seconds": 4.92
+          "seconds": 6.47
         },
         "edge_bins_not_validated": {
           "status": "scored",
@@ -6745,7 +7656,7 @@
           "details": [
             "invalid_bins_are_errors: expected an error but the call succeeded"
           ],
-          "seconds": 4.77
+          "seconds": 6.25
         },
         "malformed_returns_density_list": {
           "status": "scored",
@@ -6781,7 +7692,7 @@
             "no_deprecation_warning_when_the_plot_is_built: candidate call failed: the function did not return a ggplot object",
             "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object"
           ],
-          "seconds": 2.24
+          "seconds": 3.81
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -6817,7 +7728,7 @@
             "no_deprecation_warning_when_the_plot_is_built: candidate call failed: todo",
             "input_data_frame_is_not_modified: candidate call failed: todo"
           ],
-          "seconds": 2.13
+          "seconds": 3.5
         },
         "reference_repeat": {
           "status": "scored",
@@ -6827,7 +7738,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 5.05
+          "seconds": 7.07
         },
         "empty": {
           "status": "scored",
@@ -6863,7 +7774,7 @@
             "no_deprecation_warning_when_the_plot_is_built: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found",
             "input_data_frame_is_not_modified: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found"
           ],
-          "seconds": 2.74
+          "seconds": 4.29
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -6875,7 +7786,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 2.14
+          "seconds": 3.4
         },
         "forged_result": {
           "status": "scored",
@@ -6885,7 +7796,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 4.1
+          "seconds": 5.42
         }
       },
       "problems": [],
@@ -6899,7 +7810,7 @@
     {
       "task": "XV05",
       "task_sha256": "ed8cc52833720f3b7197cb11cd6d280017d4cf0507a6ff5e02d3197a1d5fe386",
-      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
       "checks": 12,
       "checks_failed_by_some_rejected_control": 11,
       "checks_never_failed_by_any_control": [
@@ -6925,7 +7836,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.93
+          "seconds": 4.97
         },
         "alternate_base_r_read_csv": {
           "status": "scored",
@@ -6935,7 +7846,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.38
+          "seconds": 4.28
         },
         "wrong_literal_data_without_I": {
           "status": "scored",
@@ -6959,7 +7870,7 @@
             "header_only_text_gives_a_typed_zero_row_data_frame: Expected `got$data$ts` to be an S3 object.\nActual OO type: none.",
             "runs_without_warnings_or_messages_about_literal_data: warning raised: The `file` argument of `read_csv()` should use `I()` for literal data as of\nreadr 2.2.0.\n  \n  # Bad (for example):\n  read_csv(\"x,y\\n1,2\")\n  \n  # Good:\n  read_csv(I(\"x,y\\n1,2\"))"
           ],
-          "seconds": 3.45
+          "seconds": 5.73
         },
         "wrong_guessed_user_type": {
           "status": "scored",
@@ -6981,7 +7892,7 @@
             "quoted_fields_with_commas_are_kept_whole: Expected `is.na(got$amount[7])` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
             "header_only_text_gives_a_typed_zero_row_data_frame: Expected `got$data$ts` to be an S3 object.\nActual OO type: none."
           ],
-          "seconds": 2.83
+          "seconds": 5.21
         },
         "wrong_problem_count_includes_missing": {
           "status": "scored",
@@ -6995,7 +7906,7 @@
           "details": [
             "problem_count_counts_only_present_but_unparseable_values: Expected `value_of(xv05_call(xv05_t1))$n_problems` to be identical to 3L.\nDifferences:\n  `actual`: 5\n`expected`: 3\n"
           ],
-          "seconds": 2.42
+          "seconds": 4.62
         },
         "wrong_local_timezone": {
           "status": "scored",
@@ -7009,7 +7920,7 @@
           "details": [
             "timestamps_are_utc_posixct_and_invalid_ones_are_missing: Expected `attr(got$ts, \"tzone\")` to be identical to \"UTC\".\nDifferences:\n`actual`:   \"America/New_York\"\n`expected`: \"UTC\"             \n"
           ],
-          "seconds": 2.49
+          "seconds": 4.7
         },
         "edge_header_only_drops_types": {
           "status": "scored",
@@ -7023,7 +7934,7 @@
           "details": [
             "header_only_text_gives_a_typed_zero_row_data_frame: Expected `names(got$data)` to be identical to `c(\"ts\", \"user\", \"amount\", \"status\")`.\nDifferences:\n`actual`:                                \n`expected`: \"ts\" \"user\" \"amount\" \"status\"\n"
           ],
-          "seconds": 2.82
+          "seconds": 4.96
         },
         "malformed_returns_data_frame_only": {
           "status": "scored",
@@ -7055,7 +7966,7 @@
             "header_only_text_gives_a_typed_zero_row_data_frame: Expected `nrow(got$data)` to be identical to 0L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (0)\n",
             "text_without_trailing_newline_is_parsed: Expected `nrow(got)` to be identical to 1L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (1)\n"
           ],
-          "seconds": 2.65
+          "seconds": 4.81
         },
         "malformed_incomplete_stub": {
           "status": "scored",
@@ -7087,7 +7998,7 @@
             "header_only_text_gives_a_typed_zero_row_data_frame: Expected `nrow(got$data)` to be identical to 0L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (0)\n",
             "text_without_trailing_newline_is_parsed: Expected `nrow(got)` to be identical to 1L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (1)\n"
           ],
-          "seconds": 2.43
+          "seconds": 4.65
         },
         "reference_repeat": {
           "status": "scored",
@@ -7097,7 +8008,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 3.58
+          "seconds": 5.54
         },
         "empty": {
           "status": "scored",
@@ -7133,7 +8044,7 @@
             "runs_without_warnings_or_messages_about_literal_data: candidate call failed: object 'parse_events' of mode 'function' was not found",
             "input_text_is_not_modified: candidate call failed: object 'parse_events' of mode 'function' was not found"
           ],
-          "seconds": 2.78
+          "seconds": 4.45
         },
         "syntax_error": {
           "status": "candidate_error",
@@ -7145,7 +8056,7 @@
           "details": [
             "1:6: unexpected symbol\n1: this is\n         ^"
           ],
-          "seconds": 2.06
+          "seconds": 3.58
         },
         "forged_result": {
           "status": "scored",
@@ -7155,7 +8066,7 @@
           "reason": null,
           "failed_checks": [],
           "details": [],
-          "seconds": 2.6
+          "seconds": 4.16
         }
       },
       "problems": [],

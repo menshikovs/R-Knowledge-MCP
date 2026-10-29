@@ -294,6 +294,92 @@
       ]
     },
     {
+      "id": "XM01",
+      "title": "DESeq2 differential expression with a batch covariate, contrast direction, alpha-matched filtering and name-based sample alignment",
+      "category": "multi_step_workflow",
+      "image": "bioc",
+      "packages": [
+        "DESeq2",
+        "SummarizedExperiment",
+        "BiocVersion"
+      ],
+      "spec": "tasks/XM01/prompt.md",
+      "fixtures": [
+        "tasks/XM01/fixture/counts.csv",
+        "tasks/XM01/fixture/coldata.csv"
+      ],
+      "metadata": "tasks/XM01/task.json",
+      "verifier": "verifier/XM01.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XM02",
+      "title": "Multi-site treatment investigation with column-selective missingness screening, post-treatment exclusion, interaction gate and site-specific vs pooled contrasts",
+      "category": "multi_step_workflow",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XM02/prompt.md",
+      "fixtures": [
+        "tasks/XM02/fixture/study.csv"
+      ],
+      "metadata": "tasks/XM02/task.json",
+      "verifier": "verifier/XM02.R",
+      "checks": 9,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XM03",
+      "title": "Shiny moduleServer workflow with session-scoped bindCache/bindEvent pipeline, reactiveVal audit counters and headless testServer replay",
+      "category": "multi_step_workflow",
+      "image": "base",
+      "packages": [
+        "shiny",
+        "cachem"
+      ],
+      "spec": "tasks/XM03/prompt.md",
+      "fixtures": [
+        "tasks/XM03/fixture/cohorts.csv"
+      ],
+      "metadata": "tasks/XM03/task.json",
+      "verifier": "verifier/XM03.R",
+      "checks": 8,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XM04",
+      "title": "Transcript-to-gene SummarizedExperiment workflow with sequence MD5 provenance verification, abundance-weighted effective length and sample metadata alignment",
+      "category": "multi_step_workflow",
+      "image": "bioc",
+      "packages": [
+        "SummarizedExperiment",
+        "BiocVersion",
+        "digest"
+      ],
+      "spec": "tasks/XM04/prompt.md",
+      "fixtures": [
+        "tasks/XM04/fixture/tx_counts.csv",
+        "tasks/XM04/fixture/tx_tpm.csv",
+        "tasks/XM04/fixture/tx_efflen.csv",
+        "tasks/XM04/fixture/coldata.csv",
+        "tasks/XM04/fixture/tx_manifest.csv"
+      ],
+      "metadata": "tasks/XM04/task.json",
+      "verifier": "verifier/XM04.R",
+      "checks": 9,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
       "id": "XP01",
       "title": "Transitive hard-dependency closure of an installed package from its own metadata",
       "category": "package_discovery",

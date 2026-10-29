@@ -184,6 +184,18 @@ def calibration_candidate_tasks() -> list[str]:
     )
 
 
+def stage3b_calibration_candidate_tasks() -> list[str]:
+    """Stage 3B expansion tasks eligible for Arm-A calibration (separate catalogue)."""
+    from benchmarks.codex_r.studies.stage3b_expansion import build as stage3b_build
+
+    cat = json.loads(stage3b_build.CATALOG.read_text(encoding="utf-8"))
+    return sorted(
+        t["id"]
+        for t in cat.get("tasks", [])
+        if t.get("pool", {}).get("calibration_eligible") is True
+    )
+
+
 def validate_calibration_schedule(
     schedule: dict[str, Any], *, allow_ineligible_tasks: bool = False
 ) -> list[str]:
@@ -212,7 +224,11 @@ def validate_calibration_schedule(
     elif len(set(tasks)) != len(tasks):
         problems.append("duplicate tasks in candidate_tasks")
     elif not allow_ineligible_tasks:
-        eligible = set(calibration_candidate_tasks())
+        eligible = (
+            set(stage3b_calibration_candidate_tasks())
+            if schedule.get("study_id") == "stage3b_baseline_calibration"
+            else set(calibration_candidate_tasks())
+        )
         outside = sorted(set(tasks) - eligible)
         if outside:
             problems.append(f"tasks not eligible for calibration (catalogue stratum): {outside}")
@@ -400,6 +416,33 @@ def calibration_strata_by_task() -> dict[str, str]:
     return {e["task"]: e["provisional_stratum"] for e in catalogue["tasks"]}
 
 
+def build_stage3b_calibration_schedule(
+    seed: int = 20261029,
+    *,
+    tasks: list[str] | None = None,
+    repetitions: int = BASELINE_REPETITIONS,
+) -> dict[str, Any]:
+    """Generate the deterministic Arm-A-only baseline calibration schedule for Stage 3B.
+
+    Covers all calibration-eligible Stage 3B tasks (or an explicit ``tasks`` subset) without
+    mutating the historical 31-task ``task_catalog.json`` or running any model calls.
+    """
+    from benchmarks.codex_r.studies.stage3b_expansion import build as stage3b_build
+
+    candidates = sorted(tasks) if tasks is not None else stage3b_calibration_candidate_tasks()
+    sched = build_calibration_schedule(seed=seed, tasks=candidates, repetitions=repetitions)
+    cat = json.loads(stage3b_build.CATALOG.read_text(encoding="utf-8"))
+    classifications = {
+        e["id"]: e.get("mcp_relevance", {}).get("classification") for e in cat.get("tasks", [])
+    }
+    sched["study_id"] = "stage3b_baseline_calibration"
+    sched["candidate_source"] = "stage3b_expansion/catalog.json pool.calibration_eligible=true"
+    sched["candidates_that_can_enter_s1"] = [
+        t for t in candidates if classifications.get(t) == "target_candidate"
+    ]
+    return sched
+
+
 def schedule_to_plan(schedule: dict[str, Any]) -> dict[str, Any]:
     """Express a validated schedule as a Stage 2 plan (single-arm blocks) for the ledger."""
     canonical = json.dumps(schedule, sort_keys=True, separators=(",", ":")).encode()
@@ -444,10 +487,17 @@ def live_execution_blockers(schedule: dict[str, Any] | None = None) -> list[dict
     """
     from benchmarks.codex_r import knowledge_pilot, run_simple
     from benchmarks.codex_r.hard import suite as hard
+    from benchmarks.codex_r.studies.stage3b_expansion import suite as stage3b
 
     schedule = schedule if schedule is not None else build_calibration_schedule()
-    known = set(run_simple.R_TASKS) | set(hard.task_ids()) | set(knowledge_pilot.PILOT_TASK_IDS)
+    known = (
+        set(run_simple.R_TASKS)
+        | set(hard.task_ids())
+        | set(knowledge_pilot.PILOT_TASK_IDS)
+        | set(stage3b.task_ids())
+    )
     labels = {e["task"]: e["scorer"] for e in calibration.CATALOG}
+    labels.update({tid: scorer_bindings.STAGE3B_SCORER for tid in stage3b.task_ids()})
     unknown, unbound = [], []
     for task in sorted({t["task"] for t in schedule["trials"]}):
         if task not in known:
@@ -467,10 +517,13 @@ def live_execution_blockers(schedule: dict[str, Any] | None = None) -> list[dict
 
 def live_execution_limitations(schedule: dict[str, Any] | None = None) -> list[dict[str, Any]]:
     """Known, documented limits of the real execution path (not blockers)."""
+    from benchmarks.codex_r.studies.stage3b_expansion import suite as stage3b
+
     from . import legacy_executor
 
     schedule = schedule if schedule is not None else build_calibration_schedule()
     labels = {e["task"]: e["scorer"] for e in calibration.CATALOG}
+    labels.update({tid: scorer_bindings.STAGE3B_SCORER for tid in stage3b.task_ids()})
     relabelled = sorted(
         t
         for t in {t["task"] for t in schedule["trials"]}

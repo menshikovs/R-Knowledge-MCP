@@ -2405,7 +2405,7 @@ def run_trial(
             else "consolidated-v2"
             if task_suite is knowledge_pilot and scorer_choice == "knowledge-pilot-v2"
             else knowledge_pilot.configuration()["id"]
-            if task_suite in {hard, knowledge_pilot} and mode == "with-mcp"
+            if task_suite in {hard, stage3b, knowledge_pilot} and mode == "with-mcp"
             else None
         ),
         "suite": "knowledge-tool-value-v2"
@@ -2508,7 +2508,7 @@ def run_trial(
     generated_names = configured_tools[0]["allowed_tools"] if configured_tools else []
     discovery_policy = (
         record["function_discovery_policy"]
-        if task_suite in {hard, knowledge_pilot}
+        if task_suite in {hard, stage3b, knowledge_pilot}
         else "not_applicable"
     )
     trial_events.emit(

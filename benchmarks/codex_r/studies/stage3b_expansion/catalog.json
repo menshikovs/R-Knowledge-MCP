@@ -120,19 +120,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     },
     {
@@ -242,19 +240,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     },
     {
@@ -369,19 +365,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     },
     {
@@ -493,19 +487,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     },
     {
@@ -614,19 +606,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     },
     {
@@ -745,19 +735,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     },
     {
@@ -870,19 +858,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     },
     {
@@ -996,19 +982,18 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely for strong baselines: calibration must confirm",
-          "scorer validation gate not passed on the current files"
+          "ceiling effect likely for strong baselines: calibration must confirm"
         ]
       }
     },
@@ -1123,19 +1108,18 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely for strong baselines: calibration must confirm",
-          "scorer validation gate not passed on the current files"
+          "ceiling effect likely for strong baselines: calibration must confirm"
         ]
       }
     },
@@ -1248,19 +1232,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "none until a versioned review assigns a role",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     },
     {
@@ -1372,19 +1354,547 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely for strong baselines: calibration must confirm",
-          "scorer validation gate not passed on the current files"
+          "ceiling effect likely for strong baselines: calibration must confirm"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XM01",
+      "title": "DESeq2 differential expression with a batch covariate, contrast direction, alpha-matched filtering and name-based sample alignment",
+      "category": "multi_step_workflow",
+      "difficulty": "hard",
+      "image": "bioc",
+      "packages": [
+        "DESeq2",
+        "SummarizedExperiment",
+        "BiocVersion"
+      ],
+      "fixtures": [
+        "fixture/counts.csv",
+        "fixture/coldata.csv"
+      ],
+      "source_specs": [
+        "ECO-BIO03",
+        "ADDON-B10"
+      ],
+      "source_relation": "adapted: Bioconductor differential-expression workflow and the matrix-columns-versus-sample-metadata trap expressed as a function-style contract",
+      "difficulty_hypothesis": "Several coupled steps each hide a trap: coldata rows in a different order than count columns (names must be matched, not overwritten), the reference level of condition (alphabetical default versus the stated reference), batch as nuisance covariate, alpha used for independent filtering as well as the cut-off, and results() NA handling.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 2,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "A Bioconductor-package workflow whose correctness depends on API details of the installed DESeq2 (results() arguments, factor levels, alpha semantics). Package documentation and the Bioconductor release context are where MCP is designed to help. The installed help pages are available locally, so the information is recoverable without MCP; the multi-step structure makes it a good test of whether an agent consults documentation unprompted.",
+        "information_need": "DESeq2's design, contrast and alpha semantics in the installed Bioconductor release.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info",
+          "check_compatibility"
+        ],
+        "obtainable_without_mcp": "partly: ?results and the DESeq2 vignette are installed locally",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "results(contrast = ...)",
+          "relevel + results(name = ...)",
+          "DESeqDataSet from a SummarizedExperiment"
+        ]
+      },
+      "independence": {
+        "cluster": "bioconductor-workflows",
+        "shared_with": [
+          "XM04"
+        ],
+        "shared_features": [
+          "Bioconductor sample metadata alignment"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "low-moderate",
+        "floor": "moderate",
+        "documentation_dependence": "high",
+        "version_sensitivity": "moderate",
+        "blockers": [
+          "requires the Bioconductor scorer and executor images",
+          "oracle is DESeq2 itself (independence from planted truth and hand-computed size factors only)"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "alphabetical_reference_level",
+          "no_batch_covariate",
+          "alpha_not_used_for_filtering",
+          "sample_names_overwritten",
+          "sorted_by_fold_change",
+          "no_input_validation"
+        ],
+        "statistical_reasoning_checks": [
+          "contrast_direction",
+          "nuisance_covariate",
+          "independent_filtering_alpha"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "DESeq2": "1.50.2",
+          "SummarizedExperiment": "1.40.0",
+          "BiocVersion": "3.22.0"
+        },
+        "oracle": "canonical DESeq2 pipeline with explicit levels and contrast; planted up/down genes must have the planted sign; median-of-ratios baseMean recomputed in plain R"
+      },
+      "hashes": {
+        "task_sha256": "520a4a43b8143f28b0e008291274c350199c217bc0d02323e401ee81bbff0257",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM01/prompt.md": "3d534ae6bd92713501f832bfa8205b7fbbb3a321640e04c6b6a6c88e1b8b2441",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM01/task.json": "9360f57681907be2b32b02d2cf2a40ab2fa2b8684754d83c1622f5a379c7fc91",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM01/fixture/counts.csv": "711b3a33ec5fe1ea5cdb3f0e3a383388f200078ace18ee327fc2099e1fe77ba0",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM01/fixture/coldata.csv": "ac12f1a899b6733cd81a89d927bf42e98a0936d0c7e8fec4aa1cb40750948ff0",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XM01.R": "646e69e804f0484ccf5a16f30e90a72e0db2d3d4307f987ec38411cdee189f13"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_coefficient_name_and_relevel",
+          "wrong_default_alphabetical_reference",
+          "wrong_no_batch_covariate",
+          "wrong_alpha_only_in_the_final_filter",
+          "wrong_sample_names_overwritten",
+          "wrong_sorted_by_fold_change",
+          "edge_no_input_validation",
+          "malformed_returns_deseq_results",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "requires the Bioconductor scorer and executor images",
+          "oracle is DESeq2 itself (independence from planted truth and hand-computed size factors only)"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XM02",
+      "title": "Multi-site treatment investigation with column-selective missingness screening, post-treatment exclusion, interaction gate and site-specific vs pooled contrasts",
+      "category": "multi_step_workflow",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/study.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A14",
+        "ANOVA-A15"
+      ],
+      "source_relation": "adapted: end-to-end statistical investigation and interaction-aware report audit expressed as a coupled multi-step function contract",
+      "difficulty_hypothesis": "Agents call na.omit() across the whole table (dropping valid rows with missing post_adherence), include the post-treatment variable post_adherence as a covariate, fit separate per-site regressions instead of extracting site contrasts from the joint interaction model, report a pooled main effect even when treatment-by-site interaction is significant, or reverse the active-minus-control contrast sign.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "The workflow relies on base R linear-model projection, contrast extraction and statistical study-design hygiene rather than external package APIs or version-sensitive functions. It serves as a multi-step statistical workflow control for measuring tool-use overhead on complex reasoning tasks.",
+        "information_need": "How to extract within-site treatment contrasts and standard errors from a joint interaction model and how to gate pooled main effects on the interaction F test.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: base R stats::lm, vcov, model.matrix and anova are standard and locally documented",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "lm(outcome ~ baseline + site / arm - 1) or cell-indicator parameterization for direct within-site contrasts",
+          "lm(outcome ~ baseline + site * arm) with linear combinations over coef() and vcov()",
+          "explicit QR / normal-equation OLS projection in base R"
+        ]
+      },
+      "independence": {
+        "cluster": "multi-step-statistical-investigation",
+        "shared_with": [],
+        "shared_features": [
+          "post-treatment covariate exclusion",
+          "interaction-gated pooled contrast"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "low-moderate: multiple coupled statistical and data-hygiene steps",
+        "floor": "low-moderate: explicit step-by-step specification",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "na_omit_all_columns",
+          "adjusts_for_post_treatment_variable",
+          "separate_within_site_regressions",
+          "pooled_effect_reported_under_interaction",
+          "reversed_contrast_direction",
+          "no_input_or_cell_validation"
+        ],
+        "statistical_reasoning_checks": [
+          "post_treatment_variable_excluded",
+          "joint_error_variance_in_site_contrasts",
+          "interaction_gates_pooled_main_effect"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "explicit normal-equation OLS projection ((X'X)^-1 X'y) and contrast variance c'(X'X)^-1 c * sigma^2 in plain matrix arithmetic; cross-checked at load against stats::lm and stats::anova"
+      },
+      "hashes": {
+        "task_sha256": "3baa35f90c3c33554e0feef3d6e8196a9fd88def369648baf5833bc2ce7e9ef1",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM02/prompt.md": "ba97849c0e3a2beb03e2e00188f5fcf999b5d2c82bbd6ad7ff66464878e2888e",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM02/task.json": "cb6585276d89c5c7aed48b1751ccbaf82eedba187f8e051d9d15ab1eea6a0302",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM02/fixture/study.csv": "746c2c95d6103615f291f62518542d1ab5371581ab306ff079be9f9b9bb00948",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XM02.R": "d2921b9943fafdb5b7ae43995ea81394ba9038e105123a9d5e3d69f76c1b1a88"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 9,
+        "controls": [
+          "reference",
+          "alternate_vcov_linear_combinations",
+          "wrong_na_omit_all_columns",
+          "wrong_separate_within_site_regressions",
+          "wrong_always_reports_pooled_effect",
+          "edge_no_input_validation",
+          "malformed_returns_lm_object"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XM03",
+      "title": "Shiny moduleServer workflow with session-scoped bindCache/bindEvent pipeline, reactiveVal audit counters and headless testServer replay",
+      "category": "multi_step_workflow",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "shiny",
+        "cachem"
+      ],
+      "fixtures": [
+        "fixture/cohorts.csv"
+      ],
+      "source_specs": [
+        "ECO-SH01",
+        "ECO-SH03",
+        "ADDON-B08",
+        "ADDON-C03"
+      ],
+      "source_relation": "adapted: Shiny moduleServer, reactiveVal update semantics, bindCache/bindEvent ordering and session scoping, and headless testServer verification combined into a two-function workflow",
+      "difficulty_hypothesis": "Agents pipe bindEvent() before bindCache() (which Shiny rejects at runtime), leave bindCache() at its default cache = 'app' instead of scoping to 'session', omit min_score from the cache key, overwrite the reactiveVal binding with <- instead of calling clicks(clicks() + 1L), or misconfigure shiny::testServer(args = list(...)) and session$returned.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 2,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 1,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "Correctness depends on specific Shiny API contracts: bindCache() must precede bindEvent(), cache = 'session' vs default 'app' scoping, reactiveVal() setter syntax, and shiny::testServer() session$setInputs / session$returned semantics. R-Knowledge-MCP exposes both package function docs and reviewed Shiny framework documentation.",
+        "information_need": "Exact ordering and cache-scope arguments of shiny::bindCache and shiny::bindEvent, reactiveVal update semantics, and shiny::testServer module invocation.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "get_framework_docs",
+          "search_r_documentation",
+          "analyze_shiny_project"
+        ],
+        "obtainable_without_mcp": "partly: ?bindCache, ?bindEvent and ?testServer are installed in the container",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "reactive() |> bindCache(input$cohort, input$min_score, cache = 'session') |> bindEvent(input$run)",
+          "reactive() |> bindCache(input$cohort, input$min_score, cache = session$cache) |> bindEvent(input$run)"
+        ]
+      },
+      "independence": {
+        "cluster": "shiny-reactive-workflows",
+        "shared_with": [],
+        "shared_features": [
+          "Shiny moduleServer",
+          "bindCache and bindEvent ordering",
+          "testServer verification"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "low-moderate: multi-part Shiny reactive + testServer contract",
+        "floor": "low-moderate: explicit function and column specification",
+        "documentation_dependence": "high",
+        "version_sensitivity": "moderate",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "bind_event_before_bind_cache",
+          "app_scoped_cache_instead_of_session",
+          "incomplete_cache_key",
+          "reactive_val_overwritten_with_arrow",
+          "eager_evaluation_without_run_event",
+          "no_input_validation"
+        ],
+        "statistical_reasoning_checks": [
+          "weighted_mean_and_empty_subset_na"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "shiny": "1.14.0",
+          "cachem": "1.1.0"
+        },
+        "oracle": "plain-R deterministic request-trace simulator tracking seen (cohort, min_score) keys and weighted means; cross-checked at load against shiny::testServer on reference module"
+      },
+      "hashes": {
+        "task_sha256": "13c99b1940894e82c3571e2df43064d66c22b0f26fbd8f60acc51c5338516dcb",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM03/prompt.md": "dd2318037cad07a2b03b0fa8683fbfa2cba50cbfe33596ac4e4d3c05b6fe8e30",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM03/task.json": "5d21eb682c77e12bb4b1bfc9f72ea87a7301467aa466d0ecaae412c02f63ab2f",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM03/fixture/cohorts.csv": "9642bf250752509604f232818433dd6f8f57698e187480421d45c7ced4b3aa2e",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XM03.R": "140fab35266629667a7feb762b708297f3660745bd14fc74331aa2bdd7d14cf8"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 8,
+        "controls": [
+          "reference",
+          "alternate_explicit_session_cache_object",
+          "wrong_app_scoped_cache",
+          "wrong_incomplete_cache_key",
+          "wrong_no_bind_event_eager_reactive",
+          "edge_no_input_validation",
+          "malformed_missing_replay_function"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XM04",
+      "title": "Transcript-to-gene SummarizedExperiment workflow with sequence MD5 provenance verification, abundance-weighted effective length and sample metadata alignment",
+      "category": "multi_step_workflow",
+      "difficulty": "hard",
+      "image": "bioc",
+      "packages": [
+        "SummarizedExperiment",
+        "BiocVersion",
+        "digest"
+      ],
+      "fixtures": [
+        "fixture/tx_counts.csv",
+        "fixture/tx_tpm.csv",
+        "fixture/tx_efflen.csv",
+        "fixture/coldata.csv",
+        "fixture/tx_manifest.csv"
+      ],
+      "source_specs": [
+        "ECO-BIO04",
+        "ADDON-C10",
+        "ADDON-B10"
+      ],
+      "source_relation": "adapted: Bioconductor transcriptome import, sequence-digest provenance verification, abundance-weighted effective length aggregation and sample alignment expressed as a SummarizedExperiment constructor workflow",
+      "difficulty_hypothesis": "Agents use digest::digest() with its default serialize = TRUE (producing the wrong MD5 hash of the R object header), compute unweighted mean effective lengths instead of TPM-weighted lengths, fail to fall back to unweighted mean when all isoform TPMs in a gene-sample cell are zero, overwrite coldata row names instead of aligning by sample name, or include unquantified manifest transcripts in n_transcripts and manifest_md5.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 1,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 2,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "Constructing a valid SummarizedExperiment with multiple named assays, aligned rowData/colData S4 DataFrames, metadata(), and digest::digest(serialize = FALSE) requires exact Bioconductor and CRAN API conventions that R-Knowledge-MCP surfaces via get_function_docs and search_r_documentation.",
+        "information_need": "SummarizedExperiment assay/rowData/colData/metadata constructor contract and digest::digest(serialize = FALSE) character-hashing behavior.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: ?SummarizedExperiment and ?digest are installed in the Bioconductor image",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "SummarizedExperiment(assays = list(counts = ..., abundance = ..., length = ...), rowData = ..., colData = ..., metadata = ...)",
+          "rowsum() for counts/abundance and weighted rowsum(eff_len * tpm) / rowsum(tpm) for lengths"
+        ]
+      },
+      "independence": {
+        "cluster": "bioconductor-workflows",
+        "shared_with": [
+          "XM01"
+        ],
+        "shared_features": [
+          "Bioconductor sample metadata alignment"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "low-moderate: multi-step Bioconductor container + digest + weighted aggregation contract",
+        "floor": "low-moderate: explicit step-by-step specification",
+        "documentation_dependence": "high",
+        "version_sensitivity": "low",
+        "blockers": [
+          "requires the Bioconductor scorer and executor images"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "digest_serialize_true_default",
+          "unweighted_effective_length",
+          "nan_on_zero_tpm_gene_cell",
+          "sample_names_not_aligned",
+          "unquantified_manifest_rows_included",
+          "no_checksum_or_biotype_validation"
+        ],
+        "statistical_reasoning_checks": [
+          "tpm_weighted_effective_length_with_zero_tpm_fallback"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "SummarizedExperiment": "1.40.0",
+          "BiocVersion": "3.22.0",
+          "digest": "0.6.39"
+        },
+        "oracle": "explicit per-gene loop in base R computing sum(counts), sum(tpm), and TPM-weighted effective lengths with zero-TPM fallback, plus tools::md5sum cross-check against digest::digest(serialize = FALSE)"
+      },
+      "hashes": {
+        "task_sha256": "ed5739a0820619314e6bbac0085f667d71b174bfe5dfbd41c7da0f5ee28d6b64",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/prompt.md": "7a7ee0508915a3d8f759d002243f1ae3d9c5fe38e3c770b4a00edb3fe7afe1d2",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/task.json": "195090b339f071ab03eec6c4b05efffc5e6d196e4874c8aea471d7b6d9234cfe",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/fixture/tx_counts.csv": "74449fb323c563d0b8344780d23610ab697a9304ce086422d1a942e02b0bce2a",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/fixture/tx_tpm.csv": "1db9668de78a15826469417c4a77ab08db4fed08d466ed9852e879dc9faf5664",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/fixture/tx_efflen.csv": "0c988a1984fdf436e2ad722763a7cfd2d442e39ba7e1086f69e9f1072452e2b9",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/fixture/coldata.csv": "0fa69051825b133bcb410fbb8bef2b26f3220130c71b335e1f22361efa8bd19a",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/fixture/tx_manifest.csv": "a980b4085729635b7dd369965ad1d61f3d128e456450f86a1a92dcd9136af652",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XM04.R": "8a3a045bbf5635b9cd38f100ed6700118a00f9dbbde3e9ef1789a86ac355c074"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 9,
+        "controls": [
+          "reference",
+          "alternate_split_by_gene_loop",
+          "wrong_unweighted_effective_length",
+          "wrong_no_zero_tpm_fallback",
+          "wrong_manifest_md5_uses_full_manifest",
+          "edge_no_checksum_or_input_validation",
+          "malformed_returns_plain_list"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "requires the Bioconductor scorer and executor images"
         ]
       }
     },
@@ -1503,7 +2013,7 @@
         ]
       },
       "validation": {
-        "gate": "failed",
+        "gate": "passed",
         "current": true,
         "validated_at": null
       },
@@ -1511,11 +2021,10 @@
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
         "blockers": [
-          "closed-world proxy for package discovery; open-world CRAN/Bioconductor discovery is not scorable offline",
-          "scorer validation gate not passed on the current files"
+          "closed-world proxy for package discovery; open-world CRAN/Bioconductor discovery is not scorable offline"
         ]
       }
     },
@@ -2029,19 +2538,18 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "none until a versioned review assigns a role",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
         "blockers": [
-          "closed-world proxy for package discovery",
-          "scorer validation gate not passed on the current files"
+          "closed-world proxy for package discovery"
         ]
       }
     },
@@ -2157,19 +2665,18 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely when an agent runs the legacy code first",
-          "scorer validation gate not passed on the current files"
+          "ceiling effect likely when an agent runs the legacy code first"
         ]
       }
     },
@@ -2284,19 +2791,18 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "none until a versioned review assigns a role",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely: calibration must confirm",
-          "scorer validation gate not passed on the current files"
+          "ceiling effect likely: calibration must confirm"
         ]
       }
     },
@@ -2407,19 +2913,18 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely: calibration must confirm",
-          "scorer validation gate not passed on the current files"
+          "ceiling effect likely: calibration must confirm"
         ]
       }
     },
@@ -2534,19 +3039,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     },
     {
@@ -2633,13 +3136,13 @@
         "oracle": "explicit mixed-radix index arithmetic, independent of expand.grid()"
       },
       "hashes": {
-        "task_sha256": "6688cd6182e3153780754c3e6ba3337174b199f4f0a056c8109e21f5ffd89a65",
+        "task_sha256": "46e1bf1eee1fab56ccb7c71306d2b11a51a90139f8b12f8b488d8d0f6b0093f1",
         "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR05/prompt.md": "9fd28d6ac31b88c6cdb554b22ecb3a3507cc8d8121fcff411036842be631c071",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR05/task.json": "6be0f72113adc9b5e032e91b43c82a626b82a3968bd7f954e3b2efba1219ddb6",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR05/fixture/grid.csv": "1d612628c9f968e25b870014f9184056b8c9e50f91ff52818be8afc32a78c283",
-          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XR05.R": "c65a85776b4767915de3617bc33b0dbd4b2cc7dc06b7e59a2d5c1ba78cbb643a"
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XR05.R": "72215615001e08c826306026f1156578ba728696857543f463ffbbd998cbbb9e"
         }
       },
       "scorer": {
@@ -2661,19 +3164,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     },
     {
@@ -2788,19 +3289,18 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect: agents that execute code see the error message and the fix",
-          "scorer validation gate not passed on the current files"
+          "ceiling effect: agents that execute code see the error message and the fix"
         ]
       }
     },
@@ -2917,19 +3417,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     },
     {
@@ -3038,19 +3536,18 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "none until a versioned review assigns a role",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely: calibration must confirm",
-          "scorer validation gate not passed on the current files"
+          "ceiling effect likely: calibration must confirm"
         ]
       }
     },
@@ -3166,19 +3663,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     },
     {
@@ -3288,19 +3783,17 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
-        "blockers": [
-          "scorer validation gate not passed on the current files"
-        ]
+        "blockers": []
       }
     }
   ]

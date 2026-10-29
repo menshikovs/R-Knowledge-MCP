@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "id": "XM01",
+  "title": "DESeq2 differential expression with a batch covariate, contrast direction, alpha-matched filtering and name-based sample alignment",
+  "category": "multi_step_workflow",
+  "difficulty": "hard",
+  "image": "bioc",
+  "packages": ["DESeq2", "SummarizedExperiment", "BiocVersion"],
+  "fixtures": ["fixture/counts.csv", "fixture/coldata.csv"],
+  "source_specs": ["ECO-BIO03", "ADDON-B10"],
+  "source_relation": "adapted: Bioconductor differential-expression workflow and the matrix-columns-versus-sample-metadata trap expressed as a function-style contract",
+  "difficulty_hypothesis": "Several coupled steps each hide a trap: coldata rows in a different order than count columns (names must be matched, not overwritten), the reference level of condition (alphabetical default versus the stated reference), batch as nuisance covariate, alpha used for independent filtering as well as the cut-off, and results() NA handling.",
+  "dimensions": {
+    "r_knowledge_depth": 3, "version_sensitivity": 2, "documentation_dependence": 3,
+    "reasoning_complexity": 3, "code_generation_complexity": 3, "statistical_reasoning": 3,
+    "debugging_difficulty": 2, "package_api_verification_need": 3
+  },
+  "expected_mcp_usefulness": "high",
+  "mcp_relevance": {
+    "classification": "target_candidate",
+    "rationale": "A Bioconductor-package workflow whose correctness depends on API details of the installed DESeq2 (results() arguments, factor levels, alpha semantics). Package documentation and the Bioconductor release context are where MCP is designed to help. The installed help pages are available locally, so the information is recoverable without MCP; the multi-step structure makes it a good test of whether an agent consults documentation unprompted.",
+    "information_need": "DESeq2's design, contrast and alpha semantics in the installed Bioconductor release.",
+    "relevant_mcp_tools": ["get_function_docs", "search_r_documentation", "get_package_info", "check_compatibility"],
+    "obtainable_without_mcp": "partly: ?results and the DESeq2 vignette are installed locally",
+    "version_specific_evidence_value": "medium",
+    "alternative_solution_paths": ["results(contrast = ...)", "relevel + results(name = ...)", "DESeqDataSet from a SummarizedExperiment"]
+  },
+  "independence": {"cluster": "bioconductor-workflows", "shared_with": ["XM04"], "shared_features": ["Bioconductor sample metadata alignment"]},
+  "calibration_risks": {
+    "ceiling": "low-moderate",
+    "floor": "moderate",
+    "documentation_dependence": "high",
+    "version_sensitivity": "moderate",
+    "blockers": ["requires the Bioconductor scorer and executor images", "oracle is DESeq2 itself (independence from planted truth and hand-computed size factors only)"]
+  },
+  "analysis": {
+    "failure_modes": ["alphabetical_reference_level", "no_batch_covariate", "alpha_not_used_for_filtering", "sample_names_overwritten", "sorted_by_fold_change", "no_input_validation"],
+    "statistical_reasoning_checks": ["contrast_direction", "nuisance_covariate", "independent_filtering_alpha"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"DESeq2": "1.50.2", "SummarizedExperiment": "1.40.0", "BiocVersion": "3.22.0"},
+    "oracle": "canonical DESeq2 pipeline with explicit levels and contrast; planted up/down genes must have the planted sign; median-of-ratios baseMean recomputed in plain R"
+  },
+  "checks_documented_in": "verifier/XM01.R"
+}

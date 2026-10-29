@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "id": "XM04",
+  "title": "Transcript-to-gene SummarizedExperiment workflow with sequence MD5 provenance verification, abundance-weighted effective length and sample metadata alignment",
+  "category": "multi_step_workflow",
+  "difficulty": "hard",
+  "image": "bioc",
+  "packages": ["SummarizedExperiment", "BiocVersion", "digest"],
+  "fixtures": [
+    "fixture/tx_counts.csv",
+    "fixture/tx_tpm.csv",
+    "fixture/tx_efflen.csv",
+    "fixture/coldata.csv",
+    "fixture/tx_manifest.csv"
+  ],
+  "source_specs": ["ECO-BIO04", "ADDON-C10", "ADDON-B10"],
+  "source_relation": "adapted: Bioconductor transcriptome import, sequence-digest provenance verification, abundance-weighted effective length aggregation and sample alignment expressed as a SummarizedExperiment constructor workflow",
+  "difficulty_hypothesis": "Agents use digest::digest() with its default serialize = TRUE (producing the wrong MD5 hash of the R object header), compute unweighted mean effective lengths instead of TPM-weighted lengths, fail to fall back to unweighted mean when all isoform TPMs in a gene-sample cell are zero, overwrite coldata row names instead of aligning by sample name, or include unquantified manifest transcripts in n_transcripts and manifest_md5.",
+  "dimensions": {
+    "r_knowledge_depth": 3, "version_sensitivity": 1, "documentation_dependence": 3,
+    "reasoning_complexity": 3, "code_generation_complexity": 3, "statistical_reasoning": 2,
+    "debugging_difficulty": 2, "package_api_verification_need": 3
+  },
+  "expected_mcp_usefulness": "high",
+  "mcp_relevance": {
+    "classification": "target_candidate",
+    "rationale": "Constructing a valid SummarizedExperiment with multiple named assays, aligned rowData/colData S4 DataFrames, metadata(), and digest::digest(serialize = FALSE) requires exact Bioconductor and CRAN API conventions that R-Knowledge-MCP surfaces via get_function_docs and search_r_documentation.",
+    "information_need": "SummarizedExperiment assay/rowData/colData/metadata constructor contract and digest::digest(serialize = FALSE) character-hashing behavior.",
+    "relevant_mcp_tools": ["get_function_docs", "search_r_documentation", "get_package_info"],
+    "obtainable_without_mcp": "partly: ?SummarizedExperiment and ?digest are installed in the Bioconductor image",
+    "version_specific_evidence_value": "medium",
+    "alternative_solution_paths": [
+      "SummarizedExperiment(assays = list(counts = ..., abundance = ..., length = ...), rowData = ..., colData = ..., metadata = ...)",
+      "rowsum() for counts/abundance and weighted rowsum(eff_len * tpm) / rowsum(tpm) for lengths"
+    ]
+  },
+  "independence": {
+    "cluster": "bioconductor-workflows",
+    "shared_with": ["XM01"],
+    "shared_features": ["Bioconductor sample metadata alignment"]
+  },
+  "calibration_risks": {
+    "ceiling": "low-moderate: multi-step Bioconductor container + digest + weighted aggregation contract",
+    "floor": "low-moderate: explicit step-by-step specification",
+    "documentation_dependence": "high",
+    "version_sensitivity": "low",
+    "blockers": ["requires the Bioconductor scorer and executor images"]
+  },
+  "analysis": {
+    "failure_modes": [
+      "digest_serialize_true_default",
+      "unweighted_effective_length",
+      "nan_on_zero_tpm_gene_cell",
+      "sample_names_not_aligned",
+      "unquantified_manifest_rows_included",
+      "no_checksum_or_biotype_validation"
+    ],
+    "statistical_reasoning_checks": ["tpm_weighted_effective_length_with_zero_tpm_fallback"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {
+      "SummarizedExperiment": "1.40.0",
+      "BiocVersion": "3.22.0",
+      "digest": "0.6.39"
+    },
+    "oracle": "explicit per-gene loop in base R computing sum(counts), sum(tpm), and TPM-weighted effective lengths with zero-TPM fallback, plus tools::md5sum cross-check against digest::digest(serialize = FALSE)"
+  },
+  "checks_documented_in": "verifier/XM04.R"
+}
+
