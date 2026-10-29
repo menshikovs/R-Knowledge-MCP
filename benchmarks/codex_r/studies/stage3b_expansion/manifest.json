@@ -294,6 +294,107 @@
       ]
     },
     {
+      "id": "XP01",
+      "title": "Transitive hard-dependency closure of an installed package from its own metadata",
+      "category": "package_discovery",
+      "image": "base",
+      "packages": [
+        "tools",
+        "utils"
+      ],
+      "spec": "tasks/XP01/prompt.md",
+      "fixtures": [
+        "tasks/XP01/fixture/deps_sample.csv"
+      ],
+      "metadata": "tasks/XP01/task.json",
+      "verifier": "verifier/XP01.R",
+      "checks": 8,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XP02",
+      "title": "Direct reverse dependencies among installed packages (whole-name matching)",
+      "category": "package_discovery",
+      "image": "base",
+      "packages": [
+        "tools",
+        "utils"
+      ],
+      "spec": "tasks/XP02/prompt.md",
+      "fixtures": [
+        "tasks/XP02/fixture/imports_sample.csv"
+      ],
+      "metadata": "tasks/XP02/task.json",
+      "verifier": "verifier/XP02.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XP03",
+      "title": "Minimum R version required by a package and everything it needs (numeric version comparison)",
+      "category": "package_discovery",
+      "image": "base",
+      "packages": [
+        "tools",
+        "utils"
+      ],
+      "spec": "tasks/XP03/prompt.md",
+      "fixtures": [
+        "tasks/XP03/fixture/r_requirements_sample.csv"
+      ],
+      "metadata": "tasks/XP03/task.json",
+      "verifier": "verifier/XP03.R",
+      "checks": 8,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XP04",
+      "title": "Base, CRAN or Bioconductor? Repository identity of installed packages, including RSPM snapshots",
+      "category": "package_discovery",
+      "image": "bioc",
+      "packages": [
+        "utils",
+        "Biobase",
+        "DESeq2",
+        "BiocVersion"
+      ],
+      "spec": "tasks/XP04/prompt.md",
+      "fixtures": [
+        "tasks/XP04/fixture/origin_sample.csv"
+      ],
+      "metadata": "tasks/XP04/task.json",
+      "verifier": "verifier/XP04.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XP05",
+      "title": "Check version requirements against the installed library with numeric version semantics",
+      "category": "package_discovery",
+      "image": "base",
+      "packages": [
+        "utils"
+      ],
+      "spec": "tasks/XP05/prompt.md",
+      "fixtures": [
+        "tasks/XP05/fixture/requirements_sample.csv"
+      ],
+      "metadata": "tasks/XP05/task.json",
+      "verifier": "verifier/XP05.R",
+      "checks": 9,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
       "id": "XR01",
       "title": "Migrate a legacy helper off dplyr's defunct underscore verbs (string-based column selection)",
       "category": "code_repair_migration",

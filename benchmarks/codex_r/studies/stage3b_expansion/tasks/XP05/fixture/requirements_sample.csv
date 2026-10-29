@@ -1,0 +1,5 @@
+"package","op","version"
+"dplyr",">=","1.1.0"
+"MASS",">=","7.3-60"
+"ggplot2","<","3.0.0"
+"notAPackage","==","1.0.0"

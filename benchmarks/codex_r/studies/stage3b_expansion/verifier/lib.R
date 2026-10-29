@@ -172,3 +172,61 @@ layers_of <- function(digest, geoms) {
 discrete_levels <- function(digest, aesthetic = "x") {
   digest$position[[aesthetic]]$levels
 }
+
+# ---- installed-package metadata oracle helpers (XP tasks) ---------------------------------
+
+xp_desc <- function(pkg) {
+  for (lib in .libPaths()) {
+    f <- file.path(lib, pkg, "DESCRIPTION")
+    if (file.exists(f)) {
+      m <- read.dcf(f)
+      return(as.list(m[1, ]))
+    }
+  }
+  NULL
+}
+
+xp_names <- function(x) {
+  if (is.null(x) || is.na(x)) return(character())
+  parts <- trimws(strsplit(gsub("\\s+", " ", x), ",")[[1]])
+  parts <- trimws(sub("\\(.*$", "", parts))
+  parts[nzchar(parts) & parts != "R"]
+}
+
+xp_direct <- function(pkg, types) {
+  d <- xp_desc(pkg)
+  if (is.null(d)) return(character())
+  unique(unlist(lapply(types, function(t) xp_names(d[[t]])), use.names = FALSE))
+}
+
+xp_is_base <- function(pkg) {
+  d <- xp_desc(pkg)
+  !is.null(d) && identical(d[["Priority"]], "base")
+}
+
+xp_hard <- c("Depends", "Imports", "LinkingTo")
+
+xp_closure <- function(pkg, types = xp_hard) {
+  seen <- character()
+  queue <- xp_direct(pkg, types)
+  while (length(queue)) {
+    p <- queue[[1]]
+    queue <- queue[-1]
+    if (p %in% seen || p == pkg) next
+    if (xp_is_base(p)) next
+    seen <- c(seen, p)
+    if (!is.null(xp_desc(p))) queue <- c(queue, xp_direct(p, types))
+  }
+  sort(seen, method = "radix")
+}
+
+xp_installed_packages <- function() {
+  libs <- .libPaths()
+  out <- character()
+  for (lib in libs) {
+    ds <- list.dirs(lib, recursive = FALSE, full.names = FALSE)
+    ds <- ds[file.exists(file.path(lib, ds, "DESCRIPTION"))]
+    out <- c(out, ds)
+  }
+  sort(unique(out), method = "radix")
+}

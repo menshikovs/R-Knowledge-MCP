@@ -6,7 +6,7 @@
   "scorer_files": {
     "benchmarks/codex_r/studies/stage3b_expansion/suite.py": "9ec15175c379199649cd0a67cf8fa48860ca95cc0e37ecfb88454ccfe3943431",
     "benchmarks/codex_r/studies/stage3b_expansion/verifier/run.R": "b449346fcd13d6dd84846ecedb6e76d4e9d132726d9190f22f48e873c0697e0d",
-    "benchmarks/codex_r/studies/stage3b_expansion/verifier/lib.R": "26940aa97138c885aebc8085fb1d9b272d3fd10cede17edbb62b4e5975709f6e",
+    "benchmarks/codex_r/studies/stage3b_expansion/verifier/lib.R": "853e65ce95a2974d05a61396a2285adc3a7e666dc9850753a07f722e0872eaad",
     "benchmarks/codex_r/hard/verifier/harness.R": "e5524b818f3be07c58b7668e3a68a6cce81ecc83a653492686bb678418fe6183"
   },
   "tasks": [
@@ -95,7 +95,7 @@
       },
       "hashes": {
         "task_sha256": "da0d0d8154f6237dd45df3169be5072376c74b6188abca507bfaabe9634cbcd5",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA01/prompt.md": "687d67f8076c6460c15e6cdc7d08e5cb7a51445fd5a851af213287100f435f55",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA01/task.json": "f393888720611170a8053a4ba10f8c8d23d49bf79922d6a323362f80335ce911",
@@ -217,7 +217,7 @@
       },
       "hashes": {
         "task_sha256": "cc06b96406df947fd4f8248d53e920b0b7e26d6725bd993a93943832102fe80f",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA02/prompt.md": "16bf705ce14f5e4f8ce9d8b6e67cdf10cdafdda784da6b3580cab4e6e9953ba7",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA02/task.json": "19c5bad5085adbf69d31ad75b87dd2e7dec9968dfed945c4c9b64a9a8abffdca",
@@ -343,7 +343,7 @@
       },
       "hashes": {
         "task_sha256": "9d040538c7f554653bcd04699b82622ce3d5cedfa48678b7da95366db600bf61",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA03/prompt.md": "3bea190dde59c318a62f21b638d74f38088a94889c48abcda40bd361f52b27f3",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA03/task.json": "7c928cb0284371f332f47ba8807455c765a451a57b406e21906f096b4f1473ce",
@@ -467,7 +467,7 @@
       },
       "hashes": {
         "task_sha256": "d4cc2480e94aa38609f5155c958a3abc6ccbb55d10d68d1fa040936b96f00e54",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA04/prompt.md": "e4ec9031bcbef8ff8ed43d59e4d021bf1acbafc611e70c2c9ccc881603064e73",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA04/task.json": "90087b54cf97d22de5ac71aceeb12996655dad773715afd34e48665205f55881",
@@ -589,7 +589,7 @@
       },
       "hashes": {
         "task_sha256": "e18b4938169900a44acc2b86b8a3643d3545ff39d6b92db3993281dd275300ef",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA05/prompt.md": "ffff4b57bbd157dfb42ff5d79d14829db539b84172f8fef89c241d1bba4d9af6",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA05/task.json": "a8c3b6a7ce20bbc0c09ed4c73b4f69b11e2539c43b3443e1662fa59dc3d6f7ab",
@@ -720,7 +720,7 @@
       },
       "hashes": {
         "task_sha256": "e13155af3a2c12630561c39ed70177085a6a795f30c41a46ed8e6f2ffc87488a",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA06/prompt.md": "dcc6839a523586543d1dad6be9db1ee6e39db11a799f9750b3d8a88e66ffa977",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA06/task.json": "4500481ac93c0972a15c6c24ff27f8294ed810475a6dba6ba6be7d7102617abd",
@@ -844,7 +844,7 @@
       },
       "hashes": {
         "task_sha256": "5b5b23feed933ba0d5e561748c3a2d1ce6d6c35f031e73846aa3fa0609b7af8e",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG01/prompt.md": "7ad23fe563ca312b297081330643f0a217b185e9135582dbb50ccf23d0b6f229",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG01/task.json": "b414349a8e12b0db7408301741a1a136b4dcfbf3200c577e0add4b3f32b83c27",
@@ -970,7 +970,7 @@
       },
       "hashes": {
         "task_sha256": "7110f95745f0482a602b14435486755f528f2ffb1f258817d4e10b9a9a5487a1",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG02/prompt.md": "d6df8411cd8126a7f8a19a88efd7e9c8deb4d49840406d9e3268b2b454a4512c",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG02/task.json": "511b4440981e3f4ce3f50983e085f9b6d5e98e5d88f07c1f3c4f53b3db9d78d7",
@@ -1097,7 +1097,7 @@
       },
       "hashes": {
         "task_sha256": "457e5d92a0361dad30ada6fac1ffa96f317af7da8153fecf2c1538575a2f2013",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG03/prompt.md": "391cd93afee604055c8a7d93f8175a5142b0ec37dc0b465be2f6fb59b3437158",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG03/task.json": "fd5291b65009b46a1416579c0b6534511176ad269fb4d9ffede649b000f7736e",
@@ -1222,7 +1222,7 @@
       },
       "hashes": {
         "task_sha256": "cd29e9193a71f1e12642511599db15c6c61d9df9162182eaf0ccc0b10edd9f65",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG04/prompt.md": "92bad3482c2c86dd606e2c99481268e954bb90f3d2289a3318eb7dd5869d3ea6",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG04/task.json": "e5196c7c1a38ae24c65adf04ec41c6a8ca2c26793e58faa2b7160b926ab53cc2",
@@ -1346,7 +1346,7 @@
       },
       "hashes": {
         "task_sha256": "ee186e62f98686ee73dbc9b1c7dd7fa05c2baf85269d5c37cff6e94091808a8d",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG05/prompt.md": "984f1d7d44a371b8b42298e362ea5a720df4311c3d7547a436342181e92d4f41",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG05/task.json": "c95c3c12552f322f744f32de201dfbc7dbb1fe48f3ee75061b877b041983e30e",
@@ -1384,6 +1384,663 @@
         "confirmatory_eligible": false,
         "blockers": [
           "ceiling effect likely for strong baselines: calibration must confirm",
+          "scorer validation gate not passed on the current files"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XP01",
+      "title": "Transitive hard-dependency closure of an installed package from its own metadata",
+      "category": "package_discovery",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "tools",
+        "utils"
+      ],
+      "fixtures": [
+        "fixture/deps_sample.csv"
+      ],
+      "source_specs": [
+        "ECO-PK01",
+        "ECO-PK03"
+      ],
+      "source_relation": "adapted to a closed world: the registry's package-investigation specs ask about CRAN; this task restricts the evidence to the pinned installed library so it can be scored offline",
+      "difficulty_hypothesis": "Agents stop at direct dependencies, forget LinkingTo, keep base packages or R in the list, or include Suggests; unusual field handling (version constraints, line wrapping).",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "The question is closed-world: the scorer evaluates dependency metadata of the pinned installed library, which an MCP package-metadata tool does not see (it describes CRAN/Bioconductor, not this container's library). It therefore tests whether an agent over-uses MCP for a question the local library answers authoritatively; any MCP use is overhead or at best a cross-check.",
+        "information_need": "The DESCRIPTION fields of the installed packages and the meaning of the dependency fields.",
+        "relevant_mcp_tools": [
+          "get_package_info",
+          "get_dependencies"
+        ],
+        "obtainable_without_mcp": "yes: packageDescription(), installed.packages() and tools::package_dependencies() are in base R",
+        "version_specific_evidence_value": "low",
+        "alternative_solution_paths": [
+          "tools::package_dependencies(recursive = TRUE) + filtering",
+          "manual breadth-first search over packageDescription()"
+        ]
+      },
+      "independence": {
+        "cluster": "installed-package-metadata",
+        "shared_with": [
+          "XP02",
+          "XP03",
+          "XP04",
+          "XP05"
+        ],
+        "shared_features": [
+          "installed DESCRIPTION fields",
+          "pinned library as evidence"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "low",
+        "blockers": [
+          "closed-world proxy for package discovery; open-world CRAN/Bioconductor discovery is not scorable offline"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "direct_only",
+          "base_packages_included",
+          "suggests_included",
+          "locale_sort",
+          "linkingto_ignored",
+          "no_argument_validation"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "installed_library_metadata",
+        "r": "4.5.2",
+        "packages": {
+          "library": "pinned scorer image, 121 packages (base image)"
+        },
+        "oracle": "breadth-first search over read.dcf() of installed DESCRIPTION files, independent of installed.packages()/packageDescription()/tools::package_dependencies()"
+      },
+      "hashes": {
+        "task_sha256": "e077c0196cad489b18faa6b00951ad6a3b2fa6c6a13bf6e51158c4f9cf2bdac7",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP01/prompt.md": "51814aa7a1f8d8bbd00f33c174aaf58485035da2655c38f8c5a569cdb6462f9e",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP01/task.json": "215bf13671ae392573f80196008cd5f04a06e06bd750ae8201dd483708ef20c1",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP01/fixture/deps_sample.csv": "d5020ae208122cfe4d73e89afb4f9b03004b026f2ae4dfa68a366006ecd2c6da",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XP01.R": "faac25c2c6f59fb1c1840f90e43460ab9a8098bd83bc53fb03c4fb76843ba5df"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 8,
+        "controls": [
+          "reference",
+          "alternate_tools_package_dependencies",
+          "wrong_direct_dependencies_only",
+          "wrong_base_packages_included",
+          "wrong_suggests_always_included",
+          "wrong_locale_sort_and_default_types_ignored",
+          "edge_no_argument_validation",
+          "malformed_returns_data_frame",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "failed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": false,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "closed-world proxy for package discovery; open-world CRAN/Bioconductor discovery is not scorable offline",
+          "scorer validation gate not passed on the current files"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XP02",
+      "title": "Direct reverse dependencies among installed packages (whole-name matching)",
+      "category": "package_discovery",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "tools",
+        "utils"
+      ],
+      "fixtures": [
+        "fixture/imports_sample.csv"
+      ],
+      "source_specs": [
+        "ECO-PL02",
+        "ECO-GP03"
+      ],
+      "source_relation": "adapted to a closed world: the registry's reverse-dependency and upgrade-impact specs concern CRAN; this task restricts the evidence to the pinned installed library",
+      "difficulty_hypothesis": "Substring matching confuses cli with clipr; recursive reverse dependencies over-report; LinkingTo and the requested field set are forgotten; only one library path is searched.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "Closed-world question answered authoritatively by the pinned installed library; MCP describes CRAN/Bioconductor, not this library, so any use is overhead or a cross-check. Included to measure unprompted tool use when the tool is not needed.",
+        "information_need": "Direct dependency declarations of the installed packages.",
+        "relevant_mcp_tools": [
+          "get_package_info",
+          "get_dependencies"
+        ],
+        "obtainable_without_mcp": "yes",
+        "version_specific_evidence_value": "low",
+        "alternative_solution_paths": [
+          "tools::package_dependencies(reverse = TRUE)",
+          "manual scan of packageDescription()"
+        ]
+      },
+      "independence": {
+        "cluster": "installed-package-metadata",
+        "shared_with": [
+          "XP01",
+          "XP03",
+          "XP04",
+          "XP05"
+        ],
+        "shared_features": [
+          "installed DESCRIPTION fields",
+          "pinned library as evidence"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "low",
+        "blockers": [
+          "closed-world proxy for package discovery"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "substring_matching",
+          "recursive_reverse_dependencies",
+          "linkingto_and_types_ignored",
+          "single_library",
+          "no_argument_validation"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "installed_library_metadata",
+        "r": "4.5.2",
+        "packages": {
+          "library": "pinned scorer image, 121 packages (base image)"
+        },
+        "oracle": "scan of every installed DESCRIPTION with read.dcf() and whole-name comparison"
+      },
+      "hashes": {
+        "task_sha256": "26c2d502dff113991ab70ca1273cd389cecef33a3066120104bfb26ad195ef61",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP02/prompt.md": "72a17164f7464ff4f71b232d9954fda5912196295b3d98186f74df0035f0ec5f",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP02/task.json": "be5a706e4c55fd238fa208e6d25f6d6528cb2456c03140d139e72f7629a2fc17",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP02/fixture/imports_sample.csv": "654406a85f64c8faeb8f47a39b5f96f23650df7c20a63fe9a2397a4008d69e51",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XP02.R": "cccd577719e1960c51601c90a4de404a7b439ff3f1eba56cbe01a178569e32c5"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_manual_scan",
+          "wrong_substring_matching",
+          "wrong_recursive_dependencies",
+          "wrong_ignores_linkingto_and_types",
+          "wrong_only_user_library_searched",
+          "edge_no_argument_validation",
+          "malformed_returns_list",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "closed-world proxy for package discovery"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XP03",
+      "title": "Minimum R version required by a package and everything it needs (numeric version comparison)",
+      "category": "package_discovery",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "tools",
+        "utils"
+      ],
+      "fixtures": [
+        "fixture/r_requirements_sample.csv"
+      ],
+      "source_specs": [
+        "ECO-PK02",
+        "ECO-PL02"
+      ],
+      "source_relation": "adapted to a closed world: formal-requirement versus full-closure reasoning from the registry's dependency-verification specs, scored against the pinned installed library",
+      "difficulty_hypothesis": "A package's own Depends line understates the requirement of its dependencies; textual version comparison orders 4.10 before 4.9; base packages must not be followed; the result must be normalised to three components.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "exploratory",
+        "rationale": "Version-requirement reasoning over a dependency closure is exactly what a package-metadata service could help with in the open world, but the scorer fixes the evidence to the pinned installed library, so MCP can at most cross-check metadata for packages whose installed and CRAN versions agree. Marked exploratory because the closed-world reduction removes the information advantage.",
+        "information_need": "Each package's stated R requirement and its dependency closure.",
+        "relevant_mcp_tools": [
+          "get_package_info",
+          "get_dependencies",
+          "check_compatibility"
+        ],
+        "obtainable_without_mcp": "yes: installed.packages()/packageDescription() expose every field",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "tools::package_dependencies + regex over Depends",
+          "manual breadth-first search over packageDescription()"
+        ]
+      },
+      "independence": {
+        "cluster": "installed-package-metadata",
+        "shared_with": [
+          "XP01",
+          "XP02",
+          "XP04",
+          "XP05"
+        ],
+        "shared_features": [
+          "installed DESCRIPTION fields",
+          "pinned library as evidence"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "moderate",
+        "blockers": [
+          "closed-world proxy for package discovery"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "own_requirement_only",
+          "lexical_version_comparison",
+          "base_packages_followed",
+          "no_normalisation",
+          "no_argument_validation"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "installed_library_metadata",
+        "r": "4.5.2",
+        "packages": {
+          "library": "pinned scorer image, 121 packages (base image)"
+        },
+        "oracle": "breadth-first closure over read.dcf() and numeric component comparison of R (>= x) constraints"
+      },
+      "hashes": {
+        "task_sha256": "e7be3129e26884472df1fc6bc61bc12bf9bde0f67fb8ad2f2e7b994cdba00727",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP03/prompt.md": "45d1a080f910256b5c4999b0a4a2dadb1f16b0f7677106fd78a36448975cef76",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP03/task.json": "cb8e313ac3ea26ea3aae5de6e44995c6c0b300281514d35acce47c1c35a22834",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP03/fixture/r_requirements_sample.csv": "7fec72b1116845e8ded87ad8c9dfe6490e98eb3d7f2e4e520e6d15305e1bb085",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XP03.R": "abc68501187f69b301fd61fb21d3abddd14ab2bb15eab1c40d4f3f7a0d3bd2fe"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 8,
+        "controls": [
+          "reference",
+          "alternate_tools_package_dependencies",
+          "wrong_own_requirement_only",
+          "wrong_lexical_comparison",
+          "wrong_base_packages_followed",
+          "wrong_no_normalisation",
+          "edge_no_argument_validation",
+          "malformed_returns_numeric_version",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "none until a versioned review assigns a role",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "closed-world proxy for package discovery"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XP04",
+      "title": "Base, CRAN or Bioconductor? Repository identity of installed packages, including RSPM snapshots",
+      "category": "package_discovery",
+      "difficulty": "medium",
+      "image": "bioc",
+      "packages": [
+        "utils",
+        "Biobase",
+        "DESeq2",
+        "BiocVersion"
+      ],
+      "fixtures": [
+        "fixture/origin_sample.csv"
+      ],
+      "source_specs": [
+        "ECO-SRC02",
+        "ECO-BIO01",
+        "ADDON-C09"
+      ],
+      "source_relation": "adapted to a closed world: the registry's CRAN-or-Bioconductor and release-mapping specs concern the live repositories; this task restricts the evidence to the metadata of the pinned installed library",
+      "difficulty_hypothesis": "The Repository field mixes CRAN, RSPM (a CRAN snapshot service) and Bioconductor release strings; base packages have no Repository field; recommended packages have a Priority but are not base. Agents confuse these, drop duplicates or reorder the input.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "Distinguishing CRAN from Bioconductor and mapping a Bioconductor release is the kind of repository-identity reasoning an R package-knowledge service exists for. The scorer, however, fixes the evidence to installed DESCRIPTION metadata, so MCP can only corroborate the repository of a package name; the decisive facts (the RSPM value, the Priority rule) are stated in the prompt. Classified target_candidate by the dimension rule and expected to show modest benefit at most.",
+        "information_need": "Which repository a package belongs to and what a Bioconductor release string denotes.",
+        "relevant_mcp_tools": [
+          "get_package_info",
+          "check_compatibility",
+          "search_packages"
+        ],
+        "obtainable_without_mcp": "yes: every needed field is in the installed DESCRIPTION files",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "installed.packages(fields = ...)",
+          "packageDescription() per package"
+        ]
+      },
+      "independence": {
+        "cluster": "installed-package-metadata",
+        "shared_with": [
+          "XP01",
+          "XP02",
+          "XP03",
+          "XP05"
+        ],
+        "shared_features": [
+          "installed DESCRIPTION fields",
+          "pinned library as evidence"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate-high",
+        "floor": "low",
+        "documentation_dependence": "low (rules are in the prompt)",
+        "version_sensitivity": "low",
+        "blockers": [
+          "closed-world proxy for package discovery",
+          "bioc image required"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "repository_field_as_origin",
+          "recommended_as_base",
+          "rspm_not_cran",
+          "input_reordered_or_deduplicated",
+          "release_not_extracted",
+          "no_argument_validation"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "installed_library_metadata",
+        "r": "4.5.2",
+        "packages": {
+          "BiocVersion": "3.22.0",
+          "library": "pinned Bioconductor scorer image, 143 packages"
+        },
+        "observed": "Repository values in the library: CRAN (112), RSPM (docopt, littler), Bioconductor 3.22 (15), absent for the 14 base packages",
+        "oracle": "classification rules applied to read.dcf() of installed DESCRIPTION files"
+      },
+      "hashes": {
+        "task_sha256": "1eacd571de1999ebfedbe3a81b7980a8e2d605cad4953bb1f38ad4e2638afb18",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP04/prompt.md": "87b8e9664f014c3d3261af208a6745077144b7335e04672ec1a1e210c1c1a25d",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP04/task.json": "377c67628c22b6c4b2fb657b597e3370203ea5e02305caf54d9f5dd7b9888c76",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP04/fixture/origin_sample.csv": "3574ec44e0d588f865c80bee81fc787b6a10833e562cb7f6d683e197c9bb9535",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XP04.R": "dd5dc21deae1c7f8175676f96d7779995508ad75eae91749f58f4b6f88513d07"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 11,
+        "controls": [
+          "reference",
+          "alternate_packagedescription",
+          "wrong_repository_field_used_as_origin",
+          "wrong_recommended_treated_as_base",
+          "wrong_rspm_not_cran",
+          "wrong_unique_rows_and_sorted",
+          "wrong_missing_release_text",
+          "edge_no_argument_validation",
+          "malformed_returns_named_vector",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "closed-world proxy for package discovery",
+          "bioc image required"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XP05",
+      "title": "Check version requirements against the installed library with numeric version semantics",
+      "category": "package_discovery",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "utils"
+      ],
+      "fixtures": [
+        "fixture/requirements_sample.csv"
+      ],
+      "source_specs": [
+        "ECO-PK02",
+        "ADDON-C06"
+      ],
+      "source_relation": "adapted to a closed world: renv/lock-style version verification from the registry, scored against the pinned installed library",
+      "difficulty_hypothesis": "Textual comparison ranks 1.10.0 below 1.9.0 and 7.3-65 below 7.3-9; hyphen separators are dropped or misparsed; packages that are not installed abort the whole check.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "exploratory",
+        "rationale": "Version-requirement checking is central to package compatibility reasoning, but here the semantics are fully specified in the prompt and the installed versions are local metadata, so MCP adds little; an agent that calls MCP for installed versions would be using the wrong evidence source (CRAN current versus the installed library). Exploratory to observe unprompted use and any confusion of the two sources.",
+        "information_need": "Installed package versions and numeric version ordering rules.",
+        "relevant_mcp_tools": [
+          "get_package_info",
+          "check_compatibility"
+        ],
+        "obtainable_without_mcp": "yes: packageDescription(), numeric_version() and compareVersion() are in base R",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "numeric_version()",
+          "utils::compareVersion()",
+          "manual component comparison"
+        ]
+      },
+      "independence": {
+        "cluster": "installed-package-metadata",
+        "shared_with": [
+          "XP01",
+          "XP02",
+          "XP03",
+          "XP04"
+        ],
+        "shared_features": [
+          "installed DESCRIPTION fields",
+          "pinned library as evidence"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate-high",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "moderate",
+        "blockers": [
+          "closed-world proxy for package discovery"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "textual_version_comparison",
+          "hyphen_dropped",
+          "not_installed_aborts",
+          "no_input_validation"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "installed_library_metadata",
+        "r": "4.5.2",
+        "packages": {
+          "library": "pinned scorer image, 121 packages (base image)"
+        },
+        "oracle": "component-wise integer comparison ; installed versions read with read.dcf()"
+      },
+      "hashes": {
+        "task_sha256": "ea2d662810c8b133cbf1be2fd8f1efbcb940a6abcecec3cda9a030b5f368ab4a",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP05/prompt.md": "57b193ec0317973b83dfcbf3f66a1d3986197f6f0af153f63679ae84da91cb2c",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP05/task.json": "7997e6aa1f22adcd3ff9918a1781b749ebf891ea793cf81982925fcb0ecbed58",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP05/fixture/requirements_sample.csv": "2021decca834c38685537ef8c63b83e1f9766ff3d8aa2dfcc52e8640bbc902bb",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XP05.R": "0f485523dc32e0bf3622dadff5212f981b73353e22f64fabe7ae9dfaa2c15280"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 9,
+        "controls": [
+          "reference",
+          "alternate_compareversion",
+          "wrong_textual_comparison",
+          "wrong_hyphen_not_a_separator",
+          "wrong_not_installed_is_an_error",
+          "edge_no_input_validation",
+          "malformed_returns_logical",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": null,
+        "current": false,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "none until a versioned review assigns a role",
+        "calibration_eligible": false,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "closed-world proxy for package discovery",
           "scorer validation gate not passed on the current files"
         ]
       }
@@ -1473,7 +2130,7 @@
       },
       "hashes": {
         "task_sha256": "0ffeec29e2d169452609211f1b3ab52f357f495f4170d58edf93c3c080a0016d",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR01/prompt.md": "d55fc51b074b87d7675eb17a49b8c8d889729e96d57249e33557e9d80028bf29",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR01/task.json": "a3faf37588b08d11de4ea7be5bec9b352b74bdc29b2f5147840530d11ec775c5",
@@ -1500,18 +2157,19 @@
         ]
       },
       "validation": {
-        "gate": "passed",
-        "current": true,
+        "gate": null,
+        "current": false,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": true,
+        "calibration_eligible": false,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely when an agent runs the legacy code first"
+          "ceiling effect likely when an agent runs the legacy code first",
+          "scorer validation gate not passed on the current files"
         ]
       }
     },
@@ -1599,7 +2257,7 @@
       },
       "hashes": {
         "task_sha256": "a058d21de56622b23f3e0e30973aae2d9ecde910ef558e05417e5ebc8894a475",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR02/prompt.md": "3b695ffee92cd37c522f100c513a2aacb1fbf972d6684240d0d90199b338282f",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR02/task.json": "bb4126a5c72a69c54d9603201b272aa65b40e8c0ac3605088ee7fb0fab029f30",
@@ -1626,18 +2284,19 @@
         ]
       },
       "validation": {
-        "gate": "passed",
-        "current": true,
+        "gate": null,
+        "current": false,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "none until a versioned review assigns a role",
-        "calibration_eligible": true,
+        "calibration_eligible": false,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely: calibration must confirm"
+          "ceiling effect likely: calibration must confirm",
+          "scorer validation gate not passed on the current files"
         ]
       }
     },
@@ -1721,7 +2380,7 @@
       },
       "hashes": {
         "task_sha256": "220a536640af3a5c9a3228b4366a8e48449bb6751bb3bd991f782dd704700120",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR03/prompt.md": "f3940719ebea57dff3da3be5a45be65cbd997f0f12dfd4a54109bb3aa782ece2",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR03/task.json": "99f78c7a6e8a195d1b0b515cc6251d2a0c607fbb064903efc268a55a1be2ad6c",
@@ -1748,18 +2407,19 @@
         ]
       },
       "validation": {
-        "gate": "passed",
-        "current": true,
+        "gate": null,
+        "current": false,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": true,
+        "calibration_eligible": false,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely: calibration must confirm"
+          "ceiling effect likely: calibration must confirm",
+          "scorer validation gate not passed on the current files"
         ]
       }
     },
@@ -1847,7 +2507,7 @@
       },
       "hashes": {
         "task_sha256": "6ff99c6e47fe37946174c2a4f4f8ff34d1788d99b26f28b8ef6231b1fb0045ba",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR04/prompt.md": "c5c132eadb4007f7627b168341680d70bb20b953ae532763a6a27778ae7a23e3",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR04/task.json": "a451f689dab3fd549b420017c378f18dcec3c37feb889f335af99408ed585033",
@@ -1974,7 +2634,7 @@
       },
       "hashes": {
         "task_sha256": "6688cd6182e3153780754c3e6ba3337174b199f4f0a056c8109e21f5ffd89a65",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR05/prompt.md": "9fd28d6ac31b88c6cdb554b22ecb3a3507cc8d8121fcff411036842be631c071",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR05/task.json": "6be0f72113adc9b5e032e91b43c82a626b82a3968bd7f954e3b2efba1219ddb6",
@@ -2001,17 +2661,19 @@
         ]
       },
       "validation": {
-        "gate": "passed",
-        "current": true,
+        "gate": null,
+        "current": false,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": true,
+        "calibration_eligible": false,
         "confirmatory_eligible": false,
-        "blockers": []
+        "blockers": [
+          "scorer validation gate not passed on the current files"
+        ]
       }
     },
     {
@@ -2100,7 +2762,7 @@
       },
       "hashes": {
         "task_sha256": "0c39c48acab87a714e438918beb466a28fbd26dd9e4b6aa91ba11691f88333b9",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV01/prompt.md": "f3bb6bdafe29eee3130b566953d90f2cd9b35c15bf807074115fb7f5f5c5eb7c",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV01/task.json": "a8eff2ba47d886ca17048bda9a4c04e413ebc5937b8f6a9e16f547055cdb5d9d",
@@ -2126,18 +2788,19 @@
         ]
       },
       "validation": {
-        "gate": "passed",
-        "current": true,
+        "gate": null,
+        "current": false,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": true,
+        "calibration_eligible": false,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect: agents that execute code see the error message and the fix"
+          "ceiling effect: agents that execute code see the error message and the fix",
+          "scorer validation gate not passed on the current files"
         ]
       }
     },
@@ -2226,7 +2889,7 @@
       },
       "hashes": {
         "task_sha256": "7ff464b59f12bf9545d16b256f00ceba9c552fba8a0f45b29f0c5b54c28e6c04",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV02/prompt.md": "e43c4f1d1bd328f8c58f3e4e7871f35cbea5e4f203f79568b7b613f8756107bd",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV02/task.json": "99ba7cc4ee4e25153879a90365e54963a6954163e4a55765484f17bfb6762af6",
@@ -2254,17 +2917,19 @@
         ]
       },
       "validation": {
-        "gate": "passed",
-        "current": true,
+        "gate": null,
+        "current": false,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": true,
+        "calibration_eligible": false,
         "confirmatory_eligible": false,
-        "blockers": []
+        "blockers": [
+          "scorer validation gate not passed on the current files"
+        ]
       }
     },
     {
@@ -2346,7 +3011,7 @@
       },
       "hashes": {
         "task_sha256": "849dd91d06d856bf4d97ec6613bb6ae546f31bb11c7683ac6186f1fd6207f9eb",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV03/prompt.md": "45784a2869afeaf242be971aa0d81d43881ecaae91326bb51e99d498378adbac",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV03/task.json": "edb0ac3b3f605ca5e4d1e979a127ee57144ac9fd3ea67e8d4ca41088b35474d5",
@@ -2373,18 +3038,19 @@
         ]
       },
       "validation": {
-        "gate": "passed",
-        "current": true,
+        "gate": null,
+        "current": false,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "none until a versioned review assigns a role",
-        "calibration_eligible": true,
+        "calibration_eligible": false,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely: calibration must confirm"
+          "ceiling effect likely: calibration must confirm",
+          "scorer validation gate not passed on the current files"
         ]
       }
     },
@@ -2473,7 +3139,7 @@
       },
       "hashes": {
         "task_sha256": "fb0db4713295cb7e894fe75c6f5527268857ddbd69dcf3002190788a98917738",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV04/prompt.md": "a269635ca4036ff7c89ff3bca8bfa1ab518f10de8e01db9d9076db00eb5d9bce",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV04/task.json": "9949ce1f66d2e480439773f04ba2433fe18330bc93c57405ae42b754314aec68",
@@ -2500,17 +3166,19 @@
         ]
       },
       "validation": {
-        "gate": "passed",
-        "current": true,
+        "gate": null,
+        "current": false,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": true,
+        "calibration_eligible": false,
         "confirmatory_eligible": false,
-        "blockers": []
+        "blockers": [
+          "scorer validation gate not passed on the current files"
+        ]
       }
     },
     {
@@ -2594,7 +3262,7 @@
       },
       "hashes": {
         "task_sha256": "ed8cc52833720f3b7197cb11cd6d280017d4cf0507a6ff5e02d3197a1d5fe386",
-        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV05/prompt.md": "81b6df965676cea48c0684875e42469040958ef5a86693e5885dec4bae2b6b59",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV05/task.json": "8f7aa9a40c6b5f5e7290b98ed3d64ba890d344cce803d4367dab41b733bf043d",
@@ -2620,17 +3288,19 @@
         ]
       },
       "validation": {
-        "gate": "passed",
-        "current": true,
+        "gate": null,
+        "current": false,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
-        "calibration_eligible": true,
+        "calibration_eligible": false,
         "confirmatory_eligible": false,
-        "blockers": []
+        "blockers": [
+          "scorer validation gate not passed on the current files"
+        ]
       }
     }
   ]

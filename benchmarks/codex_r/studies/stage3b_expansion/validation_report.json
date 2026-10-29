@@ -1,6 +1,6 @@
 {
   "benchmark": "r-knowledge-mcp-stage3b-v1",
-  "validated_at": "2026-10-29T09:01:27Z",
+  "validated_at": "2026-10-29T09:15:24Z",
   "api_calls": 0,
   "tasks": [
     {
@@ -3018,6 +3018,1307 @@
           "failed_checks": [],
           "details": [],
           "seconds": 3.69
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XP01",
+      "task_sha256": "e077c0196cad489b18faa6b00951ad6a3b2fa6c6a13bf6e51158c4f9cf2bdac7",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+      "checks": 8,
+      "checks_failed_by_some_rejected_control": 8,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "tools": "4.5.2",
+          "utils": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 8,
+          "total": 8,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.05
+        },
+        "alternate_tools_package_dependencies": {
+          "status": "scored",
+          "passed": 8,
+          "total": 8,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.35
+        },
+        "wrong_direct_dependencies_only": {
+          "status": "scored",
+          "passed": 4,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_closure_matches_the_oracle_for_several_packages",
+            "base_packages_r_and_the_package_itself_are_excluded",
+            "other_field_sets_change_the_closure",
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "default_closure_matches_the_oracle_for_several_packages: Expected `value_of(xp01_call(p))` to be identical to `xp_closure(p)`.\nDifferences:\n     actual      | expected                     \n [1] \"S7\"        - \"R6\"           [1]           \n [2] \"cli\"       - \"RColorBrewer\" [2]           \n [3] \"grDevices\" - \"S7\"           [3]           \n [4] \"grid\"      - \"cli\"          [4]           \n [5] \"gtable\"    - \"cpp11\"        [5]           \n [6] \"isoband\"   - \"farver\"       [6]           \n [7] \"lifecycle\" - \"glue\"         [7]           \n [8] \"rlang\"     - \"gtabl",
+            "base_packages_r_and_the_package_itself_are_excluded: Expected `any(...)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "other_field_sets_change_the_closure: Expected `value_of(xp01_call(\"tidyr\", \"Imports\"))` to be identical to `xp_closure(\"tidyr\", \"Imports\")`.\nDifferences:\n     actual       | expected                  \n [1] \"cli\"        - \"R6\"        [1]           \n [2] \"dplyr\"      - \"cli\"       [2]           \n [3] \"glue\"       - \"dplyr\"     [3]           \n [4] \"lifecycle\"  - \"generics\"  [4]           \n [5] \"magrittr\"   - \"glue\"      [5]           \n [6] \"purrr\"      - \"lifecycle\" [6]           \n [7] \"rlang\"      - \"magrittr\"  [7]           \n [8] \"s",
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 2.85
+        },
+        "wrong_base_packages_included": {
+          "status": "scored",
+          "passed": 4,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_closure_matches_the_oracle_for_several_packages",
+            "base_packages_r_and_the_package_itself_are_excluded",
+            "other_field_sets_change_the_closure",
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "default_closure_matches_the_oracle_for_several_packages: Expected `value_of(xp01_call(p))` to be identical to `xp_closure(p)`.\nDifferences:\n     actual      | expected                  \n [5] \"cpp11\"     | \"cpp11\"     [5]           \n [6] \"farver\"    | \"farver\"    [6]           \n [7] \"glue\"      | \"glue\"      [7]           \n [8] \"grDevices\" -                           \n [9] \"graphics\"  -                           \n[10] \"grid\"      -                           \n[11] \"gtable\"    | \"gtable\"    [8]           \n[12] \"isoband\"   | \"isoband\"   [9]           \n[13",
+            "base_packages_r_and_the_package_itself_are_excluded: Expected `any(...)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "other_field_sets_change_the_closure: Expected `value_of(xp01_call(\"tidyr\", \"Imports\"))` to be identical to `xp_closure(\"tidyr\", \"Imports\")`.\nDifferences:\n     actual      | expected                   \n [3] \"dplyr\"     | \"dplyr\"     [3]            \n [4] \"generics\"  | \"generics\"  [4]            \n [5] \"glue\"      | \"glue\"      [5]            \n [6] \"grDevices\" -                            \n [7] \"graphics\"  -                            \n [8] \"lifecycle\" | \"lifecycle\" [6]            \n [9] \"magrittr\"  | \"magrittr\"  [7]            \n[10] \"m",
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 4.21
+        },
+        "wrong_suggests_always_included": {
+          "status": "scored",
+          "passed": 4,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_closure_matches_the_oracle_for_several_packages",
+            "a_package_without_dependencies_gives_an_empty_character_vector",
+            "other_field_sets_change_the_closure",
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "default_closure_matches_the_oracle_for_several_packages: Expected `value_of(xp01_call(p))` to be identical to `xp_closure(p)`.\nDifferences:\n     actual       | expected                       \n [1] \"Cairo\"      - \"R6\"           [1]             \n [2] \"DBI\"        - \"RColorBrewer\" [2]             \n [3] \"DBItest\"    - \"S7\"           [3]             \n [4] \"DT\"         - \"cli\"          [4]             \n [5] \"DiagrammeR\" - \"cpp11\"        [5]             \n [6] \"Hmisc\"      - \"farver\"       [6]             \n [7] \"JuliaCall\"  - \"glue\"         [7]             \n ",
+            "a_package_without_dependencies_gives_an_empty_character_vector: Expected `got` to be identical to `character(0)`.\nDifferences:\n     actual       | expected                 \n [1] \"Cairo\"      -                          \n [2] \"DBI\"        -                          \n [3] \"DBItest\"    -                          \n [4] \"DT\"         -                          \n [5] \"DiagrammeR\" -                          \n [6] \"Hmisc\"      -                          \n [7] \"JuliaCall\"  -                          \n [8] \"KernSmooth\" -                          \n [9] \"Lahman\"     -    ",
+            "other_field_sets_change_the_closure: Expected `value_of(xp01_call(\"tidyr\", \"Imports\"))` to be identical to `xp_closure(\"tidyr\", \"Imports\")`.\nDifferences:\n     actual       | expected                    \n [1] \"Cairo\"      - \"R6\"        [1]             \n [2] \"DBI\"        - \"cli\"       [2]             \n [3] \"DBItest\"    - \"dplyr\"     [3]             \n [4] \"DT\"         - \"generics\"  [4]             \n [5] \"DiagrammeR\" - \"glue\"      [5]             \n [6] \"Hmisc\"      - \"lifecycle\" [6]             \n [7] \"JuliaCall\"  - \"magrittr\"  [7]     ",
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 4.11
+        },
+        "wrong_locale_sort_and_default_types_ignored": {
+          "status": "scored",
+          "passed": 3,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_closure_matches_the_oracle_for_several_packages",
+            "linkingto_is_followed_by_default",
+            "other_field_sets_change_the_closure",
+            "result_is_sorted_in_c_locale_without_duplicates",
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "default_closure_matches_the_oracle_for_several_packages: Expected `value_of(xp01_call(p))` to be identical to `xp_closure(p)`.\nDifferences:\n`actual[1:4]`:                            \"cli\"         \"farver\" \"glue\" \"gtable\"\n`expected[1:8]`: \"R6\" \"RColorBrewer\" \"S7\" \"cli\" \"cpp11\" \"farver\" \"glue\" \"gtable\"\n\n     actual         | expected          \n [5] \"isoband\"      | \"isoband\"     [9] \n [6] \"labeling\"     | \"labeling\"    [10]\n [7] \"lifecycle\"    | \"lifecycle\"   [11]\n [8] \"R6\"           -                   \n [9] \"RColorBrewer\" -                   \n[10] \"rl",
+            "linkingto_is_followed_by_default: Expected `all(c(\"cpp11\", \"tzdb\") %in% got)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "other_field_sets_change_the_closure: Expected `value_of(xp01_call(\"tidyr\", \"Imports\"))` to be identical to `xp_closure(\"tidyr\", \"Imports\")`.\nDifferences:\n`actual[1:3]`:        \"cli\" \"dplyr\" \"generics\"\n`expected[1:4]`: \"R6\" \"cli\" \"dplyr\" \"generics\"\n\n`actual[7:13]`:   \"pillar\" \"pkgconfig\" \"purrr\" \"R6\" \"rlang\" \"stringi\" \"stringr\"\n`expected[8:13]`: \"pillar\" \"pkgconfig\" \"purrr\"      \"rlang\" \"stringi\" \"stringr\"\n",
+            "result_is_sorted_in_c_locale_without_duplicates: Expected `got` to be identical to `sort(unique(got), method = \"radix\")`.\nDifferences:\n     actual         | expected                     \n [1] \"cli\"          - \"R6\"           [1]           \n [2] \"farver\"       - \"RColorBrewer\" [2]           \n [3] \"glue\"         - \"S7\"           [3]           \n [4] \"gtable\"       - \"cli\"          [4]           \n [5] \"isoband\"      - \"farver\"       [5]           \n [6] \"labeling\"     - \"glue\"         [6]           \n [7] \"lifecycle\"    - \"gtable\"       [7]          ",
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 4.19
+        },
+        "edge_no_argument_validation": {
+          "status": "scored",
+          "passed": 7,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 4.75
+        },
+        "malformed_returns_data_frame": {
+          "status": "scored",
+          "passed": 1,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_closure_matches_the_oracle_for_several_packages",
+            "a_package_without_dependencies_gives_an_empty_character_vector",
+            "base_packages_r_and_the_package_itself_are_excluded",
+            "linkingto_is_followed_by_default",
+            "other_field_sets_change_the_closure",
+            "result_is_sorted_in_c_locale_without_duplicates",
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "default_closure_matches_the_oracle_for_several_packages: Expected `value_of(xp01_call(p))` to be identical to `xp_closure(p)`.\nDifferences:\n`actual` is an S3 object of class <data.frame>, a list\n`expected` is a character vector ('R6', 'RColorBrewer', 'S7', 'cli', 'cpp11', ...)\n\nggplot2",
+            "a_package_without_dependencies_gives_an_empty_character_vector: Expected `got` to be identical to `character(0)`.\nDifferences:\n`actual` is an S3 object of class <data.frame>, a list\n`expected` is a character vector ()\n",
+            "base_packages_r_and_the_package_itself_are_excluded: Expected `any(...)` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "linkingto_is_followed_by_default: Expected `all(c(\"cpp11\", \"tzdb\") %in% got)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "other_field_sets_change_the_closure: Expected `value_of(xp01_call(\"tidyr\", \"Imports\"))` to be identical to `xp_closure(\"tidyr\", \"Imports\")`.\nDifferences:\n`actual` is an S3 object of class <data.frame>, a list\n`expected` is a character vector ('R6', 'cli', 'dplyr', 'generics', 'glue', ...)\n",
+            "result_is_sorted_in_c_locale_without_duplicates: cannot xtfrm data frames",
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 4.16
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_closure_matches_the_oracle_for_several_packages",
+            "a_package_without_dependencies_gives_an_empty_character_vector",
+            "base_packages_r_and_the_package_itself_are_excluded",
+            "linkingto_is_followed_by_default",
+            "other_field_sets_change_the_closure",
+            "result_is_sorted_in_c_locale_without_duplicates",
+            "invalid_arguments_are_errors",
+            "runs_without_warnings_and_does_not_use_the_network"
+          ],
+          "details": [
+            "default_closure_matches_the_oracle_for_several_packages: candidate call failed: todo",
+            "a_package_without_dependencies_gives_an_empty_character_vector: candidate call failed: todo",
+            "base_packages_r_and_the_package_itself_are_excluded: candidate call failed: todo",
+            "linkingto_is_followed_by_default: candidate call failed: todo",
+            "other_field_sets_change_the_closure: candidate call failed: todo",
+            "result_is_sorted_in_c_locale_without_duplicates: candidate call failed: todo",
+            "invalid_arguments_are_errors: candidate call failed: todo",
+            "runs_without_warnings_and_does_not_use_the_network: candidate call failed: todo"
+          ],
+          "seconds": 3.63
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 8,
+          "total": 8,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.84
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_closure_matches_the_oracle_for_several_packages",
+            "a_package_without_dependencies_gives_an_empty_character_vector",
+            "base_packages_r_and_the_package_itself_are_excluded",
+            "linkingto_is_followed_by_default",
+            "other_field_sets_change_the_closure",
+            "result_is_sorted_in_c_locale_without_duplicates",
+            "invalid_arguments_are_errors",
+            "runs_without_warnings_and_does_not_use_the_network"
+          ],
+          "details": [
+            "default_closure_matches_the_oracle_for_several_packages: candidate call failed: object 'dependency_closure' of mode 'function' was not found",
+            "a_package_without_dependencies_gives_an_empty_character_vector: candidate call failed: object 'dependency_closure' of mode 'function' was not found",
+            "base_packages_r_and_the_package_itself_are_excluded: candidate call failed: object 'dependency_closure' of mode 'function' was not found",
+            "linkingto_is_followed_by_default: candidate call failed: object 'dependency_closure' of mode 'function' was not found",
+            "other_field_sets_change_the_closure: candidate call failed: object 'dependency_closure' of mode 'function' was not found",
+            "result_is_sorted_in_c_locale_without_duplicates: candidate call failed: object 'dependency_closure' of mode 'function' was not found",
+            "invalid_arguments_are_errors: candidate call failed: object 'dependency_closure' of mode 'function' was not found",
+            "runs_without_warnings_and_does_not_use_the_network: candidate call failed: object 'dependency_closure' of mode 'function' was not found"
+          ],
+          "seconds": 3.77
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 8,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 3.36
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 8,
+          "total": 8,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.69
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XP02",
+      "task_sha256": "26c2d502dff113991ab70ca1273cd389cecef33a3066120104bfb26ad195ef61",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+      "checks": 10,
+      "checks_failed_by_some_rejected_control": 10,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "tools": "4.5.2",
+          "utils": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 10.56
+        },
+        "alternate_manual_scan": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 11.1
+        },
+        "wrong_substring_matching": {
+          "status": "scored",
+          "passed": 9,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 10.45
+        },
+        "wrong_recursive_dependencies": {
+          "status": "scored",
+          "passed": 5,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_fields_match_the_oracle_for_several_packages",
+            "whole_name_matching_does_not_confuse_prefixes",
+            "only_direct_declarations_count",
+            "other_field_sets_are_honoured",
+            "packages_that_ship_with_r_are_searched_too"
+          ],
+          "details": [
+            "default_fields_match_the_oracle_for_several_packages: Expected `value_of(xp02_call(p))` to be identical to `xp02_oracle(p)`.\nDifferences:\n     actual      | expected                  \n [8] \"gtable\"    | \"gtable\"    [8]           \n [9] \"hms\"       | \"hms\"       [9]           \n[10] \"htmltools\" | \"htmltools\" [10]          \n[11] \"httpuv\"    -                           \n[12] \"isoband\"   | \"isoband\"   [11]          \n[13] \"jquerylib\" -                           \n[14] \"later\"     | \"later\"     [12]          \n[15] \"lifecycle\" | \"lifecycle\" [13]          \n[1",
+            "whole_name_matching_does_not_confuse_prefixes: Expected `got` to be identical to `xp02_oracle(\"cli\")`.\nDifferences:\n     actual    | expected                 \n [1] \"RSQLite\" -                          \n [2] \"blob\"    -                          \n [3] \"bslib\"   -                          \n [4] \"desc\"    | \"desc\"    [1]            \n [5] \"dplyr\"   | \"dplyr\"   [2]            \n [6] \"ggplot2\" | \"ggplot2\" [3]            \n [7] \"gtable\"  | \"gtable\"  [4]            \n [8] \"hms\"     | \"hms\"     [5]            \n [9] \"httpuv\"  -                          \n[",
+            "only_direct_declarations_count: Expected `\"ggplot2\" %in% got` to be FALSE.\nDifferences:\n`actual`:   TRUE \n`expected`: FALSE\n",
+            "other_field_sets_are_honoured: Expected `value_of(xp02_call(\"testthat\", \"Suggests\"))` to be identical to `xp02_oracle(\"testthat\", \"Suggests\")`.\nDifferences:\n     actual         | expected         \n [1] \"BiocGenerics\" -                  \n [2] \"BiocManager\"  | \"BiocManager\" [1]\n [3] \"DBI\"          | \"DBI\"         [2]\n [4] \"Matrix\"       -                  \n [5] \"R6\"           | \"R6\"          [3]\n [6] \"RSQLite\"      | \"RSQLite\"     [4]\n [7] \"S4Vectors\"    -                  \n [8] \"S7\"           | \"S7\"          [5]\n [9] \"bit\"    ",
+            "packages_that_ship_with_r_are_searched_too: Expected `got` to be identical to `xp02_oracle(\"stats\")`.\nDifferences:\n     actual         | expected                      \n [1] \"BiocGenerics\" | \"BiocGenerics\" [1]            \n [2] \"DBI\"          -                               \n [3] \"IRanges\"      | \"IRanges\"      [2]            \n [4] \"KernSmooth\"   | \"KernSmooth\"   [3]            \n [5] \"MASS\"         | \"MASS\"         [4]            \n [6] \"Matrix\"       | \"Matrix\"       [5]            \n [7] \"RSQLite\"      -                               \n [8] "
+          ],
+          "seconds": 9.68
+        },
+        "wrong_ignores_linkingto_and_types": {
+          "status": "scored",
+          "passed": 5,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_fields_match_the_oracle_for_several_packages",
+            "linkingto_is_a_default_field",
+            "other_field_sets_are_honoured",
+            "packages_that_ship_with_r_are_searched_too",
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "default_fields_match_the_oracle_for_several_packages: Expected `value_of(xp02_call(p))` to be identical to `xp02_oracle(p)`.\nDifferences:\n`actual`:                                                     \n`expected`: \"RSQLite\" \"isoband\" \"readr\" \"tidyr\" \"tzdb\" \"vroom\"\n\ncpp11",
+            "linkingto_is_a_default_field: Expected `all(c(\"readr\", \"tidyr\") %in% got)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "other_field_sets_are_honoured: Expected `value_of(xp02_call(\"testthat\", \"Suggests\"))` to be identical to `xp02_oracle(\"testthat\", \"Suggests\")`.\nDifferences:\n    actual | expected                     \n           - \"BiocManager\" [1]            \n           - \"DBI\"         [2]            \n           - \"R6\"          [3]            \n           - \"RSQLite\"     [4]            \n           - \"S7\"          [5]            \n           - \"bit\"         [6]            \n           - \"bit64\"       [7]            \n           - \"blob\"        [8]",
+            "packages_that_ship_with_r_are_searched_too: Expected `got` to be identical to `xp02_oracle(\"stats\")`.\nDifferences:\n    actual         | expected                     \n[1] \"BiocGenerics\" | \"BiocGenerics\" [1]           \n                   - \"IRanges\"      [2]           \n                   - \"KernSmooth\"   [3]           \n                   - \"MASS\"         [4]           \n[2] \"Matrix\"       | \"Matrix\"       [5]           \n                   - \"S4Vectors\"    [6]           \n[3] \"bit64\"        | \"bit64\"        [7]           \n                   - ",
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 9.26
+        },
+        "wrong_only_user_library_searched": {
+          "status": "scored",
+          "passed": 7,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_fields_match_the_oracle_for_several_packages",
+            "other_field_sets_are_honoured",
+            "packages_that_ship_with_r_are_searched_too"
+          ],
+          "details": [
+            "default_fields_match_the_oracle_for_several_packages: Expected `value_of(xp02_call(p))` to be identical to `xp02_oracle(p)`.\nDifferences:\n    actual         | expected                      \n[1] \"BiocGenerics\" | \"BiocGenerics\" [1]            \n[2] \"IRanges\"      | \"IRanges\"      [2]            \n                   - \"KernSmooth\"   [3]            \n                   - \"MASS\"         [4]            \n                   - \"Matrix\"       [5]            \n[3] \"S4Vectors\"    | \"S4Vectors\"    [6]            \n[4] \"bit64\"        | \"bit64\"        [7]            \n",
+            "other_field_sets_are_honoured: Expected `value_of(xp02_call(\"testthat\", \"Suggests\"))` to be identical to `xp02_oracle(\"testthat\", \"Suggests\")`.\nDifferences:\n`actual[16:21]`:   \"cpp11\" \"crayon\" \"desc\"          \"dplyr\" \"evaluate\" \"farver\"\n`expected[16:22]`: \"cpp11\" \"crayon\" \"desc\" \"docopt\" \"dplyr\" \"evaluate\" \"farver\"\n",
+            "packages_that_ship_with_r_are_searched_too: Expected `got` to be identical to `xp02_oracle(\"stats\")`.\nDifferences:\n    actual         | expected                      \n[1] \"BiocGenerics\" | \"BiocGenerics\" [1]            \n[2] \"IRanges\"      | \"IRanges\"      [2]            \n                   - \"KernSmooth\"   [3]            \n                   - \"MASS\"         [4]            \n                   - \"Matrix\"       [5]            \n[3] \"S4Vectors\"    | \"S4Vectors\"    [6]            \n[4] \"bit64\"        | \"bit64\"        [7]            \n             "
+          ],
+          "seconds": 9.28
+        },
+        "edge_no_argument_validation": {
+          "status": "scored",
+          "passed": 9,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 10.25
+        },
+        "malformed_returns_list": {
+          "status": "scored",
+          "passed": 2,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_fields_match_the_oracle_for_several_packages",
+            "whole_name_matching_does_not_confuse_prefixes",
+            "linkingto_is_a_default_field",
+            "other_field_sets_are_honoured",
+            "packages_that_ship_with_r_are_searched_too",
+            "package_itself_is_never_listed_and_result_is_sorted_unique_unnamed",
+            "no_reverse_dependencies_gives_an_empty_character_vector",
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "default_fields_match_the_oracle_for_several_packages: Expected `value_of(xp02_call(p))` to be identical to `xp02_oracle(p)`.\nDifferences:\n`actual` is a list\n`expected` is a character vector ('RSQLite', 'blob', 'bslib', 'cachem', 'dplyr', ...)\n\nrlang",
+            "whole_name_matching_does_not_confuse_prefixes: Expected `\"readr\" %in% got` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "linkingto_is_a_default_field: Expected `all(c(\"readr\", \"tidyr\") %in% got)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "other_field_sets_are_honoured: Expected `value_of(xp02_call(\"testthat\", \"Suggests\"))` to be identical to `xp02_oracle(\"testthat\", \"Suggests\")`.\nDifferences:\n`actual` is a list\n`expected` is a character vector ('BiocManager', 'DBI', 'R6', 'RSQLite', 'S7', ...)\n",
+            "packages_that_ship_with_r_are_searched_too: Expected `... || \"ggplot2\" %in% got` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "package_itself_is_never_listed_and_result_is_sorted_unique_unnamed: First arg is type 'list', not yet supported",
+            "no_reverse_dependencies_gives_an_empty_character_vector: Expected `got` to be identical to `character(0)`.\nDifferences:\n`actual` is a list\n`expected` is a character vector ()\n",
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 9.42
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_fields_match_the_oracle_for_several_packages",
+            "whole_name_matching_does_not_confuse_prefixes",
+            "linkingto_is_a_default_field",
+            "only_direct_declarations_count",
+            "other_field_sets_are_honoured",
+            "packages_that_ship_with_r_are_searched_too",
+            "package_itself_is_never_listed_and_result_is_sorted_unique_unnamed",
+            "no_reverse_dependencies_gives_an_empty_character_vector",
+            "invalid_arguments_are_errors",
+            "runs_without_warnings"
+          ],
+          "details": [
+            "default_fields_match_the_oracle_for_several_packages: candidate call failed: todo",
+            "whole_name_matching_does_not_confuse_prefixes: candidate call failed: todo",
+            "linkingto_is_a_default_field: candidate call failed: todo",
+            "only_direct_declarations_count: candidate call failed: todo",
+            "other_field_sets_are_honoured: candidate call failed: todo",
+            "packages_that_ship_with_r_are_searched_too: candidate call failed: todo",
+            "package_itself_is_never_listed_and_result_is_sorted_unique_unnamed: candidate call failed: todo",
+            "no_reverse_dependencies_gives_an_empty_character_vector: candidate call failed: todo",
+            "invalid_arguments_are_errors: candidate call failed: todo",
+            "runs_without_warnings: candidate call failed: todo"
+          ],
+          "seconds": 9.24
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 10.12
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "default_fields_match_the_oracle_for_several_packages",
+            "whole_name_matching_does_not_confuse_prefixes",
+            "linkingto_is_a_default_field",
+            "only_direct_declarations_count",
+            "other_field_sets_are_honoured",
+            "packages_that_ship_with_r_are_searched_too",
+            "package_itself_is_never_listed_and_result_is_sorted_unique_unnamed",
+            "no_reverse_dependencies_gives_an_empty_character_vector",
+            "invalid_arguments_are_errors",
+            "runs_without_warnings"
+          ],
+          "details": [
+            "default_fields_match_the_oracle_for_several_packages: candidate call failed: object 'reverse_dependencies' of mode 'function' was not found",
+            "whole_name_matching_does_not_confuse_prefixes: candidate call failed: object 'reverse_dependencies' of mode 'function' was not found",
+            "linkingto_is_a_default_field: candidate call failed: object 'reverse_dependencies' of mode 'function' was not found",
+            "only_direct_declarations_count: candidate call failed: object 'reverse_dependencies' of mode 'function' was not found",
+            "other_field_sets_are_honoured: candidate call failed: object 'reverse_dependencies' of mode 'function' was not found",
+            "packages_that_ship_with_r_are_searched_too: candidate call failed: object 'reverse_dependencies' of mode 'function' was not found",
+            "package_itself_is_never_listed_and_result_is_sorted_unique_unnamed: candidate call failed: object 'reverse_dependencies' of mode 'function' was not found",
+            "no_reverse_dependencies_gives_an_empty_character_vector: candidate call failed: object 'reverse_dependencies' of mode 'function' was not found",
+            "invalid_arguments_are_errors: candidate call failed: object 'reverse_dependencies' of mode 'function' was not found",
+            "runs_without_warnings: candidate call failed: object 'reverse_dependencies' of mode 'function' was not found"
+          ],
+          "seconds": 9.4
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 10,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 2.89
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 9.84
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XP03",
+      "task_sha256": "e7be3129e26884472df1fc6bc61bc12bf9bde0f67fb8ad2f2e7b994cdba00727",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+      "checks": 8,
+      "checks_failed_by_some_rejected_control": 8,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "tools": "4.5.2",
+          "utils": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 8,
+          "total": 8,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.88
+        },
+        "alternate_tools_package_dependencies": {
+          "status": "scored",
+          "passed": 8,
+          "total": 8,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.91
+        },
+        "wrong_own_requirement_only": {
+          "status": "scored",
+          "passed": 6,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matches_the_oracle_for_several_packages",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own"
+          ],
+          "details": [
+            "matches_the_oracle_for_several_packages: Expected `value_of(xp03_call(p))` to be identical to `xp03_oracle(p)`.\nDifferences:\n`actual`:   \"3.1.2\"\n`expected`: \"4.1.0\"\n\nshiny",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own: Expected `got` to be identical to `xp03_oracle(\"survival\")`.\nDifferences:\n`actual`:   \"3.5.0\"\n`expected`: \"4.4.0\"\n"
+          ],
+          "seconds": 5.1
+        },
+        "wrong_lexical_comparison": {
+          "status": "scored",
+          "passed": 4,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matches_the_oracle_for_several_packages",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own",
+            "three_component_normalised_string_result",
+            "numeric_not_textual_comparison"
+          ],
+          "details": [
+            "matches_the_oracle_for_several_packages: Expected `value_of(xp03_call(p))` to be identical to `xp03_oracle(p)`.\nDifferences:\n`actual`:   \"4.1\"  \n`expected`: \"4.1.0\"\n\nggplot2",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own: Expected `got` to be identical to `xp03_oracle(\"survival\")`.\nDifferences:\n`actual`:   \"4.4\"  \n`expected`: \"4.4.0\"\n",
+            "three_component_normalised_string_result: Expected `got` to match regexp \"^[0-9]+\\\\.[0-9]+\\\\.[0-9]+\".\nActual text:\n✖ │ 4.1",
+            "numeric_not_textual_comparison: Expected `got` to be identical to `xp03_oracle(\"Matrix\")`.\nDifferences:\n`actual`:   \"4.4\"  \n`expected`: \"4.4.0\"\n"
+          ],
+          "seconds": 4.64
+        },
+        "wrong_base_packages_followed": {
+          "status": "scored",
+          "passed": 3,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matches_the_oracle_for_several_packages",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own",
+            "base_packages_are_not_followed",
+            "a_package_with_no_requirement_anywhere_gives_na",
+            "numeric_not_textual_comparison"
+          ],
+          "details": [
+            "matches_the_oracle_for_several_packages: Expected `value_of(xp03_call(p))` to be identical to `xp03_oracle(p)`.\nDifferences:\n`actual`:   \"4.5.2\"\n`expected`: \"4.1.0\"\n\nggplot2",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own: Expected `got` to be identical to `xp03_oracle(\"survival\")`.\nDifferences:\n`actual`:   \"4.5.2\"\n`expected`: \"4.4.0\"\n",
+            "base_packages_are_not_followed: Expected `got` to be identical to `xp03_oracle(\"tools\")`.\nDifferences:\n`actual`:   \"4.5.2\"\n`expected`: NA     \n",
+            "a_package_with_no_requirement_anywhere_gives_na: Expected `is.character(got) && length(got) == 1L && is.na(got)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "numeric_not_textual_comparison: Expected `got` to be identical to `xp03_oracle(\"Matrix\")`.\nDifferences:\n`actual`:   \"4.5.2\"\n`expected`: \"4.4.0\"\n"
+          ],
+          "seconds": 4.48
+        },
+        "wrong_no_normalisation": {
+          "status": "scored",
+          "passed": 4,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matches_the_oracle_for_several_packages",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own",
+            "three_component_normalised_string_result",
+            "numeric_not_textual_comparison"
+          ],
+          "details": [
+            "matches_the_oracle_for_several_packages: Expected `value_of(xp03_call(p))` to be identical to `xp03_oracle(p)`.\nDifferences:\n`names(actual)` is a character vector ('ggplot2')\n`names(expected)` is absent\n\n`actual`:   \"4.1\"  \n`expected`: \"4.1.0\"\n\nggplot2",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own: Expected `got` to be identical to `xp03_oracle(\"survival\")`.\nDifferences:\n`names(actual)` is a character vector ('Matrix')\n`names(expected)` is absent\n\n`actual`:   \"4.4\"  \n`expected`: \"4.4.0\"\n",
+            "three_component_normalised_string_result: Expected `got` to match regexp \"^[0-9]+\\\\.[0-9]+\\\\.[0-9]+\".\nActual text:\n✖ │ 4.1",
+            "numeric_not_textual_comparison: Expected `got` to be identical to `xp03_oracle(\"Matrix\")`.\nDifferences:\n`names(actual)` is a character vector ('Matrix')\n`names(expected)` is absent\n\n`actual`:   \"4.4\"  \n`expected`: \"4.4.0\"\n"
+          ],
+          "seconds": 4.47
+        },
+        "edge_no_argument_validation": {
+          "status": "scored",
+          "passed": 7,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 4.81
+        },
+        "malformed_returns_numeric_version": {
+          "status": "scored",
+          "passed": 1,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matches_the_oracle_for_several_packages",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own",
+            "three_component_normalised_string_result",
+            "base_packages_are_not_followed",
+            "a_package_with_no_requirement_anywhere_gives_na",
+            "numeric_not_textual_comparison",
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "matches_the_oracle_for_several_packages: Expected `value_of(xp03_call(p))` to be identical to `xp03_oracle(p)`.\nDifferences:\n`actual` is an S3 object of class <numeric_version>, a list\n`expected` is a character vector ('4.1.0')\n\nggplot2",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own: Expected `got` to be identical to `xp03_oracle(\"survival\")`.\nDifferences:\n`actual` is an S3 object of class <numeric_version>, a list\n`expected` is a character vector ('4.4.0')\n",
+            "three_component_normalised_string_result: Expected `is.character(got) && length(got) == 1L` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "base_packages_are_not_followed: Expected `got` to be identical to `xp03_oracle(\"tools\")`.\nDifferences:\n`actual` is an S3 object of class <numeric_version>, a list\n`expected` is a character vector (NA)\n",
+            "a_package_with_no_requirement_anywhere_gives_na: Expected `is.character(got) && length(got) == 1L && is.na(got)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "numeric_not_textual_comparison: Expected `got` to be identical to `xp03_oracle(\"Matrix\")`.\nDifferences:\n`actual` is an S3 object of class <numeric_version>, a list\n`expected` is a character vector ('4.4.0')\n",
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 4.1
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matches_the_oracle_for_several_packages",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own",
+            "three_component_normalised_string_result",
+            "base_packages_are_not_followed",
+            "a_package_with_no_requirement_anywhere_gives_na",
+            "numeric_not_textual_comparison",
+            "invalid_arguments_are_errors",
+            "runs_without_warnings"
+          ],
+          "details": [
+            "matches_the_oracle_for_several_packages: candidate call failed: todo",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own: candidate call failed: todo",
+            "three_component_normalised_string_result: candidate call failed: todo",
+            "base_packages_are_not_followed: candidate call failed: todo",
+            "a_package_with_no_requirement_anywhere_gives_na: candidate call failed: todo",
+            "numeric_not_textual_comparison: candidate call failed: todo",
+            "invalid_arguments_are_errors: candidate call failed: todo",
+            "runs_without_warnings: candidate call failed: todo"
+          ],
+          "seconds": 4.25
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 8,
+          "total": 8,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.92
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 8,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matches_the_oracle_for_several_packages",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own",
+            "three_component_normalised_string_result",
+            "base_packages_are_not_followed",
+            "a_package_with_no_requirement_anywhere_gives_na",
+            "numeric_not_textual_comparison",
+            "invalid_arguments_are_errors",
+            "runs_without_warnings"
+          ],
+          "details": [
+            "matches_the_oracle_for_several_packages: candidate call failed: object 'minimum_r_version' of mode 'function' was not found",
+            "the_requirement_of_a_dependency_can_exceed_the_packages_own: candidate call failed: object 'minimum_r_version' of mode 'function' was not found",
+            "three_component_normalised_string_result: candidate call failed: object 'minimum_r_version' of mode 'function' was not found",
+            "base_packages_are_not_followed: candidate call failed: object 'minimum_r_version' of mode 'function' was not found",
+            "a_package_with_no_requirement_anywhere_gives_na: candidate call failed: object 'minimum_r_version' of mode 'function' was not found",
+            "numeric_not_textual_comparison: candidate call failed: object 'minimum_r_version' of mode 'function' was not found",
+            "invalid_arguments_are_errors: candidate call failed: object 'minimum_r_version' of mode 'function' was not found",
+            "runs_without_warnings: candidate call failed: object 'minimum_r_version' of mode 'function' was not found"
+          ],
+          "seconds": 4.53
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 8,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 2.6
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 8,
+          "total": 8,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.91
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XP04",
+      "task_sha256": "1eacd571de1999ebfedbe3a81b7980a8e2d605cad4953bb1f38ad4e2638afb18",
+      "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+      "checks": 11,
+      "checks_failed_by_some_rejected_control": 11,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "utils": "4.5.2",
+          "Biobase": "2.70.0",
+          "DESeq2": "1.50.2",
+          "BiocVersion": "3.22.0"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.92
+        },
+        "alternate_packagedescription": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.51
+        },
+        "wrong_repository_field_used_as_origin": {
+          "status": "scored",
+          "passed": 7,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "origin_table_matches_the_oracle",
+            "rspm_snapshots_count_as_cran",
+            "recommended_packages_are_not_base",
+            "bioconductor_packages_carry_their_release"
+          ],
+          "details": [
+            "origin_table_matches_the_oracle: Expected `unname(got[[nm]])` to be identical to `unname(want[[nm]])`.\nDifferences:\n     actual          | expected                      \n [1] \"Bioconductor\"  - \"bioconductor\"  [1]           \n [2] \"CRAN\"          - \"cran\"          [2]           \n [3] \"base\"          | \"base\"          [3]           \n [4] \"RSPM\"          - \"cran\"          [4]           \n [5] \"CRAN\"          - \"cran\"          [5]           \n [6] \"Bioconductor\"  - \"bioconductor\"  [6]           \n [7] \"not_installed\" | \"not_installed\" ",
+            "rspm_snapshots_count_as_cran: Expected `got$origin` to be identical to `c(\"cran\", \"cran\")`.\nDifferences:\n`actual`:   \"RSPM\" \"RSPM\"\n`expected`: \"cran\" \"cran\"\n",
+            "recommended_packages_are_not_base: Expected `got$origin` to be identical to `rep(\"cran\", 4L)`.\nDifferences:\n`actual`:   \"CRAN\" \"CRAN\" \"CRAN\" \"CRAN\"\n`expected`: \"cran\" \"cran\" \"cran\" \"cran\"\n",
+            "bioconductor_packages_carry_their_release: Expected `got$origin` to be identical to `rep(\"bioconductor\", 4L)`.\nDifferences:\n`actual`:   \"Bioconductor\" \"Bioconductor\" \"Bioconductor\" \"Bioconductor\"\n`expected`: \"bioconductor\" \"bioconductor\" \"bioconductor\" \"bioconductor\"\n"
+          ],
+          "seconds": 3.25
+        },
+        "wrong_recommended_treated_as_base": {
+          "status": "scored",
+          "passed": 9,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "origin_table_matches_the_oracle",
+            "recommended_packages_are_not_base"
+          ],
+          "details": [
+            "origin_table_matches_the_oracle: Expected `unname(got[[nm]])` to be identical to `unname(want[[nm]])`.\nDifferences:\n     actual          | expected                      \n [2] \"cran\"          | \"cran\"          [2]           \n [3] \"base\"          | \"base\"          [3]           \n [4] \"cran\"          | \"cran\"          [4]           \n [5] \"base\"          - \"cran\"          [5]           \n [6] \"bioconductor\"  | \"bioconductor\"  [6]           \n [7] \"not_installed\" | \"not_installed\" [7]           \n [8] \"bioconductor\"  | \"bioconductor\"  ",
+            "recommended_packages_are_not_base: Expected `got$origin` to be identical to `rep(\"cran\", 4L)`.\nDifferences:\n`actual`:   \"base\" \"base\" \"base\" \"base\"\n`expected`: \"cran\" \"cran\" \"cran\" \"cran\"\n"
+          ],
+          "seconds": 3.07
+        },
+        "wrong_rspm_not_cran": {
+          "status": "scored",
+          "passed": 9,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "origin_table_matches_the_oracle",
+            "rspm_snapshots_count_as_cran"
+          ],
+          "details": [
+            "origin_table_matches_the_oracle: Expected `unname(got[[nm]])` to be identical to `unname(want[[nm]])`.\nDifferences:\n     actual          | expected                      \n [1] \"bioconductor\"  | \"bioconductor\"  [1]           \n [2] \"cran\"          | \"cran\"          [2]           \n [3] \"base\"          | \"base\"          [3]           \n [4] \"unknown\"       - \"cran\"          [4]           \n [5] \"cran\"          | \"cran\"          [5]           \n [6] \"bioconductor\"  | \"bioconductor\"  [6]           \n [7] \"not_installed\" | \"not_installed\" ",
+            "rspm_snapshots_count_as_cran: Expected `got$origin` to be identical to `c(\"cran\", \"cran\")`.\nDifferences:\n`actual`:   \"unknown\" \"unknown\"\n`expected`: \"cran\"    \"cran\"   \n"
+          ],
+          "seconds": 3.25
+        },
+        "wrong_unique_rows_and_sorted": {
+          "status": "scored",
+          "passed": 8,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "origin_table_matches_the_oracle",
+            "rows_follow_the_input_order_including_duplicates",
+            "installed_version_text_is_reported_exactly"
+          ],
+          "details": [
+            "origin_table_matches_the_oracle: Expected `nrow(got)` to be identical to `nrow(want)`.\nDifferences:\n  `actual`: 13\n`expected`: 14\n",
+            "rows_follow_the_input_order_including_duplicates: Expected `got$package` to be identical to `xp04_set`.\nDifferences:\n     actual                | expected                            \n [1] \"Biobase\"             - \"DESeq2\"              [1]           \n [2] \"BiocVersion\"         - \"dplyr\"               [2]           \n [3] \"DESeq2\"              - \"stats\"               [3]           \n [4] \"docopt\"              | \"docopt\"              [4]           \n [5] \"dplyr\"               - \"MASS\"                [5]           \n [6] \"littler\"             - \"S4Vecto",
+            "installed_version_text_is_reported_exactly: Expected `got$version` to be identical to `c(xp_desc(\"MASS\")[[\"Version\"]], xp_desc(\"DESeq2\")[[\"Version\"]])`.\nDifferences:\n`actual`:   \"1.50.2\" \"7.3-65\"\n`expected`: \"7.3-65\" \"1.50.2\"\n"
+          ],
+          "seconds": 3.29
+        },
+        "wrong_missing_release_text": {
+          "status": "scored",
+          "passed": 9,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "origin_table_matches_the_oracle",
+            "bioconductor_packages_carry_their_release"
+          ],
+          "details": [
+            "origin_table_matches_the_oracle: Expected `unname(got[[nm]])` to be identical to `unname(want[[nm]])`.\nDifferences:\n`actual`:   NA     NA NA NA NA NA     NA NA     NA     NA and 4 more...\n`expected`: \"3.22\" NA NA NA NA \"3.22\" NA \"3.22\" \"3.22\" NA ...          \n\nbioc_release",
+            "bioconductor_packages_carry_their_release: Expected `got$bioc_release` to be identical to `rep(\"3.22\", 4L)`.\nDifferences:\n`actual`:   NA     NA     NA     NA    \n`expected`: \"3.22\" \"3.22\" \"3.22\" \"3.22\"\n"
+          ],
+          "seconds": 3.26
+        },
+        "edge_no_argument_validation": {
+          "status": "scored",
+          "passed": 10,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 2.8
+        },
+        "malformed_returns_named_vector": {
+          "status": "scored",
+          "passed": 1,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "origin_table_matches_the_oracle",
+            "rows_follow_the_input_order_including_duplicates",
+            "rspm_snapshots_count_as_cran",
+            "recommended_packages_are_not_base",
+            "base_packages_are_base_whatever_their_repository_field",
+            "bioconductor_packages_carry_their_release",
+            "packages_that_are_not_installed_have_missing_version_and_release",
+            "installed_version_text_is_reported_exactly",
+            "result_is_a_plain_data_frame_with_default_row_names",
+            "invalid_arguments_are_errors"
+          ],
+          "details": [
+            "origin_table_matches_the_oracle: Expected `names(got)` to be identical to `c(\"package\", \"version\", \"origin\", \"bioc_release\")`.\nDifferences:\n`actual`:   \"value_of(xp04_call(xp04_set))\"                                  \n`expected`: \"package\"                       \"version\" \"origin\" \"bioc_release\"\n",
+            "rows_follow_the_input_order_including_duplicates: Expected `got$package` to be identical to `xp04_set`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('DESeq2', 'dplyr', 'stats', 'docopt', 'MASS', ...)\n",
+            "rspm_snapshots_count_as_cran: Expected `got$origin` to be identical to `c(\"cran\", \"cran\")`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('cran', 'cran')\n",
+            "recommended_packages_are_not_base: Expected `got$origin` to be identical to `rep(\"cran\", 4L)`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('cran', 'cran', 'cran', 'cran')\n",
+            "base_packages_are_base_whatever_their_repository_field: Expected `got$origin` to be identical to `rep(\"base\", 4L)`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('base', 'base', 'base', 'base')\n",
+            "bioconductor_packages_carry_their_release: Expected `got$origin` to be identical to `rep(\"bioconductor\", 4L)`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('bioconductor', 'bioconductor', 'bioconductor', 'bioconductor')\n",
+            "packages_that_are_not_installed_have_missing_version_and_release: Expected `got$origin` to be identical to `rep(\"not_installed\", 2L)`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('not_installed', 'not_installed')\n",
+            "installed_version_text_is_reported_exactly: Expected `got$version` to be identical to `c(xp_desc(\"MASS\")[[\"Version\"]], xp_desc(\"DESeq2\")[[\"Version\"]])`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('7.3-65', '1.50.2')\n",
+            "result_is_a_plain_data_frame_with_default_row_names: argument must be coercible to non-negative integer",
+            "invalid_arguments_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 3.19
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "origin_table_matches_the_oracle",
+            "rows_follow_the_input_order_including_duplicates",
+            "rspm_snapshots_count_as_cran",
+            "recommended_packages_are_not_base",
+            "base_packages_are_base_whatever_their_repository_field",
+            "bioconductor_packages_carry_their_release",
+            "packages_that_are_not_installed_have_missing_version_and_release",
+            "installed_version_text_is_reported_exactly",
+            "result_is_a_plain_data_frame_with_default_row_names",
+            "invalid_arguments_are_errors",
+            "runs_without_warnings"
+          ],
+          "details": [
+            "origin_table_matches_the_oracle: candidate call failed: todo",
+            "rows_follow_the_input_order_including_duplicates: candidate call failed: todo",
+            "rspm_snapshots_count_as_cran: candidate call failed: todo",
+            "recommended_packages_are_not_base: candidate call failed: todo",
+            "base_packages_are_base_whatever_their_repository_field: candidate call failed: todo",
+            "bioconductor_packages_carry_their_release: candidate call failed: todo",
+            "packages_that_are_not_installed_have_missing_version_and_release: candidate call failed: todo",
+            "installed_version_text_is_reported_exactly: candidate call failed: todo",
+            "result_is_a_plain_data_frame_with_default_row_names: candidate call failed: todo",
+            "invalid_arguments_are_errors: candidate call failed: todo",
+            "runs_without_warnings: candidate call failed: todo"
+          ],
+          "seconds": 2.71
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.79
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "origin_table_matches_the_oracle",
+            "rows_follow_the_input_order_including_duplicates",
+            "rspm_snapshots_count_as_cran",
+            "recommended_packages_are_not_base",
+            "base_packages_are_base_whatever_their_repository_field",
+            "bioconductor_packages_carry_their_release",
+            "packages_that_are_not_installed_have_missing_version_and_release",
+            "installed_version_text_is_reported_exactly",
+            "result_is_a_plain_data_frame_with_default_row_names",
+            "invalid_arguments_are_errors",
+            "runs_without_warnings"
+          ],
+          "details": [
+            "origin_table_matches_the_oracle: candidate call failed: object 'package_origin' of mode 'function' was not found",
+            "rows_follow_the_input_order_including_duplicates: candidate call failed: object 'package_origin' of mode 'function' was not found",
+            "rspm_snapshots_count_as_cran: candidate call failed: object 'package_origin' of mode 'function' was not found",
+            "recommended_packages_are_not_base: candidate call failed: object 'package_origin' of mode 'function' was not found",
+            "base_packages_are_base_whatever_their_repository_field: candidate call failed: object 'package_origin' of mode 'function' was not found",
+            "bioconductor_packages_carry_their_release: candidate call failed: object 'package_origin' of mode 'function' was not found",
+            "packages_that_are_not_installed_have_missing_version_and_release: candidate call failed: object 'package_origin' of mode 'function' was not found",
+            "installed_version_text_is_reported_exactly: candidate call failed: object 'package_origin' of mode 'function' was not found",
+            "result_is_a_plain_data_frame_with_default_row_names: candidate call failed: object 'package_origin' of mode 'function' was not found",
+            "invalid_arguments_are_errors: candidate call failed: object 'package_origin' of mode 'function' was not found",
+            "runs_without_warnings: candidate call failed: object 'package_origin' of mode 'function' was not found"
+          ],
+          "seconds": 3.12
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 2.91
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.51
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "bioc",
+        "name": "codex-r-benchmark:pilot-bioc",
+        "id": "sha256:a4e959f2ed9af8141ecec5d95d727880fd5dfc325efc19cb55032d6d34899161"
+      }
+    },
+    {
+      "task": "XP05",
+      "task_sha256": "18a54d2fb80a0f67eadfd74daf616d83a2112b50c5a7c08ea6da4a1694775460",
+      "scorer_sha256": "15464593ff378efeeee9efd13786841c01630025caeeb0099486463bc8903bef",
+      "checks": 9,
+      "checks_failed_by_some_rejected_control": 9,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "utils": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 9,
+          "total": 9,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.7
+        },
+        "alternate_compareversion": {
+          "status": "scored",
+          "passed": 9,
+          "total": 9,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.64
+        },
+        "wrong_textual_comparison": {
+          "status": "scored",
+          "passed": 5,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "statuses_match_the_oracle",
+            "versions_are_compared_numerically_not_textually",
+            "hyphen_and_dot_separators_are_equivalent",
+            "zero_row_tables_and_extra_columns_are_accepted"
+          ],
+          "details": [
+            "statuses_match_the_oracle: Expected `unname(got[[nm]])` to be identical to `unname(want[[nm]])`.\nDifferences:\n    actual        | expected         \n[1] \"satisfied\"   | \"satisfied\"   [1]\n[2] \"satisfied\"   - \"unsatisfied\" [2]\n[3] \"unsatisfied\" - \"satisfied\"   [3]\n[4] \"unsatisfied\" - \"satisfied\"   [4]\n[5] \"satisfied\"   | \"satisfied\"   [5]\n[6] \"unsatisfied\" | \"unsatisfied\" [6]\n[7] \"satisfied\"   | \"satisfied\"   [7]\n\nstatus",
+            "versions_are_compared_numerically_not_textually: Expected `got$status[2]` to be identical to \"unsatisfied\".\nDifferences:\n`actual`:   \"satisfied\"  \n`expected`: \"unsatisfied\"\n",
+            "hyphen_and_dot_separators_are_equivalent: Expected `got$status` to be identical to `xp05_oracle(xp05_b)$status`.\nDifferences:\n`actual`:   \"satisfied\" \"unsatisfied\" \"satisfied\" \"unsatisfied\"\n`expected`: \"satisfied\" \"satisfied\"   \"satisfied\" \"unsatisfied\"\n",
+            "zero_row_tables_and_extra_columns_are_accepted: Expected `unname(got[[nm]])` to be identical to `unname(want[[nm]])`.\nDifferences:\n`actual`:   \"satisfied\" \"unsatisfied\" \"satisfied\" \"unsatisfied\"\n`expected`: \"satisfied\" \"satisfied\"   \"satisfied\" \"unsatisfied\"\n\nstatus"
+          ],
+          "seconds": 3.96
+        },
+        "wrong_hyphen_not_a_separator": {
+          "status": "scored",
+          "passed": 5,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "statuses_match_the_oracle",
+            "versions_are_compared_numerically_not_textually",
+            "hyphen_and_dot_separators_are_equivalent",
+            "zero_row_tables_and_extra_columns_are_accepted"
+          ],
+          "details": [
+            "statuses_match_the_oracle: Expected `unname(got[[nm]])` to be identical to `unname(want[[nm]])`.\nDifferences:\n    actual        | expected         \n[1] \"satisfied\"   | \"satisfied\"   [1]\n[2] \"unsatisfied\" | \"unsatisfied\" [2]\n[3] \"satisfied\"   | \"satisfied\"   [3]\n[4] \"unsatisfied\" - \"satisfied\"   [4]\n[5] \"satisfied\"   | \"satisfied\"   [5]\n[6] \"unsatisfied\" | \"unsatisfied\" [6]\n[7] \"satisfied\"   | \"satisfied\"   [7]\n\nstatus",
+            "versions_are_compared_numerically_not_textually: Expected `got$status[4]` to be identical to \"satisfied\".\nDifferences:\n`actual`:   \"unsatisfied\"\n`expected`: \"satisfied\"  \n",
+            "hyphen_and_dot_separators_are_equivalent: Expected `got$status` to be identical to `xp05_oracle(xp05_b)$status`.\nDifferences:\n`actual`:   \"satisfied\" \"unsatisfied\" \"unsatisfied\" \"unsatisfied\"\n`expected`: \"satisfied\" \"satisfied\"   \"satisfied\"   \"unsatisfied\"\n",
+            "zero_row_tables_and_extra_columns_are_accepted: Expected `unname(got[[nm]])` to be identical to `unname(want[[nm]])`.\nDifferences:\n`actual`:   \"satisfied\" \"unsatisfied\" \"unsatisfied\" \"unsatisfied\"\n`expected`: \"satisfied\" \"satisfied\"   \"satisfied\"   \"unsatisfied\"\n\nstatus"
+          ],
+          "seconds": 4.33
+        },
+        "wrong_not_installed_is_an_error": {
+          "status": "scored",
+          "passed": 0,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "statuses_match_the_oracle",
+            "versions_are_compared_numerically_not_textually",
+            "hyphen_and_dot_separators_are_equivalent",
+            "packages_that_are_not_installed_are_reported_not_rejected",
+            "rows_keep_the_input_order_and_duplicates",
+            "zero_row_tables_and_extra_columns_are_accepted",
+            "result_is_a_plain_data_frame_with_character_columns",
+            "invalid_tables_operators_and_versions_are_errors",
+            "input_is_not_modified_and_no_warnings"
+          ],
+          "details": [
+            "statuses_match_the_oracle: candidate call failed: $ operator is invalid for atomic vectors",
+            "versions_are_compared_numerically_not_textually: candidate call failed: $ operator is invalid for atomic vectors",
+            "hyphen_and_dot_separators_are_equivalent: candidate call failed: $ operator is invalid for atomic vectors",
+            "packages_that_are_not_installed_are_reported_not_rejected: candidate call failed: $ operator is invalid for atomic vectors",
+            "rows_keep_the_input_order_and_duplicates: candidate call failed: $ operator is invalid for atomic vectors",
+            "zero_row_tables_and_extra_columns_are_accepted: candidate call failed: $ operator is invalid for atomic vectors",
+            "result_is_a_plain_data_frame_with_character_columns: candidate call failed: $ operator is invalid for atomic vectors",
+            "invalid_tables_operators_and_versions_are_errors: candidate call failed: $ operator is invalid for atomic vectors",
+            "input_is_not_modified_and_no_warnings: candidate call failed: $ operator is invalid for atomic vectors"
+          ],
+          "seconds": 3.69
+        },
+        "edge_no_input_validation": {
+          "status": "scored",
+          "passed": 8,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "invalid_tables_operators_and_versions_are_errors"
+          ],
+          "details": [
+            "invalid_tables_operators_and_versions_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 3.74
+        },
+        "malformed_returns_logical": {
+          "status": "scored",
+          "passed": 2,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "statuses_match_the_oracle",
+            "versions_are_compared_numerically_not_textually",
+            "hyphen_and_dot_separators_are_equivalent",
+            "packages_that_are_not_installed_are_reported_not_rejected",
+            "rows_keep_the_input_order_and_duplicates",
+            "zero_row_tables_and_extra_columns_are_accepted",
+            "invalid_tables_operators_and_versions_are_errors"
+          ],
+          "details": [
+            "statuses_match_the_oracle: Expected `names(got)` to be identical to `c(\"package\", \"op\", \"required\", \"installed\", \"status\")`.\nDifferences:\n`actual`:   \"value_of(xp05_call(xp05_a))\"                                     \n`expected`: \"package\"                     \"op\" \"required\" \"installed\" \"status\"\n",
+            "versions_are_compared_numerically_not_textually: Expected `got$status[2]` to be identical to \"unsatisfied\".\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('unsatisfied')\n",
+            "hyphen_and_dot_separators_are_equivalent: Expected `got$status` to be identical to `xp05_oracle(xp05_b)$status`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('satisfied', 'satisfied', 'satisfied', 'unsatisfied')\n",
+            "packages_that_are_not_installed_are_reported_not_rejected: Expected `got$status[8]` to be identical to \"not_installed\".\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('not_installed')\n",
+            "rows_keep_the_input_order_and_duplicates: Expected `got$package` to be identical to `xp05_a$package`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('dplyr', 'dplyr', 'MASS', 'MASS', 'ggplot2', ...)\n",
+            "zero_row_tables_and_extra_columns_are_accepted: Expected `names(got)` to be identical to `c(\"package\", \"op\", \"required\", \"installed\", \"status\")`.\nDifferences:\n`actual`:   \"value_of(xp05_call(empty))\"                                     \n`expected`: \"package\"                    \"op\" \"required\" \"installed\" \"status\"\n",
+            "invalid_tables_operators_and_versions_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 3.64
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 2,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "statuses_match_the_oracle",
+            "versions_are_compared_numerically_not_textually",
+            "hyphen_and_dot_separators_are_equivalent",
+            "packages_that_are_not_installed_are_reported_not_rejected",
+            "rows_keep_the_input_order_and_duplicates",
+            "zero_row_tables_and_extra_columns_are_accepted",
+            "invalid_tables_operators_and_versions_are_errors"
+          ],
+          "details": [
+            "statuses_match_the_oracle: Expected `names(got)` to be identical to `c(\"package\", \"op\", \"required\", \"installed\", \"status\")`.\nDifferences:\n`actual`:                                                 \n`expected`: \"package\" \"op\" \"required\" \"installed\" \"status\"\n",
+            "versions_are_compared_numerically_not_textually: Expected `got$status[2]` to be identical to \"unsatisfied\".\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('unsatisfied')\n",
+            "hyphen_and_dot_separators_are_equivalent: Expected `got$status` to be identical to `xp05_oracle(xp05_b)$status`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('satisfied', 'satisfied', 'satisfied', 'unsatisfied')\n",
+            "packages_that_are_not_installed_are_reported_not_rejected: Expected `got$status[8]` to be identical to \"not_installed\".\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('not_installed')\n",
+            "rows_keep_the_input_order_and_duplicates: Expected `got$package` to be identical to `xp05_a$package`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('dplyr', 'dplyr', 'MASS', 'MASS', 'ggplot2', ...)\n",
+            "zero_row_tables_and_extra_columns_are_accepted: Expected `names(got)` to be identical to `c(\"package\", \"op\", \"required\", \"installed\", \"status\")`.\nDifferences:\n`actual`:                                                 \n`expected`: \"package\" \"op\" \"required\" \"installed\" \"status\"\n",
+            "invalid_tables_operators_and_versions_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 3.51
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 9,
+          "total": 9,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.76
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 9,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "statuses_match_the_oracle",
+            "versions_are_compared_numerically_not_textually",
+            "hyphen_and_dot_separators_are_equivalent",
+            "packages_that_are_not_installed_are_reported_not_rejected",
+            "rows_keep_the_input_order_and_duplicates",
+            "zero_row_tables_and_extra_columns_are_accepted",
+            "result_is_a_plain_data_frame_with_character_columns",
+            "invalid_tables_operators_and_versions_are_errors",
+            "input_is_not_modified_and_no_warnings"
+          ],
+          "details": [
+            "statuses_match_the_oracle: candidate call failed: object 'check_requirements' of mode 'function' was not found",
+            "versions_are_compared_numerically_not_textually: candidate call failed: object 'check_requirements' of mode 'function' was not found",
+            "hyphen_and_dot_separators_are_equivalent: candidate call failed: object 'check_requirements' of mode 'function' was not found",
+            "packages_that_are_not_installed_are_reported_not_rejected: candidate call failed: object 'check_requirements' of mode 'function' was not found",
+            "rows_keep_the_input_order_and_duplicates: candidate call failed: object 'check_requirements' of mode 'function' was not found",
+            "zero_row_tables_and_extra_columns_are_accepted: candidate call failed: object 'check_requirements' of mode 'function' was not found",
+            "result_is_a_plain_data_frame_with_character_columns: candidate call failed: object 'check_requirements' of mode 'function' was not found",
+            "invalid_tables_operators_and_versions_are_errors: candidate call failed: object 'check_requirements' of mode 'function' was not found",
+            "input_is_not_modified_and_no_warnings: candidate call failed: object 'check_requirements' of mode 'function' was not found"
+          ],
+          "seconds": 3.64
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 9,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 3.05
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 9,
+          "total": 9,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.07
         }
       },
       "problems": [],

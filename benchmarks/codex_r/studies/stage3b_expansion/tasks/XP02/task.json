@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "id": "XP02",
+  "title": "Direct reverse dependencies among installed packages (whole-name matching)",
+  "category": "package_discovery",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["tools", "utils"],
+  "fixtures": ["fixture/imports_sample.csv"],
+  "source_specs": ["ECO-PL02", "ECO-GP03"],
+  "source_relation": "adapted to a closed world: the registry's reverse-dependency and upgrade-impact specs concern CRAN; this task restricts the evidence to the pinned installed library",
+  "difficulty_hypothesis": "Substring matching confuses cli with clipr; recursive reverse dependencies over-report; LinkingTo and the requested field set are forgotten; only one library path is searched.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 1, "documentation_dependence": 1,
+    "reasoning_complexity": 2, "code_generation_complexity": 2, "statistical_reasoning": 0,
+    "debugging_difficulty": 1, "package_api_verification_need": 1
+  },
+  "expected_mcp_usefulness": "low",
+  "mcp_relevance": {
+    "classification": "control",
+    "rationale": "Closed-world question answered authoritatively by the pinned installed library; MCP describes CRAN/Bioconductor, not this library, so any use is overhead or a cross-check. Included to measure unprompted tool use when the tool is not needed.",
+    "information_need": "Direct dependency declarations of the installed packages.",
+    "relevant_mcp_tools": ["get_package_info", "get_dependencies"],
+    "obtainable_without_mcp": "yes",
+    "version_specific_evidence_value": "low",
+    "alternative_solution_paths": ["tools::package_dependencies(reverse = TRUE)", "manual scan of packageDescription()"]
+  },
+  "independence": {"cluster": "installed-package-metadata", "shared_with": ["XP01", "XP03", "XP04", "XP05"], "shared_features": ["installed DESCRIPTION fields", "pinned library as evidence"]},
+  "calibration_risks": {
+    "ceiling": "moderate",
+    "floor": "low",
+    "documentation_dependence": "low",
+    "version_sensitivity": "low",
+    "blockers": ["closed-world proxy for package discovery"]
+  },
+  "analysis": {
+    "failure_modes": ["substring_matching", "recursive_reverse_dependencies", "linkingto_and_types_ignored", "single_library", "no_argument_validation"],
+    "statistical_reasoning_checks": []
+  },
+  "pinned_evidence": {
+    "kind": "installed_library_metadata",
+    "r": "4.5.2",
+    "packages": {"library": "pinned scorer image, 121 packages (base image)"},
+    "oracle": "scan of every installed DESCRIPTION with read.dcf() and whole-name comparison"
+  },
+  "checks_documented_in": "verifier/XP02.R"
+}

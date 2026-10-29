@@ -1,0 +1,6 @@
+"package","version","imports"
+"clipr","0.8.1","utils"
+"cli","3.6.5","utils"
+"glue","1.8.0","methods"
+"tibble","3.3.1","cli, lifecycle (>= 1.0.0), magrittr, methods, pillar (>= 1.8.1), pkgconfig, rlang (>= 1.0.2), utils, vctrs (>= 0.5.0)"
+"R6","2.6.1",

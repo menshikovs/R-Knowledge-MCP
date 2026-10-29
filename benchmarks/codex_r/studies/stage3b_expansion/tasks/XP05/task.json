@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "id": "XP05",
+  "title": "Check version requirements against the installed library with numeric version semantics",
+  "category": "package_discovery",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["utils"],
+  "fixtures": ["fixture/requirements_sample.csv"],
+  "source_specs": ["ECO-PK02", "ADDON-C06"],
+  "source_relation": "adapted to a closed world: renv/lock-style version verification from the registry, scored against the pinned installed library",
+  "difficulty_hypothesis": "Textual comparison ranks 1.10.0 below 1.9.0 and 7.3-65 below 7.3-9; hyphen separators are dropped or misparsed; packages that are not installed abort the whole check.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 2, "documentation_dependence": 1,
+    "reasoning_complexity": 2, "code_generation_complexity": 2, "statistical_reasoning": 0,
+    "debugging_difficulty": 1, "package_api_verification_need": 1
+  },
+  "expected_mcp_usefulness": "low",
+  "mcp_relevance": {
+    "classification": "exploratory",
+    "rationale": "Version-requirement checking is central to package compatibility reasoning, but here the semantics are fully specified in the prompt and the installed versions are local metadata, so MCP adds little; an agent that calls MCP for installed versions would be using the wrong evidence source (CRAN current versus the installed library). Exploratory to observe unprompted use and any confusion of the two sources.",
+    "information_need": "Installed package versions and numeric version ordering rules.",
+    "relevant_mcp_tools": ["get_package_info", "check_compatibility"],
+    "obtainable_without_mcp": "yes: packageDescription(), numeric_version() and compareVersion() are in base R",
+    "version_specific_evidence_value": "medium",
+    "alternative_solution_paths": ["numeric_version()", "utils::compareVersion()", "manual component comparison"]
+  },
+  "independence": {"cluster": "installed-package-metadata", "shared_with": ["XP01", "XP02", "XP03", "XP04"], "shared_features": ["installed DESCRIPTION fields", "pinned library as evidence"]},
+  "calibration_risks": {
+    "ceiling": "moderate-high",
+    "floor": "low",
+    "documentation_dependence": "low",
+    "version_sensitivity": "moderate",
+    "blockers": ["closed-world proxy for package discovery"]
+  },
+  "analysis": {
+    "failure_modes": ["textual_version_comparison", "hyphen_dropped", "not_installed_aborts", "no_input_validation"],
+    "statistical_reasoning_checks": []
+  },
+  "pinned_evidence": {
+    "kind": "installed_library_metadata",
+    "r": "4.5.2",
+    "packages": {"library": "pinned scorer image, 121 packages (base image)"},
+    "oracle": "component-wise integer comparison ; installed versions read with read.dcf()"
+  },
+  "checks_documented_in": "verifier/XP05.R"
+}

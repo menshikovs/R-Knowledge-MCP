@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "id": "XP04",
+  "title": "Base, CRAN or Bioconductor? Repository identity of installed packages, including RSPM snapshots",
+  "category": "package_discovery",
+  "difficulty": "medium",
+  "image": "bioc",
+  "packages": ["utils", "Biobase", "DESeq2", "BiocVersion"],
+  "fixtures": ["fixture/origin_sample.csv"],
+  "source_specs": ["ECO-SRC02", "ECO-BIO01", "ADDON-C09"],
+  "source_relation": "adapted to a closed world: the registry's CRAN-or-Bioconductor and release-mapping specs concern the live repositories; this task restricts the evidence to the metadata of the pinned installed library",
+  "difficulty_hypothesis": "The Repository field mixes CRAN, RSPM (a CRAN snapshot service) and Bioconductor release strings; base packages have no Repository field; recommended packages have a Priority but are not base. Agents confuse these, drop duplicates or reorder the input.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 2, "documentation_dependence": 2,
+    "reasoning_complexity": 2, "code_generation_complexity": 1, "statistical_reasoning": 0,
+    "debugging_difficulty": 1, "package_api_verification_need": 2
+  },
+  "expected_mcp_usefulness": "plausible",
+  "mcp_relevance": {
+    "classification": "target_candidate",
+    "rationale": "Distinguishing CRAN from Bioconductor and mapping a Bioconductor release is the kind of repository-identity reasoning an R package-knowledge service exists for. The scorer, however, fixes the evidence to installed DESCRIPTION metadata, so MCP can only corroborate the repository of a package name; the decisive facts (the RSPM value, the Priority rule) are stated in the prompt. Classified target_candidate by the dimension rule and expected to show modest benefit at most.",
+    "information_need": "Which repository a package belongs to and what a Bioconductor release string denotes.",
+    "relevant_mcp_tools": ["get_package_info", "check_compatibility", "search_packages"],
+    "obtainable_without_mcp": "yes: every needed field is in the installed DESCRIPTION files",
+    "version_specific_evidence_value": "medium",
+    "alternative_solution_paths": ["installed.packages(fields = ...)", "packageDescription() per package"]
+  },
+  "independence": {"cluster": "installed-package-metadata", "shared_with": ["XP01", "XP02", "XP03", "XP05"], "shared_features": ["installed DESCRIPTION fields", "pinned library as evidence"]},
+  "calibration_risks": {
+    "ceiling": "moderate-high",
+    "floor": "low",
+    "documentation_dependence": "low (rules are in the prompt)",
+    "version_sensitivity": "low",
+    "blockers": ["closed-world proxy for package discovery", "bioc image required"]
+  },
+  "analysis": {
+    "failure_modes": ["repository_field_as_origin", "recommended_as_base", "rspm_not_cran", "input_reordered_or_deduplicated", "release_not_extracted", "no_argument_validation"],
+    "statistical_reasoning_checks": []
+  },
+  "pinned_evidence": {
+    "kind": "installed_library_metadata",
+    "r": "4.5.2",
+    "packages": {"BiocVersion": "3.22.0", "library": "pinned Bioconductor scorer image, 143 packages"},
+    "observed": "Repository values in the library: CRAN (112), RSPM (docopt, littler), Bioconductor 3.22 (15), absent for the 14 base packages",
+    "oracle": "classification rules applied to read.dcf() of installed DESCRIPTION files"
+  },
+  "checks_documented_in": "verifier/XP04.R"
+}
