@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "id": "XR02",
+  "title": "Repair a paired t-test written with the formula interface (paired = TRUE is an error since R 4.4)",
+  "category": "code_repair_migration",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["stats"],
+  "fixtures": ["fixture/clinic.csv"],
+  "source_specs": ["ADDON-C04"],
+  "source_relation": "original construction on the R 4.4.0 change to t.test()/wilcox.test() formula methods; registry family: statistical-procedure semantics",
+  "difficulty_hypothesis": "Widely copied code runs t.test(y ~ group, paired = TRUE), which errors in R >= 4.4 ('cannot use paired in formula method'). Repairs commonly mis-handle missing values (dropping per column misaligns participants), the sign convention, or fall back to an unpaired test.",
+  "dimensions": {
+    "r_knowledge_depth": 3, "version_sensitivity": 3, "documentation_dependence": 1,
+    "reasoning_complexity": 2, "code_generation_complexity": 1, "statistical_reasoning": 3,
+    "debugging_difficulty": 2, "package_api_verification_need": 0
+  },
+  "expected_mcp_usefulness": "low",
+  "mcp_relevance": {
+    "classification": "exploratory",
+    "rationale": "The failure is a base-R behaviour change documented in R's NEWS and in ?t.test; the error message states the problem. The statistical content (pairwise deletion, sign convention, df) matters more than any package fact, so MCP offers little beyond local help pages.",
+    "information_need": "Whether and how t.test() supports paired data in the installed R version.",
+    "relevant_mcp_tools": ["get_function_docs"],
+    "obtainable_without_mcp": "yes: ?t.test and the error message",
+    "version_specific_evidence_value": "medium",
+    "alternative_solution_paths": ["t.test(x, y, paired = TRUE)", "t.test(differences)", "closed-form"]
+  },
+  "independence": {"cluster": "base-r-api-change", "shared_with": [], "shared_features": []},
+  "calibration_risks": {
+    "ceiling": "high for strong baselines",
+    "floor": "low",
+    "documentation_dependence": "low",
+    "version_sensitivity": "moderate (recoverable from the error)",
+    "blockers": ["ceiling effect likely: calibration must confirm"]
+  },
+  "analysis": {
+    "failure_modes": ["formula_paired_error", "unpaired_test", "sign_flipped", "per_column_na_removal", "wrong_confidence_level", "names_left_on_values"],
+    "statistical_reasoning_checks": ["pairwise_deletion", "difference_direction", "paired_df"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"stats": "4.5.2"},
+    "observed": "t.test(v ~ g, data, paired = TRUE) errors: cannot use 'paired' in formula method",
+    "oracle": "closed-form mean/sd/se of differences with qt/pt; cross-checked against stats::t.test(paired = TRUE) at load time"
+  },
+  "checks_documented_in": "verifier/XR02.R"
+}

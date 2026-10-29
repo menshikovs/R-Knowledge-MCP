@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "id": "XR05",
+  "title": "Migrate a parameter-grid evaluator off deprecated purrr cross() and invoke_map()",
+  "category": "code_repair_migration",
+  "difficulty": "hard",
+  "image": "base",
+  "packages": ["purrr", "tidyr"],
+  "fixtures": ["fixture/grid.csv"],
+  "source_specs": ["HARD-H09", "ADDON-C07"],
+  "source_relation": "adapted: package migration preserving behavioural semantics, expressed as a repair of a delivered function with a named-argument call contract",
+  "difficulty_hypothesis": "purrr::cross() and invoke_map() were deprecated in purrr 1.0.0 and warn in the pinned version; their replacements (tidyr::expand_grid(), exec()/pmap) differ in row order and argument matching. expand.grid() makes factors by default, and positional calls break when the formals are in a different order.",
+  "dimensions": {
+    "r_knowledge_depth": 3, "version_sensitivity": 3, "documentation_dependence": 2,
+    "reasoning_complexity": 2, "code_generation_complexity": 2, "statistical_reasoning": 0,
+    "debugging_difficulty": 2, "package_api_verification_need": 2
+  },
+  "expected_mcp_usefulness": "plausible",
+  "mcp_relevance": {
+    "classification": "target_candidate",
+    "rationale": "Which purrr functions are deprecated, and what replaces them with what semantics, is package-version knowledge that pre-1.0 training data contradicts. The deprecation warnings themselves name the replacements, and base R expand.grid()/do.call() is a complete fallback.",
+    "information_need": "Deprecation status of purrr::cross()/invoke_map() in the pinned purrr and the semantics of the replacements.",
+    "relevant_mcp_tools": ["get_function_docs", "search_r_documentation", "get_package_info"],
+    "obtainable_without_mcp": "partly: the warnings name tidyr::expand_grid() and exec(); base R is sufficient",
+    "version_specific_evidence_value": "high",
+    "alternative_solution_paths": ["expand.grid + do.call", "tidyr::expand_grid + purrr::pmap_dbl", "purrr::exec"]
+  },
+  "independence": {"cluster": "purrr-deprecations", "shared_with": [], "shared_features": ["lifecycle deprecations"]},
+  "calibration_risks": {
+    "ceiling": "moderate",
+    "floor": "low",
+    "documentation_dependence": "moderate",
+    "version_sensitivity": "high",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": ["legacy_purrr_unchanged", "last_parameter_fastest", "factors_from_expand_grid", "positional_arguments", "no_input_validation", "tibble_result"],
+    "statistical_reasoning_checks": []
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"purrr": "1.2.2", "tidyr": "1.3.2"},
+    "observed": "cross() warns 'deprecated in purrr 1.0.0, use tidyr::expand_grid()'; invoke_map() warns 'use map() + exec()'",
+    "oracle": "explicit mixed-radix index arithmetic, independent of expand.grid()"
+  },
+  "checks_documented_in": "verifier/XR05.R"
+}

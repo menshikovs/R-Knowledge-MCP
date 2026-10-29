@@ -294,6 +294,102 @@
       ]
     },
     {
+      "id": "XR01",
+      "title": "Migrate a legacy helper off dplyr's defunct underscore verbs (string-based column selection)",
+      "category": "code_repair_migration",
+      "image": "base",
+      "packages": [
+        "dplyr"
+      ],
+      "spec": "tasks/XR01/prompt.md",
+      "fixtures": [
+        "tasks/XR01/fixture/scores.csv"
+      ],
+      "metadata": "tasks/XR01/task.json",
+      "verifier": "verifier/XR01.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XR02",
+      "title": "Repair a paired t-test written with the formula interface (paired = TRUE is an error since R 4.4)",
+      "category": "code_repair_migration",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XR02/prompt.md",
+      "fixtures": [
+        "tasks/XR02/fixture/clinic.csv"
+      ],
+      "metadata": "tasks/XR02/task.json",
+      "verifier": "verifier/XR02.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XR03",
+      "title": "Repair a legacy moving average: short and empty inputs, missing values and attributes",
+      "category": "code_repair_migration",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XR03/prompt.md",
+      "fixtures": [
+        "tasks/XR03/fixture/series.csv"
+      ],
+      "metadata": "tasks/XR03/task.json",
+      "verifier": "verifier/XR03.R",
+      "checks": 12,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XR04",
+      "title": "Repair a long-to-wide reshape that errors on repeated measurements (spread() duplicates)",
+      "category": "code_repair_migration",
+      "image": "base",
+      "packages": [
+        "tidyr"
+      ],
+      "spec": "tasks/XR04/prompt.md",
+      "fixtures": [
+        "tasks/XR04/fixture/long.csv"
+      ],
+      "metadata": "tasks/XR04/task.json",
+      "verifier": "verifier/XR04.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XR05",
+      "title": "Migrate a parameter-grid evaluator off deprecated purrr cross() and invoke_map()",
+      "category": "code_repair_migration",
+      "image": "base",
+      "packages": [
+        "purrr",
+        "tidyr"
+      ],
+      "spec": "tasks/XR05/prompt.md",
+      "fixtures": [
+        "tasks/XR05/fixture/grid.csv"
+      ],
+      "metadata": "tasks/XR05/task.json",
+      "verifier": "verifier/XR05.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
       "id": "XV01",
       "title": "Multiple quantiles per group: summarise() no longer returns several rows in a current dplyr",
       "category": "version_sensitive_api",

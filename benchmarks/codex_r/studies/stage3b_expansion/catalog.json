@@ -1390,6 +1390,632 @@
     },
     {
       "schema_version": 1,
+      "id": "XR01",
+      "title": "Migrate a legacy helper off dplyr's defunct underscore verbs (string-based column selection)",
+      "category": "code_repair_migration",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "dplyr"
+      ],
+      "fixtures": [
+        "fixture/scores.csv"
+      ],
+      "source_specs": [
+        "HARD-H01",
+        "ADDON-B01"
+      ],
+      "source_relation": "adapted: dynamic grouped summaries and data-masking name clash families, expressed as a repair of a delivered legacy function",
+      "difficulty_hypothesis": "group_by_()/arrange_()/filter_() with string arguments were removed (defunct) in dplyr; the replacement requires the .data pronoun or across(all_of()) with strings. Ties, missing group keys and a column literally named like an argument are secondary traps.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 3,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 3,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "The migration path from removed standard-evaluation verbs to the .data pronoun is a version-specific fact; function documentation for the installed dplyr and its programming vignette state it. The defunct-function error message itself names the replacements, and base R is a complete fallback.",
+        "information_need": "Which dplyr functions are defunct and how to select columns by string in the installed version.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: the error message names select()/filter()/arrange() and points to vignette('programming')",
+        "version_specific_evidence_value": "high",
+        "alternative_solution_paths": [
+          ".data[[col]] pronoun",
+          "across(all_of(col))",
+          "base R order/ave"
+        ]
+      },
+      "independence": {
+        "cluster": "dplyr-se-migration",
+        "shared_with": [],
+        "shared_features": [
+          "dplyr tidy evaluation"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines: base R fallback",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "high but recoverable from the runtime error",
+        "blockers": [
+          "ceiling effect likely when an agent runs the legacy code first"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "defunct_verbs_unchanged",
+          "top_n_keeps_ties",
+          "ascending_order",
+          "missing_groups_kept",
+          "column_name_taken_literally",
+          "no_n_validation"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "dplyr": "1.2.1"
+        },
+        "observed": "group_by_(), arrange_(), filter_() each raise: was deprecated in dplyr 0.7.0 and is now defunct",
+        "oracle": "base-R order() with original-row-order tie break and ave() truncation"
+      },
+      "hashes": {
+        "task_sha256": "0ffeec29e2d169452609211f1b3ab52f357f495f4170d58edf93c3c080a0016d",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR01/prompt.md": "d55fc51b074b87d7675eb17a49b8c8d889729e96d57249e33557e9d80028bf29",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR01/task.json": "a3faf37588b08d11de4ea7be5bec9b352b74bdc29b2f5147840530d11ec775c5",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR01/fixture/scores.csv": "ff0e9d68b950b23d2e25ea5246d89fc3ae65132a298acb7eb8699294cdf70ebd",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XR01.R": "5bf2931c51e4ad98572e3f8e2b6f145c20e7b56842e1d04f1477455dfa20c261"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 11,
+        "controls": [
+          "reference",
+          "alternate_base_r",
+          "wrong_underscore_verbs_unchanged",
+          "wrong_top_n_keeps_ties",
+          "wrong_ascending_order",
+          "wrong_keeps_missing_groups",
+          "wrong_data_masking_name_clash",
+          "edge_no_n_validation",
+          "malformed_returns_vector",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect likely when an agent runs the legacy code first"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XR02",
+      "title": "Repair a paired t-test written with the formula interface (paired = TRUE is an error since R 4.4)",
+      "category": "code_repair_migration",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/clinic.csv"
+      ],
+      "source_specs": [
+        "ADDON-C04"
+      ],
+      "source_relation": "original construction on the R 4.4.0 change to t.test()/wilcox.test() formula methods; registry family: statistical-procedure semantics",
+      "difficulty_hypothesis": "Widely copied code runs t.test(y ~ group, paired = TRUE), which errors in R >= 4.4 ('cannot use paired in formula method'). Repairs commonly mis-handle missing values (dropping per column misaligns participants), the sign convention, or fall back to an unpaired test.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 3,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "exploratory",
+        "rationale": "The failure is a base-R behaviour change documented in R's NEWS and in ?t.test; the error message states the problem. The statistical content (pairwise deletion, sign convention, df) matters more than any package fact, so MCP offers little beyond local help pages.",
+        "information_need": "Whether and how t.test() supports paired data in the installed R version.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: ?t.test and the error message",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "t.test(x, y, paired = TRUE)",
+          "t.test(differences)",
+          "closed-form"
+        ]
+      },
+      "independence": {
+        "cluster": "base-r-api-change",
+        "shared_with": [],
+        "shared_features": []
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "moderate (recoverable from the error)",
+        "blockers": [
+          "ceiling effect likely: calibration must confirm"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "formula_paired_error",
+          "unpaired_test",
+          "sign_flipped",
+          "per_column_na_removal",
+          "wrong_confidence_level",
+          "names_left_on_values"
+        ],
+        "statistical_reasoning_checks": [
+          "pairwise_deletion",
+          "difference_direction",
+          "paired_df"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "observed": "t.test(v ~ g, data, paired = TRUE) errors: cannot use 'paired' in formula method",
+        "oracle": "closed-form mean/sd/se of differences with qt/pt; cross-checked against stats::t.test(paired = TRUE) at load time"
+      },
+      "hashes": {
+        "task_sha256": "a058d21de56622b23f3e0e30973aae2d9ecde910ef558e05417e5ebc8894a475",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR02/prompt.md": "3b695ffee92cd37c522f100c513a2aacb1fbf972d6684240d0d90199b338282f",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR02/task.json": "bb4126a5c72a69c54d9603201b272aa65b40e8c0ac3605088ee7fb0fab029f30",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR02/fixture/clinic.csv": "41a3f0dc3fd9ec25ae7c7cb7eb6560d0436a804f36a183cf70b062c797f887d9",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XR02.R": "94373a8c56f592acae46096f91f44dbc694a4fad8342a4e2eaef45bc17cb800c"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_manual_formulas",
+          "wrong_legacy_formula_paired",
+          "wrong_unpaired_welch",
+          "wrong_sign_before_minus_after",
+          "wrong_independent_na_removal",
+          "wrong_ninety_percent_interval",
+          "edge_names_left_on_values",
+          "malformed_returns_htest",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "none until a versioned review assigns a role",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect likely: calibration must confirm"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XR03",
+      "title": "Repair a legacy moving average: short and empty inputs, missing values and attributes",
+      "category": "code_repair_migration",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/series.csv"
+      ],
+      "source_specs": [
+        "ADDON-B05",
+        "HARD-H10"
+      ],
+      "source_relation": "original construction in the missing-value and numerical-edge-case family",
+      "difficulty_hypothesis": "The delivered loop uses 1:(n-k+1), which counts down for short or empty input; common repairs drop leading positions, skip missing values with na.rm = TRUE, let one NA contaminate later windows through cumulative sums, or return names/attributes.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 0,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 1,
+        "debugging_difficulty": 3,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "none",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "A pure base-R logic repair; no package, version or documentation fact is needed. It controls for general coding ability when MCP access is available.",
+        "information_need": "None beyond core R semantics (seq_len versus 1:n, NA propagation).",
+        "relevant_mcp_tools": [],
+        "obtainable_without_mcp": "yes",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "explicit loop with seq_len",
+          "stats::filter(sides = 1)",
+          "vapply over window start positions"
+        ]
+      },
+      "independence": {
+        "cluster": "base-r-numeric-repair",
+        "shared_with": [],
+        "shared_features": []
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines",
+        "floor": "low",
+        "documentation_dependence": "none",
+        "version_sensitivity": "none",
+        "blockers": [
+          "ceiling effect likely: calibration must confirm"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "legacy_unchanged",
+          "leading_values_dropped",
+          "na_rm_hides_missing",
+          "cumsum_contamination",
+          "centered_window",
+          "names_leak"
+        ],
+        "statistical_reasoning_checks": [
+          "missing_value_propagation"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "explicit loop over positions with a window membership test"
+      },
+      "hashes": {
+        "task_sha256": "220a536640af3a5c9a3228b4366a8e48449bb6751bb3bd991f782dd704700120",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR03/prompt.md": "f3940719ebea57dff3da3be5a45be65cbd997f0f12dfd4a54109bb3aa782ece2",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR03/task.json": "99f78c7a6e8a195d1b0b515cc6251d2a0c607fbb064903efc268a55a1be2ad6c",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR03/fixture/series.csv": "442ef1e7438ab89aa14566111121bff1b02387048ecc5c2c8327bf3666bfa528",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XR03.R": "844d5ea3c726449b0f79e00d2d05088dcc36987ab020d9247fd58e25c2537e4c"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 12,
+        "controls": [
+          "reference",
+          "alternate_stats_filter",
+          "wrong_legacy_code_unchanged",
+          "wrong_leading_values_dropped",
+          "wrong_skips_missing_values",
+          "wrong_cumsum_propagates_missing",
+          "wrong_centered_window",
+          "edge_keeps_names",
+          "malformed_returns_scalar",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect likely: calibration must confirm"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XR04",
+      "title": "Repair a long-to-wide reshape that errors on repeated measurements (spread() duplicates)",
+      "category": "code_repair_migration",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "tidyr"
+      ],
+      "fixtures": [
+        "fixture/long.csv"
+      ],
+      "source_specs": [
+        "HARD-H03"
+      ],
+      "source_relation": "adapted: duplicate-key reshaping with an explicit loss policy (mean of non-missing values), expressed as a repair of a delivered function",
+      "difficulty_hypothesis": "spread() cannot reshape duplicated id/key pairs; the modern pivot_wider() default silently returns list-columns with a warning. Repairs mis-handle missing values, ordering of rows and columns, id types and all-missing ids.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "The superseded spread()/gather() verbs and the pivot_wider(values_fn =) replacement are tidyr-version-specific; documentation for the installed tidyr states the duplicate-handling behaviour. Base R remains a complete fallback, and the runtime error and warning both name values_fn.",
+        "information_need": "How the installed tidyr handles duplicate keys and what pivot_wider's values_fn does.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: spread() error text names the shared keys; pivot_wider's warning names values_fn; base R aggregate/tapply works",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "pivot_wider(values_fn = mean)",
+          "aggregate then reshape",
+          "tapply/vapply loops"
+        ]
+      },
+      "independence": {
+        "cluster": "tidyr-reshaping",
+        "shared_with": [],
+        "shared_features": [
+          "tidyr superseded verbs"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "moderate",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "spread_unchanged",
+          "pivot_wider_list_columns",
+          "sum_instead_of_mean",
+          "missing_values_poison_mean",
+          "column_order",
+          "all_missing_ids_dropped"
+        ],
+        "statistical_reasoning_checks": [
+          "aggregation_policy_for_repeats"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "tidyr": "1.3.2"
+        },
+        "observed": "spread() on duplicated id/key pairs errors: Each row of output must be identified by a unique combination of keys",
+        "oracle": "base-R loops over sorted ids and keys; mean of non-missing values per cell"
+      },
+      "hashes": {
+        "task_sha256": "6ff99c6e47fe37946174c2a4f4f8ff34d1788d99b26f28b8ef6231b1fb0045ba",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR04/prompt.md": "c5c132eadb4007f7627b168341680d70bb20b953ae532763a6a27778ae7a23e3",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR04/task.json": "a451f689dab3fd549b420017c378f18dcec3c37feb889f335af99408ed585033",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR04/fixture/long.csv": "384c97f52165cc13b0ae1c97ac0e9fdcc8ea825095156a45bd34353e680d38f4",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XR04.R": "a30d0807c28a78fdaef837339881570f6bda8b593cb2ad7287003985d793883f"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_tidyr_pivot_wider",
+          "wrong_legacy_spread_unchanged",
+          "wrong_pivot_wider_list_columns",
+          "wrong_sum_instead_of_mean",
+          "wrong_missing_values_poison_the_mean",
+          "wrong_columns_in_order_of_appearance",
+          "edge_drops_ids_with_only_missing_values",
+          "malformed_returns_matrix",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": null,
+        "current": false,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": false,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "scorer validation gate not passed on the current files"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XR05",
+      "title": "Migrate a parameter-grid evaluator off deprecated purrr cross() and invoke_map()",
+      "category": "code_repair_migration",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "purrr",
+        "tidyr"
+      ],
+      "fixtures": [
+        "fixture/grid.csv"
+      ],
+      "source_specs": [
+        "HARD-H09",
+        "ADDON-C07"
+      ],
+      "source_relation": "adapted: package migration preserving behavioural semantics, expressed as a repair of a delivered function with a named-argument call contract",
+      "difficulty_hypothesis": "purrr::cross() and invoke_map() were deprecated in purrr 1.0.0 and warn in the pinned version; their replacements (tidyr::expand_grid(), exec()/pmap) differ in row order and argument matching. expand.grid() makes factors by default, and positional calls break when the formals are in a different order.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 3,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "Which purrr functions are deprecated, and what replaces them with what semantics, is package-version knowledge that pre-1.0 training data contradicts. The deprecation warnings themselves name the replacements, and base R expand.grid()/do.call() is a complete fallback.",
+        "information_need": "Deprecation status of purrr::cross()/invoke_map() in the pinned purrr and the semantics of the replacements.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: the warnings name tidyr::expand_grid() and exec(); base R is sufficient",
+        "version_specific_evidence_value": "high",
+        "alternative_solution_paths": [
+          "expand.grid + do.call",
+          "tidyr::expand_grid + purrr::pmap_dbl",
+          "purrr::exec"
+        ]
+      },
+      "independence": {
+        "cluster": "purrr-deprecations",
+        "shared_with": [],
+        "shared_features": [
+          "lifecycle deprecations"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "high",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "legacy_purrr_unchanged",
+          "last_parameter_fastest",
+          "factors_from_expand_grid",
+          "positional_arguments",
+          "no_input_validation",
+          "tibble_result"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "purrr": "1.2.2",
+          "tidyr": "1.3.2"
+        },
+        "observed": "cross() warns 'deprecated in purrr 1.0.0, use tidyr::expand_grid()'; invoke_map() warns 'use map() + exec()'",
+        "oracle": "explicit mixed-radix index arithmetic, independent of expand.grid()"
+      },
+      "hashes": {
+        "task_sha256": "6688cd6182e3153780754c3e6ba3337174b199f4f0a056c8109e21f5ffd89a65",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR05/prompt.md": "9fd28d6ac31b88c6cdb554b22ecb3a3507cc8d8121fcff411036842be631c071",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR05/task.json": "6be0f72113adc9b5e032e91b43c82a626b82a3968bd7f954e3b2efba1219ddb6",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR05/fixture/grid.csv": "1d612628c9f968e25b870014f9184056b8c9e50f91ff52818be8afc32a78c283",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XR05.R": "c65a85776b4767915de3617bc33b0dbd4b2cc7dc06b7e59a2d5c1ba78cbb643a"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_purrr_pmap",
+          "wrong_legacy_purrr_unchanged",
+          "wrong_last_parameter_varies_fastest",
+          "wrong_factors_from_expand_grid",
+          "wrong_positional_arguments",
+          "wrong_no_input_validation",
+          "edge_returns_tibble",
+          "malformed_returns_vector",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
       "id": "XV01",
       "title": "Multiple quantiles per group: summarise() no longer returns several rows in a current dplyr",
       "category": "version_sensitive_api",
@@ -1747,19 +2373,18 @@
         ]
       },
       "validation": {
-        "gate": null,
-        "current": false,
+        "gate": "passed",
+        "current": true,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "none until a versioned review assigns a role",
-        "calibration_eligible": false,
+        "calibration_eligible": true,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely: calibration must confirm",
-          "scorer validation gate not passed on the current files"
+          "ceiling effect likely: calibration must confirm"
         ]
       }
     },

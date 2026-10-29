@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "id": "XR03",
+  "title": "Repair a legacy moving average: short and empty inputs, missing values and attributes",
+  "category": "code_repair_migration",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["stats"],
+  "fixtures": ["fixture/series.csv"],
+  "source_specs": ["ADDON-B05", "HARD-H10"],
+  "source_relation": "original construction in the missing-value and numerical-edge-case family",
+  "difficulty_hypothesis": "The delivered loop uses 1:(n-k+1), which counts down for short or empty input; common repairs drop leading positions, skip missing values with na.rm = TRUE, let one NA contaminate later windows through cumulative sums, or return names/attributes.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 0, "documentation_dependence": 0,
+    "reasoning_complexity": 2, "code_generation_complexity": 1, "statistical_reasoning": 1,
+    "debugging_difficulty": 3, "package_api_verification_need": 0
+  },
+  "expected_mcp_usefulness": "none",
+  "mcp_relevance": {
+    "classification": "control",
+    "rationale": "A pure base-R logic repair; no package, version or documentation fact is needed. It controls for general coding ability when MCP access is available.",
+    "information_need": "None beyond core R semantics (seq_len versus 1:n, NA propagation).",
+    "relevant_mcp_tools": [],
+    "obtainable_without_mcp": "yes",
+    "version_specific_evidence_value": "none",
+    "alternative_solution_paths": ["explicit loop with seq_len", "stats::filter(sides = 1)", "vapply over window start positions"]
+  },
+  "independence": {"cluster": "base-r-numeric-repair", "shared_with": [], "shared_features": []},
+  "calibration_risks": {
+    "ceiling": "high for strong baselines",
+    "floor": "low",
+    "documentation_dependence": "none",
+    "version_sensitivity": "none",
+    "blockers": ["ceiling effect likely: calibration must confirm"]
+  },
+  "analysis": {
+    "failure_modes": ["legacy_unchanged", "leading_values_dropped", "na_rm_hides_missing", "cumsum_contamination", "centered_window", "names_leak"],
+    "statistical_reasoning_checks": ["missing_value_propagation"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"stats": "4.5.2"},
+    "oracle": "explicit loop over positions with a window membership test"
+  },
+  "checks_documented_in": "verifier/XR03.R"
+}
