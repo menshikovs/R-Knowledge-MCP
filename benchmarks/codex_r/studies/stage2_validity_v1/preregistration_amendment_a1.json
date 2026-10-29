@@ -1,0 +1,55 @@
+{
+  "amendment_id": "A1",
+  "study_id": "stage2_validity_v1",
+  "protocol_version": "1.1.0",
+  "amends_protocol_version": "1.0.0",
+  "registered_on": "2026-10-28",
+  "effective_from_utc": "2026-10-28T00:00:00Z",
+  "registered_before_any_real_trial": true,
+  "base": {
+    "experiment_manifest_core_sha256": "4eaee4975f9b7f7cd94ed875ab1464e4b35dcb7f57c52f8a3a2a60c20fcf603e",
+    "experiment_manifest_json_sha256": "1224079e1391a6d5a5c962104984712367934b2750728f83bbaf02bce84e8993",
+    "preregistration_md_sha256": "bed59bb7a2e67a46703235edeed4ad0cd2183706ea5c4d2631c9552e33710461"
+  },
+  "rules": {
+    "capability_equivalence": [
+      "Arms A and B have identical non-MCP capabilities (configured agent tools, executor runtime image, network and model transport) and byte-identical instructions.",
+      "MCP is unavailable in A and available in B and C; C adds only the registered encouragement sentence.",
+      "All arms may use the same required model API transport; network topology is not itself a validity requirement.",
+      "Scorers and reference answers are not reachable from candidate mounts during execution; observed references to them are recorded as a heuristic violation.",
+      "Study 1 and Study 2 each record an explicit web-access policy; web use contrary to the policy is a deviation.",
+      "The actual capability configuration, observed tool use and all deviations are logged per trial."
+    ],
+    "superseded_violation_codes": [
+      "egress_not_restricted",
+      "egress_unverified"
+    ],
+    "new_violation_codes": {
+      "capability_configuration_unrecorded": "the trial did not log its capability configuration",
+      "non_mcp_capabilities_differ": "configured non-MCP tools or executor runtime differ from the run's policy (A/B equality)",
+      "execution_environment_differs": "network or model transport differs from the run's policy",
+      "web_access_policy_differs": "the trial's web-access policy is not the study's policy",
+      "web_access_policy_deviation": "web-access tool use observed although the policy forbids it",
+      "scorer_material_exposed": "scorer or reference files were reachable from candidate mounts",
+      "reference_access_suspected": "heuristic: agent tool items reference the benchmark's scorer/reference locations",
+      "pre_amendment_trial": "the trial started before the amendment's effective time"
+    },
+    "unchanged": [
+      "primary estimand (B - A, intention to treat, equal task weights)",
+      "randomization and assignment",
+      "outcome definitions and missing-data rules",
+      "statistical inference and multiplicity control",
+      "all other 1.0.0 violation codes and their invalidating status"
+    ]
+  },
+  "compatibility": {
+    "applies_to": "trials of runs whose run_config declares protocol_amendment A1 and that started at or after 2026-10-28T00:00:00Z",
+    "historical_records": "unchanged; evaluated under protocol 1.0.0; never made eligible retroactively",
+    "recorded_violations": "never removed; superseded codes remain in each A1 record, marked invalidating false with superseded_by A1",
+    "resume": "a run directory is bound to its protocol version; resuming under a different one is rejected",
+    "pooling": "records evaluated under 1.0.0 and A1 are reported separately, never pooled"
+  },
+  "rules_sha256": "b8b0fd6132bc1a1184a83b5901b0c582d403d1c728ce9a7c337d90ed1adf2afc",
+  "document": "PREREGISTRATION_AMENDMENT_A1.md",
+  "document_sha256": "36163b0ecb54e8209b79565c3fe222b2ee850dbf6782c4c6f89fb8e867f77bea"
+}

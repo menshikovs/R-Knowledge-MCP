@@ -29,6 +29,18 @@ SENTINEL = "sk-stage27-sentinel-must-not-leak"
 _STATUS = None
 
 
+def _canonically_correct(rec):
+    """D01 (knowledge-pilot-v2.1) reports dimensions, not passed/total: the primary outcome is
+    undefined (missing) and the scorer's own verdict is preserved in scorer_result."""
+    result = rec.get("scorer_result") or {}
+    return (
+        rec["outcome_kind"] == "scoring_error"
+        and rec["score"] is None
+        and result.get("primary_metric") == "undefined_by_canonical_scorer"
+        and result.get("fully_correct") is True
+    )
+
+
 @pytest.fixture
 def docker_ready(monkeypatch):
     global _STATUS
@@ -94,12 +106,12 @@ def test_docker_calibration_scores_bills_usage_and_stops_at_the_spend_ceiling(
     res = _run(_schedule(3), tmp_path / "run", settings, capture, ceiling)
 
     kinds = [r["outcome_kind"] for r in res["records"]]
-    assert kinds == ["scored", "scored", "not_executed"]
+    assert kinds == ["scoring_error", "scoring_error", "not_executed"]
     assert res["stopped_reason"] == spend_control.STOP_CEILING_REACHED
     assert len(capture.calls) == 2  # the third attempt was refused before any container
     assert all(r["synthetic"] is True for r in res["records"])
     for rec in res["records"][:2]:
-        assert rec["score"] == 1.0 and rec["violations"] == []
+        assert _canonically_correct(rec) and rec["violations"] == []
         assert rec["usage"]["status"] == "observed"
     assert 0 < res["spend"]["accounted_spend_usd"] <= ceiling.max_spend_usd
     assert res["dataset_problems"] == []
@@ -127,7 +139,7 @@ def test_docker_calibration_partial_usage_telemetry_is_charged_the_full_reserve(
     res = _run(schedule, tmp_path / "run", settings, executor, ceiling)
 
     rec = res["records"][0]
-    assert rec["outcome_kind"] == "scored"
+    assert _canonically_correct(rec)
     assert rec["usage"] == {"status": "unavailable"}  # output_tokens missing upstream
     raw = _attempt(tmp_path / "run", f"{tid}__att01")["runner_record"]
     assert "output_tokens" not in raw["usage"] and "input_tokens" in raw["usage"]
@@ -156,7 +168,7 @@ def test_docker_calibration_retries_infrastructure_but_not_candidate_failures(
     res = _run(schedule, tmp_path / "run", settings, capture)
 
     by_id = {r["trial_id"]: r for r in res["records"]}
-    assert by_id[t1]["outcome_kind"] == "scored" and by_id[t1]["score"] == 1.0
+    assert _canonically_correct(by_id[t1])
     assert by_id[t2]["outcome_kind"] == "candidate_failure" and by_id[t2]["score"] == 0.0
     assert capture.calls == [(t1, 1), (t1, 2), (t2, 1)]
     first = _attempt(tmp_path / "run", f"{t1}__att01")["runner_record"]
@@ -221,7 +233,7 @@ def test_docker_calibration_interruption_resume_and_duplicate_lines(docker_ready
     capture = _Capture(live_runner.make_docker_trial_executor(settings))
     resumed = _run(schedule, run_dir, settings, capture, ceiling)
     assert capture.calls == [(t1, 2), (t2, 1)]
-    assert [r["outcome_kind"] for r in resumed["records"]] == ["scored", "scored"]
+    assert all(_canonically_correct(r) for r in resumed["records"])
     assert resumed["spend"]["reserve_charged_for_interrupted_attempts"] == [f"{t1}__att01"]
     assert resumed["spend"]["accounted_spend_usd"] > 0.1
     _assert_clean(resumed)

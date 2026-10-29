@@ -461,6 +461,9 @@ class TrialTopology:
         if with_token:
             args += ["--env", "CODEX_API_KEY"]
         if workspace is not None:
+            # The candidate runs as uid 65534. On Linux a host-created directory is not writable
+            # by it (Docker Desktop's Windows mounts hid this); run_simple does the same chmod.
+            Path(workspace).chmod(0o777)
             args += ["--mount", f"type=bind,source={workspace},target=/candidate"]
             args += ["--workdir", "/candidate"]
         args += [self.python_image, "python", WORKLOAD_SCRIPT]
