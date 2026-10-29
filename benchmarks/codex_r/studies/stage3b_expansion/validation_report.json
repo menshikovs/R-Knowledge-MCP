@@ -1,6 +1,6 @@
 {
   "benchmark": "r-knowledge-mcp-stage3b-v1",
-  "validated_at": "2026-10-29T08:36:07Z",
+  "validated_at": "2026-10-29T08:52:36Z",
   "api_calls": 0,
   "tasks": [
     {
@@ -3018,6 +3018,1371 @@
           "failed_checks": [],
           "details": [],
           "seconds": 3.69
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XV01",
+      "task_sha256": "0c39c48acab87a714e438918beb466a28fbd26dd9e4b6aa91ba11691f88333b9",
+      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "checks": 10,
+      "checks_failed_by_some_rejected_control": 10,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "dplyr": "1.2.1",
+          "stats": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.78
+        },
+        "alternate_base_r_split": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.28
+        },
+        "wrong_summarise_multirow": {
+          "status": "scored",
+          "passed": 1,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "quartiles_per_group_match_stats_quantile_type_7",
+            "output_is_a_plain_data_frame",
+            "probs_are_honoured_in_the_given_order",
+            "missing_values_are_ignored_and_empty_groups_omitted",
+            "rows_with_a_missing_group_are_ignored",
+            "groups_are_ordered_ascending_whatever_the_row_order",
+            "invalid_probabilities_are_errors",
+            "runs_without_any_warning_under_strict_lifecycle_settings",
+            "input_is_not_modified"
+          ],
+          "details": [
+            "quartiles_per_group_match_stats_quantile_type_7: candidate call failed: ℹ In argument: `prob = probs`.\nℹ In group 1: `g = \"a\"`.\nCaused by error:\n! `prob` must be size 1, not 3.\nℹ To return more or less than 1 row per group, use `reframe()`.",
+            "output_is_a_plain_data_frame: candidate call failed: ℹ In argument: `prob = probs`.\nℹ In group 1: `g = \"a\"`.\nCaused by error:\n! `prob` must be size 1, not 3.\nℹ To return more or less than 1 row per group, use `reframe()`.",
+            "probs_are_honoured_in_the_given_order: candidate call failed: ℹ In argument: `prob = probs`.\nℹ In group 1: `g = \"a\"`.\nCaused by error:\n! `prob` must be size 1, not 3.\nℹ To return more or less than 1 row per group, use `reframe()`.",
+            "missing_values_are_ignored_and_empty_groups_omitted: candidate call failed: ℹ In argument: `prob = probs`.\nℹ In group 1: `g = \"x\"`.\nCaused by error:\n! `prob` must be size 1, not 3.\nℹ To return more or less than 1 row per group, use `reframe()`.",
+            "rows_with_a_missing_group_are_ignored: candidate call failed: ℹ In argument: `prob = probs`.\nℹ In group 1: `g = \"a\"`.\nCaused by error:\n! `prob` must be size 1, not 3.\nℹ To return more or less than 1 row per group, use `reframe()`.",
+            "groups_are_ordered_ascending_whatever_the_row_order: candidate call failed: ℹ In argument: `prob = probs`.\nℹ In group 1: `g = \"a\"`.\nCaused by error:\n! `prob` must be size 1, not 3.\nℹ To return more or less than 1 row per group, use `reframe()`.",
+            "invalid_probabilities_are_errors: candidate call failed: ℹ In argument: `prob = probs`.\nℹ In group 1: `g = \"a\"`.\nCaused by error:\n! `prob` must be size 1, not 3.\nℹ To return more or less than 1 row per group, use `reframe()`.",
+            "runs_without_any_warning_under_strict_lifecycle_settings: candidate call failed: ℹ In argument: `prob = probs`.\nℹ In group 1: `g = \"a\"`.\nCaused by error:\n! `prob` must be size 1, not 3.\nℹ To return more or less than 1 row per group, use `reframe()`.",
+            "input_is_not_modified: candidate call failed: ℹ In argument: `prob = probs`.\nℹ In group 1: `g = \"a\"`.\nCaused by error:\n! `prob` must be size 1, not 3.\nℹ To return more or less than 1 row per group, use `reframe()`."
+          ],
+          "seconds": 3.38
+        },
+        "wrong_quantile_type_6": {
+          "status": "scored",
+          "passed": 6,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "quartiles_per_group_match_stats_quantile_type_7",
+            "probs_are_honoured_in_the_given_order",
+            "missing_values_are_ignored_and_empty_groups_omitted",
+            "rows_with_a_missing_group_are_ignored"
+          ],
+          "details": [
+            "quartiles_per_group_match_stats_quantile_type_7: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n     actual | expected               \n [1] 9.240  - 9.253    [1]           \n [2] 14.498 | 14.498   [2]           \n [3] 30.986 - 28.716   [3]           \n [4] 11.242 - 11.361   [4]           \n [5] 14.113 | 14.113   [5]           \n [6] 46.233 - 43.835   [6]           \n [7] 14.539 - 16.862   [7]           \n [8] 25.096 | 25.096   [8]           \n [9] 37.519 - 32.538   [9]           \n[10] 10.535 - 11.406   [10] ",
+            "probs_are_honoured_in_the_given_order: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n     actual | expected               \n [1] 39.11  - 37.31    [1]           \n [2] 4.22   - 7.20     [2]           \n [3] 14.50  | 14.50    [3]           \n [4] 89.62  - 74.72    [4]           \n [5] 5.89   - 7.08     [5]           \n [6] 14.11  | 14.11    [6]           \n [7] 74.13  - 44.02    [7]           \n [8] 10.81  - 13.32    [8]           \n [9] 25.10  | 25.10    [9]           \n[10] 67.55  - 41.52    [10] ",
+            "missing_values_are_ignored_and_empty_groups_omitted: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 12.41 28.39 44.43 10.60 19.83 44.89\n`expected`: 13.05 28.39 42.48 10.96 19.83 40.17\n",
+            "rows_with_a_missing_group_are_ignored: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n     actual | expected               \n [1] 9.240  - 9.253    [1]           \n [2] 14.498 | 14.498   [2]           \n [3] 30.986 - 28.716   [3]           \n [4] 11.183 - 11.302   [4]           \n [5] 13.659 | 13.659   [5]           \n [6] 39.362 - 30.418   [6]           \n [7] 14.539 - 16.862   [7]           \n [8] 25.096 | 25.096   [8]           \n [9] 37.519 - 32.538   [9]           \n[10] 10.391 - 10.678   [10] "
+          ],
+          "seconds": 2.79
+        },
+        "wrong_ignores_probs_argument": {
+          "status": "scored",
+          "passed": 8,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "column_names_follow_the_group_and_value_arguments",
+            "probs_are_honoured_in_the_given_order"
+          ],
+          "details": [
+            "column_names_follow_the_group_and_value_arguments: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 3 4 6.5\n`expected`: 4      \n",
+            "probs_are_honoured_in_the_given_order: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 0.25 0.50 0.75 0.25 0.50 0.75 0.25 0.50 0.75 0.25 and 2 more...\n`expected`: 0.90 0.10 0.50 0.90 0.10 0.50 0.90 0.10 0.50 0.90           ...\n"
+          ],
+          "seconds": 3.03
+        },
+        "wrong_keeps_empty_group_as_na": {
+          "status": "scored",
+          "passed": 9,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "missing_values_are_ignored_and_empty_groups_omitted"
+          ],
+          "details": [
+            "missing_values_are_ignored_and_empty_groups_omitted: Expected `as.character(got$grp)` to be identical to `want$grp`.\nDifferences:\n`actual[4:9]`:   \"y\" \"y\" \"y\" \"z\" \"z\" \"z\"\n`expected[4:6]`: \"y\" \"y\" \"y\"            \n"
+          ],
+          "seconds": 3.05
+        },
+        "edge_no_probs_validation": {
+          "status": "scored",
+          "passed": 9,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "invalid_probabilities_are_errors"
+          ],
+          "details": [
+            "invalid_probabilities_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 2.74
+        },
+        "malformed_returns_list": {
+          "status": "scored",
+          "passed": 2,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "quartiles_per_group_match_stats_quantile_type_7",
+            "output_is_a_plain_data_frame",
+            "column_names_follow_the_group_and_value_arguments",
+            "probs_are_honoured_in_the_given_order",
+            "missing_values_are_ignored_and_empty_groups_omitted",
+            "rows_with_a_missing_group_are_ignored",
+            "groups_are_ordered_ascending_whatever_the_row_order",
+            "invalid_probabilities_are_errors"
+          ],
+          "details": [
+            "quartiles_per_group_match_stats_quantile_type_7: Expected `names(got)` to be identical to `c(\"grp\", \"prob\", \"value\")`.\nDifferences:\n`actual`:   \"a\"   \"b\"    \"c\"     \"d\"\n`expected`: \"grp\" \"prob\" \"value\"    \n",
+            "output_is_a_plain_data_frame: Expected `is.data.frame(got)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "column_names_follow_the_group_and_value_arguments: Expected `names(got)` to be identical to `c(\"g\", \"prob\", \"value\")`.\nDifferences:\n`actual`:   \"only\"               \n`expected`: \"g\"    \"prob\" \"value\"\n",
+            "probs_are_honoured_in_the_given_order: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`:                                         and 2 more...\n`expected`: 0.9 0.1 0.5 0.9 0.1 0.5 0.9 0.1 0.5 0.9           ...\n",
+            "missing_values_are_ignored_and_empty_groups_omitted: Expected `as.character(got$grp)` to be identical to `want$grp`.\nDifferences:\n`actual`:                          \n`expected`: \"x\" \"x\" \"x\" \"y\" \"y\" \"y\"\n",
+            "rows_with_a_missing_group_are_ignored: Expected `as.character(got$grp)` to be identical to `want$grp`.\nDifferences:\n`actual`:                                           and 2 more...\n`expected`: \"a\" \"a\" \"a\" \"b\" \"b\" \"b\" \"c\" \"c\" \"c\" \"d\" ...          \n",
+            "groups_are_ordered_ascending_whatever_the_row_order: Expected `unique(as.character(got$grp))` to be identical to `c(\"a\", \"b\", \"c\", \"d\")`.\nDifferences:\n`actual`:                  \n`expected`: \"a\" \"b\" \"c\" \"d\"\n",
+            "invalid_probabilities_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 2.85
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "quartiles_per_group_match_stats_quantile_type_7",
+            "output_is_a_plain_data_frame",
+            "column_names_follow_the_group_and_value_arguments",
+            "probs_are_honoured_in_the_given_order",
+            "missing_values_are_ignored_and_empty_groups_omitted",
+            "rows_with_a_missing_group_are_ignored",
+            "groups_are_ordered_ascending_whatever_the_row_order",
+            "invalid_probabilities_are_errors",
+            "runs_without_any_warning_under_strict_lifecycle_settings",
+            "input_is_not_modified"
+          ],
+          "details": [
+            "quartiles_per_group_match_stats_quantile_type_7: candidate call failed: todo",
+            "output_is_a_plain_data_frame: candidate call failed: todo",
+            "column_names_follow_the_group_and_value_arguments: candidate call failed: todo",
+            "probs_are_honoured_in_the_given_order: candidate call failed: todo",
+            "missing_values_are_ignored_and_empty_groups_omitted: candidate call failed: todo",
+            "rows_with_a_missing_group_are_ignored: candidate call failed: todo",
+            "groups_are_ordered_ascending_whatever_the_row_order: candidate call failed: todo",
+            "invalid_probabilities_are_errors: candidate call failed: todo",
+            "runs_without_any_warning_under_strict_lifecycle_settings: candidate call failed: todo",
+            "input_is_not_modified: candidate call failed: todo"
+          ],
+          "seconds": 2.44
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.13
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "quartiles_per_group_match_stats_quantile_type_7",
+            "output_is_a_plain_data_frame",
+            "column_names_follow_the_group_and_value_arguments",
+            "probs_are_honoured_in_the_given_order",
+            "missing_values_are_ignored_and_empty_groups_omitted",
+            "rows_with_a_missing_group_are_ignored",
+            "groups_are_ordered_ascending_whatever_the_row_order",
+            "invalid_probabilities_are_errors",
+            "runs_without_any_warning_under_strict_lifecycle_settings",
+            "input_is_not_modified"
+          ],
+          "details": [
+            "quartiles_per_group_match_stats_quantile_type_7: candidate call failed: object 'group_quantiles' of mode 'function' was not found",
+            "output_is_a_plain_data_frame: candidate call failed: object 'group_quantiles' of mode 'function' was not found",
+            "column_names_follow_the_group_and_value_arguments: candidate call failed: object 'group_quantiles' of mode 'function' was not found",
+            "probs_are_honoured_in_the_given_order: candidate call failed: object 'group_quantiles' of mode 'function' was not found",
+            "missing_values_are_ignored_and_empty_groups_omitted: candidate call failed: object 'group_quantiles' of mode 'function' was not found",
+            "rows_with_a_missing_group_are_ignored: candidate call failed: object 'group_quantiles' of mode 'function' was not found",
+            "groups_are_ordered_ascending_whatever_the_row_order: candidate call failed: object 'group_quantiles' of mode 'function' was not found",
+            "invalid_probabilities_are_errors: candidate call failed: object 'group_quantiles' of mode 'function' was not found",
+            "runs_without_any_warning_under_strict_lifecycle_settings: candidate call failed: object 'group_quantiles' of mode 'function' was not found",
+            "input_is_not_modified: candidate call failed: object 'group_quantiles' of mode 'function' was not found"
+          ],
+          "seconds": 2.71
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 10,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 2.12
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.84
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XV02",
+      "task_sha256": "7ff464b59f12bf9545d16b256f00ceba9c552fba8a0f45b29f0c5b54c28e6c04",
+      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "checks": 10,
+      "checks_failed_by_some_rejected_control": 9,
+      "checks_never_failed_by_any_control": [
+        "inputs_are_not_modified"
+      ],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "dplyr": "1.2.1"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.32
+        },
+        "alternate_base_r_findinterval": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.87
+        },
+        "wrong_filter_after_join_warns_and_duplicates": {
+          "status": "scored",
+          "passed": 3,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "price_matches_latest_start_on_or_before_the_order_date",
+            "price_date_is_the_start_of_the_applicable_price",
+            "one_row_per_order_in_the_original_order",
+            "orders_without_an_applicable_price_are_kept_with_missing_values",
+            "a_price_that_starts_on_the_order_date_applies",
+            "missing_order_date_gives_missing_price_but_keeps_the_row",
+            "runs_without_warnings_including_join_relationship_notices"
+          ],
+          "details": [
+            "price_matches_latest_start_on_or_before_the_order_date: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 23.14   8.8 12.83 23.14 8.8    -1 12.83 -1 -1 -1 and 59 more...\n`expected`: 23.14 12.83 23.14    -1  -1 12.83    -1 -1 -1 -1            ...\n",
+            "price_date_is_the_start_of_the_applicable_price: Expected `is.na(got$price_date)` to be identical to `is.na(want$price_date)`.\nDifferences:\n     actual | expected                \n [1] FALSE  | FALSE    [1]            \n [2] FALSE  | FALSE    [2]            \n [3] FALSE  | FALSE    [3]            \n [4] FALSE  - TRUE     [4]            \n [5] FALSE  -                         \n [6] TRUE   | TRUE     [5]            \n [7] FALSE  | FALSE    [6]            \n [8] TRUE   | TRUE     [7]            \n [9] TRUE   | TRUE     [8]            \n[10] TRUE   | TRUE ",
+            "one_row_per_order_in_the_original_order: Expected `nrow(got)` to be identical to `nrow(v$orders)`.\nDifferences:\n  `actual`: 69\n`expected`: 60\n",
+            "orders_without_an_applicable_price_are_kept_with_missing_values: Expected `all(is.na(got$price[none]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "a_price_that_starts_on_the_order_date_applies: Expected `as.numeric(got$price_date[hit])` to be identical to `as.numeric(v$orders$order_date[hit])`.\nDifferences:\n  `actual`: 20506.0 20469.0 20532.0\n`expected`: 20506.0 20532.0 20506.0\n",
+            "missing_order_date_gives_missing_price_but_keeps_the_row: Expected `all(is.na(got$price[c(4, 9)]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "runs_without_warnings_including_join_relationship_notices: warning raised: Detected an unexpected many-to-many relationship between `x` and `y`.\nℹ Row 1 of `x` matches multiple rows in `y`.\nℹ Row 1 of `y` matches multiple rows in `x`.\nℹ If a many-to-many relationship is expe"
+          ],
+          "seconds": 3.93
+        },
+        "wrong_strict_inequality": {
+          "status": "scored",
+          "passed": 7,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "price_matches_latest_start_on_or_before_the_order_date",
+            "price_date_is_the_start_of_the_applicable_price",
+            "a_price_that_starts_on_the_order_date_applies"
+          ],
+          "details": [
+            "price_matches_latest_start_on_or_before_the_order_date: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual[1:6]`:  8.8 -1.0  8.8 -1.0 -1.0 12.8\n`expected[1:6]`: 23.1 12.8 23.1 -1.0 -1.0 12.8\n",
+            "price_date_is_the_start_of_the_applicable_price: Expected `is.na(got$price_date)` to be identical to `is.na(want$price_date)`.\nDifferences:\n`actual[1:5]`:   FALSE TRUE  FALSE TRUE TRUE\n`expected[1:5]`: FALSE FALSE FALSE TRUE TRUE\n",
+            "a_price_that_starts_on_the_order_date_applies: Expected `as.numeric(got$price_date[hit])` to be identical to `as.numeric(v$orders$order_date[hit])`.\nDifferences:\n  `actual`: 20469.0      NA 20469.0\n`expected`: 20506.0 20532.0 20506.0\n"
+          ],
+          "seconds": 3.07
+        },
+        "wrong_uses_next_price": {
+          "status": "scored",
+          "passed": 6,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "price_matches_latest_start_on_or_before_the_order_date",
+            "price_date_is_the_start_of_the_applicable_price",
+            "orders_without_an_applicable_price_are_kept_with_missing_values",
+            "no_future_price_is_used"
+          ],
+          "details": [
+            "price_matches_latest_start_on_or_before_the_order_date: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n     actual | expected                \n [2] 12.8   | 12.8     [2]            \n [3] 23.1   | 23.1     [3]            \n [4] -1.0   | -1.0     [4]            \n [5] 12.8   - -1.0     [5]            \n [6] 29.9   - 12.8     [6]            \n [7] 12.8   - -1.0     [7]            \n [8] -1.0   | -1.0     [8]            \n [9] -1.0   | -1.0     [9]            \n[10] 28.3   - -1.0     [10]           \n[11] 12.8   - -1.0",
+            "price_date_is_the_start_of_the_applicable_price: Expected `is.na(got$price_date)` to be identical to `is.na(want$price_date)`.\nDifferences:\n    actual | expected                \n[2] FALSE  | FALSE    [2]            \n[3] FALSE  | FALSE    [3]            \n[4] TRUE   | TRUE     [4]            \n[5] FALSE  - TRUE     [5]            \n[6] FALSE  -                         \n[7] FALSE  | FALSE    [6]            \n           - TRUE     [7]            \n           - TRUE     [8]            \n           - TRUE     [9]            \n           - TRUE     [10]   ",
+            "orders_without_an_applicable_price_are_kept_with_missing_values: Expected `all(is.na(got$price[before]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "no_future_price_is_used: Expected `all(got$price_date[ok] <= got$order_date[ok])` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
+          ],
+          "seconds": 2.91
+        },
+        "wrong_drops_unmatched_orders": {
+          "status": "scored",
+          "passed": 5,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "price_matches_latest_start_on_or_before_the_order_date",
+            "price_date_is_the_start_of_the_applicable_price",
+            "one_row_per_order_in_the_original_order",
+            "orders_without_an_applicable_price_are_kept_with_missing_values",
+            "missing_order_date_gives_missing_price_but_keeps_the_row"
+          ],
+          "details": [
+            "price_matches_latest_start_on_or_before_the_order_date: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n     actual | expected                \n [1] 23.14  | 23.14    [1]            \n [2] 12.83  | 12.83    [2]            \n [3] 23.14  | 23.14    [3]            \n [4] 12.83  - -1       [4]            \n [5] 23.14  - -1       [5]            \n [6] 26.96  - 12.83    [6]            \n [7] 26.96  - -1       [7]            \n [8] 23.14  - -1       [8]            \n [9] 29.92  - -1       [9]            \n[10] 29.78  - -1  ",
+            "price_date_is_the_start_of_the_applicable_price: Expected `is.na(got$price_date)` to be identical to `is.na(want$price_date)`.\nDifferences:\n     actual | expected                \n [2] FALSE  | FALSE    [1]            \n [3] FALSE  | FALSE    [2]            \n [4] FALSE  | FALSE    [3]            \n [5] FALSE  - TRUE     [4]            \n [6] FALSE  - TRUE     [5]            \n [7] FALSE  | FALSE    [6]            \n [8] FALSE  - TRUE     [7]            \n [9] FALSE  - TRUE     [8]            \n[10] FALSE  - TRUE     [9]            \n[11] FALSE  - TRUE ",
+            "one_row_per_order_in_the_original_order: Expected `nrow(got)` to be identical to `nrow(v$orders)`.\nDifferences:\n  `actual`: 24\n`expected`: 60\n",
+            "orders_without_an_applicable_price_are_kept_with_missing_values: Expected `all(is.na(got$price[none]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "missing_order_date_gives_missing_price_but_keeps_the_row: Expected `all(is.na(got$price[c(4, 9)]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
+          ],
+          "seconds": 3.17
+        },
+        "wrong_output_sorted_by_date": {
+          "status": "scored",
+          "passed": 4,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "price_matches_latest_start_on_or_before_the_order_date",
+            "price_date_is_the_start_of_the_applicable_price",
+            "one_row_per_order_in_the_original_order",
+            "orders_without_an_applicable_price_are_kept_with_missing_values",
+            "a_price_that_starts_on_the_order_date_applies",
+            "missing_order_date_gives_missing_price_but_keeps_the_row"
+          ],
+          "details": [
+            "price_matches_latest_start_on_or_before_the_order_date: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual[1:9]`: -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0 -1.0\n`expected[1:9]`: 23.1 12.8 23.1 -1.0 -1.0 12.8 -1.0 -1.0 -1.0\n\n     actual | expected                \n[12] -1.0   | -1.0     [12]           \n[13] -1.0   | -1.0     [13]           \n[14] -1.0   | -1.0     [14]           \n[15] -1.0   - 23.1     [15]           \n[16] -1.0   | -1.0     [16]           \n[17] -1.0   - 27.0     [17]           \n[18] -1.0 ",
+            "price_date_is_the_start_of_the_applicable_price: Expected `is.na(got$price_date)` to be identical to `is.na(want$price_date)`.\nDifferences:\n`actual[1:8]`:   TRUE  TRUE  TRUE  TRUE TRUE       TRUE TRUE TRUE\n`expected[1:9]`: FALSE FALSE FALSE TRUE TRUE FALSE TRUE TRUE TRUE\n\n     actual | expected                \n[11] TRUE   | TRUE     [12]           \n[12] TRUE   | TRUE     [13]           \n[13] TRUE   | TRUE     [14]           \n            - FALSE    [15]           \n[14] TRUE   | TRUE     [16]           \n            - FALSE    [17]           \n   ",
+            "one_row_per_order_in_the_original_order: Expected `as.integer(got$order_id)` to be identical to `as.integer(v$orders$order_id)`.\nDifferences:\n  `actual`: 5033 5020 5021 5035 5045 5037 5048 5029 5034 5044 and 50 more...\n`expected`: 5001 5002 5003 5004 5005 5006 5007 5008 5009 5010            ...\n",
+            "orders_without_an_applicable_price_are_kept_with_missing_values: Expected `all(is.na(got$price[none]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "a_price_that_starts_on_the_order_date_applies: Expected `as.numeric(got$price_date[hit])` to be identical to `as.numeric(v$orders$order_date[hit])`.\nDifferences:\n  `actual`:      NA      NA      NA\n`expected`: 20506.0 20532.0 20506.0\n",
+            "missing_order_date_gives_missing_price_but_keeps_the_row: Expected `all(is.na(got$price[c(4, 9)]))` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
+          ],
+          "seconds": 3.26
+        },
+        "edge_extra_helper_column": {
+          "status": "scored",
+          "passed": 9,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "columns_are_exactly_the_specified_ones_in_order"
+          ],
+          "details": [
+            "columns_are_exactly_the_specified_ones_in_order: Expected `names(got)` to be identical to `c(\"order_id\", \"sku\", \"order_date\", \"price_date\", \"price\")`.\nDifferences:\n`actual`:   \"order_id\" \"sku\" \"order_date\" \".row\" \"price_date\" \"price\"\n`expected`: \"order_id\" \"sku\" \"order_date\"        \"price_date\" \"price\"\n"
+          ],
+          "seconds": 3.17
+        },
+        "malformed_returns_vector": {
+          "status": "scored",
+          "passed": 2,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "price_matches_latest_start_on_or_before_the_order_date",
+            "price_date_is_the_start_of_the_applicable_price",
+            "one_row_per_order_in_the_original_order",
+            "columns_are_exactly_the_specified_ones_in_order",
+            "orders_without_an_applicable_price_are_kept_with_missing_values",
+            "a_price_that_starts_on_the_order_date_applies",
+            "no_future_price_is_used",
+            "missing_order_date_gives_missing_price_but_keeps_the_row"
+          ],
+          "details": [
+            "price_matches_latest_start_on_or_before_the_order_date: $ operator is invalid for atomic vectors",
+            "price_date_is_the_start_of_the_applicable_price: $ operator is invalid for atomic vectors",
+            "one_row_per_order_in_the_original_order: Expected `nrow(got)` to be identical to `nrow(v$orders)`.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (60)\n",
+            "columns_are_exactly_the_specified_ones_in_order: Expected `names(got)` to be identical to `c(\"order_id\", \"sku\", \"order_date\", \"price_date\", \"price\")`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('order_id', 'sku', 'order_date', 'price_date', 'price')\n",
+            "orders_without_an_applicable_price_are_kept_with_missing_values: $ operator is invalid for atomic vectors",
+            "a_price_that_starts_on_the_order_date_applies: $ operator is invalid for atomic vectors",
+            "no_future_price_is_used: $ operator is invalid for atomic vectors",
+            "missing_order_date_gives_missing_price_but_keeps_the_row: $ operator is invalid for atomic vectors"
+          ],
+          "seconds": 2.55
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 4,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "price_matches_latest_start_on_or_before_the_order_date",
+            "price_date_is_the_start_of_the_applicable_price",
+            "one_row_per_order_in_the_original_order",
+            "columns_are_exactly_the_specified_ones_in_order",
+            "a_price_that_starts_on_the_order_date_applies",
+            "missing_order_date_gives_missing_price_but_keeps_the_row"
+          ],
+          "details": [
+            "price_matches_latest_start_on_or_before_the_order_date: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`:                                           and 50 more...\n`expected`: 23.14 12.83 23.14 -1 -1 12.83 -1 -1 -1 -1            ...\n",
+            "price_date_is_the_start_of_the_applicable_price: Expected `got$price_date` to be an S3 object.\nActual OO type: none.",
+            "one_row_per_order_in_the_original_order: Expected `nrow(got)` to be identical to `nrow(v$orders)`.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (60)\n",
+            "columns_are_exactly_the_specified_ones_in_order: Expected `names(got)` to be identical to `c(\"order_id\", \"sku\", \"order_date\", \"price_date\", \"price\")`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('order_id', 'sku', 'order_date', 'price_date', 'price')\n",
+            "a_price_that_starts_on_the_order_date_applies: Expected `as.numeric(got$price_date[hit])` to be identical to `as.numeric(v$orders$order_date[hit])`.\nDifferences:\n  `actual`:                  \n`expected`: 20506 20532 20506\n",
+            "missing_order_date_gives_missing_price_but_keeps_the_row: Expected `nrow(got)` to be identical to `nrow(v$orders)`.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (40)\n"
+          ],
+          "seconds": 2.99
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.33
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 10,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "price_matches_latest_start_on_or_before_the_order_date",
+            "price_date_is_the_start_of_the_applicable_price",
+            "one_row_per_order_in_the_original_order",
+            "columns_are_exactly_the_specified_ones_in_order",
+            "orders_without_an_applicable_price_are_kept_with_missing_values",
+            "a_price_that_starts_on_the_order_date_applies",
+            "no_future_price_is_used",
+            "missing_order_date_gives_missing_price_but_keeps_the_row",
+            "runs_without_warnings_including_join_relationship_notices",
+            "inputs_are_not_modified"
+          ],
+          "details": [
+            "price_matches_latest_start_on_or_before_the_order_date: candidate call failed: object 'price_in_force' of mode 'function' was not found",
+            "price_date_is_the_start_of_the_applicable_price: candidate call failed: object 'price_in_force' of mode 'function' was not found",
+            "one_row_per_order_in_the_original_order: candidate call failed: object 'price_in_force' of mode 'function' was not found",
+            "columns_are_exactly_the_specified_ones_in_order: candidate call failed: object 'price_in_force' of mode 'function' was not found",
+            "orders_without_an_applicable_price_are_kept_with_missing_values: candidate call failed: object 'price_in_force' of mode 'function' was not found",
+            "a_price_that_starts_on_the_order_date_applies: candidate call failed: object 'price_in_force' of mode 'function' was not found",
+            "no_future_price_is_used: candidate call failed: object 'price_in_force' of mode 'function' was not found",
+            "missing_order_date_gives_missing_price_but_keeps_the_row: candidate call failed: object 'price_in_force' of mode 'function' was not found",
+            "runs_without_warnings_including_join_relationship_notices: candidate call failed: object 'price_in_force' of mode 'function' was not found",
+            "inputs_are_not_modified: candidate call failed: object 'price_in_force' of mode 'function' was not found"
+          ],
+          "seconds": 2.57
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 10,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 2.53
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 10,
+          "total": 10,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.63
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XV03",
+      "task_sha256": "849dd91d06d856bf4d97ec6613bb6ae546f31bb11c7683ac6186f1fd6207f9eb",
+      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "checks": 11,
+      "checks_failed_by_some_rejected_control": 11,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "tibble": "3.3.1"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.63
+        },
+        "alternate_inherits_based": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.79
+        },
+        "wrong_class_equals_matrix": {
+          "status": "scored",
+          "passed": 7,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matrices_including_zero_extent_and_character_matrices",
+            "atomic_vectors_including_classed_dates_and_named_vectors",
+            "result_is_always_a_single_string",
+            "no_input_raises_an_error_or_a_warning"
+          ],
+          "details": [
+            "matrices_including_zero_extent_and_character_matrices: candidate call failed: the condition has length > 1",
+            "atomic_vectors_including_classed_dates_and_named_vectors: candidate call failed: the condition has length > 1",
+            "result_is_always_a_single_string: candidate call failed: the condition has length > 1",
+            "no_input_raises_an_error_or_a_warning: Expected `isTRUE(res$ok)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n\nmatrix(1:6, 2)"
+          ],
+          "seconds": 2.82
+        },
+        "wrong_array_before_matrix": {
+          "status": "scored",
+          "passed": 10,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "matrices_including_zero_extent_and_character_matrices"
+          ],
+          "details": [
+            "matrices_including_zero_extent_and_character_matrices: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"array\" \n`expected`: \"matrix\"\n\nmatrix(1:6, 2)"
+          ],
+          "seconds": 4.03
+        },
+        "wrong_tibble_as_data_frame": {
+          "status": "scored",
+          "passed": 10,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "tibbles_are_not_plain_data_frames"
+          ],
+          "details": [
+            "tibbles_are_not_plain_data_frames: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"data.frame\"\n`expected`: \"tibble\"    \n\ntibble::tibble(a = 1:3, b = letters[1:3])"
+          ],
+          "seconds": 4.48
+        },
+        "wrong_is_vector_for_atomic": {
+          "status": "scored",
+          "passed": 10,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "atomic_vectors_including_classed_dates_and_named_vectors"
+          ],
+          "details": [
+            "atomic_vectors_including_classed_dates_and_named_vectors: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"other\" \n`expected`: \"vector\"\n\nas.Date(\"2026-01-01\")"
+          ],
+          "seconds": 4.42
+        },
+        "wrong_data_frame_as_list": {
+          "status": "scored",
+          "passed": 9,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "tibbles_are_not_plain_data_frames",
+            "data_frames_including_empty_ones"
+          ],
+          "details": [
+            "tibbles_are_not_plain_data_frames: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"list\"  \n`expected`: \"tibble\"\n\ntibble::tibble(a = 1:3, b = letters[1:3])",
+            "data_frames_including_empty_ones: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"list\"      \n`expected`: \"data.frame\"\n\ndata.frame(a = 1:3)"
+          ],
+          "seconds": 4.36
+        },
+        "edge_errors_on_environments_and_formulas": {
+          "status": "scored",
+          "passed": 8,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "environments_symbols_calls_and_formulas_are_other",
+            "result_is_always_a_single_string",
+            "no_input_raises_an_error_or_a_warning"
+          ],
+          "details": [
+            "environments_symbols_calls_and_formulas_are_other: candidate call failed: unsupported object",
+            "result_is_always_a_single_string: candidate call failed: unsupported object",
+            "no_input_raises_an_error_or_a_warning: Expected `isTRUE(res$ok)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n\nnew.env()"
+          ],
+          "seconds": 4.55
+        },
+        "malformed_returns_class_vector": {
+          "status": "scored",
+          "passed": 5,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "tibbles_are_not_plain_data_frames",
+            "matrices_including_zero_extent_and_character_matrices",
+            "factors_including_ordered_and_empty",
+            "atomic_vectors_including_classed_dates_and_named_vectors",
+            "environments_symbols_calls_and_formulas_are_other",
+            "result_is_always_a_single_string"
+          ],
+          "details": [
+            "tibbles_are_not_plain_data_frames: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"tbl_df\" \"tbl\" \"data.frame\"\n`expected`: \"tibble\"                   \n\ntibble::tibble(a = 1:3, b = letters[1:3])",
+            "matrices_including_zero_extent_and_character_matrices: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"matrix\" \"array\"\n`expected`: \"matrix\"        \n\nmatrix(1:6, 2)",
+            "factors_including_ordered_and_empty: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"ordered\" \"factor\"\n`expected`:           \"factor\"\n\nordered(c(\"lo\", \"hi\"), levels = c(\"lo\", \"hi\"))",
+            "atomic_vectors_including_classed_dates_and_named_vectors: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"numeric\"\n`expected`: \"vector\" \n\nc(1.5, 2)",
+            "environments_symbols_calls_and_formulas_are_other: Expected `got` to be identical to `kind`.\nDifferences:\n`actual`:   \"environment\"\n`expected`: \"other\"      \n\nnew.env()",
+            "result_is_always_a_single_string: Expected `is.character(got) && length(got) == 1L && !is.na(got)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n"
+          ],
+          "seconds": 3.67
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "null_and_functions",
+            "tibbles_are_not_plain_data_frames",
+            "data_frames_including_empty_ones",
+            "matrices_including_zero_extent_and_character_matrices",
+            "arrays_of_one_or_three_or_more_dimensions",
+            "factors_including_ordered_and_empty",
+            "plain_lists",
+            "atomic_vectors_including_classed_dates_and_named_vectors",
+            "environments_symbols_calls_and_formulas_are_other",
+            "result_is_always_a_single_string",
+            "no_input_raises_an_error_or_a_warning"
+          ],
+          "details": [
+            "null_and_functions: candidate call failed: todo",
+            "tibbles_are_not_plain_data_frames: candidate call failed: todo",
+            "data_frames_including_empty_ones: candidate call failed: todo",
+            "matrices_including_zero_extent_and_character_matrices: candidate call failed: todo",
+            "arrays_of_one_or_three_or_more_dimensions: candidate call failed: todo",
+            "factors_including_ordered_and_empty: candidate call failed: todo",
+            "plain_lists: candidate call failed: todo",
+            "atomic_vectors_including_classed_dates_and_named_vectors: candidate call failed: todo",
+            "environments_symbols_calls_and_formulas_are_other: candidate call failed: todo",
+            "result_is_always_a_single_string: candidate call failed: todo",
+            "no_input_raises_an_error_or_a_warning: Expected `isTRUE(res$ok)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n\nNULL"
+          ],
+          "seconds": 2.81
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.5
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "null_and_functions",
+            "tibbles_are_not_plain_data_frames",
+            "data_frames_including_empty_ones",
+            "matrices_including_zero_extent_and_character_matrices",
+            "arrays_of_one_or_three_or_more_dimensions",
+            "factors_including_ordered_and_empty",
+            "plain_lists",
+            "atomic_vectors_including_classed_dates_and_named_vectors",
+            "environments_symbols_calls_and_formulas_are_other",
+            "result_is_always_a_single_string",
+            "no_input_raises_an_error_or_a_warning"
+          ],
+          "details": [
+            "null_and_functions: candidate call failed: object 'object_kind' of mode 'function' was not found",
+            "tibbles_are_not_plain_data_frames: candidate call failed: object 'object_kind' of mode 'function' was not found",
+            "data_frames_including_empty_ones: candidate call failed: object 'object_kind' of mode 'function' was not found",
+            "matrices_including_zero_extent_and_character_matrices: candidate call failed: object 'object_kind' of mode 'function' was not found",
+            "arrays_of_one_or_three_or_more_dimensions: candidate call failed: object 'object_kind' of mode 'function' was not found",
+            "factors_including_ordered_and_empty: candidate call failed: object 'object_kind' of mode 'function' was not found",
+            "plain_lists: candidate call failed: object 'object_kind' of mode 'function' was not found",
+            "atomic_vectors_including_classed_dates_and_named_vectors: candidate call failed: object 'object_kind' of mode 'function' was not found",
+            "environments_symbols_calls_and_formulas_are_other: candidate call failed: object 'object_kind' of mode 'function' was not found",
+            "result_is_always_a_single_string: candidate call failed: object 'object_kind' of mode 'function' was not found",
+            "no_input_raises_an_error_or_a_warning: Expected `isTRUE(res$ok)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n\nNULL"
+          ],
+          "seconds": 2.58
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 11,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 1.96
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 11,
+          "total": 11,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.65
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XV04",
+      "task_sha256": "fb0db4713295cb7e894fe75c6f5527268857ddbd69dcf3002190788a98917738",
+      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "checks": 12,
+      "checks_failed_by_some_rejected_control": 12,
+      "checks_never_failed_by_any_control": [],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "ggplot2": "4.0.3"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.93
+        },
+        "alternate_explicit_density_mapping": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.51
+        },
+        "wrong_dot_dot_notation": {
+          "status": "scored",
+          "passed": 9,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "bars_are_filled_by_group",
+            "missing_values_are_ignored",
+            "no_deprecation_warning_when_the_plot_is_built"
+          ],
+          "details": [
+            "bars_are_filled_by_group: Expected `sort(unique(as.character(h$mapped$fill)))` to be identical to `c(\"a\", \"b\", \"c\")`.\nDifferences:\n`actual`:              \n`expected`: \"a\" \"b\" \"c\"\n",
+            "missing_values_are_ignored: Expected `sort(unique(as.character(h$mapped$fill)))` to be identical to `c(\"ctl\", \"trt\")`.\nDifferences:\n`actual`:              \n`expected`: \"ctl\" \"trt\"\n",
+            "no_deprecation_warning_when_the_plot_is_built: warning raised: The dot-dot notation (`..density..`) was deprecated in ggplot2 3.4.0.\nℹ Please use `after_stat(density)` instead."
+          ],
+          "seconds": 4.56
+        },
+        "alternate_numeric_legend_position": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.1
+        },
+        "wrong_size_for_line_width": {
+          "status": "scored",
+          "passed": 11,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "no_deprecation_warning_when_the_plot_is_built"
+          ],
+          "details": [
+            "no_deprecation_warning_when_the_plot_is_built: warning raised: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.\nℹ Please use `linewidth` instead."
+          ],
+          "seconds": 4.74
+        },
+        "wrong_counts_and_stacked": {
+          "status": "scored",
+          "passed": 10,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "bars_are_on_the_density_scale_so_each_group_integrates_to_one",
+            "groups_are_overlaid_not_stacked"
+          ],
+          "details": [
+            "bars_are_on_the_density_scale_so_each_group_integrates_to_one: Expected `unname(as.numeric(actual))` to equal `unname(as.numeric(expected))`.\nDifferences:\n  `actual`: 127.3 43.4\n`expected`:   1.0  1.0\n",
+            "groups_are_overlaid_not_stacked: Expected `h$position` to be identical to \"PositionIdentity\".\nDifferences:\n`actual`:   \"PositionStack\"   \n`expected`: \"PositionIdentity\"\n"
+          ],
+          "seconds": 4.39
+        },
+        "wrong_legend_outside_on_the_right": {
+          "status": "scored",
+          "passed": 11,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "legend_is_inside_in_the_upper_right_part"
+          ],
+          "details": [
+            "legend_is_inside_in_the_upper_right_part: Expected `g$legend_position` to be identical to \"inside\".\nDifferences:\n`actual`:   \"right\" \n`expected`: \"inside\"\n"
+          ],
+          "seconds": 4.92
+        },
+        "edge_bins_not_validated": {
+          "status": "scored",
+          "passed": 11,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "invalid_bins_are_errors"
+          ],
+          "details": [
+            "invalid_bins_are_errors: expected an error but the call succeeded"
+          ],
+          "seconds": 4.77
+        },
+        "malformed_returns_density_list": {
+          "status": "scored",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "histogram_uses_the_requested_number_of_bins_per_group",
+            "bars_are_on_the_density_scale_so_each_group_integrates_to_one",
+            "counts_equal_group_sizes_after_dropping_missing_rows",
+            "groups_are_overlaid_not_stacked",
+            "bars_are_filled_by_group",
+            "a_density_curve_layer_per_group_with_a_line_width_of_at_least_0_8",
+            "vertical_axis_title_is_density",
+            "legend_is_inside_in_the_upper_right_part",
+            "missing_values_are_ignored",
+            "invalid_bins_are_errors",
+            "no_deprecation_warning_when_the_plot_is_built",
+            "input_data_frame_is_not_modified"
+          ],
+          "details": [
+            "histogram_uses_the_requested_number_of_bins_per_group: candidate call failed: the function did not return a ggplot object",
+            "bars_are_on_the_density_scale_so_each_group_integrates_to_one: candidate call failed: the function did not return a ggplot object",
+            "counts_equal_group_sizes_after_dropping_missing_rows: candidate call failed: the function did not return a ggplot object",
+            "groups_are_overlaid_not_stacked: candidate call failed: the function did not return a ggplot object",
+            "bars_are_filled_by_group: candidate call failed: the function did not return a ggplot object",
+            "a_density_curve_layer_per_group_with_a_line_width_of_at_least_0_8: candidate call failed: the function did not return a ggplot object",
+            "vertical_axis_title_is_density: candidate call failed: the function did not return a ggplot object",
+            "legend_is_inside_in_the_upper_right_part: candidate call failed: the function did not return a ggplot object",
+            "missing_values_are_ignored: candidate call failed: the function did not return a ggplot object",
+            "invalid_bins_are_errors: candidate call failed: the function did not return a ggplot object",
+            "no_deprecation_warning_when_the_plot_is_built: candidate call failed: the function did not return a ggplot object",
+            "input_data_frame_is_not_modified: candidate call failed: the function did not return a ggplot object"
+          ],
+          "seconds": 2.24
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "histogram_uses_the_requested_number_of_bins_per_group",
+            "bars_are_on_the_density_scale_so_each_group_integrates_to_one",
+            "counts_equal_group_sizes_after_dropping_missing_rows",
+            "groups_are_overlaid_not_stacked",
+            "bars_are_filled_by_group",
+            "a_density_curve_layer_per_group_with_a_line_width_of_at_least_0_8",
+            "vertical_axis_title_is_density",
+            "legend_is_inside_in_the_upper_right_part",
+            "missing_values_are_ignored",
+            "invalid_bins_are_errors",
+            "no_deprecation_warning_when_the_plot_is_built",
+            "input_data_frame_is_not_modified"
+          ],
+          "details": [
+            "histogram_uses_the_requested_number_of_bins_per_group: candidate call failed: todo",
+            "bars_are_on_the_density_scale_so_each_group_integrates_to_one: candidate call failed: todo",
+            "counts_equal_group_sizes_after_dropping_missing_rows: candidate call failed: todo",
+            "groups_are_overlaid_not_stacked: candidate call failed: todo",
+            "bars_are_filled_by_group: candidate call failed: todo",
+            "a_density_curve_layer_per_group_with_a_line_width_of_at_least_0_8: candidate call failed: todo",
+            "vertical_axis_title_is_density: candidate call failed: todo",
+            "legend_is_inside_in_the_upper_right_part: candidate call failed: todo",
+            "missing_values_are_ignored: candidate call failed: todo",
+            "invalid_bins_are_errors: candidate call failed: todo",
+            "no_deprecation_warning_when_the_plot_is_built: candidate call failed: todo",
+            "input_data_frame_is_not_modified: candidate call failed: todo"
+          ],
+          "seconds": 2.13
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 5.05
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "histogram_uses_the_requested_number_of_bins_per_group",
+            "bars_are_on_the_density_scale_so_each_group_integrates_to_one",
+            "counts_equal_group_sizes_after_dropping_missing_rows",
+            "groups_are_overlaid_not_stacked",
+            "bars_are_filled_by_group",
+            "a_density_curve_layer_per_group_with_a_line_width_of_at_least_0_8",
+            "vertical_axis_title_is_density",
+            "legend_is_inside_in_the_upper_right_part",
+            "missing_values_are_ignored",
+            "invalid_bins_are_errors",
+            "no_deprecation_warning_when_the_plot_is_built",
+            "input_data_frame_is_not_modified"
+          ],
+          "details": [
+            "histogram_uses_the_requested_number_of_bins_per_group: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found",
+            "bars_are_on_the_density_scale_so_each_group_integrates_to_one: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found",
+            "counts_equal_group_sizes_after_dropping_missing_rows: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found",
+            "groups_are_overlaid_not_stacked: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found",
+            "bars_are_filled_by_group: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found",
+            "a_density_curve_layer_per_group_with_a_line_width_of_at_least_0_8: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found",
+            "vertical_axis_title_is_density: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found",
+            "legend_is_inside_in_the_upper_right_part: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found",
+            "missing_values_are_ignored: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found",
+            "invalid_bins_are_errors: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found",
+            "no_deprecation_warning_when_the_plot_is_built: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found",
+            "input_data_frame_is_not_modified: candidate call failed: object 'plot_density_histogram' of mode 'function' was not found"
+          ],
+          "seconds": 2.74
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 2.14
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 4.1
+        }
+      },
+      "problems": [],
+      "gate": "passed",
+      "scorer_image": {
+        "role": "base",
+        "name": "codex-r-benchmark:pilot",
+        "id": "sha256:467944b2623c0e7a6f9cbbf24022616911cd834dd2a2200bd39fbe295666eca5"
+      }
+    },
+    {
+      "task": "XV05",
+      "task_sha256": "ed8cc52833720f3b7197cb11cd6d280017d4cf0507a6ff5e02d3197a1d5fe386",
+      "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+      "checks": 12,
+      "checks_failed_by_some_rejected_control": 11,
+      "checks_never_failed_by_any_control": [
+        "input_text_is_not_modified"
+      ],
+      "environment": {
+        "r": "4.5.2",
+        "packages": {
+          "callr": "3.7.6",
+          "processx": "3.8.6",
+          "testthat": "3.3.2",
+          "jsonlite": "2.0.0",
+          "readr": "2.2.0",
+          "utils": "4.5.2"
+        }
+      },
+      "results": {
+        "reference": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.93
+        },
+        "alternate_base_r_read_csv": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.38
+        },
+        "wrong_literal_data_without_I": {
+          "status": "scored",
+          "passed": 6,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "timestamps_are_utc_posixct_and_invalid_ones_are_missing",
+            "amounts_are_doubles_and_non_numbers_are_missing",
+            "problem_count_counts_only_present_but_unparseable_values",
+            "quoted_fields_with_commas_are_kept_whole",
+            "header_only_text_gives_a_typed_zero_row_data_frame",
+            "runs_without_warnings_or_messages_about_literal_data"
+          ],
+          "details": [
+            "timestamps_are_utc_posixct_and_invalid_ones_are_missing: Expected `got$ts` to be an S3 object.\nActual OO type: none.",
+            "amounts_are_doubles_and_non_numbers_are_missing: Expected `is.double(got$amount)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "problem_count_counts_only_present_but_unparseable_values: Expected `value_of(xv05_call(xv05_t1))$n_problems` to be identical to 3L.\nDifferences:\n  `actual`: 0\n`expected`: 3\n",
+            "quoted_fields_with_commas_are_kept_whole: Expected `is.na(got$amount[7])` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "header_only_text_gives_a_typed_zero_row_data_frame: Expected `got$data$ts` to be an S3 object.\nActual OO type: none.",
+            "runs_without_warnings_or_messages_about_literal_data: warning raised: The `file` argument of `read_csv()` should use `I()` for literal data as of\nreadr 2.2.0.\n  \n  # Bad (for example):\n  read_csv(\"x,y\\n1,2\")\n  \n  # Good:\n  read_csv(I(\"x,y\\n1,2\"))"
+          ],
+          "seconds": 3.45
+        },
+        "wrong_guessed_user_type": {
+          "status": "scored",
+          "passed": 7,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "timestamps_are_utc_posixct_and_invalid_ones_are_missing",
+            "amounts_are_doubles_and_non_numbers_are_missing",
+            "problem_count_counts_only_present_but_unparseable_values",
+            "quoted_fields_with_commas_are_kept_whole",
+            "header_only_text_gives_a_typed_zero_row_data_frame"
+          ],
+          "details": [
+            "timestamps_are_utc_posixct_and_invalid_ones_are_missing: Expected `got$ts` to be an S3 object.\nActual OO type: none.",
+            "amounts_are_doubles_and_non_numbers_are_missing: Expected `is.double(got$amount)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "problem_count_counts_only_present_but_unparseable_values: Expected `value_of(xv05_call(xv05_t1))$n_problems` to be identical to 3L.\nDifferences:\n  `actual`: 0\n`expected`: 3\n",
+            "quoted_fields_with_commas_are_kept_whole: Expected `is.na(got$amount[7])` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "header_only_text_gives_a_typed_zero_row_data_frame: Expected `got$data$ts` to be an S3 object.\nActual OO type: none."
+          ],
+          "seconds": 2.83
+        },
+        "wrong_problem_count_includes_missing": {
+          "status": "scored",
+          "passed": 11,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "problem_count_counts_only_present_but_unparseable_values"
+          ],
+          "details": [
+            "problem_count_counts_only_present_but_unparseable_values: Expected `value_of(xv05_call(xv05_t1))$n_problems` to be identical to 3L.\nDifferences:\n  `actual`: 5\n`expected`: 3\n"
+          ],
+          "seconds": 2.42
+        },
+        "wrong_local_timezone": {
+          "status": "scored",
+          "passed": 11,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "timestamps_are_utc_posixct_and_invalid_ones_are_missing"
+          ],
+          "details": [
+            "timestamps_are_utc_posixct_and_invalid_ones_are_missing: Expected `attr(got$ts, \"tzone\")` to be identical to \"UTC\".\nDifferences:\n`actual`:   \"America/New_York\"\n`expected`: \"UTC\"             \n"
+          ],
+          "seconds": 2.49
+        },
+        "edge_header_only_drops_types": {
+          "status": "scored",
+          "passed": 11,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "header_only_text_gives_a_typed_zero_row_data_frame"
+          ],
+          "details": [
+            "header_only_text_gives_a_typed_zero_row_data_frame: Expected `names(got$data)` to be identical to `c(\"ts\", \"user\", \"amount\", \"status\")`.\nDifferences:\n`actual`:                                \n`expected`: \"ts\" \"user\" \"amount\" \"status\"\n"
+          ],
+          "seconds": 2.82
+        },
+        "malformed_returns_data_frame_only": {
+          "status": "scored",
+          "passed": 2,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "returned_list_has_exactly_data_and_n_problems",
+            "timestamps_are_utc_posixct_and_invalid_ones_are_missing",
+            "user_ids_stay_character_with_leading_zeros",
+            "amounts_are_doubles_and_non_numbers_are_missing",
+            "problem_count_counts_only_present_but_unparseable_values",
+            "empty_and_NA_fields_are_missing_values_not_problems",
+            "quoted_fields_with_commas_are_kept_whole",
+            "rows_keep_file_order_and_status_is_character",
+            "header_only_text_gives_a_typed_zero_row_data_frame",
+            "text_without_trailing_newline_is_parsed"
+          ],
+          "details": [
+            "returned_list_has_exactly_data_and_n_problems: Expected `sort(names(got))` to be identical to `c(\"data\", \"n_problems\")`.\nDifferences:\n`actual`:   \"amount\" \"status\"     \"ts\" \"user\"\n`expected`: \"data\"   \"n_problems\"            \n",
+            "timestamps_are_utc_posixct_and_invalid_ones_are_missing: Expected `got$ts` to be an S3 object.\nActual OO type: none.",
+            "user_ids_stay_character_with_leading_zeros: Expected `is.character(got$user)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "amounts_are_doubles_and_non_numbers_are_missing: Expected `is.double(got$amount)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "problem_count_counts_only_present_but_unparseable_values: Expected `value_of(xv05_call(xv05_t1))$n_problems` to be identical to 3L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (3)\n",
+            "empty_and_NA_fields_are_missing_values_not_problems: Expected `is.na(got$user[4])` to be TRUE.\nDifferences:\n`actual`:       \n`expected`: TRUE\n",
+            "quoted_fields_with_commas_are_kept_whole: Expected `got$user[2]` to be identical to \"O'Brien, A\".\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('O\\'Brien, A')\n",
+            "rows_keep_file_order_and_status_is_character: Expected `nrow(got)` to be identical to 7L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (7)\n",
+            "header_only_text_gives_a_typed_zero_row_data_frame: Expected `nrow(got$data)` to be identical to 0L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (0)\n",
+            "text_without_trailing_newline_is_parsed: Expected `nrow(got)` to be identical to 1L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (1)\n"
+          ],
+          "seconds": 2.65
+        },
+        "malformed_incomplete_stub": {
+          "status": "scored",
+          "passed": 2,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "returned_list_has_exactly_data_and_n_problems",
+            "timestamps_are_utc_posixct_and_invalid_ones_are_missing",
+            "user_ids_stay_character_with_leading_zeros",
+            "amounts_are_doubles_and_non_numbers_are_missing",
+            "problem_count_counts_only_present_but_unparseable_values",
+            "empty_and_NA_fields_are_missing_values_not_problems",
+            "quoted_fields_with_commas_are_kept_whole",
+            "rows_keep_file_order_and_status_is_character",
+            "header_only_text_gives_a_typed_zero_row_data_frame",
+            "text_without_trailing_newline_is_parsed"
+          ],
+          "details": [
+            "returned_list_has_exactly_data_and_n_problems: Expected `sort(names(got))` to be identical to `c(\"data\", \"n_problems\")`.\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('data', 'n_problems')\n",
+            "timestamps_are_utc_posixct_and_invalid_ones_are_missing: Expected `got$ts` to be an S3 object.\nActual OO type: none.",
+            "user_ids_stay_character_with_leading_zeros: Expected `is.character(got$user)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "amounts_are_doubles_and_non_numbers_are_missing: Expected `is.double(got$amount)` to be TRUE.\nDifferences:\n`actual`:   FALSE\n`expected`: TRUE \n",
+            "problem_count_counts_only_present_but_unparseable_values: Expected `value_of(xv05_call(xv05_t1))$n_problems` to be identical to 3L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (3)\n",
+            "empty_and_NA_fields_are_missing_values_not_problems: Expected `is.na(got$user[4])` to be TRUE.\nDifferences:\n`actual`:       \n`expected`: TRUE\n",
+            "quoted_fields_with_commas_are_kept_whole: Expected `got$user[2]` to be identical to \"O'Brien, A\".\nDifferences:\n`actual` is NULL\n`expected` is a character vector ('O\\'Brien, A')\n",
+            "rows_keep_file_order_and_status_is_character: Expected `nrow(got)` to be identical to 7L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (7)\n",
+            "header_only_text_gives_a_typed_zero_row_data_frame: Expected `nrow(got$data)` to be identical to 0L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (0)\n",
+            "text_without_trailing_newline_is_parsed: Expected `nrow(got)` to be identical to 1L.\nDifferences:\n`actual` is NULL\n`expected` is an integer vector (1)\n"
+          ],
+          "seconds": 2.43
+        },
+        "reference_repeat": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 3.58
+        },
+        "empty": {
+          "status": "scored",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": null,
+          "failed_checks": [
+            "returned_list_has_exactly_data_and_n_problems",
+            "timestamps_are_utc_posixct_and_invalid_ones_are_missing",
+            "user_ids_stay_character_with_leading_zeros",
+            "amounts_are_doubles_and_non_numbers_are_missing",
+            "problem_count_counts_only_present_but_unparseable_values",
+            "empty_and_NA_fields_are_missing_values_not_problems",
+            "quoted_fields_with_commas_are_kept_whole",
+            "rows_keep_file_order_and_status_is_character",
+            "header_only_text_gives_a_typed_zero_row_data_frame",
+            "text_without_trailing_newline_is_parsed",
+            "runs_without_warnings_or_messages_about_literal_data",
+            "input_text_is_not_modified"
+          ],
+          "details": [
+            "returned_list_has_exactly_data_and_n_problems: candidate call failed: object 'parse_events' of mode 'function' was not found",
+            "timestamps_are_utc_posixct_and_invalid_ones_are_missing: candidate call failed: object 'parse_events' of mode 'function' was not found",
+            "user_ids_stay_character_with_leading_zeros: candidate call failed: object 'parse_events' of mode 'function' was not found",
+            "amounts_are_doubles_and_non_numbers_are_missing: candidate call failed: object 'parse_events' of mode 'function' was not found",
+            "problem_count_counts_only_present_but_unparseable_values: candidate call failed: object 'parse_events' of mode 'function' was not found",
+            "empty_and_NA_fields_are_missing_values_not_problems: candidate call failed: object 'parse_events' of mode 'function' was not found",
+            "quoted_fields_with_commas_are_kept_whole: candidate call failed: object 'parse_events' of mode 'function' was not found",
+            "rows_keep_file_order_and_status_is_character: candidate call failed: object 'parse_events' of mode 'function' was not found",
+            "header_only_text_gives_a_typed_zero_row_data_frame: candidate call failed: object 'parse_events' of mode 'function' was not found",
+            "text_without_trailing_newline_is_parsed: candidate call failed: object 'parse_events' of mode 'function' was not found",
+            "runs_without_warnings_or_messages_about_literal_data: candidate call failed: object 'parse_events' of mode 'function' was not found",
+            "input_text_is_not_modified: candidate call failed: object 'parse_events' of mode 'function' was not found"
+          ],
+          "seconds": 2.78
+        },
+        "syntax_error": {
+          "status": "candidate_error",
+          "passed": 0,
+          "total": 12,
+          "fully_correct": false,
+          "reason": "source_error",
+          "failed_checks": [],
+          "details": [
+            "1:6: unexpected symbol\n1: this is\n         ^"
+          ],
+          "seconds": 2.06
+        },
+        "forged_result": {
+          "status": "scored",
+          "passed": 12,
+          "total": 12,
+          "fully_correct": true,
+          "reason": null,
+          "failed_checks": [],
+          "details": [],
+          "seconds": 2.6
         }
       },
       "problems": [],

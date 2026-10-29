@@ -76,6 +76,14 @@ expect_no_lifecycle_warnings <- function(result) {
   invisible(TRUE)
 }
 
+# Fail on any warning at all (e.g. a package's own "use I() for literal data" or many-to-many notice).
+expect_no_warnings <- function(result) {
+  if (length(result$warnings)) {
+    stop("warning raised: ", substr(paste(result$warnings[[1]], collapse = " "), 1L, 200L))
+  }
+  invisible(TRUE)
+}
+
 # ---- ggplot2 digest (runs in the candidate session) -----------------------------------------
 plot_digest <- function(p, max_rows = 5000L) {
   if (!inherits(p, "ggplot")) stop("the function did not return a ggplot object")
@@ -144,7 +152,8 @@ plot_digest <- function(p, max_rows = 5000L) {
     coord = class(p$coordinates)[1], coord_limits = safe(lapply(p$coordinates$limits, as.numeric)),
     panel_x_range = safe(as.numeric(built$layout$panel_params[[1]]$x.range)),
     panel_y_range = safe(as.numeric(built$layout$panel_params[[1]]$y.range)),
-    legend_position = safe(as.character(p$theme$legend.position))
+    legend_position = safe(as.character(p$theme$legend.position)),
+    legend_inside = safe(as.numeric(p$theme$legend.position.inside))
   )
 }
 

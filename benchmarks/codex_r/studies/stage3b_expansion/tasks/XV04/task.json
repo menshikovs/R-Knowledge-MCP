@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "id": "XV04",
+  "title": "Density histograms with a legend inside: deprecated ggplot2 spellings fail under the pinned version",
+  "category": "version_sensitive_api",
+  "difficulty": "hard",
+  "image": "base",
+  "packages": ["ggplot2"],
+  "fixtures": ["fixture/measurements.csv"],
+  "source_specs": ["ECO-GP01", "ADDON-C02", "GGP-E08"],
+  "source_relation": "original construction on the ggplot2 3.4.0/3.5.0 deprecations (..density.., size for lines, numeric legend.position) that remain common in training material",
+  "difficulty_hypothesis": "Older idioms (..density.., stat(density), geom_density(size=), theme(legend.position = c(x, y))) still render; the first two emit deprecation warnings in the pinned ggplot2, while the replacements (after_stat, linewidth, legend.position = 'inside' with legend.position.inside) are version-gated. The default stacked position and count scale are secondary traps.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 3, "documentation_dependence": 2,
+    "reasoning_complexity": 1, "code_generation_complexity": 2, "statistical_reasoning": 1,
+    "debugging_difficulty": 1, "package_api_verification_need": 2
+  },
+  "expected_mcp_usefulness": "plausible",
+  "mcp_relevance": {
+    "classification": "target_candidate",
+    "rationale": "Three separate API changes are version-gated and the correct modern spelling requires knowing the installed ggplot2's interface (legend.position.inside, after_stat, linewidth). Documentation retrieval is directly useful; the deprecated forms still run, so the failure is only visible through warnings, which an agent that executes code may or may not read.",
+    "information_need": "The current ggplot2 spelling for density-scale statistics, line widths and inside legends.",
+    "relevant_mcp_tools": ["get_function_docs", "search_r_documentation", "get_package_info"],
+    "obtainable_without_mcp": "partly: running the code prints the deprecation warnings that name the replacements; ?theme and ?after_stat are installed locally",
+    "version_specific_evidence_value": "high",
+    "alternative_solution_paths": [
+      "geom_histogram(aes(y = after_stat(density)))",
+      "aes(y = after_stat(density)) at plot level",
+      "different styling of bars and curves"
+    ]
+  },
+  "independence": {"cluster": "ggplot2-deprecations", "shared_with": [], "shared_features": ["lifecycle warnings"]},
+  "calibration_risks": {
+    "ceiling": "moderate: strong models know after_stat and linewidth",
+    "floor": "low",
+    "documentation_dependence": "moderate",
+    "version_sensitivity": "high",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": ["dot_dot_notation", "size_for_lines", "count_scale_stacked", "legend_outside", "bins_not_validated"],
+    "statistical_reasoning_checks": ["density_scale_integrates_to_one"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"ggplot2": "4.0.3"},
+    "observed": "..density.. warns 'deprecated in ggplot2 3.4.0'; size for lines warns 'deprecated in ggplot2 3.4.0'; a numeric legend.position is only soft-deprecated since 3.5.0 and is converted to an inside legend (the scorer cannot and does not distinguish it); legend.position = 'inside' works with legend.position.inside",
+    "oracle": "built layer data: density integrates to 1 per group, counts equal group sizes, bin count equals bins; warnings under strict lifecycle options are failures"
+  },
+  "checks_documented_in": "verifier/XV04.R"
+}

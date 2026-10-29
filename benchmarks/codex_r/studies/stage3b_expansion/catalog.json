@@ -6,7 +6,7 @@
   "scorer_files": {
     "benchmarks/codex_r/studies/stage3b_expansion/suite.py": "9ec15175c379199649cd0a67cf8fa48860ca95cc0e37ecfb88454ccfe3943431",
     "benchmarks/codex_r/studies/stage3b_expansion/verifier/run.R": "b449346fcd13d6dd84846ecedb6e76d4e9d132726d9190f22f48e873c0697e0d",
-    "benchmarks/codex_r/studies/stage3b_expansion/verifier/lib.R": "69949d04f9eff0005a8122f810d3c3c0c89dc7616ed5d1ff9aa4e7d25ca5d834",
+    "benchmarks/codex_r/studies/stage3b_expansion/verifier/lib.R": "26940aa97138c885aebc8085fb1d9b272d3fd10cede17edbb62b4e5975709f6e",
     "benchmarks/codex_r/hard/verifier/harness.R": "e5524b818f3be07c58b7668e3a68a6cce81ecc83a653492686bb678418fe6183"
   },
   "tasks": [
@@ -95,7 +95,7 @@
       },
       "hashes": {
         "task_sha256": "da0d0d8154f6237dd45df3169be5072376c74b6188abca507bfaabe9634cbcd5",
-        "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA01/prompt.md": "687d67f8076c6460c15e6cdc7d08e5cb7a51445fd5a851af213287100f435f55",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA01/task.json": "f393888720611170a8053a4ba10f8c8d23d49bf79922d6a323362f80335ce911",
@@ -217,7 +217,7 @@
       },
       "hashes": {
         "task_sha256": "cc06b96406df947fd4f8248d53e920b0b7e26d6725bd993a93943832102fe80f",
-        "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA02/prompt.md": "16bf705ce14f5e4f8ce9d8b6e67cdf10cdafdda784da6b3580cab4e6e9953ba7",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA02/task.json": "19c5bad5085adbf69d31ad75b87dd2e7dec9968dfed945c4c9b64a9a8abffdca",
@@ -343,7 +343,7 @@
       },
       "hashes": {
         "task_sha256": "9d040538c7f554653bcd04699b82622ce3d5cedfa48678b7da95366db600bf61",
-        "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA03/prompt.md": "3bea190dde59c318a62f21b638d74f38088a94889c48abcda40bd361f52b27f3",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA03/task.json": "7c928cb0284371f332f47ba8807455c765a451a57b406e21906f096b4f1473ce",
@@ -467,7 +467,7 @@
       },
       "hashes": {
         "task_sha256": "d4cc2480e94aa38609f5155c958a3abc6ccbb55d10d68d1fa040936b96f00e54",
-        "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA04/prompt.md": "e4ec9031bcbef8ff8ed43d59e4d021bf1acbafc611e70c2c9ccc881603064e73",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA04/task.json": "90087b54cf97d22de5ac71aceeb12996655dad773715afd34e48665205f55881",
@@ -589,7 +589,7 @@
       },
       "hashes": {
         "task_sha256": "e18b4938169900a44acc2b86b8a3643d3545ff39d6b92db3993281dd275300ef",
-        "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA05/prompt.md": "ffff4b57bbd157dfb42ff5d79d14829db539b84172f8fef89c241d1bba4d9af6",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA05/task.json": "a8c3b6a7ce20bbc0c09ed4c73b4f69b11e2539c43b3443e1662fa59dc3d6f7ab",
@@ -720,7 +720,7 @@
       },
       "hashes": {
         "task_sha256": "e13155af3a2c12630561c39ed70177085a6a795f30c41a46ed8e6f2ffc87488a",
-        "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA06/prompt.md": "dcc6839a523586543d1dad6be9db1ee6e39db11a799f9750b3d8a88e66ffa977",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA06/task.json": "4500481ac93c0972a15c6c24ff27f8294ed810475a6dba6ba6be7d7102617abd",
@@ -844,7 +844,7 @@
       },
       "hashes": {
         "task_sha256": "5b5b23feed933ba0d5e561748c3a2d1ce6d6c35f031e73846aa3fa0609b7af8e",
-        "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG01/prompt.md": "7ad23fe563ca312b297081330643f0a217b185e9135582dbb50ccf23d0b6f229",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG01/task.json": "b414349a8e12b0db7408301741a1a136b4dcfbf3200c577e0add4b3f32b83c27",
@@ -970,7 +970,7 @@
       },
       "hashes": {
         "task_sha256": "7110f95745f0482a602b14435486755f528f2ffb1f258817d4e10b9a9a5487a1",
-        "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG02/prompt.md": "d6df8411cd8126a7f8a19a88efd7e9c8deb4d49840406d9e3268b2b454a4512c",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG02/task.json": "511b4440981e3f4ce3f50983e085f9b6d5e98e5d88f07c1f3c4f53b3db9d78d7",
@@ -1097,7 +1097,7 @@
       },
       "hashes": {
         "task_sha256": "457e5d92a0361dad30ada6fac1ffa96f317af7da8153fecf2c1538575a2f2013",
-        "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG03/prompt.md": "391cd93afee604055c8a7d93f8175a5142b0ec37dc0b465be2f6fb59b3437158",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG03/task.json": "fd5291b65009b46a1416579c0b6534511176ad269fb4d9ffede649b000f7736e",
@@ -1123,18 +1123,19 @@
         ]
       },
       "validation": {
-        "gate": "passed",
-        "current": true,
+        "gate": null,
+        "current": false,
         "validated_at": null
       },
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
         "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
-        "calibration_eligible": true,
+        "calibration_eligible": false,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely for strong baselines: calibration must confirm"
+          "ceiling effect likely for strong baselines: calibration must confirm",
+          "scorer validation gate not passed on the current files"
         ]
       }
     },
@@ -1221,7 +1222,7 @@
       },
       "hashes": {
         "task_sha256": "cd29e9193a71f1e12642511599db15c6c61d9df9162182eaf0ccc0b10edd9f65",
-        "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG04/prompt.md": "92bad3482c2c86dd606e2c99481268e954bb90f3d2289a3318eb7dd5869d3ea6",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG04/task.json": "e5196c7c1a38ae24c65adf04ec41c6a8ca2c26793e58faa2b7160b926ab53cc2",
@@ -1345,7 +1346,7 @@
       },
       "hashes": {
         "task_sha256": "ee186e62f98686ee73dbc9b1c7dd7fa05c2baf85269d5c37cff6e94091808a8d",
-        "scorer_sha256": "05803c410d62708ebcedc90a64e5f2d52c321d8994725ab354289ed76af93fd6",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
         "task_files": {
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG05/prompt.md": "984f1d7d44a371b8b42298e362ea5a720df4311c3d7547a436342181e92d4f41",
           "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG05/task.json": "c95c3c12552f322f744f32de201dfbc7dbb1fe48f3ee75061b877b041983e30e",
@@ -1371,6 +1372,134 @@
         ]
       },
       "validation": {
+        "gate": null,
+        "current": false,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": false,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect likely for strong baselines: calibration must confirm",
+          "scorer validation gate not passed on the current files"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XV01",
+      "title": "Multiple quantiles per group: summarise() no longer returns several rows in a current dplyr",
+      "category": "version_sensitive_api",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "dplyr",
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/sales.csv"
+      ],
+      "source_specs": [
+        "HARD-H01"
+      ],
+      "source_relation": "original construction on the dplyr 1.1.0 multi-row summarise() change",
+      "difficulty_hypothesis": "Training data is dominated by pre-1.1.0 examples that return several quantiles from summarise(); in the pinned dplyr that is an error and reframe() is the replacement. Missing values, an all-missing group and a missing group key are secondary traps.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 3,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 1,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "The failing idiom is exactly what older material teaches, and the replacement (reframe) and its argument conventions are version-specific facts about the installed dplyr. MCP could supply the current function signature and guidance, but the error message in the pinned dplyr itself names reframe(), and base R is an equally valid route, so the information is recoverable without MCP.",
+        "information_need": "Which dplyr function returns more than one row per group, and from which version.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: the error message names reframe(); ?reframe is installed locally; base R split/quantile solves it without dplyr",
+        "version_specific_evidence_value": "high",
+        "alternative_solution_paths": [
+          "dplyr::reframe()",
+          "base R split + quantile",
+          "tapply + do.call(rbind)"
+        ]
+      },
+      "independence": {
+        "cluster": "dplyr-multirow-summaries",
+        "shared_with": [],
+        "shared_features": [
+          "dplyr 1.1.0 change"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines because base R is a complete fallback",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "high but recoverable from the runtime error",
+        "blockers": [
+          "ceiling effect: agents that execute code see the error message and the fix"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "summarise_multirow_error",
+          "quantile_type",
+          "probs_ignored",
+          "empty_group_kept",
+          "no_probs_validation"
+        ],
+        "statistical_reasoning_checks": [
+          "quantile_definition_type_7"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "dplyr": "1.2.1"
+        },
+        "observed": "summarise() with a 2-value quantile() errors: `q` must be size 1, not 2 ... use reframe(); reframe() returns one row per group and probability",
+        "oracle": "base R split + stats::quantile(type = 7); strict lifecycle options; any warning fails"
+      },
+      "hashes": {
+        "task_sha256": "0c39c48acab87a714e438918beb466a28fbd26dd9e4b6aa91ba11691f88333b9",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV01/prompt.md": "f3bb6bdafe29eee3130b566953d90f2cd9b35c15bf807074115fb7f5f5c5eb7c",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV01/task.json": "a8eff2ba47d886ca17048bda9a4c04e413ebc5937b8f6a9e16f547055cdb5d9d",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV01/fixture/sales.csv": "c0150701b2dd99e93471e264e5bb9497e0a0532440941b5a654f36adc309274f",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XV01.R": "8a5798de283208a5a1617047f0524c1b01863554f482cf44b80cfd9b12a8f264"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_base_r_split",
+          "wrong_summarise_multirow",
+          "wrong_quantile_type_6",
+          "wrong_ignores_probs_argument",
+          "wrong_keeps_empty_group_as_na",
+          "edge_no_probs_validation",
+          "malformed_returns_list",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
         "gate": "passed",
         "current": true,
         "validated_at": null
@@ -1378,12 +1507,505 @@
       "pool": {
         "pool": "stage3b-candidate-pool-v1",
         "stratum": null,
-        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
         "calibration_eligible": true,
         "confirmatory_eligible": false,
         "blockers": [
-          "ceiling effect likely for strong baselines: calibration must confirm"
+          "ceiling effect: agents that execute code see the error message and the fix"
         ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XV02",
+      "title": "Price in force on the order date: rolling join without future leakage or many-to-many notices",
+      "category": "version_sensitive_api",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "dplyr"
+      ],
+      "fixtures": [
+        "fixture/orders.csv",
+        "fixture/prices.csv"
+      ],
+      "source_specs": [
+        "HARD-H04",
+        "ADDON-B04"
+      ],
+      "source_relation": "adapted: point-in-time join family expressed as a function-style contract with a warnings-as-failure rule",
+      "difficulty_hypothesis": "A plain join by key followed by a filter multiplies rows and raises a many-to-many warning in current dplyr; inequality and rolling joins (join_by, closest) exist only from dplyr 1.1.0; the on-or-before boundary, unmatched orders and row order are secondary traps.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 2,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "join_by() with closest() and the relationship checks are version-gated dplyr features that older training material lacks; MCP could confirm the signature and the first version that offers it. A base-R solution is a complete fallback, so MCP is helpful but not necessary.",
+        "information_need": "Whether and how the installed dplyr supports rolling/inequality joins and what warnings joins emit.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: ?join_by is installed locally; base R findInterval solves it",
+        "version_specific_evidence_value": "high",
+        "alternative_solution_paths": [
+          "left_join(..., join_by(sku, closest(order_date >= price_date)))",
+          "base R findInterval per sku",
+          "inequality join then slice_max per order"
+        ]
+      },
+      "independence": {
+        "cluster": "as-of-joins",
+        "shared_with": [],
+        "shared_features": [
+          "point-in-time join"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "moderate: older dplyr idioms still work but warn",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "many_to_many_warning",
+          "duplicate_rows",
+          "strict_inequality",
+          "future_leakage",
+          "unmatched_orders_dropped",
+          "row_order_changed",
+          "extra_columns"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "dplyr": "1.2.1"
+        },
+        "observed": "left_join(orders, prices, by = 'sku') raises 'Detected an unexpected many-to-many relationship'; join_by(sku, closest(order_date >= price_date)) returns one row per order",
+        "oracle": "explicit base-R scan of each sku's history; warnings are failures"
+      },
+      "hashes": {
+        "task_sha256": "7ff464b59f12bf9545d16b256f00ceba9c552fba8a0f45b29f0c5b54c28e6c04",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV02/prompt.md": "e43c4f1d1bd328f8c58f3e4e7871f35cbea5e4f203f79568b7b613f8756107bd",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV02/task.json": "99ba7cc4ee4e25153879a90365e54963a6954163e4a55765484f17bfb6762af6",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV02/fixture/orders.csv": "9d1a36fdc6fcde56f6b19b91b20f708b19680db2479f1d56981ba8b30c13687c",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV02/fixture/prices.csv": "fc97a88de6b85047853ebf2042ee986f7fb513ec44e195214bc165c389d5a035",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XV02.R": "6718694df6009c9ce2078b5987bfaa736b980ba36500df521e30511479af7b00"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_base_r_findinterval",
+          "wrong_filter_after_join_warns_and_duplicates",
+          "wrong_strict_inequality",
+          "wrong_uses_next_price",
+          "wrong_drops_unmatched_orders",
+          "wrong_output_sorted_by_date",
+          "edge_extra_helper_column",
+          "malformed_returns_vector",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XV03",
+      "title": "Classifying objects in R 4.x: matrix class vectors, tibbles and classed atomic vectors",
+      "category": "version_sensitive_api",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "tibble"
+      ],
+      "fixtures": [
+        "fixture/examples.csv"
+      ],
+      "source_specs": [
+        "ECO-V02"
+      ],
+      "source_relation": "original construction; closest registry family is the object/type semantics group",
+      "difficulty_hypothesis": "R 3.x-era idioms (class(x) == 'matrix', inherits(x, 'array') for matrices, is.vector() for classed vectors) break or mis-classify in R 4.x, where a matrix has class c('matrix','array') and `if` rejects conditions of length > 1.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 2,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "exploratory",
+        "rationale": "The decisive facts concern base R semantics that changed in R 4.0/4.2; they are discoverable by running code and are in the installed base documentation. No package metadata is involved, so MCP is of limited use, but version-specific NEWS knowledge could matter.",
+        "information_need": "How class(), is.matrix(), dim() and inherits() behave on matrices, tibbles and classed vectors in R 4.x.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: running the candidate against examples exposes every failure",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "dim()-based",
+          "is.matrix/is.array-based",
+          "inherits-based"
+        ]
+      },
+      "independence": {
+        "cluster": "base-r-object-semantics",
+        "shared_with": [],
+        "shared_features": []
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "moderate",
+        "blockers": [
+          "ceiling effect likely: calibration must confirm"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "class_equals_matrix_length_2",
+          "array_before_matrix",
+          "tibble_treated_as_data_frame",
+          "is_vector_on_classed",
+          "data_frame_as_list",
+          "error_on_environments_and_formulas"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "tibble": "3.3.1"
+        },
+        "oracle": "declarative table of 31 constructions and kinds, cross-checked at load time against defining properties (dim length, tbl_df inheritance)"
+      },
+      "hashes": {
+        "task_sha256": "849dd91d06d856bf4d97ec6613bb6ae546f31bb11c7683ac6186f1fd6207f9eb",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV03/prompt.md": "45784a2869afeaf242be971aa0d81d43881ecaae91326bb51e99d498378adbac",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV03/task.json": "edb0ac3b3f605ca5e4d1e979a127ee57144ac9fd3ea67e8d4ca41088b35474d5",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV03/fixture/examples.csv": "15fa097274596e8075d822b04dc3568c5e184a4d04c7eeefd381616fef42bc44",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XV03.R": "bcab65ea7bd4ccd270bbe0da7a23e67d2dc0c284de7c71163afd0126802931c7"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 11,
+        "controls": [
+          "reference",
+          "alternate_inherits_based",
+          "wrong_class_equals_matrix",
+          "wrong_array_before_matrix",
+          "wrong_tibble_as_data_frame",
+          "wrong_is_vector_for_atomic",
+          "wrong_data_frame_as_list",
+          "edge_errors_on_environments_and_formulas",
+          "malformed_returns_class_vector",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": null,
+        "current": false,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "none until a versioned review assigns a role",
+        "calibration_eligible": false,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect likely: calibration must confirm",
+          "scorer validation gate not passed on the current files"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XV04",
+      "title": "Density histograms with a legend inside: deprecated ggplot2 spellings fail under the pinned version",
+      "category": "version_sensitive_api",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "ggplot2"
+      ],
+      "fixtures": [
+        "fixture/measurements.csv"
+      ],
+      "source_specs": [
+        "ECO-GP01",
+        "ADDON-C02",
+        "GGP-E08"
+      ],
+      "source_relation": "original construction on the ggplot2 3.4.0/3.5.0 deprecations (..density.., size for lines, numeric legend.position) that remain common in training material",
+      "difficulty_hypothesis": "Older idioms (..density.., stat(density), geom_density(size=), theme(legend.position = c(x, y))) still render; the first two emit deprecation warnings in the pinned ggplot2, while the replacements (after_stat, linewidth, legend.position = 'inside' with legend.position.inside) are version-gated. The default stacked position and count scale are secondary traps.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 3,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 1,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "Three separate API changes are version-gated and the correct modern spelling requires knowing the installed ggplot2's interface (legend.position.inside, after_stat, linewidth). Documentation retrieval is directly useful; the deprecated forms still run, so the failure is only visible through warnings, which an agent that executes code may or may not read.",
+        "information_need": "The current ggplot2 spelling for density-scale statistics, line widths and inside legends.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: running the code prints the deprecation warnings that name the replacements; ?theme and ?after_stat are installed locally",
+        "version_specific_evidence_value": "high",
+        "alternative_solution_paths": [
+          "geom_histogram(aes(y = after_stat(density)))",
+          "aes(y = after_stat(density)) at plot level",
+          "different styling of bars and curves"
+        ]
+      },
+      "independence": {
+        "cluster": "ggplot2-deprecations",
+        "shared_with": [],
+        "shared_features": [
+          "lifecycle warnings"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate: strong models know after_stat and linewidth",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "high",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "dot_dot_notation",
+          "size_for_lines",
+          "count_scale_stacked",
+          "legend_outside",
+          "bins_not_validated"
+        ],
+        "statistical_reasoning_checks": [
+          "density_scale_integrates_to_one"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "ggplot2": "4.0.3"
+        },
+        "observed": "..density.. warns 'deprecated in ggplot2 3.4.0'; size for lines warns 'deprecated in ggplot2 3.4.0'; a numeric legend.position is only soft-deprecated since 3.5.0 and is converted to an inside legend (the scorer cannot and does not distinguish it); legend.position = 'inside' works with legend.position.inside",
+        "oracle": "built layer data: density integrates to 1 per group, counts equal group sizes, bin count equals bins; warnings under strict lifecycle options are failures"
+      },
+      "hashes": {
+        "task_sha256": "fb0db4713295cb7e894fe75c6f5527268857ddbd69dcf3002190788a98917738",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV04/prompt.md": "a269635ca4036ff7c89ff3bca8bfa1ab518f10de8e01db9d9076db00eb5d9bce",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV04/task.json": "9949ce1f66d2e480439773f04ba2433fe18330bc93c57405ae42b754314aec68",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV04/fixture/measurements.csv": "4a20923b5279b5815542ce46b78f60a61dfa749443cba9ce1a01b5f692bff58a",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XV04.R": "470d19477fdb5f9b3c34c8d470dce046c48c60f29f9381fe35b738ce5df2962e"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 12,
+        "controls": [
+          "reference",
+          "alternate_explicit_density_mapping",
+          "wrong_dot_dot_notation",
+          "alternate_numeric_legend_position",
+          "wrong_size_for_line_width",
+          "wrong_counts_and_stacked",
+          "wrong_legend_outside_on_the_right",
+          "edge_bins_not_validated",
+          "malformed_returns_density_list",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XV05",
+      "title": "Parsing CSV held in a string: literal data needs I() in readr 2.2, and type guessing loses identifiers",
+      "category": "version_sensitive_api",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "readr",
+        "utils"
+      ],
+      "fixtures": [
+        "fixture/events.csv"
+      ],
+      "source_specs": [
+        "ADDON-C04",
+        "HARD-H03"
+      ],
+      "source_relation": "original construction on the readr 2.2.0 literal-data deprecation; closest registry families are deprecated-parameter handling and explicit-loss parsing",
+      "difficulty_hypothesis": "Widely taught read_csv(text_string) now warns in readr 2.2.0 (literal data must be wrapped in I()); type guessing silently turns '007' into 7 and invalid timestamps into guesses; counting parse problems requires telling missing values from unparseable ones.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 3,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "The literal-data change is a very recent readr release note that most training material predates; knowing the installed readr's behaviour requires version-specific documentation. The warning text itself shows the fix, and base R read.csv(text=) avoids the issue altogether.",
+        "information_need": "How the installed readr expects in-memory CSV text to be passed, and how to control column types.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: the warning message prints the I() fix; base R is a complete fallback",
+        "version_specific_evidence_value": "high",
+        "alternative_solution_paths": [
+          "readr::read_csv(I(text), col_types = ...)",
+          "utils::read.csv(text = text, colClasses = 'character')",
+          "readr::read_lines + manual split"
+        ]
+      },
+      "independence": {
+        "cluster": "readr-ingestion",
+        "shared_with": [],
+        "shared_features": []
+      },
+      "calibration_risks": {
+        "ceiling": "moderate",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "high",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "literal_data_without_I",
+          "type_guessing_loses_leading_zeros",
+          "missing_counted_as_problem",
+          "local_timezone",
+          "header_only_types"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "readr": "2.2.0"
+        },
+        "observed": "read_csv('a,b\\n1,2') warns: The `file` argument of `read_csv()` should use `I()` for literal data as of readr 2.2.0",
+        "oracle": "base R read.csv(text=, colClasses = 'character') with explicit strptime/as.numeric conversion; any warning fails"
+      },
+      "hashes": {
+        "task_sha256": "ed8cc52833720f3b7197cb11cd6d280017d4cf0507a6ff5e02d3197a1d5fe386",
+        "scorer_sha256": "ceeffb0117e4ace7c2f96454a3f5d6398c89d0e32ec05556a5c78aad8c6e1784",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV05/prompt.md": "81b6df965676cea48c0684875e42469040958ef5a86693e5885dec4bae2b6b59",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV05/task.json": "8f7aa9a40c6b5f5e7290b98ed3d64ba890d344cce803d4367dab41b733bf043d",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV05/fixture/events.csv": "ea170a4c002555652a60245262b40c7b929299817542bfed8cfee25c70f0b324",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XV05.R": "13f6063eefeaff9c60fab048f9fe0ba893018ebd3067b7be3c73a2acc84b7d2e"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 12,
+        "controls": [
+          "reference",
+          "alternate_base_r_read_csv",
+          "wrong_literal_data_without_I",
+          "wrong_guessed_user_type",
+          "wrong_problem_count_includes_missing",
+          "wrong_local_timezone",
+          "edge_header_only_drops_types",
+          "malformed_returns_data_frame_only",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
       }
     }
   ]

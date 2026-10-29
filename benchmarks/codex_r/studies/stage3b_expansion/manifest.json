@@ -292,6 +292,104 @@
       "artifacts": [
         "solution.R"
       ]
+    },
+    {
+      "id": "XV01",
+      "title": "Multiple quantiles per group: summarise() no longer returns several rows in a current dplyr",
+      "category": "version_sensitive_api",
+      "image": "base",
+      "packages": [
+        "dplyr",
+        "stats"
+      ],
+      "spec": "tasks/XV01/prompt.md",
+      "fixtures": [
+        "tasks/XV01/fixture/sales.csv"
+      ],
+      "metadata": "tasks/XV01/task.json",
+      "verifier": "verifier/XV01.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XV02",
+      "title": "Price in force on the order date: rolling join without future leakage or many-to-many notices",
+      "category": "version_sensitive_api",
+      "image": "base",
+      "packages": [
+        "dplyr"
+      ],
+      "spec": "tasks/XV02/prompt.md",
+      "fixtures": [
+        "tasks/XV02/fixture/orders.csv",
+        "tasks/XV02/fixture/prices.csv"
+      ],
+      "metadata": "tasks/XV02/task.json",
+      "verifier": "verifier/XV02.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XV03",
+      "title": "Classifying objects in R 4.x: matrix class vectors, tibbles and classed atomic vectors",
+      "category": "version_sensitive_api",
+      "image": "base",
+      "packages": [
+        "tibble"
+      ],
+      "spec": "tasks/XV03/prompt.md",
+      "fixtures": [
+        "tasks/XV03/fixture/examples.csv"
+      ],
+      "metadata": "tasks/XV03/task.json",
+      "verifier": "verifier/XV03.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XV04",
+      "title": "Density histograms with a legend inside: deprecated ggplot2 spellings fail under the pinned version",
+      "category": "version_sensitive_api",
+      "image": "base",
+      "packages": [
+        "ggplot2"
+      ],
+      "spec": "tasks/XV04/prompt.md",
+      "fixtures": [
+        "tasks/XV04/fixture/measurements.csv"
+      ],
+      "metadata": "tasks/XV04/task.json",
+      "verifier": "verifier/XV04.R",
+      "checks": 12,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XV05",
+      "title": "Parsing CSV held in a string: literal data needs I() in readr 2.2, and type guessing loses identifiers",
+      "category": "version_sensitive_api",
+      "image": "base",
+      "packages": [
+        "readr",
+        "utils"
+      ],
+      "spec": "tasks/XV05/prompt.md",
+      "fixtures": [
+        "tasks/XV05/fixture/events.csv"
+      ],
+      "metadata": "tasks/XV05/task.json",
+      "verifier": "verifier/XV05.R",
+      "checks": 12,
+      "artifacts": [
+        "solution.R"
+      ]
     }
   ]
 }

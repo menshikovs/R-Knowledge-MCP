@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "id": "XV01",
+  "title": "Multiple quantiles per group: summarise() no longer returns several rows in a current dplyr",
+  "category": "version_sensitive_api",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["dplyr", "stats"],
+  "fixtures": ["fixture/sales.csv"],
+  "source_specs": ["HARD-H01"],
+  "source_relation": "original construction on the dplyr 1.1.0 multi-row summarise() change",
+  "difficulty_hypothesis": "Training data is dominated by pre-1.1.0 examples that return several quantiles from summarise(); in the pinned dplyr that is an error and reframe() is the replacement. Missing values, an all-missing group and a missing group key are secondary traps.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 3, "documentation_dependence": 2,
+    "reasoning_complexity": 1, "code_generation_complexity": 1, "statistical_reasoning": 1,
+    "debugging_difficulty": 1, "package_api_verification_need": 2
+  },
+  "expected_mcp_usefulness": "plausible",
+  "mcp_relevance": {
+    "classification": "target_candidate",
+    "rationale": "The failing idiom is exactly what older material teaches, and the replacement (reframe) and its argument conventions are version-specific facts about the installed dplyr. MCP could supply the current function signature and guidance, but the error message in the pinned dplyr itself names reframe(), and base R is an equally valid route, so the information is recoverable without MCP.",
+    "information_need": "Which dplyr function returns more than one row per group, and from which version.",
+    "relevant_mcp_tools": ["get_function_docs", "search_r_documentation", "get_package_info"],
+    "obtainable_without_mcp": "partly: the error message names reframe(); ?reframe is installed locally; base R split/quantile solves it without dplyr",
+    "version_specific_evidence_value": "high",
+    "alternative_solution_paths": [
+      "dplyr::reframe()",
+      "base R split + quantile",
+      "tapply + do.call(rbind)"
+    ]
+  },
+  "independence": {"cluster": "dplyr-multirow-summaries", "shared_with": [], "shared_features": ["dplyr 1.1.0 change"]},
+  "calibration_risks": {
+    "ceiling": "high for strong baselines because base R is a complete fallback",
+    "floor": "low",
+    "documentation_dependence": "moderate",
+    "version_sensitivity": "high but recoverable from the runtime error",
+    "blockers": ["ceiling effect: agents that execute code see the error message and the fix"]
+  },
+  "analysis": {
+    "failure_modes": ["summarise_multirow_error", "quantile_type", "probs_ignored", "empty_group_kept", "no_probs_validation"],
+    "statistical_reasoning_checks": ["quantile_definition_type_7"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"dplyr": "1.2.1"},
+    "observed": "summarise() with a 2-value quantile() errors: `q` must be size 1, not 2 ... use reframe(); reframe() returns one row per group and probability",
+    "oracle": "base R split + stats::quantile(type = 7); strict lifecycle options; any warning fails"
+  },
+  "checks_documented_in": "verifier/XV01.R"
+}

@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "id": "XV02",
+  "title": "Price in force on the order date: rolling join without future leakage or many-to-many notices",
+  "category": "version_sensitive_api",
+  "difficulty": "hard",
+  "image": "base",
+  "packages": ["dplyr"],
+  "fixtures": ["fixture/orders.csv", "fixture/prices.csv"],
+  "source_specs": ["HARD-H04", "ADDON-B04"],
+  "source_relation": "adapted: point-in-time join family expressed as a function-style contract with a warnings-as-failure rule",
+  "difficulty_hypothesis": "A plain join by key followed by a filter multiplies rows and raises a many-to-many warning in current dplyr; inequality and rolling joins (join_by, closest) exist only from dplyr 1.1.0; the on-or-before boundary, unmatched orders and row order are secondary traps.",
+  "dimensions": {
+    "r_knowledge_depth": 3, "version_sensitivity": 2, "documentation_dependence": 2,
+    "reasoning_complexity": 2, "code_generation_complexity": 2, "statistical_reasoning": 0,
+    "debugging_difficulty": 1, "package_api_verification_need": 2
+  },
+  "expected_mcp_usefulness": "plausible",
+  "mcp_relevance": {
+    "classification": "target_candidate",
+    "rationale": "join_by() with closest() and the relationship checks are version-gated dplyr features that older training material lacks; MCP could confirm the signature and the first version that offers it. A base-R solution is a complete fallback, so MCP is helpful but not necessary.",
+    "information_need": "Whether and how the installed dplyr supports rolling/inequality joins and what warnings joins emit.",
+    "relevant_mcp_tools": ["get_function_docs", "search_r_documentation", "get_package_info"],
+    "obtainable_without_mcp": "partly: ?join_by is installed locally; base R findInterval solves it",
+    "version_specific_evidence_value": "high",
+    "alternative_solution_paths": [
+      "left_join(..., join_by(sku, closest(order_date >= price_date)))",
+      "base R findInterval per sku",
+      "inequality join then slice_max per order"
+    ]
+  },
+  "independence": {"cluster": "as-of-joins", "shared_with": [], "shared_features": ["point-in-time join"]},
+  "calibration_risks": {
+    "ceiling": "moderate",
+    "floor": "low",
+    "documentation_dependence": "moderate",
+    "version_sensitivity": "moderate: older dplyr idioms still work but warn",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": ["many_to_many_warning", "duplicate_rows", "strict_inequality", "future_leakage", "unmatched_orders_dropped", "row_order_changed", "extra_columns"],
+    "statistical_reasoning_checks": []
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"dplyr": "1.2.1"},
+    "observed": "left_join(orders, prices, by = 'sku') raises 'Detected an unexpected many-to-many relationship'; join_by(sku, closest(order_date >= price_date)) returns one row per order",
+    "oracle": "explicit base-R scan of each sku's history; warnings are failures"
+  },
+  "checks_documented_in": "verifier/XV02.R"
+}
