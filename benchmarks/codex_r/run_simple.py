@@ -47,6 +47,7 @@ from benchmarks.codex_r.exploratory.managed_agents import (
 )
 from benchmarks.codex_r.hard import suite as hard
 from benchmarks.codex_r.runner import bench
+from benchmarks.codex_r.studies.stage3b_expansion import suite as stage3b
 from benchmarks.codex_r.telemetry import aggregate as telemetry_aggregate
 from benchmarks.codex_r.telemetry import errors as telemetry_errors
 from benchmarks.codex_r.telemetry import experiment as telemetry_experiment
@@ -83,6 +84,22 @@ INSTRUCTION_VARIANTS = {
     "standard": STANDARD_INSTRUCTIONS,
     "diagnostic": STANDARD_INSTRUCTIONS + DIAGNOSTIC_ADDENDUM,
 }
+# Study-only variants, reachable through run_trial but deliberately not CLI choices: the
+# stage2_validity_v1 arm C text is the standard text plus one preregistered sentence
+# (studies/stage2_validity_v1/protocol.ENCOURAGEMENT; a test keeps the two identical).
+MCP_ENCOURAGEMENT = (
+    " When R-Knowledge-MCP tools are connected, use them to verify package, function and version "
+    "facts before relying on memory; do not call them when they cannot help."
+)
+STUDY_INSTRUCTION_VARIANTS = {"mcp-encouraged": STANDARD_INSTRUCTIONS + MCP_ENCOURAGEMENT}
+
+
+def instruction_text(variant):
+    if variant in INSTRUCTION_VARIANTS:
+        return INSTRUCTION_VARIANTS[variant]
+    return STUDY_INSTRUCTION_VARIANTS[variant]
+
+
 R_TASKS = [f"R{i:02}" for i in range(1, 13)]
 # The registered H/B/C/D/E suite, verified by the offline full readiness checks.
 # R01..R12 remain the separate legacy `--tasks all` suite.
@@ -267,6 +284,9 @@ def suite_for(task, *, experiment=None, function_discovery=None):
         task_suite, toolset = knowledge_pilot, "consolidated"
     elif task == MCP_SMOKE_TASK or task.startswith("H"):
         task_suite, toolset = hard, "consolidated"
+    elif stage3b.owns(task):
+        # Stage 3B expansion suite: hard-v1 contract, its own manifest; same MCP surface.
+        return stage3b, "consolidated", hard.manifest()["mcp"]["tools"]
     else:
         return bench, "legacy", bench.manifest()["conditions"]["B"]["tools"]
 
@@ -565,6 +585,15 @@ def write_experiment_manifest(output, args, images, tasks, *, write=True):
         "e_compatibility": knowledge_pilot.E_SCORER_VERSION,
         "r_scorer_image": images.get("scorer"),
         "hard_verifier_sha256": telemetry_experiment.tree_sha256(hard.HARD / "verifier", ".R"),
+        **(
+            {
+                "stage3b_verifier_sha256": telemetry_experiment.tree_sha256(
+                    stage3b.STAGE3B / "verifier", ".R"
+                )
+            }
+            if any(stage3b.owns(t) for t in tasks)
+            else {}
+        ),
         "pilot_verifier_sha256": telemetry_experiment.tree_sha256(
             knowledge_pilot.PILOT / "verifier", ".R"
         ),
@@ -741,6 +770,15 @@ def write_experiment_manifest(output, args, images, tasks, *, write=True):
                     for name in task["fixtures"]
                 },
             }
+        elif stage3b.owns(task_id):
+            task = stage3b.task_for(task_id)
+            experiment["task_inputs_sha256"][task_id] = {
+                "spec": bench.digest(bench.safe_file(stage3b.STAGE3B, task["spec"])),
+                "inputs": {
+                    name: bench.digest(bench.safe_file(stage3b.STAGE3B, name))
+                    for name in task["fixtures"]
+                },
+            }
     experiment["image_refs"] = {
         "executor": args.executor_image,
         "scorer": args.scorer_image,
@@ -852,6 +890,9 @@ def experiment_package_pins(tasks, pilot_manifest=None):
             metadata_path = hard.HARD / "tasks" / task_id / "metadata.json"
             metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
             package_pins[task_id] = metadata.get("packages", {})
+        elif stage3b.owns(task_id):
+            pins = stage3b.manifest()["environment"]["pins"]
+            package_pins[task_id] = {p: pins.get(p) for p in stage3b.task_for(task_id)["packages"]}
     return package_pins
 
 
@@ -1451,6 +1492,8 @@ class SimpleClient(ManagedAgentsClient):
         self.session_config_status = "response_echo_unavailable"
         self.returned_agent_tool_names = None
         self.session_config_match = None
+        self.sent_instructions_sha256 = None
+        self.sent_tool_types = None
 
     def connection_event(self, phase, **fields):
         if fields.get("outcome") in {
@@ -1486,6 +1529,10 @@ class SimpleClient(ManagedAgentsClient):
     def create_simple_session(self, effort, with_mcp, allowed_tools=None, instructions="standard"):
         self.connection_event("session_create_requested")
         tools = agent_mcp_tools(with_mcp, allowed_tools)
+        text = instruction_text(instructions)
+        # Digest of the exact text in the request body, for per-trial instruction evidence.
+        self.sent_instructions_sha256 = hashlib.sha256(text.encode("utf-8")).hexdigest()
+        self.sent_tool_types = sorted({tool["type"] for tool in tools})
         record = self._request_json(
             "POST",
             "/v1/agents/sessions",
@@ -1495,7 +1542,7 @@ class SimpleClient(ManagedAgentsClient):
                     "reasoning": {"effort": effort},
                     "multi_agent": {"enabled": False},
                     "tools": tools,
-                    "instructions": INSTRUCTION_VARIANTS[instructions],
+                    "instructions": text,
                 },
                 "environment": {"type": "self_hosted", "workspace_directory": "/candidate"},
             },
@@ -1959,6 +2006,9 @@ def seal_trial_artifacts(task, workspace, destination, task_suite=None):
     workspace = Path(workspace).absolute()
     if task_suite is knowledge_pilot:
         return knowledge_pilot.seal_artifacts(task, workspace, destination)
+    if stage3b.owns(task):
+        stage3b.seal_artifacts(task, workspace, destination)
+        return {name: name for name in stage3b.task_for(task)["artifacts"]}
     if task.startswith("H"):
         hard.seal_artifacts(task, workspace, destination)
         return {name: name for name in hard.task_for(task)["artifacts"]}
@@ -2339,6 +2389,11 @@ def run_trial(
     task_suite, toolset, allowed_tools = suite_for(
         task, experiment=experiment_id, function_discovery=discovery_enabled
     )
+    # A study adapter may fix one MCP surface for every task (stage2_validity_v1 preregisters the
+    # full consolidated toolset). Historical invocations never set this and keep suite_for's lists.
+    override = getattr(args, "mcp_tool_override", None)
+    if override is not None:
+        toolset, allowed_tools = override[0], list(override[1])
     record = {
         "run_id": run_id,
         "trial_id": trial_id,
@@ -2350,7 +2405,7 @@ def run_trial(
             else "consolidated-v2"
             if task_suite is knowledge_pilot and scorer_choice == "knowledge-pilot-v2"
             else knowledge_pilot.configuration()["id"]
-            if task_suite in {hard, knowledge_pilot} and mode == "with-mcp"
+            if task_suite in {hard, stage3b, knowledge_pilot} and mode == "with-mcp"
             else None
         ),
         "suite": "knowledge-tool-value-v2"
@@ -2359,7 +2414,13 @@ def run_trial(
         if task_suite is knowledge_pilot
         else "mcp-smoke"
         if task == MCP_SMOKE_TASK
-        else ("hard-v1" if task_suite is hard else "codex-r"),
+        else (
+            "hard-v1"
+            if task_suite is hard
+            else stage3b.BENCHMARK_ID
+            if task_suite is stage3b
+            else "codex-r"
+        ),
         "mode": mode,
         "repetition": repetition,
         "model": MODEL,
@@ -2447,7 +2508,7 @@ def run_trial(
     generated_names = configured_tools[0]["allowed_tools"] if configured_tools else []
     discovery_policy = (
         record["function_discovery_policy"]
-        if task_suite in {hard, knowledge_pilot}
+        if task_suite in {hard, stage3b, knowledge_pilot}
         else "not_applicable"
     )
     trial_events.emit(
@@ -2542,6 +2603,8 @@ def run_trial(
                 session_config_match=client.session_config_match,
             )
             record["session_id"] = environment["session_id"]
+            record["session_instructions_sha256"] = client.sent_instructions_sha256
+            record["session_tool_types"] = client.sent_tool_types
             progress.event("session created", stage="starting Docker executor")
             trial_events.emit("agent.session.created")
 
@@ -2706,7 +2769,7 @@ def run_trial(
                     total=score.get("total"),
                 )
                 record["score"], record["status"] = score, score["status"]
-                if task_suite in {hard, knowledge_pilot}:
+                if task_suite in {hard, knowledge_pilot, stage3b}:
                     record["fully_correct"] = score["fully_correct"]
                     record["environment_versions"] = score.get("environment")
                 progress.event("scoring completed", stage="cleanup")
@@ -3260,9 +3323,32 @@ def expand_tasks(requested, pilot=None):
     selected = []
     for task in requested or ["R01"]:
         selected += (
-            R_TASKS if task == "all" else hard.task_ids() if task == "hard-pilot" else [task]
+            R_TASKS
+            if task == "all"
+            else hard.task_ids()
+            if task == "hard-pilot"
+            else stage3b.task_ids()
+            if task == "stage3b-pool"
+            else [task]
         )
     return list(dict.fromkeys(selected))
+
+
+def default_image_refs(tasks):
+    """Executor/scorer image references for a task set (Bioconductor images when needed)."""
+    bioc = any(
+        task in knowledge_pilot.PILOT_TASK_IDS
+        and knowledge_pilot.task_for(task).get("required_packages")
+        for task in tasks
+    ) or any(stage3b.owns(task) and stage3b.task_for(task)["image"] == "bioc" for task in tasks)
+    return {
+        "executor": (
+            "rkmcp-codex-runtime:codex-0.163.0-bioc"
+            if bioc
+            else "rkmcp-codex-runtime:codex-0.163.0"
+        ),
+        "scorer": "codex-r-benchmark:pilot-bioc" if bioc else "codex-r-benchmark:pilot",
+    }
 
 
 def planned_trials(tasks, modes, repetitions, instructions="standard", mcp_discovery=None):
@@ -3416,9 +3502,11 @@ def main(argv=None):
         choices=[
             "all",
             "hard-pilot",
+            "stage3b-pool",
             MCP_SMOKE_TASK,
             *R_TASKS,
             *hard.task_ids(),
+            *stage3b.task_ids(),
             *knowledge_pilot.PILOT_TASK_IDS,
         ],
         help="R01..R12 (all), hard tasks, or hard-pilot for every registered hard task",
@@ -3590,19 +3678,9 @@ def main(argv=None):
             else:
                 args.tasks = args.tasks or ["R01"]
         tasks = expand_tasks(args.tasks, pilot=args.pilot)
-        bioc = any(
-            task in knowledge_pilot.PILOT_TASK_IDS
-            and knowledge_pilot.task_for(task).get("required_packages")
-            for task in tasks
-        )
-        args.executor_image = args.executor_image or (
-            "rkmcp-codex-runtime:codex-0.163.0-bioc"
-            if bioc
-            else "rkmcp-codex-runtime:codex-0.163.0"
-        )
-        args.scorer_image = args.scorer_image or (
-            "codex-r-benchmark:pilot-bioc" if bioc else "codex-r-benchmark:pilot"
-        )
+        defaults = default_image_refs(tasks)
+        args.executor_image = args.executor_image or defaults["executor"]
+        args.scorer_image = args.scorer_image or defaults["scorer"]
     if MCP_SMOKE_TASK in tasks and (tasks != [MCP_SMOKE_TASK] or args.modes != ["with-mcp"]):
         parser.error("mcp-smoke runs separately with --tasks mcp-smoke --modes with-mcp")
     if args.mcp_discovery is not None and args.modes != ["with-mcp"]:

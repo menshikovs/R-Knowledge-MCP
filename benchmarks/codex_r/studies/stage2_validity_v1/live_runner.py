@@ -455,32 +455,13 @@ def make_docker_trial_executor(
                                 egress=egress,
                             )
                         elif scored.get("status") == "scored":
-                            passed_cnt = scored.get("passed")
-                            total_cnt = scored.get("total")
-                            if (passed_cnt is None or total_cnt is None) and isinstance(
-                                scored.get("dimensions"), dict
-                            ):
-                                dims = scored["dimensions"]
-                                passed_cnt = sum(
-                                    v["passed"]
-                                    for v in dims.values()
-                                    if isinstance(v.get("passed"), int)
-                                )
-                                total_cnt = sum(
-                                    v["total"]
-                                    for v in dims.values()
-                                    if isinstance(v.get("total"), int)
-                                )
+                            # Canonical result as-is: records.from_runner_result decides whether
+                            # the preregistered passed/total outcome is defined for it.
                             runner_record = {
                                 **_error_record(spec, origin="", category="", code="", live=live),
                                 **base,
                                 "status": "scored",
-                                "score": {
-                                    "passed": passed_cnt,
-                                    "total": total_cnt,
-                                    "fully_correct": scored.get("fully_correct"),
-                                    "dimensions": scored.get("dimensions"),
-                                },
+                                "score": scored,
                                 "error_summary": {"primary_error": None},
                             }
                         else:

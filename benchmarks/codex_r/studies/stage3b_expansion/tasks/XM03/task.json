@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "id": "XM03",
+  "title": "Shiny moduleServer workflow with session-scoped bindCache/bindEvent pipeline, reactiveVal audit counters and headless testServer replay",
+  "category": "multi_step_workflow",
+  "difficulty": "hard",
+  "image": "base",
+  "packages": ["shiny", "cachem"],
+  "fixtures": ["fixture/cohorts.csv"],
+  "source_specs": ["ECO-SH01", "ECO-SH03", "ADDON-B08", "ADDON-C03"],
+  "source_relation": "adapted: Shiny moduleServer, reactiveVal update semantics, bindCache/bindEvent ordering and session scoping, and headless testServer verification combined into a two-function workflow",
+  "difficulty_hypothesis": "Agents pipe bindEvent() before bindCache() (which Shiny rejects at runtime), leave bindCache() at its default cache = 'app' instead of scoping to 'session', omit min_score from the cache key, overwrite the reactiveVal binding with <- instead of calling clicks(clicks() + 1L), or misconfigure shiny::testServer(args = list(...)) and session$returned.",
+  "dimensions": {
+    "r_knowledge_depth": 3, "version_sensitivity": 2, "documentation_dependence": 3,
+    "reasoning_complexity": 2, "code_generation_complexity": 3, "statistical_reasoning": 1,
+    "debugging_difficulty": 2, "package_api_verification_need": 3
+  },
+  "expected_mcp_usefulness": "high",
+  "mcp_relevance": {
+    "classification": "target_candidate",
+    "rationale": "Correctness depends on specific Shiny API contracts: bindCache() must precede bindEvent(), cache = 'session' vs default 'app' scoping, reactiveVal() setter syntax, and shiny::testServer() session$setInputs / session$returned semantics. R-Knowledge-MCP exposes both package function docs and reviewed Shiny framework documentation.",
+    "information_need": "Exact ordering and cache-scope arguments of shiny::bindCache and shiny::bindEvent, reactiveVal update semantics, and shiny::testServer module invocation.",
+    "relevant_mcp_tools": ["get_function_docs", "get_framework_docs", "search_r_documentation", "analyze_shiny_project"],
+    "obtainable_without_mcp": "partly: ?bindCache, ?bindEvent and ?testServer are installed in the container",
+    "version_specific_evidence_value": "medium",
+    "alternative_solution_paths": [
+      "reactive() |> bindCache(input$cohort, input$min_score, cache = 'session') |> bindEvent(input$run)",
+      "reactive() |> bindCache(input$cohort, input$min_score, cache = session$cache) |> bindEvent(input$run)"
+    ]
+  },
+  "independence": {
+    "cluster": "shiny-reactive-workflows",
+    "shared_with": [],
+    "shared_features": ["Shiny moduleServer", "bindCache and bindEvent ordering", "testServer verification"]
+  },
+  "calibration_risks": {
+    "ceiling": "low-moderate: multi-part Shiny reactive + testServer contract",
+    "floor": "low-moderate: explicit function and column specification",
+    "documentation_dependence": "high",
+    "version_sensitivity": "moderate",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": [
+      "bind_event_before_bind_cache",
+      "app_scoped_cache_instead_of_session",
+      "incomplete_cache_key",
+      "reactive_val_overwritten_with_arrow",
+      "eager_evaluation_without_run_event",
+      "no_input_validation"
+    ],
+    "statistical_reasoning_checks": ["weighted_mean_and_empty_subset_na"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"shiny": "1.14.0", "cachem": "1.1.0"},
+    "oracle": "plain-R deterministic request-trace simulator tracking seen (cohort, min_score) keys and weighted means; cross-checked at load against shiny::testServer on reference module"
+  },
+  "checks_documented_in": "verifier/XM03.R"
+}
+

@@ -1,0 +1,678 @@
+{
+  "schema_version": 1,
+  "benchmark": "r-knowledge-mcp-stage3b-v1",
+  "status": "candidate pool: offline-validated verifiers, no paid runs, no stratum assigned",
+  "environment": {
+    "r": "4.5.2",
+    "lockfile": "configs/renv.lock",
+    "pins": {
+      "stats": "4.5.2",
+      "utils": "4.5.2",
+      "tools": "4.5.2",
+      "MASS": "7.3-65",
+      "nlme": "3.1-168",
+      "survival": "3.8-3",
+      "BiocVersion": "3.22.0",
+      "Biobase": "2.70.0",
+      "SummarizedExperiment": "1.40.0",
+      "DESeq2": "1.50.2"
+    },
+    "images": {
+      "scorer": {
+        "base": "codex-r-benchmark:pilot",
+        "bioc": "codex-r-benchmark:pilot-bioc"
+      },
+      "executor": {
+        "base": "rkmcp-codex-runtime:codex-0.163.0",
+        "bioc": "rkmcp-codex-runtime:codex-0.163.0-bioc"
+      }
+    },
+    "note": "Scorer and executor images have identical package sets (2026-10-29)."
+  },
+  "protocol": {
+    "score_seconds": 240,
+    "memory_mb": 2048,
+    "cpus": 2,
+    "pids": 256,
+    "artifact_bytes": 1048576,
+    "primary_metric": "fully_correct: every hidden behavioral check passes",
+    "secondary_metric": "passed/total hidden checks",
+    "outcome_classes": [
+      "scored (fully_correct true: all checks pass)",
+      "scored (fully_correct false: partially correct or incorrect)",
+      "candidate_error (solution.R does not load, or output limit)",
+      "candidate_timeout",
+      "scoring_error (environment or verifier fault; never a candidate failure)"
+    ]
+  },
+  "mcp": {
+    "toolset": "consolidated",
+    "tools": [
+      "search_packages",
+      "get_package",
+      "get_function_docs",
+      "list_package_functions",
+      "check_package_version",
+      "check_r_compatibility",
+      "search_r_documentation",
+      "get_r_documentation_section",
+      "get_framework_docs",
+      "get_r_workflow_guidance",
+      "analyze_r_source",
+      "analyze_r_project",
+      "recommend_technology_stack"
+    ],
+    "b1_discovery_tools": [
+      "search_packages",
+      "get_package",
+      "get_function_docs",
+      "check_package_version",
+      "check_r_compatibility",
+      "search_r_documentation",
+      "get_r_documentation_section",
+      "get_framework_docs",
+      "get_r_workflow_guidance",
+      "analyze_r_source",
+      "analyze_r_project",
+      "recommend_technology_stack"
+    ]
+  },
+  "tasks": [
+    {
+      "id": "XA01",
+      "title": "Brown-Forsythe screening, then classical or Welch one-way ANOVA with matching follow-ups",
+      "category": "anova_statistical_inference",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XA01/prompt.md",
+      "fixtures": [
+        "tasks/XA01/fixture/experiment.csv"
+      ],
+      "metadata": "tasks/XA01/task.json",
+      "verifier": "verifier/XA01.R",
+      "checks": 13,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XA02",
+      "title": "Balanced two-way factorial ANOVA with interaction-aware simple-effects reporting",
+      "category": "anova_statistical_inference",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XA02/prompt.md",
+      "fixtures": [
+        "tasks/XA02/fixture/experiment.csv"
+      ],
+      "metadata": "tasks/XA02/task.json",
+      "verifier": "verifier/XA02.R",
+      "checks": 13,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XA03",
+      "title": "Equal-weight marginal (Type III) tests in an unbalanced two-factor design",
+      "category": "anova_statistical_inference",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XA03/prompt.md",
+      "fixtures": [
+        "tasks/XA03/fixture/experiment.csv"
+      ],
+      "metadata": "tasks/XA03/task.json",
+      "verifier": "verifier/XA03.R",
+      "checks": 13,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XA04",
+      "title": "One-factor repeated-measures ANOVA with a Greenhouse-Geisser sphericity rule",
+      "category": "anova_statistical_inference",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XA04/prompt.md",
+      "fixtures": [
+        "tasks/XA04/fixture/measurements.csv"
+      ],
+      "metadata": "tasks/XA04/task.json",
+      "verifier": "verifier/XA04.R",
+      "checks": 13,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XA05",
+      "title": "ANCOVA with a slope-homogeneity decision rule and covariate-adjusted means",
+      "category": "anova_statistical_inference",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XA05/prompt.md",
+      "fixtures": [
+        "tasks/XA05/fixture/trial.csv"
+      ],
+      "metadata": "tasks/XA05/task.json",
+      "verifier": "verifier/XA05.R",
+      "checks": 12,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XA06",
+      "title": "Treatment-by-time interaction with missing visits: random-intercept model and ML likelihood-ratio test",
+      "category": "anova_statistical_inference",
+      "image": "base",
+      "packages": [
+        "stats",
+        "nlme"
+      ],
+      "spec": "tasks/XA06/prompt.md",
+      "fixtures": [
+        "tasks/XA06/fixture/visits.csv"
+      ],
+      "metadata": "tasks/XA06/task.json",
+      "verifier": "verifier/XA06.R",
+      "checks": 13,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XG01",
+      "title": "Daily mean time series on a complete calendar with a broken line at gaps",
+      "category": "ggplot2_visualization",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "spec": "tasks/XG01/prompt.md",
+      "fixtures": [
+        "tasks/XG01/fixture/readings.csv"
+      ],
+      "metadata": "tasks/XG01/task.json",
+      "verifier": "verifier/XG01.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XG02",
+      "title": "Group-mean bars with correct NA handling, level order and no empty axis slot",
+      "category": "ggplot2_visualization",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "spec": "tasks/XG02/prompt.md",
+      "fixtures": [
+        "tasks/XG02/fixture/outcomes.csv"
+      ],
+      "metadata": "tasks/XG02/task.json",
+      "verifier": "verifier/XG02.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XG03",
+      "title": "Within-group proportion heatmap with complete grid and exact percent labels",
+      "category": "ggplot2_visualization",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "spec": "tasks/XG03/prompt.md",
+      "fixtures": [
+        "tasks/XG03/fixture/respondents.csv"
+      ],
+      "metadata": "tasks/XG03/task.json",
+      "verifier": "verifier/XG03.R",
+      "checks": 12,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XG04",
+      "title": "Zoom with the coordinate system so the regression line still uses all observations",
+      "category": "ggplot2_visualization",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "spec": "tasks/XG04/prompt.md",
+      "fixtures": [
+        "tasks/XG04/fixture/measurements.csv"
+      ],
+      "metadata": "tasks/XG04/task.json",
+      "verifier": "verifier/XG04.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XG05",
+      "title": "Per-participant trajectories with a mean trajectory: grouping, ordering and missing scores",
+      "category": "ggplot2_visualization",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "spec": "tasks/XG05/prompt.md",
+      "fixtures": [
+        "tasks/XG05/fixture/trajectories.csv"
+      ],
+      "metadata": "tasks/XG05/task.json",
+      "verifier": "verifier/XG05.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XM01",
+      "title": "DESeq2 differential expression with a batch covariate, contrast direction, alpha-matched filtering and name-based sample alignment",
+      "category": "multi_step_workflow",
+      "image": "bioc",
+      "packages": [
+        "DESeq2",
+        "SummarizedExperiment",
+        "BiocVersion"
+      ],
+      "spec": "tasks/XM01/prompt.md",
+      "fixtures": [
+        "tasks/XM01/fixture/counts.csv",
+        "tasks/XM01/fixture/coldata.csv"
+      ],
+      "metadata": "tasks/XM01/task.json",
+      "verifier": "verifier/XM01.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XM02",
+      "title": "Multi-site treatment investigation with column-selective missingness screening, post-treatment exclusion, interaction gate and site-specific vs pooled contrasts",
+      "category": "multi_step_workflow",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XM02/prompt.md",
+      "fixtures": [
+        "tasks/XM02/fixture/study.csv"
+      ],
+      "metadata": "tasks/XM02/task.json",
+      "verifier": "verifier/XM02.R",
+      "checks": 9,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XM03",
+      "title": "Shiny moduleServer workflow with session-scoped bindCache/bindEvent pipeline, reactiveVal audit counters and headless testServer replay",
+      "category": "multi_step_workflow",
+      "image": "base",
+      "packages": [
+        "shiny",
+        "cachem"
+      ],
+      "spec": "tasks/XM03/prompt.md",
+      "fixtures": [
+        "tasks/XM03/fixture/cohorts.csv"
+      ],
+      "metadata": "tasks/XM03/task.json",
+      "verifier": "verifier/XM03.R",
+      "checks": 8,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XM04",
+      "title": "Transcript-to-gene SummarizedExperiment workflow with sequence MD5 provenance verification, abundance-weighted effective length and sample metadata alignment",
+      "category": "multi_step_workflow",
+      "image": "bioc",
+      "packages": [
+        "SummarizedExperiment",
+        "BiocVersion",
+        "digest"
+      ],
+      "spec": "tasks/XM04/prompt.md",
+      "fixtures": [
+        "tasks/XM04/fixture/tx_counts.csv",
+        "tasks/XM04/fixture/tx_tpm.csv",
+        "tasks/XM04/fixture/tx_efflen.csv",
+        "tasks/XM04/fixture/coldata.csv",
+        "tasks/XM04/fixture/tx_manifest.csv"
+      ],
+      "metadata": "tasks/XM04/task.json",
+      "verifier": "verifier/XM04.R",
+      "checks": 9,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XP01",
+      "title": "Transitive hard-dependency closure of an installed package from its own metadata",
+      "category": "package_discovery",
+      "image": "base",
+      "packages": [
+        "tools",
+        "utils"
+      ],
+      "spec": "tasks/XP01/prompt.md",
+      "fixtures": [
+        "tasks/XP01/fixture/deps_sample.csv"
+      ],
+      "metadata": "tasks/XP01/task.json",
+      "verifier": "verifier/XP01.R",
+      "checks": 8,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XP02",
+      "title": "Direct reverse dependencies among installed packages (whole-name matching)",
+      "category": "package_discovery",
+      "image": "base",
+      "packages": [
+        "tools",
+        "utils"
+      ],
+      "spec": "tasks/XP02/prompt.md",
+      "fixtures": [
+        "tasks/XP02/fixture/imports_sample.csv"
+      ],
+      "metadata": "tasks/XP02/task.json",
+      "verifier": "verifier/XP02.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XP03",
+      "title": "Minimum R version required by a package and everything it needs (numeric version comparison)",
+      "category": "package_discovery",
+      "image": "base",
+      "packages": [
+        "tools",
+        "utils"
+      ],
+      "spec": "tasks/XP03/prompt.md",
+      "fixtures": [
+        "tasks/XP03/fixture/r_requirements_sample.csv"
+      ],
+      "metadata": "tasks/XP03/task.json",
+      "verifier": "verifier/XP03.R",
+      "checks": 8,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XP04",
+      "title": "Base, CRAN or Bioconductor? Repository identity of installed packages, including RSPM snapshots",
+      "category": "package_discovery",
+      "image": "bioc",
+      "packages": [
+        "utils",
+        "Biobase",
+        "DESeq2",
+        "BiocVersion"
+      ],
+      "spec": "tasks/XP04/prompt.md",
+      "fixtures": [
+        "tasks/XP04/fixture/origin_sample.csv"
+      ],
+      "metadata": "tasks/XP04/task.json",
+      "verifier": "verifier/XP04.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XP05",
+      "title": "Check version requirements against the installed library with numeric version semantics",
+      "category": "package_discovery",
+      "image": "base",
+      "packages": [
+        "utils"
+      ],
+      "spec": "tasks/XP05/prompt.md",
+      "fixtures": [
+        "tasks/XP05/fixture/requirements_sample.csv"
+      ],
+      "metadata": "tasks/XP05/task.json",
+      "verifier": "verifier/XP05.R",
+      "checks": 9,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XR01",
+      "title": "Migrate a legacy helper off dplyr's defunct underscore verbs (string-based column selection)",
+      "category": "code_repair_migration",
+      "image": "base",
+      "packages": [
+        "dplyr"
+      ],
+      "spec": "tasks/XR01/prompt.md",
+      "fixtures": [
+        "tasks/XR01/fixture/scores.csv"
+      ],
+      "metadata": "tasks/XR01/task.json",
+      "verifier": "verifier/XR01.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XR02",
+      "title": "Repair a paired t-test written with the formula interface (paired = TRUE is an error since R 4.4)",
+      "category": "code_repair_migration",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XR02/prompt.md",
+      "fixtures": [
+        "tasks/XR02/fixture/clinic.csv"
+      ],
+      "metadata": "tasks/XR02/task.json",
+      "verifier": "verifier/XR02.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XR03",
+      "title": "Repair a legacy moving average: short and empty inputs, missing values and attributes",
+      "category": "code_repair_migration",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "spec": "tasks/XR03/prompt.md",
+      "fixtures": [
+        "tasks/XR03/fixture/series.csv"
+      ],
+      "metadata": "tasks/XR03/task.json",
+      "verifier": "verifier/XR03.R",
+      "checks": 12,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XR04",
+      "title": "Repair a long-to-wide reshape that errors on repeated measurements (spread() duplicates)",
+      "category": "code_repair_migration",
+      "image": "base",
+      "packages": [
+        "tidyr"
+      ],
+      "spec": "tasks/XR04/prompt.md",
+      "fixtures": [
+        "tasks/XR04/fixture/long.csv"
+      ],
+      "metadata": "tasks/XR04/task.json",
+      "verifier": "verifier/XR04.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XR05",
+      "title": "Migrate a parameter-grid evaluator off deprecated purrr cross() and invoke_map()",
+      "category": "code_repair_migration",
+      "image": "base",
+      "packages": [
+        "purrr",
+        "tidyr"
+      ],
+      "spec": "tasks/XR05/prompt.md",
+      "fixtures": [
+        "tasks/XR05/fixture/grid.csv"
+      ],
+      "metadata": "tasks/XR05/task.json",
+      "verifier": "verifier/XR05.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XV01",
+      "title": "Multiple quantiles per group: summarise() no longer returns several rows in a current dplyr",
+      "category": "version_sensitive_api",
+      "image": "base",
+      "packages": [
+        "dplyr",
+        "stats"
+      ],
+      "spec": "tasks/XV01/prompt.md",
+      "fixtures": [
+        "tasks/XV01/fixture/sales.csv"
+      ],
+      "metadata": "tasks/XV01/task.json",
+      "verifier": "verifier/XV01.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XV02",
+      "title": "Price in force on the order date: rolling join without future leakage or many-to-many notices",
+      "category": "version_sensitive_api",
+      "image": "base",
+      "packages": [
+        "dplyr"
+      ],
+      "spec": "tasks/XV02/prompt.md",
+      "fixtures": [
+        "tasks/XV02/fixture/orders.csv",
+        "tasks/XV02/fixture/prices.csv"
+      ],
+      "metadata": "tasks/XV02/task.json",
+      "verifier": "verifier/XV02.R",
+      "checks": 10,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XV03",
+      "title": "Classifying objects in R 4.x: matrix class vectors, tibbles and classed atomic vectors",
+      "category": "version_sensitive_api",
+      "image": "base",
+      "packages": [
+        "tibble"
+      ],
+      "spec": "tasks/XV03/prompt.md",
+      "fixtures": [
+        "tasks/XV03/fixture/examples.csv"
+      ],
+      "metadata": "tasks/XV03/task.json",
+      "verifier": "verifier/XV03.R",
+      "checks": 11,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XV04",
+      "title": "Density histograms with a legend inside: deprecated ggplot2 spellings fail under the pinned version",
+      "category": "version_sensitive_api",
+      "image": "base",
+      "packages": [
+        "ggplot2"
+      ],
+      "spec": "tasks/XV04/prompt.md",
+      "fixtures": [
+        "tasks/XV04/fixture/measurements.csv"
+      ],
+      "metadata": "tasks/XV04/task.json",
+      "verifier": "verifier/XV04.R",
+      "checks": 12,
+      "artifacts": [
+        "solution.R"
+      ]
+    },
+    {
+      "id": "XV05",
+      "title": "Parsing CSV held in a string: literal data needs I() in readr 2.2, and type guessing loses identifiers",
+      "category": "version_sensitive_api",
+      "image": "base",
+      "packages": [
+        "readr",
+        "utils"
+      ],
+      "spec": "tasks/XV05/prompt.md",
+      "fixtures": [
+        "tasks/XV05/fixture/events.csv"
+      ],
+      "metadata": "tasks/XV05/task.json",
+      "verifier": "verifier/XV05.R",
+      "checks": 12,
+      "artifacts": [
+        "solution.R"
+      ]
+    }
+  ]
+}

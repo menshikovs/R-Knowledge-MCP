@@ -1,0 +1,5 @@
+"sample","condition","batch"
+"SMP03","trt","B1"
+"SMP01","ctrl","B1"
+"SMP02","ctrl","B2"
+"SMP04","trt","B2"

@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "id": "XG01",
+  "title": "Daily mean time series on a complete calendar with a broken line at gaps",
+  "category": "ggplot2_visualization",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["ggplot2", "stats"],
+  "fixtures": ["fixture/readings.csv"],
+  "source_specs": ["GGP-T01", "GGP-B03", "GGP-E04"],
+  "source_relation": "adapted: function-style contract, plot inspected through ggplot_build on withheld data",
+  "difficulty_hypothesis": "Agents aggregate only the observed days (so geom_line interpolates across gaps), fill gaps with zero, or silence NA with na.rm = TRUE which silently joins the line; a day with readings but only missing scores is also easy to mis-handle.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 1, "documentation_dependence": 1,
+    "reasoning_complexity": 2, "code_generation_complexity": 2, "statistical_reasoning": 0,
+    "debugging_difficulty": 1, "package_api_verification_need": 1
+  },
+  "expected_mcp_usefulness": "low",
+  "mcp_relevance": {
+    "classification": "control",
+    "rationale": "The failure modes concern how ggplot2 treats NA in lines and how to build a complete calendar; they are semantic traps solvable from basic ggplot2 knowledge and local help. Nothing depends on a version-specific fact.",
+    "information_need": "How geom_line handles NA and what na.rm does; building a complete Date sequence.",
+    "relevant_mcp_tools": ["get_function_docs"],
+    "obtainable_without_mcp": "yes: ?geom_line and ?seq.Date are installed locally",
+    "version_specific_evidence_value": "low",
+    "alternative_solution_paths": [
+      "tapply over a factor of all calendar days",
+      "tidyr::complete on aggregated means",
+      "merge with a complete calendar data frame"
+    ]
+  },
+  "independence": {
+    "cluster": "ggplot2-missing-data",
+    "shared_with": ["XG02"],
+    "shared_features": ["NA handling in aggregated plots"]
+  },
+  "calibration_risks": {
+    "ceiling": "moderate-high: a familiar pattern for strong models",
+    "floor": "low",
+    "documentation_dependence": "low",
+    "version_sensitivity": "low",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": [
+      "observed_days_only",
+      "gaps_filled_with_zero",
+      "na_rm_bridges_gaps",
+      "median_instead_of_mean",
+      "default_axis_titles",
+      "non_date_axis"
+    ],
+    "statistical_reasoning_checks": []
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"ggplot2": "4.0.3"},
+    "oracle": "tapply of daily means over the full calendar; plot inspected through ggplot_build (layer data, geom params, scales, labels)"
+  },
+  "checks_documented_in": "verifier/XG01.R"
+}

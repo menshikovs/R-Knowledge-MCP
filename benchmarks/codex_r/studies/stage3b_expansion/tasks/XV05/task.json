@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "id": "XV05",
+  "title": "Parsing CSV held in a string: literal data needs I() in readr 2.2, and type guessing loses identifiers",
+  "category": "version_sensitive_api",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["readr", "utils"],
+  "fixtures": ["fixture/events.csv"],
+  "source_specs": ["ADDON-C04", "HARD-H03"],
+  "source_relation": "original construction on the readr 2.2.0 literal-data deprecation; closest registry families are deprecated-parameter handling and explicit-loss parsing",
+  "difficulty_hypothesis": "Widely taught read_csv(text_string) now warns in readr 2.2.0 (literal data must be wrapped in I()); type guessing silently turns '007' into 7 and invalid timestamps into guesses; counting parse problems requires telling missing values from unparseable ones.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 3, "documentation_dependence": 2,
+    "reasoning_complexity": 2, "code_generation_complexity": 2, "statistical_reasoning": 0,
+    "debugging_difficulty": 1, "package_api_verification_need": 2
+  },
+  "expected_mcp_usefulness": "plausible",
+  "mcp_relevance": {
+    "classification": "target_candidate",
+    "rationale": "The literal-data change is a very recent readr release note that most training material predates; knowing the installed readr's behaviour requires version-specific documentation. The warning text itself shows the fix, and base R read.csv(text=) avoids the issue altogether.",
+    "information_need": "How the installed readr expects in-memory CSV text to be passed, and how to control column types.",
+    "relevant_mcp_tools": ["get_function_docs", "search_r_documentation", "get_package_info"],
+    "obtainable_without_mcp": "partly: the warning message prints the I() fix; base R is a complete fallback",
+    "version_specific_evidence_value": "high",
+    "alternative_solution_paths": [
+      "readr::read_csv(I(text), col_types = ...)",
+      "utils::read.csv(text = text, colClasses = 'character')",
+      "readr::read_lines + manual split"
+    ]
+  },
+  "independence": {"cluster": "readr-ingestion", "shared_with": [], "shared_features": []},
+  "calibration_risks": {
+    "ceiling": "moderate",
+    "floor": "low",
+    "documentation_dependence": "moderate",
+    "version_sensitivity": "high",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": ["literal_data_without_I", "type_guessing_loses_leading_zeros", "missing_counted_as_problem", "local_timezone", "header_only_types"],
+    "statistical_reasoning_checks": []
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"readr": "2.2.0"},
+    "observed": "read_csv('a,b\\n1,2') warns: The `file` argument of `read_csv()` should use `I()` for literal data as of readr 2.2.0",
+    "oracle": "base R read.csv(text=, colClasses = 'character') with explicit strptime/as.numeric conversion; any warning fails"
+  },
+  "checks_documented_in": "verifier/XV05.R"
+}

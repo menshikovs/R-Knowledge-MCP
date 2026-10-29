@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "id": "XG03",
+  "title": "Within-group proportion heatmap with complete grid and exact percent labels",
+  "category": "ggplot2_visualization",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["ggplot2", "stats"],
+  "fixtures": ["fixture/respondents.csv"],
+  "source_specs": ["GGP-T04", "GGP-B02"],
+  "source_relation": "adapted: function-style contract, mapped-value inspection instead of image comparison",
+  "difficulty_hypothesis": "Agents normalise by region or by the grand total, drop empty combinations (so zero tiles vanish), round labels to whole percents, or let unused factor levels and NA rows distort the axes.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 0, "documentation_dependence": 1,
+    "reasoning_complexity": 2, "code_generation_complexity": 2, "statistical_reasoning": 1,
+    "debugging_difficulty": 0, "package_api_verification_need": 0
+  },
+  "expected_mcp_usefulness": "none",
+  "mcp_relevance": {
+    "classification": "control",
+    "rationale": "Normalisation margin and a complete grid are data-wrangling semantics; no package, version or documentation fact is decisive.",
+    "information_need": "prop.table margins or dplyr/tidyr completion; sprintf percent formatting.",
+    "relevant_mcp_tools": ["get_function_docs"],
+    "obtainable_without_mcp": "yes",
+    "version_specific_evidence_value": "none",
+    "alternative_solution_paths": [
+      "table + row-normalised as.data.frame",
+      "dplyr::count + tidyr::complete + group-wise share",
+      "xtabs with proportions"
+    ]
+  },
+  "independence": {
+    "cluster": "ggplot2-aggregation",
+    "shared_with": [],
+    "shared_features": ["pre-aggregation before plotting"]
+  },
+  "calibration_risks": {
+    "ceiling": "high: a standard pattern",
+    "floor": "low",
+    "documentation_dependence": "low",
+    "version_sensitivity": "none",
+    "blockers": ["ceiling effect likely for strong baselines: calibration must confirm"]
+  },
+  "analysis": {
+    "failure_modes": [
+      "normalised_by_region",
+      "normalised_by_total",
+      "empty_combinations_dropped",
+      "label_precision",
+      "unused_levels_on_axis",
+      "default_axis_titles"
+    ],
+    "statistical_reasoning_checks": ["conditional_vs_joint_proportion"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"ggplot2": "4.0.3"},
+    "oracle": "plain-R row-normalised table; layers' mapped values (tile x/y/fill, text label) via computed_mapping, discrete axis order via trained scales"
+  },
+  "checks_documented_in": "verifier/XG03.R"
+}

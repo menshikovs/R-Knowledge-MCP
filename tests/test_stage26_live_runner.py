@@ -287,6 +287,18 @@ def test_legacy_runner_is_untouched_and_still_reports_its_plain_bridge():
 _STATUS = None
 
 
+def _canonically_correct(rec):
+    """D01 (knowledge-pilot-v2.1) reports dimensions, not passed/total: the primary outcome is
+    undefined (missing) and the scorer's own verdict is preserved in scorer_result."""
+    result = rec.get("scorer_result") or {}
+    return (
+        rec["outcome_kind"] == "scoring_error"
+        and rec["score"] is None
+        and result.get("primary_metric") == "undefined_by_canonical_scorer"
+        and result.get("fully_correct") is True
+    )
+
+
 def _status():
     global _STATUS
     if _STATUS is None:
@@ -481,7 +493,7 @@ def test_live_three_arm_plan_produces_valid_records_telemetry_and_clean_docker(l
     )
     assert result["dataset_problems"] == [] and result["finalized_count"] == 3
     by_arm = {r["arm"]: r for r in result["records"]}
-    assert all(r["outcome_kind"] == "scored" and r["score"] == 1.0 for r in by_arm.values())
+    assert all(_canonically_correct(r) for r in by_arm.values())
     assert all(r["violations"] == [] and r["synthetic"] is True for r in by_arm.values())
     assert by_arm["A"]["mcp"]["available"] is False and by_arm["A"]["mcp"]["attempted"] == 0
     assert by_arm["C"]["mcp"]["attempted"] == 1 == by_arm["C"]["mcp"]["delivered"]
@@ -546,7 +558,7 @@ def test_live_interruption_mid_trial_cleans_up_then_resumes_without_rerunning(li
         e for e in journal if e["event"] == "trial_attempt_started" and e["attempt_index"] == 2
     )
     assert link["retry_of_attempt_id"] == f"{second}__att01"
-    assert all(r["outcome_kind"] == "scored" for r in resumed["records"])
+    assert all(_canonically_correct(r) for r in resumed["records"])
 
 
 @pytest.mark.docker
@@ -584,7 +596,7 @@ def test_live_isolation_failure_in_a_plan_fails_closed_without_running_the_workl
     )
     record = next(o for s, _i, o in capture.outputs if s["trial_id"] == broken)["runner_record"]
     assert "workload_seconds" not in record["live_evidence"]  # workload never started
-    assert all(r["outcome_kind"] == "scored" for t, r in by_id.items() if t != broken)
+    assert all(_canonically_correct(r) for t, r in by_id.items() if t != broken)
     assert result["resource_cleanup"]["remaining_after"] == {"containers": [], "networks": []}
 
 

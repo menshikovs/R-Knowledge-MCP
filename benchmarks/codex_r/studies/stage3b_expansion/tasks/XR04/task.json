@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "id": "XR04",
+  "title": "Repair a long-to-wide reshape that errors on repeated measurements (spread() duplicates)",
+  "category": "code_repair_migration",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["tidyr"],
+  "fixtures": ["fixture/long.csv"],
+  "source_specs": ["HARD-H03"],
+  "source_relation": "adapted: duplicate-key reshaping with an explicit loss policy (mean of non-missing values), expressed as a repair of a delivered function",
+  "difficulty_hypothesis": "spread() cannot reshape duplicated id/key pairs; the modern pivot_wider() default silently returns list-columns with a warning. Repairs mis-handle missing values, ordering of rows and columns, id types and all-missing ids.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 2, "documentation_dependence": 2,
+    "reasoning_complexity": 2, "code_generation_complexity": 2, "statistical_reasoning": 0,
+    "debugging_difficulty": 2, "package_api_verification_need": 2
+  },
+  "expected_mcp_usefulness": "plausible",
+  "mcp_relevance": {
+    "classification": "target_candidate",
+    "rationale": "The superseded spread()/gather() verbs and the pivot_wider(values_fn =) replacement are tidyr-version-specific; documentation for the installed tidyr states the duplicate-handling behaviour. Base R remains a complete fallback, and the runtime error and warning both name values_fn.",
+    "information_need": "How the installed tidyr handles duplicate keys and what pivot_wider's values_fn does.",
+    "relevant_mcp_tools": ["get_function_docs", "search_r_documentation", "get_package_info"],
+    "obtainable_without_mcp": "partly: spread() error text names the shared keys; pivot_wider's warning names values_fn; base R aggregate/tapply works",
+    "version_specific_evidence_value": "medium",
+    "alternative_solution_paths": ["pivot_wider(values_fn = mean)", "aggregate then reshape", "tapply/vapply loops"]
+  },
+  "independence": {"cluster": "tidyr-reshaping", "shared_with": [], "shared_features": ["tidyr superseded verbs"]},
+  "calibration_risks": {
+    "ceiling": "high for strong baselines",
+    "floor": "low",
+    "documentation_dependence": "moderate",
+    "version_sensitivity": "moderate",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": ["spread_unchanged", "pivot_wider_list_columns", "sum_instead_of_mean", "missing_values_poison_mean", "column_order", "all_missing_ids_dropped"],
+    "statistical_reasoning_checks": ["aggregation_policy_for_repeats"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"tidyr": "1.3.2"},
+    "observed": "spread() on duplicated id/key pairs errors: Each row of output must be identified by a unique combination of keys",
+    "oracle": "base-R loops over sorted ids and keys; mean of non-missing values per cell"
+  },
+  "checks_documented_in": "verifier/XR04.R"
+}

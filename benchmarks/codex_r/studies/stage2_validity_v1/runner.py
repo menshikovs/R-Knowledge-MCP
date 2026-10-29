@@ -43,7 +43,9 @@ from benchmarks.codex_r.studies.stage2_validity_v1 import (
     manifest,
     protocol,
     records,
+    scorer_bindings,
 )
+from benchmarks.codex_r.studies.stage3b_expansion import suite as stage3b_suite
 
 DEFAULT_MODEL = "gpt-6-luna"
 DEFAULT_EFFORT = "medium"
@@ -68,6 +70,14 @@ class StudyExecutionConfig:
     max_consecutive_infra_failures: int = 3
     require_egress_log: bool = True
     synthetic: bool = True
+    # Violations that every trial of a declared execution environment carries (the legacy
+    # runner's plain bridge network). They are still recorded and still invalidating in the
+    # analysis; they only do not trigger the operational stop_on_invalidating_violation.
+    structural_violation_codes: tuple[str, ...] = ()
+    # Preregistration amendment applied to this run's trials (None: protocol 1.0.0) and, for A1,
+    # the capability policy every trial is compared against (identical across arms).
+    protocol_amendment: str | None = None
+    capability_policy: dict[str, Any] | None = None
 
     def expected_contract(self, scorer_version: str) -> dict[str, Any]:
         base = protocol.base_instructions()
@@ -79,15 +89,25 @@ class StudyExecutionConfig:
             "base_instructions": base,
             "mcp_tools": tools,
             "require_egress_log": self.require_egress_log,
+            "protocol_amendment": self.protocol_amendment,
+            "capability_policy": self.capability_policy,
         }
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        # JSON form, so a resumed run compares equal to its saved run_config.json.
+        return {**asdict(self), "structural_violation_codes": list(self.structural_violation_codes)}
 
 
 def _task_and_scorer_meta(task_id: str) -> dict[str, str]:
     """Return suite, scorer_version, task_sha256, and scorer_sha256 for ``task_id``."""
     entry = next((e for e in calibration.CATALOG if e["task"] == task_id), None)
+    if entry is None and stage3b_suite.owns(task_id):
+        # Stage 3B tasks live in their own versioned catalogue, never in the 31-task one.
+        entry = {
+            "task": task_id,
+            "suite": stage3b_suite.BENCHMARK_ID,
+            "scorer": scorer_bindings.STAGE3B_SCORER,
+        }
     if entry is None:
         raise ValueError(f"Unknown task_id: {task_id!r}")
     files = manifest.task_files(task_id)
@@ -98,21 +118,15 @@ def _task_and_scorer_meta(task_id: str) -> dict[str, str]:
         json.dumps(file_digests, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()
 
-    scorer_ver = entry["scorer"]
-    if scorer_ver == "knowledge-pilot-v2.1":
-        scorer_file = manifest.CODEX / "knowledge_pilot_v21.py"
-    elif scorer_ver == "knowledge-pilot-v2":
-        scorer_file = manifest.CODEX / "knowledge_pilot_v2.py"
-    elif scorer_ver == "hard-v1":
-        scorer_file = manifest.CODEX / "hard" / "suite.py"
-    else:
-        scorer_file = manifest.CODEX / "runner" / "bench.py"
-    scorer_sha = manifest.digest(scorer_file)
+    # The digest covers the scorer that actually executes for this task, not merely the module
+    # named by the catalogue label (see scorer_bindings).
+    binding = scorer_bindings.bind(task_id, entry["scorer"])
     return {
         "suite": entry["suite"],
-        "scorer_version": scorer_ver,
+        "scorer_version": binding.scorer_version,
+        "catalogue_scorer_label": entry["scorer"],
         "task_sha256": task_sha,
-        "scorer_sha256": scorer_sha,
+        "scorer_sha256": binding.digest(),
     }
 
 
@@ -720,7 +734,8 @@ def execute_study_plan(
                 consecutive_infra_failures = 0
 
             if config.stop_on_invalidating_violation and any(
-                v.get("invalidating") for v in stage2_rec["violations"]
+                v.get("invalidating") and v.get("code") not in config.structural_violation_codes
+                for v in stage2_rec["violations"]
             ):
                 stopped_reason = f"invalidating_protocol_violation_in_{tid}"
             elif controller_stop is not None:

@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "id": "XV03",
+  "title": "Classifying objects in R 4.x: matrix class vectors, tibbles and classed atomic vectors",
+  "category": "version_sensitive_api",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["tibble"],
+  "fixtures": ["fixture/examples.csv"],
+  "source_specs": ["ECO-V02"],
+  "source_relation": "original construction; closest registry family is the object/type semantics group",
+  "difficulty_hypothesis": "R 3.x-era idioms (class(x) == 'matrix', inherits(x, 'array') for matrices, is.vector() for classed vectors) break or mis-classify in R 4.x, where a matrix has class c('matrix','array') and `if` rejects conditions of length > 1.",
+  "dimensions": {
+    "r_knowledge_depth": 3, "version_sensitivity": 2, "documentation_dependence": 1,
+    "reasoning_complexity": 2, "code_generation_complexity": 1, "statistical_reasoning": 0,
+    "debugging_difficulty": 2, "package_api_verification_need": 0
+  },
+  "expected_mcp_usefulness": "low",
+  "mcp_relevance": {
+    "classification": "exploratory",
+    "rationale": "The decisive facts concern base R semantics that changed in R 4.0/4.2; they are discoverable by running code and are in the installed base documentation. No package metadata is involved, so MCP is of limited use, but version-specific NEWS knowledge could matter.",
+    "information_need": "How class(), is.matrix(), dim() and inherits() behave on matrices, tibbles and classed vectors in R 4.x.",
+    "relevant_mcp_tools": ["get_function_docs"],
+    "obtainable_without_mcp": "yes: running the candidate against examples exposes every failure",
+    "version_specific_evidence_value": "medium",
+    "alternative_solution_paths": ["dim()-based", "is.matrix/is.array-based", "inherits-based"]
+  },
+  "independence": {"cluster": "base-r-object-semantics", "shared_with": [], "shared_features": []},
+  "calibration_risks": {
+    "ceiling": "high for strong baselines",
+    "floor": "low",
+    "documentation_dependence": "low",
+    "version_sensitivity": "moderate",
+    "blockers": ["ceiling effect likely: calibration must confirm"]
+  },
+  "analysis": {
+    "failure_modes": ["class_equals_matrix_length_2", "array_before_matrix", "tibble_treated_as_data_frame", "is_vector_on_classed", "data_frame_as_list", "error_on_environments_and_formulas"],
+    "statistical_reasoning_checks": []
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"tibble": "3.3.1"},
+    "oracle": "declarative table of 31 constructions and kinds, cross-checked at load time against defining properties (dim length, tbl_df inheritance)"
+  },
+  "checks_documented_in": "verifier/XV03.R"
+}

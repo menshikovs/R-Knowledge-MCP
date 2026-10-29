@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "id": "XA01",
+  "title": "Brown-Forsythe screening, then classical or Welch one-way ANOVA with matching follow-ups",
+  "category": "anova_statistical_inference",
+  "difficulty": "medium",
+  "image": "base",
+  "packages": ["stats"],
+  "fixtures": ["fixture/experiment.csv"],
+  "source_specs": ["ANOVA-A03", "ANOVA-A01", "ANOVA-A02"],
+  "source_relation": "adapted: fixed analysis plan, function-style contract, closed-form oracle",
+  "difficulty_hypothesis": "Agents reach for car::leveneTest (not installed) or mean-centred Levene, apply pooled Tukey after a Welch omnibus, or forget that Welch's denominator df is fractional and that the pairwise branch must be unpooled with Holm.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 0, "documentation_dependence": 1,
+    "reasoning_complexity": 2, "code_generation_complexity": 2, "statistical_reasoning": 3,
+    "debugging_difficulty": 0, "package_api_verification_need": 1
+  },
+  "expected_mcp_usefulness": "low",
+  "mcp_relevance": {
+    "classification": "control",
+    "rationale": "The decision rule and every formula are given in the prompt; the work is implementation of base-R statistics. MCP package documentation does not change the answer.",
+    "information_need": "Exact definitions of Welch's F and Tukey-Kramer p-values, and which base functions expose them (oneway.test, TukeyHSD, pairwise.t.test).",
+    "relevant_mcp_tools": ["get_function_docs"],
+    "obtainable_without_mcp": "yes: stats help pages are installed locally",
+    "version_specific_evidence_value": "none",
+    "alternative_solution_paths": [
+      "oneway.test + TukeyHSD + manual unpooled t tests",
+      "closed-form formulas for every statistic",
+      "pairwise.t.test(pool.sd = FALSE) for the Welch branch"
+    ]
+  },
+  "independence": {
+    "cluster": "anova-independent-groups",
+    "shared_with": [],
+    "shared_features": ["one-way layout", "pooled versus unpooled variance"]
+  },
+  "calibration_risks": {
+    "ceiling": "moderate: the plan is explicit and the building blocks are standard",
+    "floor": "low",
+    "documentation_dependence": "low",
+    "version_sensitivity": "none",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": [
+      "mean_centred_levene",
+      "always_classical",
+      "pooled_tukey_after_welch",
+      "integer_welch_df",
+      "group_order_or_diff_sign",
+      "no_error_for_two_groups"
+    ],
+    "statistical_reasoning_checks": ["variance_assumption_drives_method", "pooled_vs_unpooled_followup"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"stats": "4.5.2"},
+    "oracle": "closed-form Brown-Forsythe F, Welch F with weights n/s^2, Tukey-Kramer via ptukey; cross-checked at load against oneway.test, TukeyHSD and pairwise.t.test"
+  },
+  "checks_documented_in": "verifier/XA01.R"
+}

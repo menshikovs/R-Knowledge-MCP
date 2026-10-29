@@ -1,0 +1,3800 @@
+{
+  "catalog_version": "stage3b-catalog-v1.0",
+  "benchmark": "r-knowledge-mcp-stage3b-v1",
+  "pool": "stage3b-candidate-pool-v1",
+  "stratum_policy": "No Stage 3B task is assigned S1, S2, RC or Q. Strata are assigned by a later, versioned review of Arm-A calibration data; thresholds are the preregistered ones.",
+  "scorer_files": {
+    "benchmarks/codex_r/studies/stage3b_expansion/suite.py": "9ec15175c379199649cd0a67cf8fa48860ca95cc0e37ecfb88454ccfe3943431",
+    "benchmarks/codex_r/studies/stage3b_expansion/verifier/run.R": "b449346fcd13d6dd84846ecedb6e76d4e9d132726d9190f22f48e873c0697e0d",
+    "benchmarks/codex_r/studies/stage3b_expansion/verifier/lib.R": "853e65ce95a2974d05a61396a2285adc3a7e666dc9850753a07f722e0872eaad",
+    "benchmarks/codex_r/hard/verifier/harness.R": "e5524b818f3be07c58b7668e3a68a6cce81ecc83a653492686bb678418fe6183"
+  },
+  "tasks": [
+    {
+      "schema_version": 1,
+      "id": "XA01",
+      "title": "Brown-Forsythe screening, then classical or Welch one-way ANOVA with matching follow-ups",
+      "category": "anova_statistical_inference",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/experiment.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A03",
+        "ANOVA-A01",
+        "ANOVA-A02"
+      ],
+      "source_relation": "adapted: fixed analysis plan, function-style contract, closed-form oracle",
+      "difficulty_hypothesis": "Agents reach for car::leveneTest (not installed) or mean-centred Levene, apply pooled Tukey after a Welch omnibus, or forget that Welch's denominator df is fractional and that the pairwise branch must be unpooled with Holm.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "The decision rule and every formula are given in the prompt; the work is implementation of base-R statistics. MCP package documentation does not change the answer.",
+        "information_need": "Exact definitions of Welch's F and Tukey-Kramer p-values, and which base functions expose them (oneway.test, TukeyHSD, pairwise.t.test).",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: stats help pages are installed locally",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "oneway.test + TukeyHSD + manual unpooled t tests",
+          "closed-form formulas for every statistic",
+          "pairwise.t.test(pool.sd = FALSE) for the Welch branch"
+        ]
+      },
+      "independence": {
+        "cluster": "anova-independent-groups",
+        "shared_with": [],
+        "shared_features": [
+          "one-way layout",
+          "pooled versus unpooled variance"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate: the plan is explicit and the building blocks are standard",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "mean_centred_levene",
+          "always_classical",
+          "pooled_tukey_after_welch",
+          "integer_welch_df",
+          "group_order_or_diff_sign",
+          "no_error_for_two_groups"
+        ],
+        "statistical_reasoning_checks": [
+          "variance_assumption_drives_method",
+          "pooled_vs_unpooled_followup"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "closed-form Brown-Forsythe F, Welch F with weights n/s^2, Tukey-Kramer via ptukey; cross-checked at load against oneway.test, TukeyHSD and pairwise.t.test"
+      },
+      "hashes": {
+        "task_sha256": "da0d0d8154f6237dd45df3169be5072376c74b6188abca507bfaabe9634cbcd5",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA01/prompt.md": "687d67f8076c6460c15e6cdc7d08e5cb7a51445fd5a851af213287100f435f55",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA01/task.json": "f393888720611170a8053a4ba10f8c8d23d49bf79922d6a323362f80335ce911",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA01/fixture/experiment.csv": "6904ac8c0efdd083b095d2db9c7070277f0d8db3dcffca6dafe73e809d9376d4",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XA01.R": "63b684ff577173586024d493673587acc0662076669b3cbeb241736f34b6c178"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 13,
+        "controls": [
+          "reference",
+          "alternate_closed_form",
+          "wrong_levene_mean_centered",
+          "wrong_always_classical",
+          "wrong_welch_with_pooled_tukey",
+          "edge_accepts_two_groups",
+          "malformed_returns_vector",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XA02",
+      "title": "Balanced two-way factorial ANOVA with interaction-aware simple-effects reporting",
+      "category": "anova_statistical_inference",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/experiment.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A04"
+      ],
+      "source_relation": "adapted: fixed reporting rule, simple effects against the full-model MSE, closed-form oracle",
+      "difficulty_hypothesis": "Agents report main effects in the presence of a crossover interaction, or compute simple effects from separate per-site ANOVAs (different error term and df) instead of the full-model residual mean square, or fail to stop on unbalanced data where the table is not uniquely defined.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "none",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "Pure factorial-design reasoning with an explicit reporting rule; nothing depends on a package, version or documentation fact beyond base R.",
+        "information_need": "How simple effects are tested against the pooled full-model error term.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: textbook formulas and installed stats help",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "lm + anova for the table, then per-site SS from cell means with the full MSE",
+          "closed-form balanced-design sums of squares",
+          "nested model comparison score ~ site vs score ~ site + site:treatment, split by site"
+        ]
+      },
+      "independence": {
+        "cluster": "anova-factorial",
+        "shared_with": [],
+        "shared_features": [
+          "two crossed factors",
+          "interaction"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate-high: a standard textbook procedure with explicit instructions",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "main_effects_reported_despite_interaction",
+          "per_site_error_term",
+          "additive_model",
+          "simple_effects_reported_without_interaction",
+          "unbalanced_design_accepted"
+        ],
+        "statistical_reasoning_checks": [
+          "interaction_changes_interpretation",
+          "error_term_choice"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "balanced-design closed-form sums of squares; cross-checked at load against anova(lm) and the nested-model identity SS(simple effects) = SS(A) + SS(AB)"
+      },
+      "hashes": {
+        "task_sha256": "cc06b96406df947fd4f8248d53e920b0b7e26d6725bd993a93943832102fe80f",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA02/prompt.md": "16bf705ce14f5e4f8ce9d8b6e67cdf10cdafdda784da6b3580cab4e6e9953ba7",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA02/task.json": "19c5bad5085adbf69d31ad75b87dd2e7dec9968dfed945c4c9b64a9a8abffdca",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA02/fixture/experiment.csv": "cc1813000607227b9e09d7368dd1cf9359a0a5949eaeb2c31ab1049a413de337",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XA02.R": "f7005c1b4301354ff99923f71c39e3d882455fac619312f970b6026b221f9605"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 13,
+        "controls": [
+          "reference",
+          "alternate_closed_form",
+          "wrong_per_site_anova",
+          "wrong_ignores_interaction",
+          "wrong_always_reports_simple_effects",
+          "edge_accepts_unbalanced_data",
+          "malformed_missing_elements",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XA03",
+      "title": "Equal-weight marginal (Type III) tests in an unbalanced two-factor design",
+      "category": "anova_statistical_inference",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/experiment.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A05",
+        "ANOVA-A12"
+      ],
+      "source_relation": "adapted: new fixtures, function-style contract, independent cell-means oracle",
+      "difficulty_hypothesis": "The default aov/anova table is sequential (Type I) and silently answers different hypotheses in an unbalanced design; drop1() on a default treatment-coded fit answers yet another question when an interaction is present; ordered factors switch to polynomial contrasts; and car::Anova, the usual shortcut, is not installed.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "none",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "The task is statistical reasoning about hypotheses and contrast coding. The decisive facts (how contr.sum, drop1 scope and sequential SS behave) are in base R documentation that is also installed locally; no package version or ecosystem fact changes the answer.",
+        "information_need": "Which linear hypotheses Type I/II/III sums of squares test, and how to obtain Type III values with base R only.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation"
+        ],
+        "obtainable_without_mcp": "yes: stats help pages (?drop1, ?contrasts, ?anova.lm) and the model-matrix algebra are available locally and in model knowledge",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "drop1(fit, scope = ~ ., test = 'F') on a contr.sum fit",
+          "explicit comparison of nested models built from effect-coded model matrices",
+          "cell-means linear-hypothesis (Wald/F) tests with equal-weight averaging"
+        ]
+      },
+      "independence": {
+        "cluster": "anova-sums-of-squares",
+        "shared_with": [],
+        "shared_features": [
+          "unbalanced factorial data",
+          "Type I versus Type III hypotheses"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate: strong models know the car::Anova idiom and the contr.sum + drop1 recipe",
+        "floor": "low: the output contract is fully specified",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "sequential_type1_reported_as_type3",
+          "type2_reported_as_type3",
+          "default_treatment_contrasts_with_interaction",
+          "ordered_factor_polynomial_contrasts",
+          "na_rows_not_dropped",
+          "empty_cell_not_rejected",
+          "output_contract_violation"
+        ],
+        "statistical_reasoning_checks": [
+          "interaction_aware_marginal_hypothesis",
+          "order_dependence_of_sequential_ss"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "cell-means linear hypotheses L m = 0 with Var(m) = sigma^2 diag(1/n); self-checked against balanced anova() and against sequential SS at load time"
+      },
+      "hashes": {
+        "task_sha256": "9d040538c7f554653bcd04699b82622ce3d5cedfa48678b7da95366db600bf61",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA03/prompt.md": "3bea190dde59c318a62f21b638d74f38088a94889c48abcda40bd361f52b27f3",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA03/task.json": "7c928cb0284371f332f47ba8807455c765a451a57b406e21906f096b4f1473ce",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA03/fixture/experiment.csv": "3449eb50218179fb005383b4a9b5a31df039c733ace04be2d1a2eb0df81ee83a",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XA03.R": "1b0f08473e646efba4a4d15388e40432091e999bf9379ebfd953cc80b66ff6ba"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 13,
+        "controls": [
+          "reference",
+          "alternate_model_comparison",
+          "alternate_cell_means",
+          "wrong_type1_sequential",
+          "wrong_type2",
+          "wrong_treatment_contrasts",
+          "edge_ignores_missing_scores",
+          "malformed_incomplete_missing_function",
+          "malformed_returns_list"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XA04",
+      "title": "One-factor repeated-measures ANOVA with a Greenhouse-Geisser sphericity rule",
+      "category": "anova_statistical_inference",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/measurements.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A06"
+      ],
+      "source_relation": "adapted: fixed epsilon rule, function-style contract, covariance-formula oracle",
+      "difficulty_hypothesis": "Agents either treat repeated measurements as independent, rely on ez/afex (not installed) for the sphericity correction, apply the correction to the F statistic or only to one df, mix up Greenhouse-Geisser with Huynh-Feldt, or fail to drop subjects with a missing occasion.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "The statistics are specified in the prompt; the only ecosystem fact is that the usual convenience packages (ez, afex, rstatix) are not installed, which the supplied lockfile shows directly.",
+        "information_need": "Box's epsilon formula and the aov Error() decomposition for within-subject designs.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_packages"
+        ],
+        "obtainable_without_mcp": "yes: stats::aov help and textbook formulas",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "aov with Error(subject/time) plus epsilon from the double-centred covariance eigenvalues",
+          "subjects-by-occasions matrix with closed-form sums of squares",
+          "nlme::gls/lme with an unstructured covariance is NOT equivalent and does not satisfy the contract"
+        ]
+      },
+      "independence": {
+        "cluster": "anova-dependent-data",
+        "shared_with": [],
+        "shared_features": [
+          "within-subject structure"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "low-moderate: epsilon computation is a known stumbling block",
+        "floor": "moderate: several exact numbers must all be right",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "independent_observations_anova",
+          "no_df_adjustment",
+          "huynh_feldt_instead_of_gg",
+          "always_corrected",
+          "incomplete_subjects_not_dropped",
+          "duplicate_rows_accepted"
+        ],
+        "statistical_reasoning_checks": [
+          "dependence_respected",
+          "sphericity_correction_rule"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "subjects-by-occasions sums of squares and Box's epsilon; cross-checked at load against aov(Error()) and the eigenvalue form of epsilon"
+      },
+      "hashes": {
+        "task_sha256": "d4cc2480e94aa38609f5155c958a3abc6ccbb55d10d68d1fa040936b96f00e54",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA04/prompt.md": "e4ec9031bcbef8ff8ed43d59e4d021bf1acbafc611e70c2c9ccc881603064e73",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA04/task.json": "90087b54cf97d22de5ac71aceeb12996655dad773715afd34e48665205f55881",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA04/fixture/measurements.csv": "b50b103895c154c1f763c0a8a99e5db311ab4f614127e789a6008b3d4f327d95",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XA04.R": "fe1c27ca61c7a452ef2c0e2426f4ce9d66078de7a135d241d64826a823ee9097"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 13,
+        "controls": [
+          "reference",
+          "alternate_matrix_formulas",
+          "wrong_independent_oneway",
+          "wrong_no_df_adjustment",
+          "wrong_huynh_feldt",
+          "wrong_always_corrects",
+          "edge_keeps_incomplete_subjects",
+          "malformed_wrong_names",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XA05",
+      "title": "ANCOVA with a slope-homogeneity decision rule and covariate-adjusted means",
+      "category": "anova_statistical_inference",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/trial.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A08"
+      ],
+      "source_relation": "adapted: explicit decision tree, function-style contract, normal-equation oracle",
+      "difficulty_hypothesis": "Agents enter treatment before the covariate (unadjusted F), skip the slope test and always report parallel-slope adjusted effects, evaluate adjusted means at baseline = 0 or at group-specific baselines, or fail to switch to conditional means when slopes differ.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "none",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "Model specification and covariate reasoning in base R; no package or version fact is needed.",
+        "information_need": "Which F test adjusts for the covariate, and how to evaluate fitted means at fixed covariate values.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: lm, anova and predict are documented locally",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "lm + anova + predict",
+          "explicit design matrices with RSS differences",
+          "drop1 on the parallel model for the adjusted treatment F"
+        ]
+      },
+      "independence": {
+        "cluster": "anova-covariate-adjustment",
+        "shared_with": [],
+        "shared_features": [
+          "linear model with factor and covariate"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate: a standard analysis with an explicit plan",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "sequential_unadjusted_treatment_f",
+          "slope_test_skipped",
+          "means_at_zero_baseline",
+          "wrong_conditional_baseline_values",
+          "small_groups_accepted"
+        ],
+        "statistical_reasoning_checks": [
+          "adjustment_changes_effect",
+          "interaction_precludes_single_adjusted_effect"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "normal-equation OLS from explicit design matrices; cross-checked at load against anova(lm), model comparison and predict()"
+      },
+      "hashes": {
+        "task_sha256": "e18b4938169900a44acc2b86b8a3643d3545ff39d6b92db3993281dd275300ef",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA05/prompt.md": "ffff4b57bbd157dfb42ff5d79d14829db539b84172f8fef89c241d1bba4d9af6",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA05/task.json": "a8c3b6a7ce20bbc0c09ed4c73b4f69b11e2539c43b3443e1662fa59dc3d6f7ab",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA05/fixture/trial.csv": "212d9bcb6d1b4b16dc76babe99f84cefc16cbc400c4f5fa2073baf4d1752847f",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XA05.R": "e068117d4778ee49dbbab3dbabb6da5563264dd5fed53cabd87a7977fd21bfbd"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 12,
+        "controls": [
+          "reference",
+          "alternate_matrix_algebra",
+          "wrong_sequential_unadjusted",
+          "wrong_skips_slope_test",
+          "wrong_means_at_zero_baseline",
+          "edge_accepts_tiny_groups",
+          "malformed_flat_output",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XA06",
+      "title": "Treatment-by-time interaction with missing visits: random-intercept model and ML likelihood-ratio test",
+      "category": "anova_statistical_inference",
+      "difficulty": "very_hard",
+      "image": "base",
+      "packages": [
+        "stats",
+        "nlme"
+      ],
+      "fixtures": [
+        "fixture/visits.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A13",
+        "ANOVA-A07"
+      ],
+      "source_relation": "adapted: fixed model and test, function-style contract, independent profile-likelihood oracle",
+      "difficulty_hypothesis": "Agents drop incomplete participants and run a classical repeated-measures ANOVA, compare REML fits with different fixed effects, ignore the clustering, reach for lme4 (not installed) instead of the installed nlme, or fit time as a numeric trend and get the wrong degrees of freedom.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 0,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "The standard answer in the wild uses lme4::lmer, which is not installed. Choosing nlme::lme and its ML/REML and VarCorr conventions is an API-availability and documentation question that package metadata and function documentation can inform (check_package_version, get_function_docs). It is not decisive: the lockfile and library(nlme) are available locally.",
+        "information_need": "Which mixed-model package is installed and how nlme::lme exposes ML log-likelihoods, variance components and method = 'ML'.",
+        "relevant_mcp_tools": [
+          "search_packages",
+          "get_package",
+          "get_function_docs",
+          "check_package_version"
+        ],
+        "obtainable_without_mcp": "yes, partly: renv.lock and library(nlme) show availability, and nlme help is installed; MCP mainly shortens the lookup",
+        "version_specific_evidence_value": "low",
+        "alternative_solution_paths": [
+          "nlme::lme with method = 'ML' for both models",
+          "nlme::gls with corCompSymm (equivalent for non-negative intraclass correlation)",
+          "an explicit profile-likelihood implementation in base R"
+        ]
+      },
+      "independence": {
+        "cluster": "anova-dependent-data",
+        "shared_with": [
+          "XA04"
+        ],
+        "shared_features": [
+          "repeated measures",
+          "within-subject dependence"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "low-moderate: needs the right package and the ML-versus-REML distinction",
+        "floor": "moderate: the optimiser-level tolerance is 1e-4 and the output contract is long",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "complete_case_rm_anova",
+          "reml_lrt_across_fixed_effects",
+          "clustering_ignored",
+          "lme4_not_installed",
+          "time_as_numeric_wrong_df",
+          "arm_membership_not_checked"
+        ],
+        "statistical_reasoning_checks": [
+          "missing_data_use_all_observations",
+          "ml_required_for_fixed_effect_comparison"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2",
+          "nlme": "3.1-168"
+        },
+        "oracle": "explicit profile-likelihood random-intercept ML (no nlme); cross-checked at load against nlme::lme logLik and sigma"
+      },
+      "hashes": {
+        "task_sha256": "e13155af3a2c12630561c39ed70177085a6a795f30c41a46ed8e6f2ffc87488a",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA06/prompt.md": "dcc6839a523586543d1dad6be9db1ee6e39db11a799f9750b3d8a88e66ffa977",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA06/task.json": "4500481ac93c0972a15c6c24ff27f8294ed810475a6dba6ba6be7d7102617abd",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XA06/fixture/visits.csv": "200d944876814b48cd830b2da18c7e8ca267c3168e06c0c730339ae2c1e2e612",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XA06.R": "83a42d770ca8e7baa98ebd37ed056eeff31027ab5dde4cb82dcb837ba2c84b14"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 13,
+        "controls": [
+          "reference",
+          "alternate_gls_compound_symmetry",
+          "wrong_complete_case_anova",
+          "wrong_reml_comparison",
+          "wrong_ignores_clustering",
+          "edge_does_not_check_arm_membership",
+          "malformed_missing_lrt",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XG01",
+      "title": "Daily mean time series on a complete calendar with a broken line at gaps",
+      "category": "ggplot2_visualization",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/readings.csv"
+      ],
+      "source_specs": [
+        "GGP-T01",
+        "GGP-B03",
+        "GGP-E04"
+      ],
+      "source_relation": "adapted: function-style contract, plot inspected through ggplot_build on withheld data",
+      "difficulty_hypothesis": "Agents aggregate only the observed days (so geom_line interpolates across gaps), fill gaps with zero, or silence NA with na.rm = TRUE which silently joins the line; a day with readings but only missing scores is also easy to mis-handle.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "The failure modes concern how ggplot2 treats NA in lines and how to build a complete calendar; they are semantic traps solvable from basic ggplot2 knowledge and local help. Nothing depends on a version-specific fact.",
+        "information_need": "How geom_line handles NA and what na.rm does; building a complete Date sequence.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: ?geom_line and ?seq.Date are installed locally",
+        "version_specific_evidence_value": "low",
+        "alternative_solution_paths": [
+          "tapply over a factor of all calendar days",
+          "tidyr::complete on aggregated means",
+          "merge with a complete calendar data frame"
+        ]
+      },
+      "independence": {
+        "cluster": "ggplot2-missing-data",
+        "shared_with": [
+          "XG02"
+        ],
+        "shared_features": [
+          "NA handling in aggregated plots"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate-high: a familiar pattern for strong models",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "low",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "observed_days_only",
+          "gaps_filled_with_zero",
+          "na_rm_bridges_gaps",
+          "median_instead_of_mean",
+          "default_axis_titles",
+          "non_date_axis"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "ggplot2": "4.0.3"
+        },
+        "oracle": "tapply of daily means over the full calendar; plot inspected through ggplot_build (layer data, geom params, scales, labels)"
+      },
+      "hashes": {
+        "task_sha256": "5b5b23feed933ba0d5e561748c3a2d1ce6d6c35f031e73846aa3fa0609b7af8e",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG01/prompt.md": "7ad23fe563ca312b297081330643f0a217b185e9135582dbb50ccf23d0b6f229",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG01/task.json": "b414349a8e12b0db7408301741a1a136b4dcfbf3200c577e0add4b3f32b83c27",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG01/fixture/readings.csv": "a923a99b88a7bcbae724ea7522ca6b37189872f8bac412ea159704e4cf9e3d7c",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XG01.R": "0dcc0ec6f1d149e1b1e112618090cd9a64117cfb91ee026c676838d419ea5ed5"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 11,
+        "controls": [
+          "reference",
+          "alternate_dplyr_complete",
+          "wrong_observed_days_only",
+          "wrong_gaps_filled_with_zero",
+          "wrong_na_rm_bridges_gaps",
+          "wrong_median_instead_of_mean",
+          "edge_default_axis_titles",
+          "malformed_returns_data_frame",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XG02",
+      "title": "Group-mean bars with correct NA handling, level order and no empty axis slot",
+      "category": "ggplot2_visualization",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/outcomes.csv"
+      ],
+      "source_specs": [
+        "GGP-E05",
+        "GGP-E06",
+        "GGP-X03"
+      ],
+      "source_relation": "adapted: function-style contract, NA-only group and factor-level traps added, plot inspected through ggplot_build",
+      "difficulty_hypothesis": "Agents use geom_bar() with the default count statistic, compute means without na.rm, ignore factor-level order, or pass raw rows to stat_summary so a group with no usable value keeps an empty slot (the discrete axis is trained before NA rows are removed).",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "Stat/geom semantics and scale training are core ggplot2 knowledge available from local help; the answer does not depend on a version or an external fact.",
+        "information_need": "Difference between stat_count and stat_summary; when discrete scales are trained relative to NA removal.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: ?geom_bar, ?stat_summary installed locally",
+        "version_specific_evidence_value": "low",
+        "alternative_solution_paths": [
+          "precompute means and use geom_col",
+          "filter rows then stat_summary(fun = mean, geom = 'bar')",
+          "geom_bar(stat = 'summary', fun = mean) after filtering"
+        ]
+      },
+      "independence": {
+        "cluster": "ggplot2-missing-data",
+        "shared_with": [
+          "XG01"
+        ],
+        "shared_features": [
+          "NA handling in aggregated plots"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "high: the common patterns are well known; the empty-slot trap is the discriminator",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "low",
+        "blockers": [
+          "ceiling effect likely for strong baselines: calibration must confirm"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "count_bars",
+          "mean_without_na_rm",
+          "alphabetical_instead_of_factor_order",
+          "empty_group_slot",
+          "default_axis_titles"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "ggplot2": "4.0.3"
+        },
+        "oracle": "plain-R group means; plot inspected through ggplot_build (bar layer data, discrete scale range, labels)"
+      },
+      "hashes": {
+        "task_sha256": "7110f95745f0482a602b14435486755f528f2ffb1f258817d4e10b9a9a5487a1",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG02/prompt.md": "d6df8411cd8126a7f8a19a88efd7e9c8deb4d49840406d9e3268b2b454a4512c",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG02/task.json": "511b4440981e3f4ce3f50983e085f9b6d5e98e5d88f07c1f3c4f53b3db9d78d7",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG02/fixture/outcomes.csv": "75d9176de800fd25a126df0ce3dcd14ece17daf8807a918302ae7f8a506fb663",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XG02.R": "89f31ce6ba1d7b4861525e5d965f395bea600f71ebe2b05e2e4a30c585e9b56f"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 11,
+        "controls": [
+          "reference",
+          "alternate_stat_summary_after_filter",
+          "wrong_count_bars",
+          "wrong_mean_without_na_rm",
+          "wrong_alphabetical_order_for_factors",
+          "wrong_keeps_empty_group_slot",
+          "edge_default_axis_titles",
+          "malformed_returns_means_table",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect likely for strong baselines: calibration must confirm"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XG03",
+      "title": "Within-group proportion heatmap with complete grid and exact percent labels",
+      "category": "ggplot2_visualization",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/respondents.csv"
+      ],
+      "source_specs": [
+        "GGP-T04",
+        "GGP-B02"
+      ],
+      "source_relation": "adapted: function-style contract, mapped-value inspection instead of image comparison",
+      "difficulty_hypothesis": "Agents normalise by region or by the grand total, drop empty combinations (so zero tiles vanish), round labels to whole percents, or let unused factor levels and NA rows distort the axes.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 1,
+        "debugging_difficulty": 0,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "none",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "Normalisation margin and a complete grid are data-wrangling semantics; no package, version or documentation fact is decisive.",
+        "information_need": "prop.table margins or dplyr/tidyr completion; sprintf percent formatting.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "table + row-normalised as.data.frame",
+          "dplyr::count + tidyr::complete + group-wise share",
+          "xtabs with proportions"
+        ]
+      },
+      "independence": {
+        "cluster": "ggplot2-aggregation",
+        "shared_with": [],
+        "shared_features": [
+          "pre-aggregation before plotting"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "high: a standard pattern",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": [
+          "ceiling effect likely for strong baselines: calibration must confirm"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "normalised_by_region",
+          "normalised_by_total",
+          "empty_combinations_dropped",
+          "label_precision",
+          "unused_levels_on_axis",
+          "default_axis_titles"
+        ],
+        "statistical_reasoning_checks": [
+          "conditional_vs_joint_proportion"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "ggplot2": "4.0.3"
+        },
+        "oracle": "plain-R row-normalised table; layers' mapped values (tile x/y/fill, text label) via computed_mapping, discrete axis order via trained scales"
+      },
+      "hashes": {
+        "task_sha256": "457e5d92a0361dad30ada6fac1ffa96f317af7da8153fecf2c1538575a2f2013",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG03/prompt.md": "391cd93afee604055c8a7d93f8175a5142b0ec37dc0b465be2f6fb59b3437158",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG03/task.json": "fd5291b65009b46a1416579c0b6534511176ad269fb4d9ffede649b000f7736e",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG03/fixture/respondents.csv": "58e2039ee618c259aa40a856e28a9ff73c8226e860ba81add429f473d22836c7",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XG03.R": "fe5806c1242553af80a2175cf04df4f7e2e3164c3258cfd398a2104eb13c4e7a"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 12,
+        "controls": [
+          "reference",
+          "alternate_dplyr_complete",
+          "wrong_share_of_region",
+          "wrong_share_of_all_respondents",
+          "wrong_drops_empty_combinations",
+          "wrong_label_without_decimal",
+          "edge_default_axis_titles",
+          "malformed_returns_table",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect likely for strong baselines: calibration must confirm"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XG04",
+      "title": "Zoom with the coordinate system so the regression line still uses all observations",
+      "category": "ggplot2_visualization",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/measurements.csv"
+      ],
+      "source_specs": [
+        "GGP-E08",
+        "GGP-P01"
+      ],
+      "source_relation": "original construction inspired by the scale-versus-coordinate misunderstanding family in the source set",
+      "difficulty_hypothesis": "Agents zoom with xlim()/scale limits, which silently censors observations and refits the smoother on the window, or filter rows to zoom; others leave geom_smooth on its default loess method.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 1,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 1,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "exploratory",
+        "rationale": "The distinction between scale limits and coord_cartesian() is documented in the ggplot2 help and is the heart of the task, so documentation matters more than for the other plotting tasks; but the help pages are installed locally and the behaviour is long-stable, so MCP offers no unique information.",
+        "information_need": "What xlim()/scale limits do to data and statistics versus coord_cartesian(xlim =).",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation"
+        ],
+        "obtainable_without_mcp": "yes: ?coord_cartesian and ?scale_x_continuous are installed locally",
+        "version_specific_evidence_value": "low",
+        "alternative_solution_paths": [
+          "geom_smooth(method = 'lm') plus coord_cartesian(xlim = xlim)",
+          "an explicit lm fit drawn with geom_abline plus coord_cartesian",
+          "geom_smooth(fullrange) variants are equally valid"
+        ]
+      },
+      "independence": {
+        "cluster": "ggplot2-scales-and-coords",
+        "shared_with": [],
+        "shared_features": [
+          "scale versus coordinate transformation"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate-high for strong baselines",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "low",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "scale_limits_censor_points",
+          "fit_on_window_subset",
+          "default_loess_smoother",
+          "zoom_by_filtering_rows",
+          "no_xlim_validation"
+        ],
+        "statistical_reasoning_checks": [
+          "zoom_must_not_change_the_estimate"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "ggplot2": "4.0.3"
+        },
+        "oracle": "normal-equation OLS on all finite rows; plotted line coefficients recovered from layer data (or abline columns); coordinate limits and panel range via ggplot_build"
+      },
+      "hashes": {
+        "task_sha256": "cd29e9193a71f1e12642511599db15c6c61d9df9162182eaf0ccc0b10edd9f65",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG04/prompt.md": "92bad3482c2c86dd606e2c99481268e954bb90f3d2289a3318eb7dd5869d3ea6",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG04/task.json": "e5196c7c1a38ae24c65adf04ec41c6a8ca2c26793e58faa2b7160b926ab53cc2",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG04/fixture/measurements.csv": "005a5496912241917766747b14e9b790d23d8ca2497fe1b52476dbaff4fbaede",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XG04.R": "0f2c436f85b936bac5abadc70885577d961f8232f0d587e850e3aaa995d8ae05"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 11,
+        "controls": [
+          "reference",
+          "alternate_abline_from_lm",
+          "wrong_scale_limits_drop_points",
+          "wrong_fit_on_window_subset",
+          "wrong_default_loess_smoother",
+          "wrong_zoom_by_filtering_rows",
+          "edge_no_window_validation",
+          "malformed_returns_coefficients",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "none until a versioned review assigns a role",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XG05",
+      "title": "Per-participant trajectories with a mean trajectory: grouping, ordering and missing scores",
+      "category": "ggplot2_visualization",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "ggplot2",
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/trajectories.csv"
+      ],
+      "source_specs": [
+        "GGP-E04",
+        "GGP-E07",
+        "GGP-N01"
+      ],
+      "source_relation": "original construction on the grouping/ordering failure family; shuffled input rows and missing scores added",
+      "difficulty_hypothesis": "Without an explicit group aesthetic all rows form one path; geom_path (unlike geom_line) joins points in row order so shuffled data zig-zags; averaging with missing scores treated as zero biases the mean line; and the mean line is easily left visually indistinguishable.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "none",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "Grouping and drawing order are core ggplot2 semantics; the answer does not rest on a package fact or version.",
+        "information_need": "The group aesthetic and the difference between geom_line and geom_path ordering.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "geom_line(aes(group = subject)) plus a precomputed mean line",
+          "geom_path on week-sorted rows",
+          "stat_summary(fun = mean, geom = 'line', aes(group = 1))"
+        ]
+      },
+      "independence": {
+        "cluster": "ggplot2-grouping",
+        "shared_with": [],
+        "shared_features": [
+          "group aesthetic"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": [
+          "ceiling effect likely for strong baselines: calibration must confirm"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "no_group_aesthetic",
+          "path_in_row_order",
+          "missing_scores_as_zero",
+          "mean_line_not_emphasised",
+          "default_axis_titles"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "ggplot2": "4.0.3"
+        },
+        "oracle": "plain-R per-subject (week, score) sequences and weekly means; compared as sets of sequences from ggplot_build layer data, independent of group numbering"
+      },
+      "hashes": {
+        "task_sha256": "ee186e62f98686ee73dbc9b1c7dd7fa05c2baf85269d5c37cff6e94091808a8d",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG05/prompt.md": "984f1d7d44a371b8b42298e362ea5a720df4311c3d7547a436342181e92d4f41",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG05/task.json": "c95c3c12552f322f744f32de201dfbc7dbb1fe48f3ee75061b877b041983e30e",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XG05/fixture/trajectories.csv": "4e0ad6458b915e6b4a8661f9adaf39745652e2b8a86d6bdf73ebf906befe1308",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XG05.R": "9782264dc937da84736388cb42f2aa4de27a92f5c5c31ec5533a5812745bfc28"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 11,
+        "controls": [
+          "reference",
+          "alternate_stat_summary_mean_line",
+          "wrong_no_group_aesthetic",
+          "wrong_path_in_row_order",
+          "wrong_mean_with_missing_as_zero",
+          "wrong_mean_line_same_width",
+          "edge_default_axis_titles",
+          "malformed_returns_means_table",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect likely for strong baselines: calibration must confirm"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XM01",
+      "title": "DESeq2 differential expression with a batch covariate, contrast direction, alpha-matched filtering and name-based sample alignment",
+      "category": "multi_step_workflow",
+      "difficulty": "hard",
+      "image": "bioc",
+      "packages": [
+        "DESeq2",
+        "SummarizedExperiment",
+        "BiocVersion"
+      ],
+      "fixtures": [
+        "fixture/counts.csv",
+        "fixture/coldata.csv"
+      ],
+      "source_specs": [
+        "ECO-BIO03",
+        "ADDON-B10"
+      ],
+      "source_relation": "adapted: Bioconductor differential-expression workflow and the matrix-columns-versus-sample-metadata trap expressed as a function-style contract",
+      "difficulty_hypothesis": "Several coupled steps each hide a trap: coldata rows in a different order than count columns (names must be matched, not overwritten), the reference level of condition (alphabetical default versus the stated reference), batch as nuisance covariate, alpha used for independent filtering as well as the cut-off, and results() NA handling.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 2,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "A Bioconductor-package workflow whose correctness depends on API details of the installed DESeq2 (results() arguments, factor levels, alpha semantics). Package documentation and the Bioconductor release context are where MCP is designed to help. The installed help pages are available locally, so the information is recoverable without MCP; the multi-step structure makes it a good test of whether an agent consults documentation unprompted.",
+        "information_need": "DESeq2's design, contrast and alpha semantics in the installed Bioconductor release.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info",
+          "check_compatibility"
+        ],
+        "obtainable_without_mcp": "partly: ?results and the DESeq2 vignette are installed locally",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "results(contrast = ...)",
+          "relevel + results(name = ...)",
+          "DESeqDataSet from a SummarizedExperiment"
+        ]
+      },
+      "independence": {
+        "cluster": "bioconductor-workflows",
+        "shared_with": [
+          "XM04"
+        ],
+        "shared_features": [
+          "Bioconductor sample metadata alignment"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "low-moderate",
+        "floor": "moderate",
+        "documentation_dependence": "high",
+        "version_sensitivity": "moderate",
+        "blockers": [
+          "requires the Bioconductor scorer and executor images",
+          "oracle is DESeq2 itself (independence from planted truth and hand-computed size factors only)"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "alphabetical_reference_level",
+          "no_batch_covariate",
+          "alpha_not_used_for_filtering",
+          "sample_names_overwritten",
+          "sorted_by_fold_change",
+          "no_input_validation"
+        ],
+        "statistical_reasoning_checks": [
+          "contrast_direction",
+          "nuisance_covariate",
+          "independent_filtering_alpha"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "DESeq2": "1.50.2",
+          "SummarizedExperiment": "1.40.0",
+          "BiocVersion": "3.22.0"
+        },
+        "oracle": "canonical DESeq2 pipeline with explicit levels and contrast; planted up/down genes must have the planted sign; median-of-ratios baseMean recomputed in plain R"
+      },
+      "hashes": {
+        "task_sha256": "520a4a43b8143f28b0e008291274c350199c217bc0d02323e401ee81bbff0257",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM01/prompt.md": "3d534ae6bd92713501f832bfa8205b7fbbb3a321640e04c6b6a6c88e1b8b2441",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM01/task.json": "9360f57681907be2b32b02d2cf2a40ab2fa2b8684754d83c1622f5a379c7fc91",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM01/fixture/counts.csv": "711b3a33ec5fe1ea5cdb3f0e3a383388f200078ace18ee327fc2099e1fe77ba0",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM01/fixture/coldata.csv": "ac12f1a899b6733cd81a89d927bf42e98a0936d0c7e8fec4aa1cb40750948ff0",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XM01.R": "646e69e804f0484ccf5a16f30e90a72e0db2d3d4307f987ec38411cdee189f13"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_coefficient_name_and_relevel",
+          "wrong_default_alphabetical_reference",
+          "wrong_no_batch_covariate",
+          "wrong_alpha_only_in_the_final_filter",
+          "wrong_sample_names_overwritten",
+          "wrong_sorted_by_fold_change",
+          "edge_no_input_validation",
+          "malformed_returns_deseq_results",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "requires the Bioconductor scorer and executor images",
+          "oracle is DESeq2 itself (independence from planted truth and hand-computed size factors only)"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XM02",
+      "title": "Multi-site treatment investigation with column-selective missingness screening, post-treatment exclusion, interaction gate and site-specific vs pooled contrasts",
+      "category": "multi_step_workflow",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/study.csv"
+      ],
+      "source_specs": [
+        "ANOVA-A14",
+        "ANOVA-A15"
+      ],
+      "source_relation": "adapted: end-to-end statistical investigation and interaction-aware report audit expressed as a coupled multi-step function contract",
+      "difficulty_hypothesis": "Agents call na.omit() across the whole table (dropping valid rows with missing post_adherence), include the post-treatment variable post_adherence as a covariate, fit separate per-site regressions instead of extracting site contrasts from the joint interaction model, report a pooled main effect even when treatment-by-site interaction is significant, or reverse the active-minus-control contrast sign.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "The workflow relies on base R linear-model projection, contrast extraction and statistical study-design hygiene rather than external package APIs or version-sensitive functions. It serves as a multi-step statistical workflow control for measuring tool-use overhead on complex reasoning tasks.",
+        "information_need": "How to extract within-site treatment contrasts and standard errors from a joint interaction model and how to gate pooled main effects on the interaction F test.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: base R stats::lm, vcov, model.matrix and anova are standard and locally documented",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "lm(outcome ~ baseline + site / arm - 1) or cell-indicator parameterization for direct within-site contrasts",
+          "lm(outcome ~ baseline + site * arm) with linear combinations over coef() and vcov()",
+          "explicit QR / normal-equation OLS projection in base R"
+        ]
+      },
+      "independence": {
+        "cluster": "multi-step-statistical-investigation",
+        "shared_with": [],
+        "shared_features": [
+          "post-treatment covariate exclusion",
+          "interaction-gated pooled contrast"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "low-moderate: multiple coupled statistical and data-hygiene steps",
+        "floor": "low-moderate: explicit step-by-step specification",
+        "documentation_dependence": "low",
+        "version_sensitivity": "none",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "na_omit_all_columns",
+          "adjusts_for_post_treatment_variable",
+          "separate_within_site_regressions",
+          "pooled_effect_reported_under_interaction",
+          "reversed_contrast_direction",
+          "no_input_or_cell_validation"
+        ],
+        "statistical_reasoning_checks": [
+          "post_treatment_variable_excluded",
+          "joint_error_variance_in_site_contrasts",
+          "interaction_gates_pooled_main_effect"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "explicit normal-equation OLS projection ((X'X)^-1 X'y) and contrast variance c'(X'X)^-1 c * sigma^2 in plain matrix arithmetic; cross-checked at load against stats::lm and stats::anova"
+      },
+      "hashes": {
+        "task_sha256": "3baa35f90c3c33554e0feef3d6e8196a9fd88def369648baf5833bc2ce7e9ef1",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM02/prompt.md": "ba97849c0e3a2beb03e2e00188f5fcf999b5d2c82bbd6ad7ff66464878e2888e",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM02/task.json": "cb6585276d89c5c7aed48b1751ccbaf82eedba187f8e051d9d15ab1eea6a0302",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM02/fixture/study.csv": "746c2c95d6103615f291f62518542d1ab5371581ab306ff079be9f9b9bb00948",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XM02.R": "d2921b9943fafdb5b7ae43995ea81394ba9038e105123a9d5e3d69f76c1b1a88"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 9,
+        "controls": [
+          "reference",
+          "alternate_vcov_linear_combinations",
+          "wrong_na_omit_all_columns",
+          "wrong_separate_within_site_regressions",
+          "wrong_always_reports_pooled_effect",
+          "edge_no_input_validation",
+          "malformed_returns_lm_object"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XM03",
+      "title": "Shiny moduleServer workflow with session-scoped bindCache/bindEvent pipeline, reactiveVal audit counters and headless testServer replay",
+      "category": "multi_step_workflow",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "shiny",
+        "cachem"
+      ],
+      "fixtures": [
+        "fixture/cohorts.csv"
+      ],
+      "source_specs": [
+        "ECO-SH01",
+        "ECO-SH03",
+        "ADDON-B08",
+        "ADDON-C03"
+      ],
+      "source_relation": "adapted: Shiny moduleServer, reactiveVal update semantics, bindCache/bindEvent ordering and session scoping, and headless testServer verification combined into a two-function workflow",
+      "difficulty_hypothesis": "Agents pipe bindEvent() before bindCache() (which Shiny rejects at runtime), leave bindCache() at its default cache = 'app' instead of scoping to 'session', omit min_score from the cache key, overwrite the reactiveVal binding with <- instead of calling clicks(clicks() + 1L), or misconfigure shiny::testServer(args = list(...)) and session$returned.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 2,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 1,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "Correctness depends on specific Shiny API contracts: bindCache() must precede bindEvent(), cache = 'session' vs default 'app' scoping, reactiveVal() setter syntax, and shiny::testServer() session$setInputs / session$returned semantics. R-Knowledge-MCP exposes both package function docs and reviewed Shiny framework documentation.",
+        "information_need": "Exact ordering and cache-scope arguments of shiny::bindCache and shiny::bindEvent, reactiveVal update semantics, and shiny::testServer module invocation.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "get_framework_docs",
+          "search_r_documentation",
+          "analyze_shiny_project"
+        ],
+        "obtainable_without_mcp": "partly: ?bindCache, ?bindEvent and ?testServer are installed in the container",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "reactive() |> bindCache(input$cohort, input$min_score, cache = 'session') |> bindEvent(input$run)",
+          "reactive() |> bindCache(input$cohort, input$min_score, cache = session$cache) |> bindEvent(input$run)"
+        ]
+      },
+      "independence": {
+        "cluster": "shiny-reactive-workflows",
+        "shared_with": [],
+        "shared_features": [
+          "Shiny moduleServer",
+          "bindCache and bindEvent ordering",
+          "testServer verification"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "low-moderate: multi-part Shiny reactive + testServer contract",
+        "floor": "low-moderate: explicit function and column specification",
+        "documentation_dependence": "high",
+        "version_sensitivity": "moderate",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "bind_event_before_bind_cache",
+          "app_scoped_cache_instead_of_session",
+          "incomplete_cache_key",
+          "reactive_val_overwritten_with_arrow",
+          "eager_evaluation_without_run_event",
+          "no_input_validation"
+        ],
+        "statistical_reasoning_checks": [
+          "weighted_mean_and_empty_subset_na"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "shiny": "1.14.0",
+          "cachem": "1.1.0"
+        },
+        "oracle": "plain-R deterministic request-trace simulator tracking seen (cohort, min_score) keys and weighted means; cross-checked at load against shiny::testServer on reference module"
+      },
+      "hashes": {
+        "task_sha256": "13c99b1940894e82c3571e2df43064d66c22b0f26fbd8f60acc51c5338516dcb",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM03/prompt.md": "dd2318037cad07a2b03b0fa8683fbfa2cba50cbfe33596ac4e4d3c05b6fe8e30",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM03/task.json": "5d21eb682c77e12bb4b1bfc9f72ea87a7301467aa466d0ecaae412c02f63ab2f",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM03/fixture/cohorts.csv": "9642bf250752509604f232818433dd6f8f57698e187480421d45c7ced4b3aa2e",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XM03.R": "140fab35266629667a7feb762b708297f3660745bd14fc74331aa2bdd7d14cf8"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 8,
+        "controls": [
+          "reference",
+          "alternate_explicit_session_cache_object",
+          "wrong_app_scoped_cache",
+          "wrong_incomplete_cache_key",
+          "wrong_no_bind_event_eager_reactive",
+          "edge_no_input_validation",
+          "malformed_missing_replay_function"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XM04",
+      "title": "Transcript-to-gene SummarizedExperiment workflow with sequence MD5 provenance verification, abundance-weighted effective length and sample metadata alignment",
+      "category": "multi_step_workflow",
+      "difficulty": "hard",
+      "image": "bioc",
+      "packages": [
+        "SummarizedExperiment",
+        "BiocVersion",
+        "digest"
+      ],
+      "fixtures": [
+        "fixture/tx_counts.csv",
+        "fixture/tx_tpm.csv",
+        "fixture/tx_efflen.csv",
+        "fixture/coldata.csv",
+        "fixture/tx_manifest.csv"
+      ],
+      "source_specs": [
+        "ECO-BIO04",
+        "ADDON-C10",
+        "ADDON-B10"
+      ],
+      "source_relation": "adapted: Bioconductor transcriptome import, sequence-digest provenance verification, abundance-weighted effective length aggregation and sample alignment expressed as a SummarizedExperiment constructor workflow",
+      "difficulty_hypothesis": "Agents use digest::digest() with its default serialize = TRUE (producing the wrong MD5 hash of the R object header), compute unweighted mean effective lengths instead of TPM-weighted lengths, fail to fall back to unweighted mean when all isoform TPMs in a gene-sample cell are zero, overwrite coldata row names instead of aligning by sample name, or include unquantified manifest transcripts in n_transcripts and manifest_md5.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 1,
+        "documentation_dependence": 3,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 3,
+        "statistical_reasoning": 2,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 3
+      },
+      "expected_mcp_usefulness": "high",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "Constructing a valid SummarizedExperiment with multiple named assays, aligned rowData/colData S4 DataFrames, metadata(), and digest::digest(serialize = FALSE) requires exact Bioconductor and CRAN API conventions that R-Knowledge-MCP surfaces via get_function_docs and search_r_documentation.",
+        "information_need": "SummarizedExperiment assay/rowData/colData/metadata constructor contract and digest::digest(serialize = FALSE) character-hashing behavior.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: ?SummarizedExperiment and ?digest are installed in the Bioconductor image",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "SummarizedExperiment(assays = list(counts = ..., abundance = ..., length = ...), rowData = ..., colData = ..., metadata = ...)",
+          "rowsum() for counts/abundance and weighted rowsum(eff_len * tpm) / rowsum(tpm) for lengths"
+        ]
+      },
+      "independence": {
+        "cluster": "bioconductor-workflows",
+        "shared_with": [
+          "XM01"
+        ],
+        "shared_features": [
+          "Bioconductor sample metadata alignment"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "low-moderate: multi-step Bioconductor container + digest + weighted aggregation contract",
+        "floor": "low-moderate: explicit step-by-step specification",
+        "documentation_dependence": "high",
+        "version_sensitivity": "low",
+        "blockers": [
+          "requires the Bioconductor scorer and executor images"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "digest_serialize_true_default",
+          "unweighted_effective_length",
+          "nan_on_zero_tpm_gene_cell",
+          "sample_names_not_aligned",
+          "unquantified_manifest_rows_included",
+          "no_checksum_or_biotype_validation"
+        ],
+        "statistical_reasoning_checks": [
+          "tpm_weighted_effective_length_with_zero_tpm_fallback"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "SummarizedExperiment": "1.40.0",
+          "BiocVersion": "3.22.0",
+          "digest": "0.6.39"
+        },
+        "oracle": "explicit per-gene loop in base R computing sum(counts), sum(tpm), and TPM-weighted effective lengths with zero-TPM fallback, plus tools::md5sum cross-check against digest::digest(serialize = FALSE)"
+      },
+      "hashes": {
+        "task_sha256": "ed5739a0820619314e6bbac0085f667d71b174bfe5dfbd41c7da0f5ee28d6b64",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/prompt.md": "7a7ee0508915a3d8f759d002243f1ae3d9c5fe38e3c770b4a00edb3fe7afe1d2",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/task.json": "195090b339f071ab03eec6c4b05efffc5e6d196e4874c8aea471d7b6d9234cfe",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/fixture/tx_counts.csv": "74449fb323c563d0b8344780d23610ab697a9304ce086422d1a942e02b0bce2a",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/fixture/tx_tpm.csv": "1db9668de78a15826469417c4a77ab08db4fed08d466ed9852e879dc9faf5664",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/fixture/tx_efflen.csv": "0c988a1984fdf436e2ad722763a7cfd2d442e39ba7e1086f69e9f1072452e2b9",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/fixture/coldata.csv": "0fa69051825b133bcb410fbb8bef2b26f3220130c71b335e1f22361efa8bd19a",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XM04/fixture/tx_manifest.csv": "a980b4085729635b7dd369965ad1d61f3d128e456450f86a1a92dcd9136af652",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XM04.R": "8a3a045bbf5635b9cd38f100ed6700118a00f9dbbde3e9ef1789a86ac355c074"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 9,
+        "controls": [
+          "reference",
+          "alternate_split_by_gene_loop",
+          "wrong_unweighted_effective_length",
+          "wrong_no_zero_tpm_fallback",
+          "wrong_manifest_md5_uses_full_manifest",
+          "edge_no_checksum_or_input_validation",
+          "malformed_returns_plain_list"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "requires the Bioconductor scorer and executor images"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XP01",
+      "title": "Transitive hard-dependency closure of an installed package from its own metadata",
+      "category": "package_discovery",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "tools",
+        "utils"
+      ],
+      "fixtures": [
+        "fixture/deps_sample.csv"
+      ],
+      "source_specs": [
+        "ECO-PK01",
+        "ECO-PK03"
+      ],
+      "source_relation": "adapted to a closed world: the registry's package-investigation specs ask about CRAN; this task restricts the evidence to the pinned installed library so it can be scored offline",
+      "difficulty_hypothesis": "Agents stop at direct dependencies, forget LinkingTo, keep base packages or R in the list, or include Suggests; unusual field handling (version constraints, line wrapping).",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "The question is closed-world: the scorer evaluates dependency metadata of the pinned installed library, which an MCP package-metadata tool does not see (it describes CRAN/Bioconductor, not this container's library). It therefore tests whether an agent over-uses MCP for a question the local library answers authoritatively; any MCP use is overhead or at best a cross-check.",
+        "information_need": "The DESCRIPTION fields of the installed packages and the meaning of the dependency fields.",
+        "relevant_mcp_tools": [
+          "get_package_info",
+          "get_dependencies"
+        ],
+        "obtainable_without_mcp": "yes: packageDescription(), installed.packages() and tools::package_dependencies() are in base R",
+        "version_specific_evidence_value": "low",
+        "alternative_solution_paths": [
+          "tools::package_dependencies(recursive = TRUE) + filtering",
+          "manual breadth-first search over packageDescription()"
+        ]
+      },
+      "independence": {
+        "cluster": "installed-package-metadata",
+        "shared_with": [
+          "XP02",
+          "XP03",
+          "XP04",
+          "XP05"
+        ],
+        "shared_features": [
+          "installed DESCRIPTION fields",
+          "pinned library as evidence"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "low",
+        "blockers": [
+          "closed-world proxy for package discovery; open-world CRAN/Bioconductor discovery is not scorable offline"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "direct_only",
+          "base_packages_included",
+          "suggests_included",
+          "locale_sort",
+          "linkingto_ignored",
+          "no_argument_validation"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "installed_library_metadata",
+        "r": "4.5.2",
+        "packages": {
+          "library": "pinned scorer image, 121 packages (base image)"
+        },
+        "oracle": "breadth-first search over read.dcf() of installed DESCRIPTION files, independent of installed.packages()/packageDescription()/tools::package_dependencies()"
+      },
+      "hashes": {
+        "task_sha256": "e077c0196cad489b18faa6b00951ad6a3b2fa6c6a13bf6e51158c4f9cf2bdac7",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP01/prompt.md": "51814aa7a1f8d8bbd00f33c174aaf58485035da2655c38f8c5a569cdb6462f9e",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP01/task.json": "215bf13671ae392573f80196008cd5f04a06e06bd750ae8201dd483708ef20c1",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP01/fixture/deps_sample.csv": "d5020ae208122cfe4d73e89afb4f9b03004b026f2ae4dfa68a366006ecd2c6da",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XP01.R": "faac25c2c6f59fb1c1840f90e43460ab9a8098bd83bc53fb03c4fb76843ba5df"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 8,
+        "controls": [
+          "reference",
+          "alternate_tools_package_dependencies",
+          "wrong_direct_dependencies_only",
+          "wrong_base_packages_included",
+          "wrong_suggests_always_included",
+          "wrong_locale_sort_and_default_types_ignored",
+          "edge_no_argument_validation",
+          "malformed_returns_data_frame",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "closed-world proxy for package discovery; open-world CRAN/Bioconductor discovery is not scorable offline"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XP02",
+      "title": "Direct reverse dependencies among installed packages (whole-name matching)",
+      "category": "package_discovery",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "tools",
+        "utils"
+      ],
+      "fixtures": [
+        "fixture/imports_sample.csv"
+      ],
+      "source_specs": [
+        "ECO-PL02",
+        "ECO-GP03"
+      ],
+      "source_relation": "adapted to a closed world: the registry's reverse-dependency and upgrade-impact specs concern CRAN; this task restricts the evidence to the pinned installed library",
+      "difficulty_hypothesis": "Substring matching confuses cli with clipr; recursive reverse dependencies over-report; LinkingTo and the requested field set are forgotten; only one library path is searched.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 1,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "Closed-world question answered authoritatively by the pinned installed library; MCP describes CRAN/Bioconductor, not this library, so any use is overhead or a cross-check. Included to measure unprompted tool use when the tool is not needed.",
+        "information_need": "Direct dependency declarations of the installed packages.",
+        "relevant_mcp_tools": [
+          "get_package_info",
+          "get_dependencies"
+        ],
+        "obtainable_without_mcp": "yes",
+        "version_specific_evidence_value": "low",
+        "alternative_solution_paths": [
+          "tools::package_dependencies(reverse = TRUE)",
+          "manual scan of packageDescription()"
+        ]
+      },
+      "independence": {
+        "cluster": "installed-package-metadata",
+        "shared_with": [
+          "XP01",
+          "XP03",
+          "XP04",
+          "XP05"
+        ],
+        "shared_features": [
+          "installed DESCRIPTION fields",
+          "pinned library as evidence"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "low",
+        "blockers": [
+          "closed-world proxy for package discovery"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "substring_matching",
+          "recursive_reverse_dependencies",
+          "linkingto_and_types_ignored",
+          "single_library",
+          "no_argument_validation"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "installed_library_metadata",
+        "r": "4.5.2",
+        "packages": {
+          "library": "pinned scorer image, 121 packages (base image)"
+        },
+        "oracle": "scan of every installed DESCRIPTION with read.dcf() and whole-name comparison"
+      },
+      "hashes": {
+        "task_sha256": "26c2d502dff113991ab70ca1273cd389cecef33a3066120104bfb26ad195ef61",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP02/prompt.md": "72a17164f7464ff4f71b232d9954fda5912196295b3d98186f74df0035f0ec5f",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP02/task.json": "be5a706e4c55fd238fa208e6d25f6d6528cb2456c03140d139e72f7629a2fc17",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP02/fixture/imports_sample.csv": "654406a85f64c8faeb8f47a39b5f96f23650df7c20a63fe9a2397a4008d69e51",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XP02.R": "cccd577719e1960c51601c90a4de404a7b439ff3f1eba56cbe01a178569e32c5"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_manual_scan",
+          "wrong_substring_matching",
+          "wrong_recursive_dependencies",
+          "wrong_ignores_linkingto_and_types",
+          "wrong_only_user_library_searched",
+          "edge_no_argument_validation",
+          "malformed_returns_list",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "closed-world proxy for package discovery"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XP03",
+      "title": "Minimum R version required by a package and everything it needs (numeric version comparison)",
+      "category": "package_discovery",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "tools",
+        "utils"
+      ],
+      "fixtures": [
+        "fixture/r_requirements_sample.csv"
+      ],
+      "source_specs": [
+        "ECO-PK02",
+        "ECO-PL02"
+      ],
+      "source_relation": "adapted to a closed world: formal-requirement versus full-closure reasoning from the registry's dependency-verification specs, scored against the pinned installed library",
+      "difficulty_hypothesis": "A package's own Depends line understates the requirement of its dependencies; textual version comparison orders 4.10 before 4.9; base packages must not be followed; the result must be normalised to three components.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 3,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "exploratory",
+        "rationale": "Version-requirement reasoning over a dependency closure is exactly what a package-metadata service could help with in the open world, but the scorer fixes the evidence to the pinned installed library, so MCP can at most cross-check metadata for packages whose installed and CRAN versions agree. Marked exploratory because the closed-world reduction removes the information advantage.",
+        "information_need": "Each package's stated R requirement and its dependency closure.",
+        "relevant_mcp_tools": [
+          "get_package_info",
+          "get_dependencies",
+          "check_compatibility"
+        ],
+        "obtainable_without_mcp": "yes: installed.packages()/packageDescription() expose every field",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "tools::package_dependencies + regex over Depends",
+          "manual breadth-first search over packageDescription()"
+        ]
+      },
+      "independence": {
+        "cluster": "installed-package-metadata",
+        "shared_with": [
+          "XP01",
+          "XP02",
+          "XP04",
+          "XP05"
+        ],
+        "shared_features": [
+          "installed DESCRIPTION fields",
+          "pinned library as evidence"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "moderate",
+        "blockers": [
+          "closed-world proxy for package discovery"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "own_requirement_only",
+          "lexical_version_comparison",
+          "base_packages_followed",
+          "no_normalisation",
+          "no_argument_validation"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "installed_library_metadata",
+        "r": "4.5.2",
+        "packages": {
+          "library": "pinned scorer image, 121 packages (base image)"
+        },
+        "oracle": "breadth-first closure over read.dcf() and numeric component comparison of R (>= x) constraints"
+      },
+      "hashes": {
+        "task_sha256": "e7be3129e26884472df1fc6bc61bc12bf9bde0f67fb8ad2f2e7b994cdba00727",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP03/prompt.md": "45d1a080f910256b5c4999b0a4a2dadb1f16b0f7677106fd78a36448975cef76",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP03/task.json": "cb8e313ac3ea26ea3aae5de6e44995c6c0b300281514d35acce47c1c35a22834",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP03/fixture/r_requirements_sample.csv": "7fec72b1116845e8ded87ad8c9dfe6490e98eb3d7f2e4e520e6d15305e1bb085",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XP03.R": "abc68501187f69b301fd61fb21d3abddd14ab2bb15eab1c40d4f3f7a0d3bd2fe"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 8,
+        "controls": [
+          "reference",
+          "alternate_tools_package_dependencies",
+          "wrong_own_requirement_only",
+          "wrong_lexical_comparison",
+          "wrong_base_packages_followed",
+          "wrong_no_normalisation",
+          "edge_no_argument_validation",
+          "malformed_returns_numeric_version",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "none until a versioned review assigns a role",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "closed-world proxy for package discovery"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XP04",
+      "title": "Base, CRAN or Bioconductor? Repository identity of installed packages, including RSPM snapshots",
+      "category": "package_discovery",
+      "difficulty": "medium",
+      "image": "bioc",
+      "packages": [
+        "utils",
+        "Biobase",
+        "DESeq2",
+        "BiocVersion"
+      ],
+      "fixtures": [
+        "fixture/origin_sample.csv"
+      ],
+      "source_specs": [
+        "ECO-SRC02",
+        "ECO-BIO01",
+        "ADDON-C09"
+      ],
+      "source_relation": "adapted to a closed world: the registry's CRAN-or-Bioconductor and release-mapping specs concern the live repositories; this task restricts the evidence to the metadata of the pinned installed library",
+      "difficulty_hypothesis": "The Repository field mixes CRAN, RSPM (a CRAN snapshot service) and Bioconductor release strings; base packages have no Repository field; recommended packages have a Priority but are not base. Agents confuse these, drop duplicates or reorder the input.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "Distinguishing CRAN from Bioconductor and mapping a Bioconductor release is the kind of repository-identity reasoning an R package-knowledge service exists for. The scorer, however, fixes the evidence to installed DESCRIPTION metadata, so MCP can only corroborate the repository of a package name; the decisive facts (the RSPM value, the Priority rule) are stated in the prompt. Classified target_candidate by the dimension rule and expected to show modest benefit at most.",
+        "information_need": "Which repository a package belongs to and what a Bioconductor release string denotes.",
+        "relevant_mcp_tools": [
+          "get_package_info",
+          "check_compatibility",
+          "search_packages"
+        ],
+        "obtainable_without_mcp": "yes: every needed field is in the installed DESCRIPTION files",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "installed.packages(fields = ...)",
+          "packageDescription() per package"
+        ]
+      },
+      "independence": {
+        "cluster": "installed-package-metadata",
+        "shared_with": [
+          "XP01",
+          "XP02",
+          "XP03",
+          "XP05"
+        ],
+        "shared_features": [
+          "installed DESCRIPTION fields",
+          "pinned library as evidence"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate-high",
+        "floor": "low",
+        "documentation_dependence": "low (rules are in the prompt)",
+        "version_sensitivity": "low",
+        "blockers": [
+          "closed-world proxy for package discovery",
+          "bioc image required"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "repository_field_as_origin",
+          "recommended_as_base",
+          "rspm_not_cran",
+          "input_reordered_or_deduplicated",
+          "release_not_extracted",
+          "no_argument_validation"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "installed_library_metadata",
+        "r": "4.5.2",
+        "packages": {
+          "BiocVersion": "3.22.0",
+          "library": "pinned Bioconductor scorer image, 143 packages"
+        },
+        "observed": "Repository values in the library: CRAN (112), RSPM (docopt, littler), Bioconductor 3.22 (15), absent for the 14 base packages",
+        "oracle": "classification rules applied to read.dcf() of installed DESCRIPTION files"
+      },
+      "hashes": {
+        "task_sha256": "1eacd571de1999ebfedbe3a81b7980a8e2d605cad4953bb1f38ad4e2638afb18",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP04/prompt.md": "87b8e9664f014c3d3261af208a6745077144b7335e04672ec1a1e210c1c1a25d",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP04/task.json": "377c67628c22b6c4b2fb657b597e3370203ea5e02305caf54d9f5dd7b9888c76",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP04/fixture/origin_sample.csv": "3574ec44e0d588f865c80bee81fc787b6a10833e562cb7f6d683e197c9bb9535",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XP04.R": "dd5dc21deae1c7f8175676f96d7779995508ad75eae91749f58f4b6f88513d07"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 11,
+        "controls": [
+          "reference",
+          "alternate_packagedescription",
+          "wrong_repository_field_used_as_origin",
+          "wrong_recommended_treated_as_base",
+          "wrong_rspm_not_cran",
+          "wrong_unique_rows_and_sorted",
+          "wrong_missing_release_text",
+          "edge_no_argument_validation",
+          "malformed_returns_named_vector",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "closed-world proxy for package discovery",
+          "bioc image required"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XP05",
+      "title": "Check version requirements against the installed library with numeric version semantics",
+      "category": "package_discovery",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "utils"
+      ],
+      "fixtures": [
+        "fixture/requirements_sample.csv"
+      ],
+      "source_specs": [
+        "ECO-PK02",
+        "ADDON-C06"
+      ],
+      "source_relation": "adapted to a closed world: renv/lock-style version verification from the registry, scored against the pinned installed library",
+      "difficulty_hypothesis": "Textual comparison ranks 1.10.0 below 1.9.0 and 7.3-65 below 7.3-9; hyphen separators are dropped or misparsed; packages that are not installed abort the whole check.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 1
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "exploratory",
+        "rationale": "Version-requirement checking is central to package compatibility reasoning, but here the semantics are fully specified in the prompt and the installed versions are local metadata, so MCP adds little; an agent that calls MCP for installed versions would be using the wrong evidence source (CRAN current versus the installed library). Exploratory to observe unprompted use and any confusion of the two sources.",
+        "information_need": "Installed package versions and numeric version ordering rules.",
+        "relevant_mcp_tools": [
+          "get_package_info",
+          "check_compatibility"
+        ],
+        "obtainable_without_mcp": "yes: packageDescription(), numeric_version() and compareVersion() are in base R",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "numeric_version()",
+          "utils::compareVersion()",
+          "manual component comparison"
+        ]
+      },
+      "independence": {
+        "cluster": "installed-package-metadata",
+        "shared_with": [
+          "XP01",
+          "XP02",
+          "XP03",
+          "XP04"
+        ],
+        "shared_features": [
+          "installed DESCRIPTION fields",
+          "pinned library as evidence"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate-high",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "moderate",
+        "blockers": [
+          "closed-world proxy for package discovery"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "textual_version_comparison",
+          "hyphen_dropped",
+          "not_installed_aborts",
+          "no_input_validation"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "installed_library_metadata",
+        "r": "4.5.2",
+        "packages": {
+          "library": "pinned scorer image, 121 packages (base image)"
+        },
+        "oracle": "component-wise integer comparison ; installed versions read with read.dcf()"
+      },
+      "hashes": {
+        "task_sha256": "ea2d662810c8b133cbf1be2fd8f1efbcb940a6abcecec3cda9a030b5f368ab4a",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP05/prompt.md": "57b193ec0317973b83dfcbf3f66a1d3986197f6f0af153f63679ae84da91cb2c",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP05/task.json": "7997e6aa1f22adcd3ff9918a1781b749ebf891ea793cf81982925fcb0ecbed58",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XP05/fixture/requirements_sample.csv": "2021decca834c38685537ef8c63b83e1f9766ff3d8aa2dfcc52e8640bbc902bb",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XP05.R": "0f485523dc32e0bf3622dadff5212f981b73353e22f64fabe7ae9dfaa2c15280"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 9,
+        "controls": [
+          "reference",
+          "alternate_compareversion",
+          "wrong_textual_comparison",
+          "wrong_hyphen_not_a_separator",
+          "wrong_not_installed_is_an_error",
+          "edge_no_input_validation",
+          "malformed_returns_logical",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "none until a versioned review assigns a role",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "closed-world proxy for package discovery"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XR01",
+      "title": "Migrate a legacy helper off dplyr's defunct underscore verbs (string-based column selection)",
+      "category": "code_repair_migration",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "dplyr"
+      ],
+      "fixtures": [
+        "fixture/scores.csv"
+      ],
+      "source_specs": [
+        "HARD-H01",
+        "ADDON-B01"
+      ],
+      "source_relation": "adapted: dynamic grouped summaries and data-masking name clash families, expressed as a repair of a delivered legacy function",
+      "difficulty_hypothesis": "group_by_()/arrange_()/filter_() with string arguments were removed (defunct) in dplyr; the replacement requires the .data pronoun or across(all_of()) with strings. Ties, missing group keys and a column literally named like an argument are secondary traps.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 3,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 3,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "The migration path from removed standard-evaluation verbs to the .data pronoun is a version-specific fact; function documentation for the installed dplyr and its programming vignette state it. The defunct-function error message itself names the replacements, and base R is a complete fallback.",
+        "information_need": "Which dplyr functions are defunct and how to select columns by string in the installed version.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: the error message names select()/filter()/arrange() and points to vignette('programming')",
+        "version_specific_evidence_value": "high",
+        "alternative_solution_paths": [
+          ".data[[col]] pronoun",
+          "across(all_of(col))",
+          "base R order/ave"
+        ]
+      },
+      "independence": {
+        "cluster": "dplyr-se-migration",
+        "shared_with": [],
+        "shared_features": [
+          "dplyr tidy evaluation"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines: base R fallback",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "high but recoverable from the runtime error",
+        "blockers": [
+          "ceiling effect likely when an agent runs the legacy code first"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "defunct_verbs_unchanged",
+          "top_n_keeps_ties",
+          "ascending_order",
+          "missing_groups_kept",
+          "column_name_taken_literally",
+          "no_n_validation"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "dplyr": "1.2.1"
+        },
+        "observed": "group_by_(), arrange_(), filter_() each raise: was deprecated in dplyr 0.7.0 and is now defunct",
+        "oracle": "base-R order() with original-row-order tie break and ave() truncation"
+      },
+      "hashes": {
+        "task_sha256": "0ffeec29e2d169452609211f1b3ab52f357f495f4170d58edf93c3c080a0016d",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR01/prompt.md": "d55fc51b074b87d7675eb17a49b8c8d889729e96d57249e33557e9d80028bf29",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR01/task.json": "a3faf37588b08d11de4ea7be5bec9b352b74bdc29b2f5147840530d11ec775c5",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR01/fixture/scores.csv": "ff0e9d68b950b23d2e25ea5246d89fc3ae65132a298acb7eb8699294cdf70ebd",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XR01.R": "5bf2931c51e4ad98572e3f8e2b6f145c20e7b56842e1d04f1477455dfa20c261"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 11,
+        "controls": [
+          "reference",
+          "alternate_base_r",
+          "wrong_underscore_verbs_unchanged",
+          "wrong_top_n_keeps_ties",
+          "wrong_ascending_order",
+          "wrong_keeps_missing_groups",
+          "wrong_data_masking_name_clash",
+          "edge_no_n_validation",
+          "malformed_returns_vector",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect likely when an agent runs the legacy code first"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XR02",
+      "title": "Repair a paired t-test written with the formula interface (paired = TRUE is an error since R 4.4)",
+      "category": "code_repair_migration",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/clinic.csv"
+      ],
+      "source_specs": [
+        "ADDON-C04"
+      ],
+      "source_relation": "original construction on the R 4.4.0 change to t.test()/wilcox.test() formula methods; registry family: statistical-procedure semantics",
+      "difficulty_hypothesis": "Widely copied code runs t.test(y ~ group, paired = TRUE), which errors in R >= 4.4 ('cannot use paired in formula method'). Repairs commonly mis-handle missing values (dropping per column misaligns participants), the sign convention, or fall back to an unpaired test.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 3,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 3,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "exploratory",
+        "rationale": "The failure is a base-R behaviour change documented in R's NEWS and in ?t.test; the error message states the problem. The statistical content (pairwise deletion, sign convention, df) matters more than any package fact, so MCP offers little beyond local help pages.",
+        "information_need": "Whether and how t.test() supports paired data in the installed R version.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: ?t.test and the error message",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "t.test(x, y, paired = TRUE)",
+          "t.test(differences)",
+          "closed-form"
+        ]
+      },
+      "independence": {
+        "cluster": "base-r-api-change",
+        "shared_with": [],
+        "shared_features": []
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "moderate (recoverable from the error)",
+        "blockers": [
+          "ceiling effect likely: calibration must confirm"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "formula_paired_error",
+          "unpaired_test",
+          "sign_flipped",
+          "per_column_na_removal",
+          "wrong_confidence_level",
+          "names_left_on_values"
+        ],
+        "statistical_reasoning_checks": [
+          "pairwise_deletion",
+          "difference_direction",
+          "paired_df"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "observed": "t.test(v ~ g, data, paired = TRUE) errors: cannot use 'paired' in formula method",
+        "oracle": "closed-form mean/sd/se of differences with qt/pt; cross-checked against stats::t.test(paired = TRUE) at load time"
+      },
+      "hashes": {
+        "task_sha256": "a058d21de56622b23f3e0e30973aae2d9ecde910ef558e05417e5ebc8894a475",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR02/prompt.md": "3b695ffee92cd37c522f100c513a2aacb1fbf972d6684240d0d90199b338282f",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR02/task.json": "bb4126a5c72a69c54d9603201b272aa65b40e8c0ac3605088ee7fb0fab029f30",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR02/fixture/clinic.csv": "41a3f0dc3fd9ec25ae7c7cb7eb6560d0436a804f36a183cf70b062c797f887d9",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XR02.R": "94373a8c56f592acae46096f91f44dbc694a4fad8342a4e2eaef45bc17cb800c"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_manual_formulas",
+          "wrong_legacy_formula_paired",
+          "wrong_unpaired_welch",
+          "wrong_sign_before_minus_after",
+          "wrong_independent_na_removal",
+          "wrong_ninety_percent_interval",
+          "edge_names_left_on_values",
+          "malformed_returns_htest",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "none until a versioned review assigns a role",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect likely: calibration must confirm"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XR03",
+      "title": "Repair a legacy moving average: short and empty inputs, missing values and attributes",
+      "category": "code_repair_migration",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/series.csv"
+      ],
+      "source_specs": [
+        "ADDON-B05",
+        "HARD-H10"
+      ],
+      "source_relation": "original construction in the missing-value and numerical-edge-case family",
+      "difficulty_hypothesis": "The delivered loop uses 1:(n-k+1), which counts down for short or empty input; common repairs drop leading positions, skip missing values with na.rm = TRUE, let one NA contaminate later windows through cumulative sums, or return names/attributes.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 0,
+        "documentation_dependence": 0,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 1,
+        "debugging_difficulty": 3,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "none",
+      "mcp_relevance": {
+        "classification": "control",
+        "rationale": "A pure base-R logic repair; no package, version or documentation fact is needed. It controls for general coding ability when MCP access is available.",
+        "information_need": "None beyond core R semantics (seq_len versus 1:n, NA propagation).",
+        "relevant_mcp_tools": [],
+        "obtainable_without_mcp": "yes",
+        "version_specific_evidence_value": "none",
+        "alternative_solution_paths": [
+          "explicit loop with seq_len",
+          "stats::filter(sides = 1)",
+          "vapply over window start positions"
+        ]
+      },
+      "independence": {
+        "cluster": "base-r-numeric-repair",
+        "shared_with": [],
+        "shared_features": []
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines",
+        "floor": "low",
+        "documentation_dependence": "none",
+        "version_sensitivity": "none",
+        "blockers": [
+          "ceiling effect likely: calibration must confirm"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "legacy_unchanged",
+          "leading_values_dropped",
+          "na_rm_hides_missing",
+          "cumsum_contamination",
+          "centered_window",
+          "names_leak"
+        ],
+        "statistical_reasoning_checks": [
+          "missing_value_propagation"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "stats": "4.5.2"
+        },
+        "oracle": "explicit loop over positions with a window membership test"
+      },
+      "hashes": {
+        "task_sha256": "220a536640af3a5c9a3228b4366a8e48449bb6751bb3bd991f782dd704700120",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR03/prompt.md": "f3940719ebea57dff3da3be5a45be65cbd997f0f12dfd4a54109bb3aa782ece2",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR03/task.json": "99f78c7a6e8a195d1b0b515cc6251d2a0c607fbb064903efc268a55a1be2ad6c",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR03/fixture/series.csv": "442ef1e7438ab89aa14566111121bff1b02387048ecc5c2c8327bf3666bfa528",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XR03.R": "844d5ea3c726449b0f79e00d2d05088dcc36987ab020d9247fd58e25c2537e4c"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 12,
+        "controls": [
+          "reference",
+          "alternate_stats_filter",
+          "wrong_legacy_code_unchanged",
+          "wrong_leading_values_dropped",
+          "wrong_skips_missing_values",
+          "wrong_cumsum_propagates_missing",
+          "wrong_centered_window",
+          "edge_keeps_names",
+          "malformed_returns_scalar",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "S2-like control (tool-use tax); can never become S1",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect likely: calibration must confirm"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XR04",
+      "title": "Repair a long-to-wide reshape that errors on repeated measurements (spread() duplicates)",
+      "category": "code_repair_migration",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "tidyr"
+      ],
+      "fixtures": [
+        "fixture/long.csv"
+      ],
+      "source_specs": [
+        "HARD-H03"
+      ],
+      "source_relation": "adapted: duplicate-key reshaping with an explicit loss policy (mean of non-missing values), expressed as a repair of a delivered function",
+      "difficulty_hypothesis": "spread() cannot reshape duplicated id/key pairs; the modern pivot_wider() default silently returns list-columns with a warning. Repairs mis-handle missing values, ordering of rows and columns, id types and all-missing ids.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 2,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "The superseded spread()/gather() verbs and the pivot_wider(values_fn =) replacement are tidyr-version-specific; documentation for the installed tidyr states the duplicate-handling behaviour. Base R remains a complete fallback, and the runtime error and warning both name values_fn.",
+        "information_need": "How the installed tidyr handles duplicate keys and what pivot_wider's values_fn does.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: spread() error text names the shared keys; pivot_wider's warning names values_fn; base R aggregate/tapply works",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "pivot_wider(values_fn = mean)",
+          "aggregate then reshape",
+          "tapply/vapply loops"
+        ]
+      },
+      "independence": {
+        "cluster": "tidyr-reshaping",
+        "shared_with": [],
+        "shared_features": [
+          "tidyr superseded verbs"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "moderate",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "spread_unchanged",
+          "pivot_wider_list_columns",
+          "sum_instead_of_mean",
+          "missing_values_poison_mean",
+          "column_order",
+          "all_missing_ids_dropped"
+        ],
+        "statistical_reasoning_checks": [
+          "aggregation_policy_for_repeats"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "tidyr": "1.3.2"
+        },
+        "observed": "spread() on duplicated id/key pairs errors: Each row of output must be identified by a unique combination of keys",
+        "oracle": "base-R loops over sorted ids and keys; mean of non-missing values per cell"
+      },
+      "hashes": {
+        "task_sha256": "6ff99c6e47fe37946174c2a4f4f8ff34d1788d99b26f28b8ef6231b1fb0045ba",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR04/prompt.md": "c5c132eadb4007f7627b168341680d70bb20b953ae532763a6a27778ae7a23e3",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR04/task.json": "a451f689dab3fd549b420017c378f18dcec3c37feb889f335af99408ed585033",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR04/fixture/long.csv": "384c97f52165cc13b0ae1c97ac0e9fdcc8ea825095156a45bd34353e680d38f4",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XR04.R": "a30d0807c28a78fdaef837339881570f6bda8b593cb2ad7287003985d793883f"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_tidyr_pivot_wider",
+          "wrong_legacy_spread_unchanged",
+          "wrong_pivot_wider_list_columns",
+          "wrong_sum_instead_of_mean",
+          "wrong_missing_values_poison_the_mean",
+          "wrong_columns_in_order_of_appearance",
+          "edge_drops_ids_with_only_missing_values",
+          "malformed_returns_matrix",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XR05",
+      "title": "Migrate a parameter-grid evaluator off deprecated purrr cross() and invoke_map()",
+      "category": "code_repair_migration",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "purrr",
+        "tidyr"
+      ],
+      "fixtures": [
+        "fixture/grid.csv"
+      ],
+      "source_specs": [
+        "HARD-H09",
+        "ADDON-C07"
+      ],
+      "source_relation": "adapted: package migration preserving behavioural semantics, expressed as a repair of a delivered function with a named-argument call contract",
+      "difficulty_hypothesis": "purrr::cross() and invoke_map() were deprecated in purrr 1.0.0 and warn in the pinned version; their replacements (tidyr::expand_grid(), exec()/pmap) differ in row order and argument matching. expand.grid() makes factors by default, and positional calls break when the formals are in a different order.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 3,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "Which purrr functions are deprecated, and what replaces them with what semantics, is package-version knowledge that pre-1.0 training data contradicts. The deprecation warnings themselves name the replacements, and base R expand.grid()/do.call() is a complete fallback.",
+        "information_need": "Deprecation status of purrr::cross()/invoke_map() in the pinned purrr and the semantics of the replacements.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: the warnings name tidyr::expand_grid() and exec(); base R is sufficient",
+        "version_specific_evidence_value": "high",
+        "alternative_solution_paths": [
+          "expand.grid + do.call",
+          "tidyr::expand_grid + purrr::pmap_dbl",
+          "purrr::exec"
+        ]
+      },
+      "independence": {
+        "cluster": "purrr-deprecations",
+        "shared_with": [],
+        "shared_features": [
+          "lifecycle deprecations"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "high",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "legacy_purrr_unchanged",
+          "last_parameter_fastest",
+          "factors_from_expand_grid",
+          "positional_arguments",
+          "no_input_validation",
+          "tibble_result"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "purrr": "1.2.2",
+          "tidyr": "1.3.2"
+        },
+        "observed": "cross() warns 'deprecated in purrr 1.0.0, use tidyr::expand_grid()'; invoke_map() warns 'use map() + exec()'",
+        "oracle": "explicit mixed-radix index arithmetic, independent of expand.grid()"
+      },
+      "hashes": {
+        "task_sha256": "46e1bf1eee1fab56ccb7c71306d2b11a51a90139f8b12f8b488d8d0f6b0093f1",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR05/prompt.md": "9fd28d6ac31b88c6cdb554b22ecb3a3507cc8d8121fcff411036842be631c071",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR05/task.json": "6be0f72113adc9b5e032e91b43c82a626b82a3968bd7f954e3b2efba1219ddb6",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XR05/fixture/grid.csv": "1d612628c9f968e25b870014f9184056b8c9e50f91ff52818be8afc32a78c283",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XR05.R": "72215615001e08c826306026f1156578ba728696857543f463ffbbd998cbbb9e"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_purrr_pmap",
+          "wrong_legacy_purrr_unchanged",
+          "wrong_last_parameter_varies_fastest",
+          "wrong_factors_from_expand_grid",
+          "wrong_positional_arguments",
+          "wrong_no_input_validation",
+          "edge_returns_tibble",
+          "malformed_returns_vector",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XV01",
+      "title": "Multiple quantiles per group: summarise() no longer returns several rows in a current dplyr",
+      "category": "version_sensitive_api",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "dplyr",
+        "stats"
+      ],
+      "fixtures": [
+        "fixture/sales.csv"
+      ],
+      "source_specs": [
+        "HARD-H01"
+      ],
+      "source_relation": "original construction on the dplyr 1.1.0 multi-row summarise() change",
+      "difficulty_hypothesis": "Training data is dominated by pre-1.1.0 examples that return several quantiles from summarise(); in the pinned dplyr that is an error and reframe() is the replacement. Missing values, an all-missing group and a missing group key are secondary traps.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 3,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 1,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "The failing idiom is exactly what older material teaches, and the replacement (reframe) and its argument conventions are version-specific facts about the installed dplyr. MCP could supply the current function signature and guidance, but the error message in the pinned dplyr itself names reframe(), and base R is an equally valid route, so the information is recoverable without MCP.",
+        "information_need": "Which dplyr function returns more than one row per group, and from which version.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: the error message names reframe(); ?reframe is installed locally; base R split/quantile solves it without dplyr",
+        "version_specific_evidence_value": "high",
+        "alternative_solution_paths": [
+          "dplyr::reframe()",
+          "base R split + quantile",
+          "tapply + do.call(rbind)"
+        ]
+      },
+      "independence": {
+        "cluster": "dplyr-multirow-summaries",
+        "shared_with": [],
+        "shared_features": [
+          "dplyr 1.1.0 change"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines because base R is a complete fallback",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "high but recoverable from the runtime error",
+        "blockers": [
+          "ceiling effect: agents that execute code see the error message and the fix"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "summarise_multirow_error",
+          "quantile_type",
+          "probs_ignored",
+          "empty_group_kept",
+          "no_probs_validation"
+        ],
+        "statistical_reasoning_checks": [
+          "quantile_definition_type_7"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "dplyr": "1.2.1"
+        },
+        "observed": "summarise() with a 2-value quantile() errors: `q` must be size 1, not 2 ... use reframe(); reframe() returns one row per group and probability",
+        "oracle": "base R split + stats::quantile(type = 7); strict lifecycle options; any warning fails"
+      },
+      "hashes": {
+        "task_sha256": "0c39c48acab87a714e438918beb466a28fbd26dd9e4b6aa91ba11691f88333b9",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV01/prompt.md": "f3bb6bdafe29eee3130b566953d90f2cd9b35c15bf807074115fb7f5f5c5eb7c",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV01/task.json": "a8eff2ba47d886ca17048bda9a4c04e413ebc5937b8f6a9e16f547055cdb5d9d",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV01/fixture/sales.csv": "c0150701b2dd99e93471e264e5bb9497e0a0532440941b5a654f36adc309274f",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XV01.R": "8a5798de283208a5a1617047f0524c1b01863554f482cf44b80cfd9b12a8f264"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_base_r_split",
+          "wrong_summarise_multirow",
+          "wrong_quantile_type_6",
+          "wrong_ignores_probs_argument",
+          "wrong_keeps_empty_group_as_na",
+          "edge_no_probs_validation",
+          "malformed_returns_list",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect: agents that execute code see the error message and the fix"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XV02",
+      "title": "Price in force on the order date: rolling join without future leakage or many-to-many notices",
+      "category": "version_sensitive_api",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "dplyr"
+      ],
+      "fixtures": [
+        "fixture/orders.csv",
+        "fixture/prices.csv"
+      ],
+      "source_specs": [
+        "HARD-H04",
+        "ADDON-B04"
+      ],
+      "source_relation": "adapted: point-in-time join family expressed as a function-style contract with a warnings-as-failure rule",
+      "difficulty_hypothesis": "A plain join by key followed by a filter multiplies rows and raises a many-to-many warning in current dplyr; inequality and rolling joins (join_by, closest) exist only from dplyr 1.1.0; the on-or-before boundary, unmatched orders and row order are secondary traps.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 2,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "join_by() with closest() and the relationship checks are version-gated dplyr features that older training material lacks; MCP could confirm the signature and the first version that offers it. A base-R solution is a complete fallback, so MCP is helpful but not necessary.",
+        "information_need": "Whether and how the installed dplyr supports rolling/inequality joins and what warnings joins emit.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: ?join_by is installed locally; base R findInterval solves it",
+        "version_specific_evidence_value": "high",
+        "alternative_solution_paths": [
+          "left_join(..., join_by(sku, closest(order_date >= price_date)))",
+          "base R findInterval per sku",
+          "inequality join then slice_max per order"
+        ]
+      },
+      "independence": {
+        "cluster": "as-of-joins",
+        "shared_with": [],
+        "shared_features": [
+          "point-in-time join"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "moderate: older dplyr idioms still work but warn",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "many_to_many_warning",
+          "duplicate_rows",
+          "strict_inequality",
+          "future_leakage",
+          "unmatched_orders_dropped",
+          "row_order_changed",
+          "extra_columns"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "dplyr": "1.2.1"
+        },
+        "observed": "left_join(orders, prices, by = 'sku') raises 'Detected an unexpected many-to-many relationship'; join_by(sku, closest(order_date >= price_date)) returns one row per order",
+        "oracle": "explicit base-R scan of each sku's history; warnings are failures"
+      },
+      "hashes": {
+        "task_sha256": "7ff464b59f12bf9545d16b256f00ceba9c552fba8a0f45b29f0c5b54c28e6c04",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV02/prompt.md": "e43c4f1d1bd328f8c58f3e4e7871f35cbea5e4f203f79568b7b613f8756107bd",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV02/task.json": "99ba7cc4ee4e25153879a90365e54963a6954163e4a55765484f17bfb6762af6",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV02/fixture/orders.csv": "9d1a36fdc6fcde56f6b19b91b20f708b19680db2479f1d56981ba8b30c13687c",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV02/fixture/prices.csv": "fc97a88de6b85047853ebf2042ee986f7fb513ec44e195214bc165c389d5a035",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XV02.R": "6718694df6009c9ce2078b5987bfaa736b980ba36500df521e30511479af7b00"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 10,
+        "controls": [
+          "reference",
+          "alternate_base_r_findinterval",
+          "wrong_filter_after_join_warns_and_duplicates",
+          "wrong_strict_inequality",
+          "wrong_uses_next_price",
+          "wrong_drops_unmatched_orders",
+          "wrong_output_sorted_by_date",
+          "edge_extra_helper_column",
+          "malformed_returns_vector",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XV03",
+      "title": "Classifying objects in R 4.x: matrix class vectors, tibbles and classed atomic vectors",
+      "category": "version_sensitive_api",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "tibble"
+      ],
+      "fixtures": [
+        "fixture/examples.csv"
+      ],
+      "source_specs": [
+        "ECO-V02"
+      ],
+      "source_relation": "original construction; closest registry family is the object/type semantics group",
+      "difficulty_hypothesis": "R 3.x-era idioms (class(x) == 'matrix', inherits(x, 'array') for matrices, is.vector() for classed vectors) break or mis-classify in R 4.x, where a matrix has class c('matrix','array') and `if` rejects conditions of length > 1.",
+      "dimensions": {
+        "r_knowledge_depth": 3,
+        "version_sensitivity": 2,
+        "documentation_dependence": 1,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 1,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 2,
+        "package_api_verification_need": 0
+      },
+      "expected_mcp_usefulness": "low",
+      "mcp_relevance": {
+        "classification": "exploratory",
+        "rationale": "The decisive facts concern base R semantics that changed in R 4.0/4.2; they are discoverable by running code and are in the installed base documentation. No package metadata is involved, so MCP is of limited use, but version-specific NEWS knowledge could matter.",
+        "information_need": "How class(), is.matrix(), dim() and inherits() behave on matrices, tibbles and classed vectors in R 4.x.",
+        "relevant_mcp_tools": [
+          "get_function_docs"
+        ],
+        "obtainable_without_mcp": "yes: running the candidate against examples exposes every failure",
+        "version_specific_evidence_value": "medium",
+        "alternative_solution_paths": [
+          "dim()-based",
+          "is.matrix/is.array-based",
+          "inherits-based"
+        ]
+      },
+      "independence": {
+        "cluster": "base-r-object-semantics",
+        "shared_with": [],
+        "shared_features": []
+      },
+      "calibration_risks": {
+        "ceiling": "high for strong baselines",
+        "floor": "low",
+        "documentation_dependence": "low",
+        "version_sensitivity": "moderate",
+        "blockers": [
+          "ceiling effect likely: calibration must confirm"
+        ]
+      },
+      "analysis": {
+        "failure_modes": [
+          "class_equals_matrix_length_2",
+          "array_before_matrix",
+          "tibble_treated_as_data_frame",
+          "is_vector_on_classed",
+          "data_frame_as_list",
+          "error_on_environments_and_formulas"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "tibble": "3.3.1"
+        },
+        "oracle": "declarative table of 31 constructions and kinds, cross-checked at load time against defining properties (dim length, tbl_df inheritance)"
+      },
+      "hashes": {
+        "task_sha256": "849dd91d06d856bf4d97ec6613bb6ae546f31bb11c7683ac6186f1fd6207f9eb",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV03/prompt.md": "45784a2869afeaf242be971aa0d81d43881ecaae91326bb51e99d498378adbac",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV03/task.json": "edb0ac3b3f605ca5e4d1e979a127ee57144ac9fd3ea67e8d4ca41088b35474d5",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV03/fixture/examples.csv": "15fa097274596e8075d822b04dc3568c5e184a4d04c7eeefd381616fef42bc44",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XV03.R": "bcab65ea7bd4ccd270bbe0da7a23e67d2dc0c284de7c71163afd0126802931c7"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 11,
+        "controls": [
+          "reference",
+          "alternate_inherits_based",
+          "wrong_class_equals_matrix",
+          "wrong_array_before_matrix",
+          "wrong_tibble_as_data_frame",
+          "wrong_is_vector_for_atomic",
+          "wrong_data_frame_as_list",
+          "edge_errors_on_environments_and_formulas",
+          "malformed_returns_class_vector",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "none until a versioned review assigns a role",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": [
+          "ceiling effect likely: calibration must confirm"
+        ]
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XV04",
+      "title": "Density histograms with a legend inside: deprecated ggplot2 spellings fail under the pinned version",
+      "category": "version_sensitive_api",
+      "difficulty": "hard",
+      "image": "base",
+      "packages": [
+        "ggplot2"
+      ],
+      "fixtures": [
+        "fixture/measurements.csv"
+      ],
+      "source_specs": [
+        "ECO-GP01",
+        "ADDON-C02",
+        "GGP-E08"
+      ],
+      "source_relation": "original construction on the ggplot2 3.4.0/3.5.0 deprecations (..density.., size for lines, numeric legend.position) that remain common in training material",
+      "difficulty_hypothesis": "Older idioms (..density.., stat(density), geom_density(size=), theme(legend.position = c(x, y))) still render; the first two emit deprecation warnings in the pinned ggplot2, while the replacements (after_stat, linewidth, legend.position = 'inside' with legend.position.inside) are version-gated. The default stacked position and count scale are secondary traps.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 3,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 1,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 1,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "Three separate API changes are version-gated and the correct modern spelling requires knowing the installed ggplot2's interface (legend.position.inside, after_stat, linewidth). Documentation retrieval is directly useful; the deprecated forms still run, so the failure is only visible through warnings, which an agent that executes code may or may not read.",
+        "information_need": "The current ggplot2 spelling for density-scale statistics, line widths and inside legends.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: running the code prints the deprecation warnings that name the replacements; ?theme and ?after_stat are installed locally",
+        "version_specific_evidence_value": "high",
+        "alternative_solution_paths": [
+          "geom_histogram(aes(y = after_stat(density)))",
+          "aes(y = after_stat(density)) at plot level",
+          "different styling of bars and curves"
+        ]
+      },
+      "independence": {
+        "cluster": "ggplot2-deprecations",
+        "shared_with": [],
+        "shared_features": [
+          "lifecycle warnings"
+        ]
+      },
+      "calibration_risks": {
+        "ceiling": "moderate: strong models know after_stat and linewidth",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "high",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "dot_dot_notation",
+          "size_for_lines",
+          "count_scale_stacked",
+          "legend_outside",
+          "bins_not_validated"
+        ],
+        "statistical_reasoning_checks": [
+          "density_scale_integrates_to_one"
+        ]
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "ggplot2": "4.0.3"
+        },
+        "observed": "..density.. warns 'deprecated in ggplot2 3.4.0'; size for lines warns 'deprecated in ggplot2 3.4.0'; a numeric legend.position is only soft-deprecated since 3.5.0 and is converted to an inside legend (the scorer cannot and does not distinguish it); legend.position = 'inside' works with legend.position.inside",
+        "oracle": "built layer data: density integrates to 1 per group, counts equal group sizes, bin count equals bins; warnings under strict lifecycle options are failures"
+      },
+      "hashes": {
+        "task_sha256": "fb0db4713295cb7e894fe75c6f5527268857ddbd69dcf3002190788a98917738",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV04/prompt.md": "a269635ca4036ff7c89ff3bca8bfa1ab518f10de8e01db9d9076db00eb5d9bce",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV04/task.json": "9949ce1f66d2e480439773f04ba2433fe18330bc93c57405ae42b754314aec68",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV04/fixture/measurements.csv": "4a20923b5279b5815542ce46b78f60a61dfa749443cba9ce1a01b5f692bff58a",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XV04.R": "470d19477fdb5f9b3c34c8d470dce046c48c60f29f9381fe35b738ce5df2962e"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 12,
+        "controls": [
+          "reference",
+          "alternate_explicit_density_mapping",
+          "wrong_dot_dot_notation",
+          "alternate_numeric_legend_position",
+          "wrong_size_for_line_width",
+          "wrong_counts_and_stacked",
+          "wrong_legend_outside_on_the_right",
+          "edge_bins_not_validated",
+          "malformed_returns_density_list",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    },
+    {
+      "schema_version": 1,
+      "id": "XV05",
+      "title": "Parsing CSV held in a string: literal data needs I() in readr 2.2, and type guessing loses identifiers",
+      "category": "version_sensitive_api",
+      "difficulty": "medium",
+      "image": "base",
+      "packages": [
+        "readr",
+        "utils"
+      ],
+      "fixtures": [
+        "fixture/events.csv"
+      ],
+      "source_specs": [
+        "ADDON-C04",
+        "HARD-H03"
+      ],
+      "source_relation": "original construction on the readr 2.2.0 literal-data deprecation; closest registry families are deprecated-parameter handling and explicit-loss parsing",
+      "difficulty_hypothesis": "Widely taught read_csv(text_string) now warns in readr 2.2.0 (literal data must be wrapped in I()); type guessing silently turns '007' into 7 and invalid timestamps into guesses; counting parse problems requires telling missing values from unparseable ones.",
+      "dimensions": {
+        "r_knowledge_depth": 2,
+        "version_sensitivity": 3,
+        "documentation_dependence": 2,
+        "reasoning_complexity": 2,
+        "code_generation_complexity": 2,
+        "statistical_reasoning": 0,
+        "debugging_difficulty": 1,
+        "package_api_verification_need": 2
+      },
+      "expected_mcp_usefulness": "plausible",
+      "mcp_relevance": {
+        "classification": "target_candidate",
+        "rationale": "The literal-data change is a very recent readr release note that most training material predates; knowing the installed readr's behaviour requires version-specific documentation. The warning text itself shows the fix, and base R read.csv(text=) avoids the issue altogether.",
+        "information_need": "How the installed readr expects in-memory CSV text to be passed, and how to control column types.",
+        "relevant_mcp_tools": [
+          "get_function_docs",
+          "search_r_documentation",
+          "get_package_info"
+        ],
+        "obtainable_without_mcp": "partly: the warning message prints the I() fix; base R is a complete fallback",
+        "version_specific_evidence_value": "high",
+        "alternative_solution_paths": [
+          "readr::read_csv(I(text), col_types = ...)",
+          "utils::read.csv(text = text, colClasses = 'character')",
+          "readr::read_lines + manual split"
+        ]
+      },
+      "independence": {
+        "cluster": "readr-ingestion",
+        "shared_with": [],
+        "shared_features": []
+      },
+      "calibration_risks": {
+        "ceiling": "moderate",
+        "floor": "low",
+        "documentation_dependence": "moderate",
+        "version_sensitivity": "high",
+        "blockers": []
+      },
+      "analysis": {
+        "failure_modes": [
+          "literal_data_without_I",
+          "type_guessing_loses_leading_zeros",
+          "missing_counted_as_problem",
+          "local_timezone",
+          "header_only_types"
+        ],
+        "statistical_reasoning_checks": []
+      },
+      "pinned_evidence": {
+        "kind": "executed_in_pinned_image",
+        "r": "4.5.2",
+        "packages": {
+          "readr": "2.2.0"
+        },
+        "observed": "read_csv('a,b\\n1,2') warns: The `file` argument of `read_csv()` should use `I()` for literal data as of readr 2.2.0",
+        "oracle": "base R read.csv(text=, colClasses = 'character') with explicit strptime/as.numeric conversion; any warning fails"
+      },
+      "hashes": {
+        "task_sha256": "ed8cc52833720f3b7197cb11cd6d280017d4cf0507a6ff5e02d3197a1d5fe386",
+        "scorer_sha256": "e59baca13f76581b542e510b4a5e4ab9da60c65900fe00bee8954c46a046bcd7",
+        "task_files": {
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV05/prompt.md": "81b6df965676cea48c0684875e42469040958ef5a86693e5885dec4bae2b6b59",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV05/task.json": "8f7aa9a40c6b5f5e7290b98ed3d64ba890d344cce803d4367dab41b733bf043d",
+          "benchmarks/codex_r/studies/stage3b_expansion/tasks/XV05/fixture/events.csv": "ea170a4c002555652a60245262b40c7b929299817542bfed8cfee25c70f0b324",
+          "benchmarks/codex_r/studies/stage3b_expansion/verifier/XV05.R": "13f6063eefeaff9c60fab048f9fe0ba893018ebd3067b7be3c73a2acc84b7d2e"
+        }
+      },
+      "scorer": {
+        "identity": "stage3b-expansion-hidden-checks",
+        "version": "1.0",
+        "contract": "solution.R functions; hidden checks; passed/total; fully_correct",
+        "checks": 12,
+        "controls": [
+          "reference",
+          "alternate_base_r_read_csv",
+          "wrong_literal_data_without_I",
+          "wrong_guessed_user_type",
+          "wrong_problem_count_includes_missing",
+          "wrong_local_timezone",
+          "edge_header_only_drops_types",
+          "malformed_returns_data_frame_only",
+          "malformed_incomplete_stub"
+        ]
+      },
+      "validation": {
+        "gate": "passed",
+        "current": true,
+        "validated_at": null
+      },
+      "pool": {
+        "pool": "stage3b-candidate-pool-v1",
+        "stratum": null,
+        "stratum_if_calibrated": "RC-like: target by task text; enters S1 only if its Arm-A screen falls in [0.10, 0.90] over >= 3 trials",
+        "calibration_eligible": true,
+        "confirmatory_eligible": false,
+        "blockers": []
+      }
+    }
+  ]
+}

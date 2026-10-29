@@ -1,0 +1,7 @@
+"package","version","priority","repository","has_bioc_views"
+"stats","4.5.2","base",,FALSE
+"MASS","7.3-65","recommended","CRAN",FALSE
+"dplyr","1.2.1",,"CRAN",FALSE
+"S4Vectors","0.48.1",,"Bioconductor 3.22",TRUE
+"IRanges","2.44.0",,"Bioconductor 3.22",TRUE
+"docopt","0.7.2",,"RSPM",FALSE

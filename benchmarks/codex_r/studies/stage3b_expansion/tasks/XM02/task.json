@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "id": "XM02",
+  "title": "Multi-site treatment investigation with column-selective missingness screening, post-treatment exclusion, interaction gate and site-specific vs pooled contrasts",
+  "category": "multi_step_workflow",
+  "difficulty": "hard",
+  "image": "base",
+  "packages": ["stats"],
+  "fixtures": ["fixture/study.csv"],
+  "source_specs": ["ANOVA-A14", "ANOVA-A15"],
+  "source_relation": "adapted: end-to-end statistical investigation and interaction-aware report audit expressed as a coupled multi-step function contract",
+  "difficulty_hypothesis": "Agents call na.omit() across the whole table (dropping valid rows with missing post_adherence), include the post-treatment variable post_adherence as a covariate, fit separate per-site regressions instead of extracting site contrasts from the joint interaction model, report a pooled main effect even when treatment-by-site interaction is significant, or reverse the active-minus-control contrast sign.",
+  "dimensions": {
+    "r_knowledge_depth": 2, "version_sensitivity": 0, "documentation_dependence": 1,
+    "reasoning_complexity": 3, "code_generation_complexity": 3, "statistical_reasoning": 3,
+    "debugging_difficulty": 1, "package_api_verification_need": 0
+  },
+  "expected_mcp_usefulness": "low",
+  "mcp_relevance": {
+    "classification": "control",
+    "rationale": "The workflow relies on base R linear-model projection, contrast extraction and statistical study-design hygiene rather than external package APIs or version-sensitive functions. It serves as a multi-step statistical workflow control for measuring tool-use overhead on complex reasoning tasks.",
+    "information_need": "How to extract within-site treatment contrasts and standard errors from a joint interaction model and how to gate pooled main effects on the interaction F test.",
+    "relevant_mcp_tools": ["get_function_docs"],
+    "obtainable_without_mcp": "yes: base R stats::lm, vcov, model.matrix and anova are standard and locally documented",
+    "version_specific_evidence_value": "none",
+    "alternative_solution_paths": [
+      "lm(outcome ~ baseline + site / arm - 1) or cell-indicator parameterization for direct within-site contrasts",
+      "lm(outcome ~ baseline + site * arm) with linear combinations over coef() and vcov()",
+      "explicit QR / normal-equation OLS projection in base R"
+    ]
+  },
+  "independence": {
+    "cluster": "multi-step-statistical-investigation",
+    "shared_with": [],
+    "shared_features": ["post-treatment covariate exclusion", "interaction-gated pooled contrast"]
+  },
+  "calibration_risks": {
+    "ceiling": "low-moderate: multiple coupled statistical and data-hygiene steps",
+    "floor": "low-moderate: explicit step-by-step specification",
+    "documentation_dependence": "low",
+    "version_sensitivity": "none",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": [
+      "na_omit_all_columns",
+      "adjusts_for_post_treatment_variable",
+      "separate_within_site_regressions",
+      "pooled_effect_reported_under_interaction",
+      "reversed_contrast_direction",
+      "no_input_or_cell_validation"
+    ],
+    "statistical_reasoning_checks": [
+      "post_treatment_variable_excluded",
+      "joint_error_variance_in_site_contrasts",
+      "interaction_gates_pooled_main_effect"
+    ]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"stats": "4.5.2"},
+    "oracle": "explicit normal-equation OLS projection ((X'X)^-1 X'y) and contrast variance c'(X'X)^-1 c * sigma^2 in plain matrix arithmetic; cross-checked at load against stats::lm and stats::anova"
+  },
+  "checks_documented_in": "verifier/XM02.R"
+}
+

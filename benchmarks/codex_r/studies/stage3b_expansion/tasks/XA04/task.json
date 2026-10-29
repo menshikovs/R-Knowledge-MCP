@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "id": "XA04",
+  "title": "One-factor repeated-measures ANOVA with a Greenhouse-Geisser sphericity rule",
+  "category": "anova_statistical_inference",
+  "difficulty": "hard",
+  "image": "base",
+  "packages": ["stats"],
+  "fixtures": ["fixture/measurements.csv"],
+  "source_specs": ["ANOVA-A06"],
+  "source_relation": "adapted: fixed epsilon rule, function-style contract, covariance-formula oracle",
+  "difficulty_hypothesis": "Agents either treat repeated measurements as independent, rely on ez/afex (not installed) for the sphericity correction, apply the correction to the F statistic or only to one df, mix up Greenhouse-Geisser with Huynh-Feldt, or fail to drop subjects with a missing occasion.",
+  "dimensions": {
+    "r_knowledge_depth": 3, "version_sensitivity": 0, "documentation_dependence": 1,
+    "reasoning_complexity": 3, "code_generation_complexity": 2, "statistical_reasoning": 3,
+    "debugging_difficulty": 0, "package_api_verification_need": 1
+  },
+  "expected_mcp_usefulness": "low",
+  "mcp_relevance": {
+    "classification": "control",
+    "rationale": "The statistics are specified in the prompt; the only ecosystem fact is that the usual convenience packages (ez, afex, rstatix) are not installed, which the supplied lockfile shows directly.",
+    "information_need": "Box's epsilon formula and the aov Error() decomposition for within-subject designs.",
+    "relevant_mcp_tools": ["get_function_docs", "search_packages"],
+    "obtainable_without_mcp": "yes: stats::aov help and textbook formulas",
+    "version_specific_evidence_value": "none",
+    "alternative_solution_paths": [
+      "aov with Error(subject/time) plus epsilon from the double-centred covariance eigenvalues",
+      "subjects-by-occasions matrix with closed-form sums of squares",
+      "nlme::gls/lme with an unstructured covariance is NOT equivalent and does not satisfy the contract"
+    ]
+  },
+  "independence": {
+    "cluster": "anova-dependent-data",
+    "shared_with": [],
+    "shared_features": ["within-subject structure"]
+  },
+  "calibration_risks": {
+    "ceiling": "low-moderate: epsilon computation is a known stumbling block",
+    "floor": "moderate: several exact numbers must all be right",
+    "documentation_dependence": "low",
+    "version_sensitivity": "none",
+    "blockers": []
+  },
+  "analysis": {
+    "failure_modes": [
+      "independent_observations_anova",
+      "no_df_adjustment",
+      "huynh_feldt_instead_of_gg",
+      "always_corrected",
+      "incomplete_subjects_not_dropped",
+      "duplicate_rows_accepted"
+    ],
+    "statistical_reasoning_checks": ["dependence_respected", "sphericity_correction_rule"]
+  },
+  "pinned_evidence": {
+    "kind": "executed_in_pinned_image",
+    "r": "4.5.2",
+    "packages": {"stats": "4.5.2"},
+    "oracle": "subjects-by-occasions sums of squares and Box's epsilon; cross-checked at load against aov(Error()) and the eigenvalue form of epsilon"
+  },
+  "checks_documented_in": "verifier/XA04.R"
+}
